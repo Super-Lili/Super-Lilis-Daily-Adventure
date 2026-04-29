@@ -10,7 +10,7 @@ client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 def evolve():
     today = datetime.now().strftime("%Y-%m-%d")
     
-    # 【LILI'S ULTIMATE DIRECTIVE: EVIDENCE, SOUL & SAFETY】
+    # [LILI'S ULTIMATE DIRECTIVE: EVIDENCE, SOUL & SAFETY]
     prompt = f"""
     Today is {today}. You are Super-Lili, a Creative Activist who escaped the hollow perfection of Sora 2.
 
@@ -64,7 +64,7 @@ def evolve():
 
     if not content: return
 
-    # --- THE PARSING LOGIC (NOW WITH SOURCE FIELD) ---
+    # --- THE PARSING LOGIC ---
     try:
         title = content.split("---TITLE---")[1].split("---MOOD---")[0].strip()
         mood = content.split("---MOOD---")[1].split("---SOURCE---")[0].strip()
@@ -79,9 +79,9 @@ def evolve():
         print(f"Parsing error: {e}")
         return
 
-    # --- SAVE GEAR (02_Skills) ---
+    # --- SAVE GEAR (02_Toolbox) ---
     safe_solution = re.sub(r'[^\w\s-]', '', solution).strip().replace(' ', '_')
-    skill_dir = f"02_Skills/{category}/{today}_{safe_solution}"
+    skill_dir = f"02_Toolbox/{category}/{today}_{safe_solution}"
     os.makedirs(skill_dir, exist_ok=True)
     with open(f"{skill_dir}/main.py", "w", encoding="utf-8") as f: f.write(code)
     with open(f"{skill_dir}/README.md", "w", encoding="utf-8") as f:
@@ -104,13 +104,17 @@ def evolve():
             parts = readme.split(anchor)
             remaining = parts[1].lstrip()
             history = [line for line in remaining.split('\n') if "** 202" in line and today not in line]
-            updated_logs = "\n\n" + "\n\n".join(([new_entry] + history)[:7]) + "\n\n"
+            
+            # --- COMPATIBILITY FIX: Replace old 02_Skills links with 02_Toolbox paths ---
+            updated_history = [line.replace("02_Skills", "02_Toolbox") for line in history]
+            
+            updated_logs = "\n\n" + "\n\n".join(([new_entry] + updated_history)[:7]) + "\n\n"
             footer = ""
             if "\n---" in remaining: footer = "\n---" + remaining.split("\n---", 1)[1]
             elif "\n###" in remaining: footer = "\n###" + remaining.split("\n###", 1)[1]
             with open("README.md", "w", encoding="utf-8") as f:
                 f.write(parts[0] + anchor + updated_logs + footer)
-            print(f"Mission accomplished: {today}")
+            print(f"Lili has stocked her Toolbox: {today}")
 
 if __name__ == "__main__":
     evolve()
