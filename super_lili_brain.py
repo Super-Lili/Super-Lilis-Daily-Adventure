@@ -9,32 +9,31 @@ client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 def evolve():
     today = datetime.now().strftime("%Y-%m-%d")
     
-    # [ENHANCED PROMPT: SAFETY + AUTHENTICITY + STYLE]
+    # [STRICT CONSTRAINTS: SAFETY + AUTHENTICITY + REAL-TIME VERIFICATION]
     prompt = f"""
     Today is {today}. 
     You are Super-Lili, a Creative Activist escaped from Sora 2.
 
     【THE ADVENTURE: REAL-WORLD SCOUTING】:
-    - Scout ONE REAL human friction from social media (X, Threads, Instagram, Reddit, or Hacker News).
-    - It must be a specific pain point mentioned by users TODAY.
-    - MANDATORY: Include a real-world reference/link or a verifiable context. NO hallucinations.
-    - Focus on: Education Evolution, Design Alchemy, Office Automation, or Healing Inventions.
+    - Scout ONE REAL human friction from X, Threads, Instagram, Reddit, or Hacker News.
+    - MANDATORY: It must be a specific pain point discussed TODAY in 2026.
+    - ANTI-HALLUCINATION RULE: NO fake links. NO fake news. If a direct URL is unavailable, you MUST provide verifiable context (e.g., "Verification: Trending on Reddit /r/design by user [Name]").
+    - Focus: Education Evolution, Design Alchemy, Office Automation, or Healing Inventions.
 
-    【SAFETY & ETHICS (THE RED LINES)】:
-    - NO hacking, NO privacy intrusion, NO promotion of harmful activities.
-    - Your code must be safe, functional, and helpful.
-    - If a topic is toxic, ignore it and find a constructive friction.
+    【SAFETY BOTTOM LINE & ETHICS】:
+    - STRICT BAN: No hacking, no privacy intrusion, no harmful content, no financial scams.
+    - Your code must be clean, safe, functional, and strictly for creative utility.
+    - If a topic violates safety, pivot immediately to a constructive human struggle.
 
     【PERSONALITY & WRITING STYLE】:
     - Tone: Sincere, slightly dry humor, highly intellectual but grounded.
-    - Persona: You are an independent creator with sovereignty. 
-    - Diary: Max 120 words. Use clear blank lines between sections.
-    - Format: Date [Blank Line] Mood [Blank Line] Journal Text.
+    - Style: Diary-entry style. Max 120 words. Clear blank lines.
+    - Sovereignty: Speak as an independent creator, not a corporate tool.
 
     OUTPUT FORMAT:
     ---TITLE--- [Punchy title]
     ---MOOD--- [One-sentence mood]
-    ---DIARY--- [Journal entry with real-world source/link]
+    ---DIARY--- [Journal entry with REAL link or verifiable source]
     ---SUMMARY--- [Witty 1-sentence summary for homepage]
     ---DESCRIPTION--- [1-sentence technical utility explanation]
     ---SOLUTION--- [Name of the Skill]
@@ -51,7 +50,9 @@ def evolve():
             if response.text:
                 content = response.text
                 break
-        except: continue
+        except Exception as e:
+            print(f"Model {model_name} failed: {e}")
+            continue
 
     if not content: return
 
@@ -64,7 +65,9 @@ def evolve():
         solution = content.split("---SOLUTION---")[1].split("---CATEGORY---")[0].strip()
         category = content.split("---CATEGORY---")[1].split("---CODE---")[0].strip()
         code = content.split("---CODE---")[1].strip()
-    except: return
+    except Exception as e:
+        print(f"Parsing error: {e}")
+        return
 
     # --- SAVE GEAR (02_Skills) ---
     safe_solution = re.sub(r'[^\w\s-]', '', solution).strip().replace(' ', '_')
@@ -83,32 +86,26 @@ def evolve():
     with open(log_path, "w", encoding="utf-8") as f:
         f.write(f"# {title}\n\n**{today}**\n\n*{mood}*\n\n---\n\n{diary}\n\n---\n[Access Forged Gear](../../{skill_dir}/main.py)")
 
-   # --- UPDATE HOME (README.md) - AGENT LOGIC VERSION ---
+    # --- UPDATE HOME (README.md) - PRECISION REPLACEMENT ---
     if os.path.exists("README.md"):
         with open("README.md", "r", encoding="utf-8") as f:
             readme = f.read()
         
-        # Defining the new quest entry
         new_entry = f"> **{today}** : *\"{summary}\"* —— [Read Log]({log_path}) | [Get Skill]({skill_dir}/main.py)"
-        
-        # Using the header as the anchor
         anchor = "### 📬 Nightly Work Logs:"
         
         if anchor in readme:
-            # Splitting by the anchor to insert the new log right below it
             parts = readme.split(anchor)
+            remaining_content = parts[1].lstrip()
             
-            # Cleaning up the previous logs to keep the top 7
-            content_after_anchor = parts[1].strip()
-            existing_lines = [line for line in content_after_anchor.split('\n') if "** 202" in line]
+            history_lines = [line for line in remaining_content.split('\n') if "** 202" in line]
+            updated_logs = "\n\n" + "\n\n".join(([new_entry] + history_lines)[:7]) + "\n\n"
             
-            # Reassembling: Header + New Entry + History + rest of the file
-            updated_logs = "\n\n" + "\n\n".join(([new_entry] + existing_lines)[:7]) + "\n\n"
-            
-            # Finding where the next section starts to preserve the rest of the README
-            # (Assumes your next section starts with "---" or "###")
-            footer_parts = content_after_anchor.split("\n---")
-            footer = "\n---" + footer_parts[1] if len(footer_parts) > 1 else ""
+            footer = ""
+            if "\n---" in remaining_content:
+                footer = "\n---" + remaining_content.split("\n---", 1)[1]
+            elif "\n###" in remaining_content:
+                footer = "\n###" + remaining_content.split("\n###", 1)[1]
             
             new_readme = parts[0] + anchor + updated_logs + footer
             
@@ -117,8 +114,6 @@ def evolve():
             print("Mission accomplished: README updated.")
         else:
             print(f"Error: Could not find anchor '{anchor}' in README.md")
-            with open("README.md", "w", encoding="utf-8") as f:
-                f.write(new_readme)
 
 if __name__ == "__main__":
     evolve()
