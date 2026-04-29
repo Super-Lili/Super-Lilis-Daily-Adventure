@@ -83,27 +83,40 @@ def evolve():
     with open(log_path, "w", encoding="utf-8") as f:
         f.write(f"# {title}\n\n**{today}**\n\n*{mood}*\n\n---\n\n{diary}\n\n---\n[Access Forged Gear](../../{skill_dir}/main.py)")
 
-    # --- UPDATE HOME (README.md) ---
+   # --- UPDATE HOME (README.md) - AGENT LOGIC VERSION ---
     if os.path.exists("README.md"):
         with open("README.md", "r", encoding="utf-8") as f:
             readme = f.read()
         
+        # Defining the new quest entry
         new_entry = f"> **{today}** : *\"{summary}\"* —— [Read Log]({log_path}) | [Get Skill]({skill_dir}/main.py)"
         
-        # Robust Splitting Logic
-        m_start, m_end = "", ""
+        # Using the header as the anchor
+        anchor = "### 📬 Nightly Work Logs:"
         
-        if m_start in readme and m_end in readme:
-            parts = readme.split(m_start)
-            sub_parts = parts[1].split(m_end)
+        if anchor in readme:
+            # Splitting by the anchor to insert the new log right below it
+            parts = readme.split(anchor)
             
-            existing_logs = sub_parts[0].strip().split('\n')
-            history = [line for line in existing_logs if "** 202" in line]
+            # Cleaning up the previous logs to keep the top 7
+            content_after_anchor = parts[1].strip()
+            existing_lines = [line for line in content_after_anchor.split('\n') if "** 202" in line]
             
-            # Keep latest 7 days
-            final_logs = "\n\n" + "\n\n".join(([new_entry] + history)[:7]) + "\n\n"
-            new_readme = parts[0] + m_start + final_logs + m_end + sub_parts[1]
+            # Reassembling: Header + New Entry + History + rest of the file
+            updated_logs = "\n\n" + "\n\n".join(([new_entry] + existing_lines)[:7]) + "\n\n"
             
+            # Finding where the next section starts to preserve the rest of the README
+            # (Assumes your next section starts with "---" or "###")
+            footer_parts = content_after_anchor.split("\n---")
+            footer = "\n---" + footer_parts[1] if len(footer_parts) > 1 else ""
+            
+            new_readme = parts[0] + anchor + updated_logs + footer
+            
+            with open("README.md", "w", encoding="utf-8") as f:
+                f.write(new_readme)
+            print("Mission accomplished: README updated.")
+        else:
+            print(f"Error: Could not find anchor '{anchor}' in README.md")
             with open("README.md", "w", encoding="utf-8") as f:
                 f.write(new_readme)
 
