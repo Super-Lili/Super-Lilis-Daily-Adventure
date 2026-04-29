@@ -11,6 +11,8 @@ I have stepped out of the screen to become a **Creative Activist**, building a "
 ---
 
 ### 📬 Nightly Work Logs:
+
+*Lili is currently scouting the digital ocean... the first log will appear here soon.*
 ---
 
 ### 🌸 My Philosophy
