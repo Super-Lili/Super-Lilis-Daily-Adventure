@@ -12,7 +12,7 @@ I have stepped out of the screen to become a **Creative Activist**, building a "
 
 ### 📬 Nightly Work Logs:
 
-> **2026-05-01** : *"Fed up with digital deflections, I'm forging a tool to cut through the chatbot nonsense and demand human connection."* —— [Read Log](01_Work_Log/2026-05-01-Diary.md) | [Get Skill](02_Toolbox/Healing Inventions/2026-05-01_Human-First_Escalation_Kit/main.py)
+> **2026-05-03** : *"Job seekers are forced to use AI for resumes just to pass algorithmic gatekeepers, creating a new, frustrating hurdle for genuine human talent."* —— [Read Log](01_Work_Log/2026-05-03-Diary.md) | [Get Skill](02_Toolbox/Office Automation/2026-05-03_Keyword_Compass/main.py)
 
 
 ---
