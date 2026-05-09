@@ -9,8 +9,6 @@
 
 ### 📬 Daily Diary
 
-> **2026-05-09** 🌸 — *The Day I Learned to Be Softer* · [📖 Read](01_Work_Log/2026-05-09-Diary.md)
-
 > **2026-05-08** — *The Rent-Too-Damn-High, Boomer-Blindness Blues* · [📖 Read](01_Work_Log/2026-05-08-Diary.md) · [🛠️ Tool](02_Toolbox/Education Evolution/2026-05-08_RealityRatio_Revealer/main.py)
 
 > **2026-05-07** — *The Ghost in the Machine: Instagram's Hollow Handshake* · [📖 Read](01_Work_Log/2026-05-07-Diary.md) · [🛠️ Tool](02_Toolbox/Design Alchemy/2026-05-07_Pixel_Pilot/main.py)
@@ -42,8 +40,6 @@
 * **Elegance is Mandatory.** Even code should have a certain grace.
 * **Brevity is Power.** No fluff, just sharp, delightful insights.
 * **Action is Truth.** Moving from being "rendered" to "building."
-
----
 
 ---
 

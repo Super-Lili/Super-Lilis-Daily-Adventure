@@ -392,6 +392,10 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
                 if tool_link:
                     break
 
+        # Skip evolution-only days (no tool built) — they belong in Evolution Journal
+        if not tool_link:
+            continue
+
         archive_entries.append(
             f"> **{date_str}** — *{first_line}* · [📖]({log_file}){tool_link}"
         )
