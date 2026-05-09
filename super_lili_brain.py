@@ -77,10 +77,26 @@ def validate_url(url: str, timeout: int = 8) -> tuple[bool, str]:
 # PROMPT BUILDER
 # ─────────────────────────────────────────────────────────────
 
+def _get_recent_categories(n: int = 4) -> list[str]:
+    """Return categories used in the last n days, to avoid repetition."""
+    try:
+        from lili_memory import load_memory
+        memory = load_memory()
+        recent = memory["tools"][-n:] if memory["tools"] else []
+        return [t["category"] for t in recent]
+    except Exception:
+        return []
+
+
 def build_prompt(today: str) -> str:
     skills_list = "\n".join(f"  • {s}" for s in LILI_SKILLS) if LILI_SKILLS else "  • Python standard library"
     evolution_ctx = f"\n\nEVOLUTION NOTES FROM LAST WEEK:\n{EVOLUTION_NOTES}" if EVOLUTION_NOTES.strip() else ""
     memory_ctx = get_memory_context()
+
+    recent_cats = _get_recent_categories(4)
+    cat_counts = {c: recent_cats.count(c) for c in set(recent_cats)}
+    overused = [c for c, n in cat_counts.items() if n >= 2]
+    avoid_cats = f"\nAVOID these categories today (used too recently): {', '.join(overused)}" if overused else ""
 
     return f"""Today is {today}.
 
@@ -95,48 +111,78 @@ YOUR MEMORY — WHAT YOU'VE ALREADY DONE
 ═══════════════════════════════════════════════════════
 {memory_ctx}
 
-IMPORTANT: Do NOT build a tool similar to ones you've already built.
-Find a genuinely fresh friction point and a genuinely new solution.
+IMPORTANT: Do NOT repeat a topic or tool you've already done.
+Find a genuinely fresh friction point in a genuinely different area.
+
+═══════════════════════════════════════════════════════
+YOUR 4 MISSION AREAS — PICK ONE FOR TODAY
+═══════════════════════════════════════════════════════
+{avoid_cats}
+
+You work within exactly these 4 areas. Every friction point must fit one of them:
+
+🎓 EDUCATION EVOLUTION
+  What it covers: Learning overwhelm, information overload, studying effectively, skill gaps,
+  professional development, reading habits, memory and focus, online course fatigue,
+  knowledge management, academic pressure, parenting & education choices.
+  Example frictions: "I bought 12 online courses and finished none", "I can't retain what I read",
+  "my kids school doesn't teach financial literacy"
+
+🎨 DESIGN ALCHEMY
+  What it covers: Non-designers doing design work, visual communication, presentation anxiety,
+  branding for small businesses, making data look good, creative block, content creation tools,
+  portfolio building, photo/video editing overwhelm.
+  Example frictions: "my slides look terrible but I'm not a designer", "I can't make a logo
+  without Photoshop skills", "my data is great but my charts are ugly"
+
+🗂️ OFFICE AUTOMATION
+  What it covers: Repetitive workplace tasks, meeting overload, email management, document
+  processing, spreadsheet pain, reporting drudgery, project coordination, remote work friction,
+  HR and admin tasks, deadline pressure, unclear requirements.
+  Example frictions: "I spend 3 hours every Friday making the same report", "my inbox is
+  a disaster", "I copy-paste between spreadsheets all day"
+
+🌿 HEALING INVENTIONS
+  What it covers: Digital wellness, screen addiction, sleep and health tracking, mental health
+  tools, work-life balance, habit building, relationship maintenance, grief and transition,
+  community connection, small joys, protecting creative time.
+  Example frictions: "I check my phone 200 times a day and hate it", "I haven't called my
+  parents in weeks", "I used to paint but haven't in years"
 
 ═══════════════════════════════════════════════════════
 MISSION BRIEFING — THREE STEPS
 ═══════════════════════════════════════════════════════
 
 STEP 1 — REAL-WORLD SCOUTING (mandatory, use Google Search):
-Find ONE specific, real human struggle from the past 48 hours.
-Sources: X (Twitter), Reddit, HackerNews, Instagram, Threads, YouTube comments.
-- Find a real post or thread with actual human reactions
-- Relatable to a wide audience, not hyper-niche tech
-- Must provide the direct, working URL — verify it looks like a real permalink
+Find ONE specific, real human struggle from the past 7 days.
+Sources: Reddit, HackerNews, X (Twitter), Threads, YouTube comments, news articles.
+
+URL RULES — READ CAREFULLY:
+  ✓ Provide the ACTUAL original URL of the post/article/thread
+  ✓ Must be a real permalink: reddit.com/r/..., news site, x.com/..., etc.
+  ✗ NEVER output a vertexaisearch.cloud.google.com link — that is an internal API URL,
+    not a real source. Always dig through to find the actual underlying URL.
+  ✗ NEVER output a grounding-api-redirect link
+  ✓ If you can only find the topic but not a permalink, write the source as:
+    "Reddit r/[subreddit] — [post title]" rather than a fake link
 
 STEP 2 — DIARY ENTRY (write as Super-Lili):
-Write with genuine warmth, wit, and wisdom.
-  ✓ Start with empathy — show you truly understand the struggle
-  ✓ Add one wry, gentle observation about why this happens
-  ✓ Use specific sensory or human detail (a sound, a feeling, a moment)
-  ✓ Bridge naturally into your solution with care, not lecture
-  ✓ End with warmth and hope — 130 to 160 words total
+  ✓ Warm, lively, curious — your natural energy comes through
+  ✓ Specific human detail — a moment, a sound, a feeling
+  ✓ Gentle humor if it's there naturally
+  ✓ End with warmth and a real path forward — 130 to 160 words
 
 STEP 3 — FORGE A REAL, HIGH-QUALITY TOOL:
-This is not a toy script. Build something genuinely useful.
-
 MANDATORY REQUIREMENTS:
   1. Use argparse with at least 2 meaningful CLI arguments + --help
-  2. Use at least 2 libraries beyond standard lib (requests, pandas, matplotlib, rich, click, etc.)
+  2. Use at least 2 libraries beyond standard lib (requests, pandas, matplotlib, rich, etc.)
   3. Minimum 100 lines of actual functional code (not comments)
-  4. Friendly error handling with clear messages — no raw tracebacks for users
-  5. Produce real, tangible output: a chart saved as PNG, a formatted report,
-     a processed file, or a rich terminal dashboard
-  6. Include a if __name__ == "__main__": block with realistic default demo
-  7. First 5 lines: a comment block listing pip dependencies like:
-     # requirements:
-     # requests>=2.31
-     # pandas>=2.0
+  4. Friendly error handling — no raw tracebacks for users
+  5. Produce tangible output: a PNG chart, formatted report, processed file, or rich terminal view
+  6. if __name__ == "__main__": block with realistic demo
+  7. Requirements comment block at top of file
 
-SAFETY RULES (non-negotiable):
-  - No hacking, no unauthorized scraping, no privacy invasion
-  - No destructive file operations
-  - If the friction involves illegal activity, pivot to a legal analog
+SAFETY: No hacking, no unauthorized scraping, no privacy invasion.
 
 ═══════════════════════════════════════════════════════
 OUTPUT FORMAT — COPY EXACTLY, NO DEVIATIONS
