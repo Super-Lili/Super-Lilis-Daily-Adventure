@@ -405,7 +405,7 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
 
     full_log_section = featured + archive_section
 
-    anchor = "### 📬 Nightly Work Logs:"
+    anchor = "### 📬 Daily Diary"
     if anchor not in readme:
         return
 
