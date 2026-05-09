@@ -340,8 +340,13 @@ def update_readme_evolution_section(today_str: str):
     evo_entries = []
     for f in evo_files:
         date = f.stem[:10]
-        week_of = (datetime.strptime(date, "%Y-%m-%d") - timedelta(days=6)).strftime("%Y-%m-%d")
-        evo_entries.append(f"> **{week_of} → {date}** · [📊 Read Evolution Log]({f})")
+        diary_path = Path("01_Work_Log") / f"{date}-Diary.md"
+        title = "Weekly Evolution"
+        if diary_path.exists():
+            first_line = diary_path.read_text(encoding="utf-8").splitlines()[0]
+            title = first_line.lstrip("#").strip()
+        diary_link = f" · [📖 Read]({diary_path})" if diary_path.exists() else ""
+        evo_entries.append(f"> **{date}** 🌸 — *{title}*{diary_link} · [📊 Evolution Log]({f})")
 
     new_section = "\n\n".join(evo_entries) if evo_entries else "> *(First evolution coming soon...)*"
 

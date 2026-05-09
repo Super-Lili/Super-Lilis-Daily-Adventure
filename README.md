@@ -31,7 +31,7 @@
 
 ### 🌸 Evolution Journal
 
-> **Seed Edition → 2026-05-09** · [📊 Read Evolution Log](03_Evolution_Log/2026-05-09_Weekly_Evolution.md)
+> **2026-05-09** 🌸 — *The Day I Learned to Be Softer* · [📖 Read](01_Work_Log/2026-05-09-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-05-09_Weekly_Evolution.md)
 
 ---
 
