@@ -333,7 +333,7 @@ def update_readme_evolution_section(today_str: str):
         return
 
     readme = readme_path.read_text(encoding="utf-8")
-    evo_anchor = "### 🌸 Evolution Journal:"
+    evo_anchor = "### 🌸 Evolution Journal"
 
     evo_dir = Path("03_Evolution_Log")
     evo_files = sorted(evo_dir.glob("*_Weekly_Evolution.md"), reverse=True) if evo_dir.exists() else []

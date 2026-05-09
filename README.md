@@ -31,6 +31,12 @@
 
 ---
 
+### 🌸 Evolution Journal
+
+> **Seed Edition → 2026-05-09** · [📊 Read Evolution Log](03_Evolution_Log/2026-05-09_Weekly_Evolution.md)
+
+---
+
 ### 🎭 The Lili Manifesto
 
 * **Elegance is Mandatory.** Even code should have a certain grace.
