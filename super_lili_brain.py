@@ -334,13 +334,7 @@ def save_diary(today: str, parsed: dict, source_badge: str) -> str:
             f"{zh_section}\n\n"
             f"---\n\n"
             f"➡️ [Grab the Tool](../{parsed['_skill_dir']}/main.py) · "
-            f"[Tool README](../{parsed['_skill_dir']}/README.md)\n\n"
-            f"---\n\n"
-            f"📖 继续逛逛\n\n"
-            f"*这里是我每天真正工作的地方——日记在左，工具在右，随时欢迎来翻。*\n\n"
-            f"请继续热爱生活。\n\n"
-            f"干杯！砰！🐝\n\n"
-            f"*由超级莉莉精心策划，由她最喜欢的创作者监督。*"
+            f"[Tool README](../{parsed['_skill_dir']}/README.md)"
         )
 
     return log_path
