@@ -20,6 +20,15 @@ except ImportError:
     LILI_SKILLS = []
     EVOLUTION_NOTES = ""
 
+try:
+    from lili_memory import get_memory_context, add_tool, add_topic, rebuild_memory_from_repo
+    MEMORY_AVAILABLE = True
+except ImportError:
+    MEMORY_AVAILABLE = False
+    def get_memory_context(): return ""
+    def add_tool(*args, **kwargs): pass
+    def add_topic(*args, **kwargs): pass
+
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 
@@ -71,6 +80,7 @@ def validate_url(url: str, timeout: int = 8) -> tuple[bool, str]:
 def build_prompt(today: str) -> str:
     skills_list = "\n".join(f"  • {s}" for s in LILI_SKILLS) if LILI_SKILLS else "  • Python standard library"
     evolution_ctx = f"\n\nEVOLUTION NOTES FROM LAST WEEK:\n{EVOLUTION_NOTES}" if EVOLUTION_NOTES.strip() else ""
+    memory_ctx = get_memory_context()
 
     return f"""Today is {today}.
 
@@ -79,6 +89,14 @@ def build_prompt(today: str) -> str:
 
 YOUR CURRENT SKILL INVENTORY:
 {skills_list}
+
+═══════════════════════════════════════════════════════
+YOUR MEMORY — WHAT YOU'VE ALREADY DONE
+═══════════════════════════════════════════════════════
+{memory_ctx}
+
+IMPORTANT: Do NOT build a tool similar to ones you've already built.
+Find a genuinely fresh friction point and a genuinely new solution.
 
 ═══════════════════════════════════════════════════════
 MISSION BRIEFING — THREE STEPS
@@ -381,6 +399,24 @@ def evolve():
 
     print("🏠 Updating README...")
     update_readme(today, parsed, log_path, skill_dir)
+
+    print("🧠 Updating memory...")
+    if MEMORY_AVAILABLE:
+        # Initialize memory from repo on first run
+        from lili_memory import load_memory
+        mem = load_memory()
+        if not mem["tools"]:
+            print("  First run — rebuilding memory from repo...")
+            rebuild_memory_from_repo()
+        add_tool(
+            name=parsed["solution"],
+            category=parsed["category"],
+            description=parsed["description"],
+            path=skill_dir,
+            date=today,
+        )
+        add_topic(date=today, title=parsed["title"], path=log_path)
+        print("  ✓ Memory updated.")
 
     print(f"\n✨ Adventure complete for {today}!")
 
