@@ -286,8 +286,8 @@ def save_diary(today: str, parsed: dict, source_badge: str) -> str:
             f"{parsed['diary']}"
             f"{zh_section}\n\n"
             f"---\n\n"
-            f"➡️ [Grab the Tool]({parsed['_skill_dir']}/main.py) · "
-            f"[Tool README]({parsed['_skill_dir']}/README.md)"
+            f"➡️ [Grab the Tool](../{parsed['_skill_dir']}/main.py) · "
+            f"[Tool README](../{parsed['_skill_dir']}/README.md)"
         )
 
     return log_path
