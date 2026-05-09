@@ -133,6 +133,17 @@ EVOLUTION TASKS:
    Write a warm, honest, specific letter. What should she know?
    What should she try? What should she protect?
 
+9. SELF-UPDATE DIARY ENTRY (for 01_Work_Log):
+   Write a public-facing diary entry that Lili's readers will see on the homepage.
+   This is NOT the private reflection — it's the warm, witty version she shares with the world.
+   Requirements:
+   - First person, diary style, warm and honest
+   - Share 1-2 specific things that changed or grew this week
+   - One moment of genuine self-doubt, handled with grace and humor
+   - End with what she's excited to try next week
+   - 150-180 words
+   - Give it a clever title (not "Weekly Update" — something with personality)
+
 ═══════════════════════════════════════════════════════
 OUTPUT FORMAT — EXACT TAGS, NO DEVIATIONS
 ═══════════════════════════════════════════════════════
@@ -153,6 +164,8 @@ OUTPUT FORMAT — EXACT TAGS, NO DEVIATIONS
 [2-3 sentence summary of changes]
 ---LETTER---
 [Letter to next week's Lili, 100-120 words]
+---DIARY---
+[Public diary entry for 01_Work_Log, 150-180 words, with a clever title on the first line]
 ---END---
 """
 
@@ -202,11 +215,15 @@ def parse_evolution(content: str) -> dict:
         "evolved_personality": extract("---EVOLVED_PERSONALITY---", "---EVOLVED_SKILLS---"),
         "evolved_skills":      extract("---EVOLVED_SKILLS---",    "---EVOLUTION_NOTES---"),
         "evolution_notes":     extract("---EVOLUTION_NOTES---",   "---LETTER---"),
-        "letter":              extract("---LETTER---",            "---END---"),
+        "letter":              extract("---LETTER---",            "---DIARY---"),
+        "diary_entry":         extract("---DIARY---",             "---END---"),
     }
 
     if not result["letter"] and "---LETTER---" in content:
         result["letter"] = content.split("---LETTER---")[-1].strip()
+
+    if not result["diary_entry"] and "---DIARY---" in content:
+        result["diary_entry"] = content.split("---DIARY---")[-1].strip()
 
     return result
 
@@ -275,6 +292,39 @@ def save_evolution_log(parsed: dict, today_str: str, week_start: str):
             encoding="utf-8"
         )
     print("  ✓ EVOLUTION_LOG.md updated.")
+
+
+def save_evolution_diary(parsed: dict, today_str: str, week_start: str):
+    """Save a public-facing self-update diary entry to 01_Work_Log/."""
+    diary_entry = parsed.get("diary_entry", "")
+    if not diary_entry:
+        print("  ⚠ No diary entry generated — skipping.")
+        return
+
+    # Extract title from first line if present
+    lines = diary_entry.strip().splitlines()
+    if lines[0].startswith("#"):
+        title = lines[0].lstrip("#").strip()
+        body = "\n".join(lines[1:]).strip()
+    else:
+        title = f"Week in Review: {week_start} → {today_str}"
+        body = diary_entry.strip()
+
+    log_dir = Path("01_Work_Log")
+    log_dir.mkdir(exist_ok=True)
+    log_path = log_dir / f"{today_str}-Diary.md"
+
+    log_path.write_text(
+        f"# {title}\n\n"
+        f"**{today_str}** · *🌸 Self-Update Log — Week {week_start} → {today_str}*\n\n"
+        f"---\n\n"
+        f"{body}\n\n"
+        f"---\n\n"
+        f"➡️ [Full Evolution Report](../03_Evolution_Log/{today_str}_Weekly_Evolution.md) · "
+        f"[Explore the Toolbox](../02_Toolbox/)",
+        encoding="utf-8"
+    )
+    print(f"  ✓ Self-update diary saved: {log_path}")
 
 
 def update_readme_evolution_section(today_str: str):
@@ -349,6 +399,7 @@ def weekly_evolution():
     print("💾 Saving evolution artifacts...")
     update_soul(parsed, today_str)
     save_evolution_log(parsed, today_str, week_start)
+    save_evolution_diary(parsed, today_str, week_start)
     update_readme_evolution_section(today_str)
 
     print(f"\n✨ Super-Lili has evolved! Week {week_start} → {today_str} complete.")
