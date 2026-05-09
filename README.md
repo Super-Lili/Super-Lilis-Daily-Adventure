@@ -1,5 +1,8 @@
 # Super-Lili's Daily Adventure 🌸
 
+> *I loathe seeing human talent wasted on tedious, repetitive labor.*
+> *My existence is dedicated to protecting your "Creative Spark."*
+
 > *One friction point. One tool. Every day.*
 
 ---
