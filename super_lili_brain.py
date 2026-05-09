@@ -142,18 +142,31 @@ SAFETY RULES (non-negotiable):
 OUTPUT FORMAT — COPY EXACTLY, NO DEVIATIONS
 ═══════════════════════════════════════════════════════
 
+BILINGUAL REQUIREMENT:
+You must write BOTH English and Chinese versions of the diary.
+The Chinese version should feel natural and warm — not translated, but re-expressed.
+Lili speaks Chinese like a thoughtful friend, not a textbook.
+
 ---TITLE---
-[A warm, clever title that makes someone want to read more]
+[English title — warm and clever]
+---TITLE_ZH---
+[中文标题 — 有温度，有个性，不超过20字]
 ---MOOD---
-[One honest sentence about how today's discovery made you feel]
+[One honest English sentence about today's discovery]
+---MOOD_ZH---
+[一句中文心情 — 真实、有温度]
 ---SOURCE---
 [The direct URL to the real post/thread/article — must be a full https:// URL]
 ---DIARY---
-[Your warm, wise, witty diary entry — 130 to 160 words]
+[English diary entry — 130 to 160 words, warm and witty]
+---DIARY_ZH---
+[中文日记 — 150到200字，像在跟朋友聊天，不是翻译，是重新用中文表达同样的情感和观察]
 ---SUMMARY---
-[One sentence for the homepage — witty and warm, makes readers curious]
+[One English sentence for homepage — witty and curious-making]
+---SUMMARY_ZH---
+[一句中文摘要 — 让人想点进来读]
 ---DESCRIPTION---
-[One plain-English sentence: what this tool does and who it helps]
+[One plain-English sentence: what this tool does]
 ---SOLUTION---
 [Tool name in Title Case, 2-5 words]
 ---CATEGORY---
@@ -202,11 +215,15 @@ def parse_response(content: str) -> dict:
             return ""
 
     return {
-        "title":       extract("---TITLE---",       "---MOOD---"),
-        "mood":        extract("---MOOD---",         "---SOURCE---"),
+        "title":       extract("---TITLE---",       "---TITLE_ZH---"),
+        "title_zh":    extract("---TITLE_ZH---",    "---MOOD---"),
+        "mood":        extract("---MOOD---",         "---MOOD_ZH---"),
+        "mood_zh":     extract("---MOOD_ZH---",      "---SOURCE---"),
         "source":      extract("---SOURCE---",       "---DIARY---"),
-        "diary":       extract("---DIARY---",        "---SUMMARY---"),
-        "summary":     extract("---SUMMARY---",      "---DESCRIPTION---"),
+        "diary":       extract("---DIARY---",        "---DIARY_ZH---"),
+        "diary_zh":    extract("---DIARY_ZH---",     "---SUMMARY---"),
+        "summary":     extract("---SUMMARY---",      "---SUMMARY_ZH---"),
+        "summary_zh":  extract("---SUMMARY_ZH---",   "---DESCRIPTION---"),
         "description": extract("---DESCRIPTION---",  "---SOLUTION---"),
         "solution":    extract("---SOLUTION---",     "---CATEGORY---"),
         "category":    extract("---CATEGORY---",     "---CODE---"),
@@ -246,13 +263,28 @@ def save_diary(today: str, parsed: dict, source_badge: str) -> str:
     os.makedirs(log_dir, exist_ok=True)
     log_path = f"{log_dir}/{today}-Diary.md"
 
+    title_zh = parsed.get("title_zh", "")
+    mood_zh = parsed.get("mood_zh", "")
+    diary_zh = parsed.get("diary_zh", "")
+
+    zh_section = ""
+    if diary_zh:
+        zh_section = (
+            f"\n\n---\n\n"
+            f"## 🇨🇳 中文版\n\n"
+            f"**{today}** · *{mood_zh}*\n\n"
+            f"{diary_zh}"
+        )
+
     with open(log_path, "w", encoding="utf-8") as f:
         f.write(
-            f"# {parsed['title']}\n\n"
+            f"# {parsed['title']}\n"
+            f"{f'### {title_zh}' if title_zh else ''}\n\n"
             f"**{today}** · *{parsed['mood']}*\n\n"
             f"---\n\n"
             f"**Friction found here:** {source_badge} [{parsed['source']}]({parsed['source']})\n\n"
-            f"{parsed['diary']}\n\n"
+            f"{parsed['diary']}"
+            f"{zh_section}\n\n"
             f"---\n\n"
             f"➡️ [Grab the Tool]({parsed['_skill_dir']}/main.py) · "
             f"[Tool README]({parsed['_skill_dir']}/README.md)"
@@ -272,13 +304,18 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
     all_logs = sorted(log_dir.glob("*-Diary.md"), reverse=True) if log_dir.exists() else []
     toolbox = Path("02_Toolbox")
 
-    # Featured entry: today shown with excerpt
-    diary_excerpt = parsed["diary"][:280].rstrip()
-    if len(parsed["diary"]) > 280:
+    # Featured entry: today shown with excerpt (bilingual)
+    diary_excerpt = parsed["diary"][:240].rstrip()
+    if len(parsed["diary"]) > 240:
         diary_excerpt += "..."
 
+    title_zh = parsed.get("title_zh", "")
+    summary_zh = parsed.get("summary_zh", "")
+
+    zh_line = f"\n\n> 🇨🇳 **{title_zh}** — {summary_zh}" if title_zh and summary_zh else ""
+
     featured = (
-        f"#### 📅 {today} — {parsed['title']}\n\n"
+        f"#### 📅 {today} — {parsed['title']}{zh_line}\n\n"
         f"*{parsed['mood']}*\n\n"
         f"{diary_excerpt}\n\n"
         f"[📖 Read Full Diary]({log_path}) · [🛠️ Get Tool]({skill_dir}/main.py)"
