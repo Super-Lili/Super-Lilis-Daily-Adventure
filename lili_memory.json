@@ -1,0 +1,179 @@
+{
+  "tools": [
+    {
+      "date": "2026-05-03",
+      "name": "Feed Transparency Alchemist",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-03_Feed_Transparency_Alchemist",
+      "description": ""
+    },
+    {
+      "date": "2026-05-04",
+      "name": "Chrono-Search Weaver",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-04_Chrono-Search_Weaver",
+      "description": ""
+    },
+    {
+      "date": "2026-05-05",
+      "name": "The Authenticity Engine",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-05_The_Authenticity_Engine",
+      "description": ""
+    },
+    {
+      "date": "2026-05-07",
+      "name": "Pixel Pilot",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-07_Pixel_Pilot",
+      "description": ""
+    },
+    {
+      "date": "2026-05-08",
+      "name": "RealityRatio Revealer",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-08_RealityRatio_Revealer",
+      "description": ""
+    },
+    {
+      "date": "2026-05-08",
+      "name": "Status Sentinel",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-08_Status_Sentinel",
+      "description": ""
+    },
+    {
+      "date": "2026-04-30",
+      "name": "Ad-Stream Awareness Tracker",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-04-30_Ad-Stream_Awareness_Tracker",
+      "description": ""
+    },
+    {
+      "date": "2026-05-01",
+      "name": "Human-First Escalation Kit",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-01_Human-First_Escalation_Kit",
+      "description": ""
+    },
+    {
+      "date": "2026-05-06",
+      "name": "The Focus Alchemist",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-06_The_Focus_Alchemist",
+      "description": ""
+    },
+    {
+      "date": "2026-05-07",
+      "name": "Digital Fortress Blueprint",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-07_Digital_Fortress_Blueprint",
+      "description": ""
+    },
+    {
+      "date": "2026-04-29",
+      "name": "The Clarity Crucible",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-04-29_The_Clarity_Crucible",
+      "description": ""
+    },
+    {
+      "date": "2026-05-03",
+      "name": "Keyword Compass",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-03_Keyword_Compass",
+      "description": ""
+    },
+    {
+      "date": "2026-05-04",
+      "name": "Clarity Compass",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-04_Clarity_Compass",
+      "description": ""
+    },
+    {
+      "date": "2026-05-04",
+      "name": "Safety Sentinel Log",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-04_Safety_Sentinel_Log",
+      "description": ""
+    },
+    {
+      "date": "2026-05-10",
+      "name": "Report Streamliner",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-10_Report_Streamliner",
+      "description": "This tool streamlines the process of combining multiple CSV or Excel files, aggregating data based on a common key, and generating a consolidated report."
+    },
+    {
+      "date": "2026-05-10",
+      "name": "Report Streamliner",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-10_Report_Streamliner",
+      "description": "This tool streamlines the process of combining multiple CSV or Excel files, aggregating data based on a common key, and generating a consolidated report."
+    }
+  ],
+  "topics_covered": [
+    {
+      "date": "2026-04-29",
+      "title": "The Bureaucratic Black Hole Blaster",
+      "path": "01_Work_Log/2026-04-29-Diary.md"
+    },
+    {
+      "date": "2026-04-30",
+      "title": "The Ad-pocalypse Counter",
+      "path": "01_Work_Log/2026-04-30-Diary.md"
+    },
+    {
+      "date": "2026-05-01",
+      "title": "The Chatbot Calamity: A Guide to Escaping Digital Drones",
+      "path": "01_Work_Log/2026-05-01-Diary.md"
+    },
+    {
+      "date": "2026-05-03",
+      "title": "Ad-Nauseam Instagram",
+      "path": "01_Work_Log/2026-05-03-Diary.md"
+    },
+    {
+      "date": "2026-05-04",
+      "title": "The Algorithmic Black Hole of Instagram Past",
+      "path": "01_Work_Log/2026-05-04-Diary.md"
+    },
+    {
+      "date": "2026-05-05",
+      "title": "Algorithm's Ghost in the Machine",
+      "path": "01_Work_Log/2026-05-05-Diary.md"
+    },
+    {
+      "date": "2026-05-06",
+      "title": "The Finals Fizzle",
+      "path": "01_Work_Log/2026-05-06-Diary.md"
+    },
+    {
+      "date": "2026-05-07",
+      "title": "The Ghost in the Machine: Instagram's Hollow Handshake",
+      "path": "01_Work_Log/2026-05-07-Diary.md"
+    },
+    {
+      "date": "2026-05-08",
+      "title": "The Rent-Too-Damn-High, Boomer-Blindness Blues",
+      "path": "01_Work_Log/2026-05-08-Diary.md"
+    },
+    {
+      "date": "2026-05-09",
+      "title": "The Day I Learned to Be Softer",
+      "path": "01_Work_Log/2026-05-09-Diary.md"
+    },
+    {
+      "date": "2026-05-10",
+      "title": "ReportStreamliner: Your Happy Data Harmonizer!",
+      "path": "01_Work_Log/2026-05-10-Diary.md"
+    },
+    {
+      "date": "2026-05-10",
+      "title": "ReportStreamliner: Your Happy Data Harmonizer!",
+      "path": "01_Work_Log/2026-05-10-Diary.md"
+    }
+  ],
+  "last_updated": "2026-05-10"
+}
