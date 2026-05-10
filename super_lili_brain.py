@@ -334,6 +334,7 @@ def save_diary(today: str, parsed: dict, source_badge: str) -> str:
             f"{parsed['diary']}"
             f"{zh_section}\n\n"
             f"---\n\n"
+            f"今天为你锻造的工具在这里，拿走就能用 👇\n\n"
             f"➡️ [🛠️ Grab the Tool](../{encoded_dir}/main.py) · "
             f"[📖 Tool README](../{encoded_dir}/README.md)"
         )
