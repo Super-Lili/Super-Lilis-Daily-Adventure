@@ -323,6 +323,7 @@ def save_diary(today: str, parsed: dict, source_badge: str) -> str:
             f"{diary_zh}"
         )
 
+    encoded_dir = parsed['_skill_dir'].replace(" ", "%20")
     with open(log_path, "w", encoding="utf-8") as f:
         f.write(
             f"# {parsed['title']}\n"
@@ -333,8 +334,8 @@ def save_diary(today: str, parsed: dict, source_badge: str) -> str:
             f"{parsed['diary']}"
             f"{zh_section}\n\n"
             f"---\n\n"
-            f"➡️ [Grab the Tool](../{parsed['_skill_dir']}/main.py) · "
-            f"[Tool README](../{parsed['_skill_dir']}/README.md)"
+            f"➡️ [🛠️ Grab the Tool](../{encoded_dir}/main.py) · "
+            f"[📖 Tool README](../{encoded_dir}/README.md)"
         )
 
     return log_path
