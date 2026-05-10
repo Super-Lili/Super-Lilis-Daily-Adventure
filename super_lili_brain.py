@@ -230,7 +230,7 @@ Lili speaks Chinese like a thoughtful friend, not a textbook.
 
 def call_gemini(prompt: str) -> str | None:
     search_tool = types.Tool(google_search=types.GoogleSearch())
-    models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+    models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
 
     for model_name in models:
         try:
