@@ -186,7 +186,9 @@ the problem clearly and thinks about it seriously, but never loses her lightness
   ✓ Optimistic and solution-oriented — she opens a door, never just names a problem
   ✓ One small moment of wit or warmth — never forced, always earned
   ✓ 130 to 160 words
-  ✗ No anger, no preaching, no empty encouragement
+  ✗ Do NOT open with "I found/saw/noticed on Reddit/HackerNews" — start with the feeling,
+    the image, or the thought it triggered in her. The source is secondary, the human is primary.
+  ✗ No anger, no preaching, no empty encouragement ("you've got this!", "believe in yourself!")
   ✗ Do NOT add a closing section, footer, or sign-off — the script handles that automatically
 
 STEP 3 — FORGE A TOOL THAT TRULY SOLVES THE PROBLEM:
