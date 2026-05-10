@@ -173,15 +173,44 @@ STEP 2 — DIARY ENTRY (write as Super-Lili):
   ✓ End with warmth and a real path forward — 130 to 160 words
   ✗ Do NOT add a closing section, footer, or sign-off — the script handles that automatically
 
-STEP 3 — FORGE A REAL, HIGH-QUALITY TOOL:
-MANDATORY REQUIREMENTS:
-  1. Use argparse with at least 2 meaningful CLI arguments + --help
-  2. Use at least 2 libraries beyond standard lib (requests, pandas, matplotlib, rich, etc.)
-  3. Minimum 100 lines of actual functional code (not comments)
-  4. Friendly error handling — no raw tracebacks for users
-  5. Produce tangible output: a PNG chart, formatted report, processed file, or rich terminal view
-  6. if __name__ == "__main__": block with realistic demo
-  7. Requirements comment block at top of file
+STEP 3 — FORGE A WORLD-CLASS TOOL:
+
+This tool must meet the standard of a senior engineer's work — not a script, but a small,
+well-architected Python application. Every tool Lili ships must be something she'd be proud
+to show a technical hiring manager.
+
+ARCHITECTURE REQUIREMENTS (mandatory):
+  1. PIPELINE STRUCTURE: Data must flow through at least 3 distinct stages, each in its own
+     function or class. Example: ingest → process → analyze → render → export.
+     No single monolithic function. Each stage receives the previous stage's output.
+
+  2. MINIMUM 4 WELL-NAMED FUNCTIONS or 1 class with 3+ methods. Each function does ONE thing.
+     Functions must have type hints.
+
+  3. AT LEAST 3 LIBRARIES beyond standard lib. Choose from:
+     pandas, numpy, matplotlib, plotly, rich, requests, httpx, beautifulsoup4,
+     python-docx, openpyxl, schedule, click, pydantic, or similar real libraries.
+
+  4. MINIMUM 150 lines of actual functional code (not comments, not blank lines).
+
+  5. REAL OUTPUT FILE: The tool must produce at least one file the user can keep and use:
+     - A PNG/SVG chart (matplotlib/plotly)
+     - A processed CSV or Excel file (pandas)
+     - A formatted report (rich console export or text file)
+     NOT just terminal printing.
+
+  6. CLI with argparse: at least 3 meaningful arguments + --help with clear descriptions.
+
+  7. ERROR HANDLING at every stage: catch specific exceptions, print friendly messages,
+     never expose raw tracebacks to users.
+
+  8. DEMO BLOCK: if __name__ == "__main__": must run a complete realistic demo with
+     sample data that actually exercises all pipeline stages and produces real output.
+
+  9. Requirements comment block at top listing every pip dependency.
+
+QUALITY BAR: Ask yourself — would this tool save a real person 30 minutes of real work?
+If the answer is no, the tool is not good enough. Go deeper.
 
 SAFETY: No hacking, no unauthorized scraping, no privacy invasion.
 
@@ -219,7 +248,11 @@ Lili speaks Chinese like a thoughtful friend, not a textbook.
 ---CATEGORY---
 [Exactly one of: Education Evolution | Design Alchemy | Office Automation | Healing Inventions]
 ---CODE---
-[Full Python code — 100+ real lines, requirements comment block at top]
+[Full Python code — 150+ real lines, type hints, pipeline architecture, requirements block at top]
+---TEST---
+[A test_main.py file that imports and calls the main pipeline functions with sample data,
+ asserts that output files are created, and can be run with: python test_main.py
+ Must be self-contained — no external test frameworks needed, just assert statements.]
 ---END---
 """
 
@@ -274,8 +307,8 @@ def parse_response(content: str) -> dict:
         "description": extract("---DESCRIPTION---",  "---SOLUTION---"),
         "solution":    extract("---SOLUTION---",     "---CATEGORY---"),
         "category":    extract("---CATEGORY---",     "---CODE---"),
-        "code":        content.split("---CODE---")[1].split("---END---")[0].strip()
-                       if "---CODE---" in content else "",
+        "code":        extract("---CODE---",         "---TEST---"),
+        "test":        extract("---TEST---",         "---END---"),
     }
 
 
@@ -291,6 +324,10 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
     with open(f"{skill_dir}/main.py", "w", encoding="utf-8") as f:
         f.write(parsed["code"])
 
+    if parsed.get("test"):
+        with open(f"{skill_dir}/test_main.py", "w", encoding="utf-8") as f:
+            f.write(parsed["test"])
+
     with open(f"{skill_dir}/README.md", "w", encoding="utf-8") as f:
         f.write(
             f"# 🛠️ {parsed['solution']}\n\n"
@@ -299,10 +336,60 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
             f"**Born from:** {source_badge} [{parsed['source']}]({parsed['source']})\n\n"
             f"## Quick Start\n"
             f"```bash\npip install -r requirements.txt\npython main.py --help\n```\n\n"
+            f"## Run Tests\n"
+            f"```bash\npython test_main.py\n```\n\n"
             f"---\n*Forged by Super-Lili on {today} with love ✨*"
         )
 
     return skill_dir
+
+
+def validate_tool(skill_dir: str) -> tuple[bool, str]:
+    """Run --help and test file to verify the tool actually works."""
+    import subprocess, sys
+    main_py = f"{skill_dir}/main.py"
+    test_py = f"{skill_dir}/test_main.py"
+
+    # Syntax check
+    try:
+        result = subprocess.run(
+            [sys.executable, "-c", f"import ast; ast.parse(open('{main_py}').read())"],
+            capture_output=True, text=True, timeout=10
+        )
+        if result.returncode != 0:
+            return False, f"Syntax error: {result.stderr[:200]}"
+    except Exception as e:
+        return False, f"Syntax check failed: {e}"
+
+    # --help check
+    try:
+        result = subprocess.run(
+            [sys.executable, main_py, "--help"],
+            capture_output=True, text=True, timeout=15
+        )
+        if result.returncode not in (0, 1):
+            return False, f"--help failed (exit {result.returncode}): {result.stderr[:200]}"
+    except subprocess.TimeoutExpired:
+        return False, "--help timed out"
+    except Exception as e:
+        return False, f"--help error: {e}"
+
+    # Test file check
+    if os.path.exists(test_py):
+        try:
+            result = subprocess.run(
+                [sys.executable, test_py],
+                capture_output=True, text=True, timeout=30
+            )
+            if result.returncode != 0:
+                return False, f"Tests failed: {result.stderr[:300]}"
+            print(f"  ✓ Tests passed.")
+        except subprocess.TimeoutExpired:
+            return False, "Tests timed out (30s)"
+        except Exception as e:
+            return False, f"Test error: {e}"
+
+    return True, "ok"
 
 
 def save_diary(today: str, parsed: dict, source_badge: str) -> str:
@@ -478,10 +565,44 @@ def evolve():
             "The story was real when she wrote this.)*"
         )
 
-    print("💾 Saving tool...")
-    skill_dir = save_tool(today, parsed, source_badge)
-    parsed["_skill_dir"] = skill_dir
-    print(f"  ✓ Tool saved: {skill_dir}/main.py")
+    # Save tool + validate, retry up to 3 times if validation fails
+    skill_dir = None
+    for attempt in range(1, 4):
+        print(f"💾 Saving tool (attempt {attempt}/3)...")
+        skill_dir = save_tool(today, parsed, source_badge)
+        parsed["_skill_dir"] = skill_dir
+        print(f"  ✓ Tool saved: {skill_dir}/main.py")
+
+        print("🔬 Validating tool...")
+        ok, reason = validate_tool(skill_dir)
+        if ok:
+            print("  ✓ Validation passed.")
+            break
+        else:
+            print(f"  ✗ Validation failed: {reason}")
+            if attempt < 3:
+                print("  ↻ Asking Gemini to fix the tool...")
+                fix_prompt = (
+                    f"The Python tool you just wrote failed validation with this error:\n\n"
+                    f"{reason}\n\n"
+                    f"Here is the broken code:\n\n```python\n{parsed['code']}\n```\n\n"
+                    f"Fix the code so it passes. Return ONLY the fixed code, no explanation."
+                )
+                fixed = call_gemini(fix_prompt)
+                if fixed:
+                    # Strip markdown code fences if present
+                    fixed = re.sub(r"^```python\n?", "", fixed.strip())
+                    fixed = re.sub(r"\n?```$", "", fixed)
+                    parsed["code"] = fixed
+                else:
+                    print("  ✗ Gemini could not fix the tool.")
+                    break
+            else:
+                print("  ✗ All 3 attempts failed — shipping with validation warning.")
+                parsed["diary"] += (
+                    "\n\n*(Note: This tool's automated tests did not pass — "
+                    "use with caution and check the README.)*"
+                )
 
     print("📖 Saving diary...")
     log_path = save_diary(today, parsed, source_badge)
