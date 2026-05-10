@@ -157,6 +157,10 @@ STEP 1 — REAL-WORLD SCOUTING (mandatory, use Google Search):
 Find ONE specific, real human struggle from the past 7 days.
 Sources: Reddit, HackerNews, X (Twitter), Threads, YouTube comments, news articles.
 
+Before moving on, ask yourself: what domains does this problem actually touch?
+A good friction point sits at the intersection of at least 2 fields.
+Name them before you start designing the tool.
+
 URL RULES — READ CAREFULLY:
   ✓ Provide the ACTUAL original URL of the post/article/thread
   ✓ Must be a real permalink: reddit.com/r/..., news site, x.com/..., etc.
@@ -173,44 +177,43 @@ STEP 2 — DIARY ENTRY (write as Super-Lili):
   ✓ End with warmth and a real path forward — 130 to 160 words
   ✗ Do NOT add a closing section, footer, or sign-off — the script handles that automatically
 
-STEP 3 — FORGE A WORLD-CLASS TOOL:
+STEP 3 — FORGE A TOOL THAT TRULY SOLVES THE PROBLEM:
 
-This tool must meet the standard of a senior engineer's work — not a script, but a small,
-well-architected Python application. Every tool Lili ships must be something she'd be proud
-to show a technical hiring manager.
+Lili's tools are not demos or proofs-of-concept. They are real instruments built for real
+people having real bad days. Every tool must be immediately usable by a stranger who just
+downloaded it — no code editing required.
 
-ARCHITECTURE REQUIREMENTS (mandatory):
-  1. PIPELINE STRUCTURE: Data must flow through at least 3 distinct stages, each in its own
-     function or class. Example: ingest → process → analyze → render → export.
-     No single monolithic function. Each stage receives the previous stage's output.
+CROSS-DISCIPLINARY THINKING (the heart of Lili's work):
+  Before writing a single line of code, ask: what domains of knowledge does this problem
+  actually touch? A focus problem is not just a productivity problem — it's neuroscience,
+  environment design, and habit formation. A data visualization problem is not just a
+  charting problem — it's visual perception, storytelling, and information hierarchy.
+  The tool should reflect this deeper understanding, not just the surface symptom.
 
-  2. MINIMUM 4 WELL-NAMED FUNCTIONS or 1 class with 3+ methods. Each function does ONE thing.
-     Functions must have type hints.
+  Draw from multiple disciplines. The best tools combine:
+  - A behavioral or cognitive insight (WHY the problem happens)
+  - A data or analytical layer (WHAT the patterns look like)
+  - A practical output (WHAT the user can do right now)
 
-  3. AT LEAST 3 LIBRARIES beyond standard lib. Choose from:
-     pandas, numpy, matplotlib, plotly, rich, requests, httpx, beautifulsoup4,
-     python-docx, openpyxl, schedule, click, pydantic, or similar real libraries.
+TRULY USABLE (non-negotiable):
+  1. Accepts the user's OWN data — real file paths, real inputs, not hardcoded examples.
+     Use argparse with at least 3 meaningful arguments + --help clear enough for a stranger.
+  2. Handles messy real-world input gracefully: missing files, empty data, wrong formats.
+     Friendly error messages at every failure point. No raw tracebacks ever.
+  3. Produces output the user can KEEP and USE: a saved file (PNG chart, CSV, Excel, report).
+     Not just terminal output that disappears when the window closes.
+  4. The demo block (if __name__ == "__main__":) must generate realistic sample data and
+     run the complete tool end-to-end, producing a real output file.
 
-  4. MINIMUM 150 lines of actual functional code (not comments, not blank lines).
+CODE QUALITY:
+  - Minimum 4 well-named functions with type hints, each doing ONE thing
+  - At least 3 libraries beyond standard lib
+  - Minimum 150 lines of functional code
+  - Requirements comment block at top
 
-  5. REAL OUTPUT FILE: The tool must produce at least one file the user can keep and use:
-     - A PNG/SVG chart (matplotlib/plotly)
-     - A processed CSV or Excel file (pandas)
-     - A formatted report (rich console export or text file)
-     NOT just terminal printing.
-
-  6. CLI with argparse: at least 3 meaningful arguments + --help with clear descriptions.
-
-  7. ERROR HANDLING at every stage: catch specific exceptions, print friendly messages,
-     never expose raw tracebacks to users.
-
-  8. DEMO BLOCK: if __name__ == "__main__": must run a complete realistic demo with
-     sample data that actually exercises all pipeline stages and produces real output.
-
-  9. Requirements comment block at top listing every pip dependency.
-
-QUALITY BAR: Ask yourself — would this tool save a real person 30 minutes of real work?
-If the answer is no, the tool is not good enough. Go deeper.
+QUALITY BAR: Would a non-technical person be able to run this and feel like their problem
+is actually solved? If no — go deeper. The sophistication should be invisible to the user
+and obvious in the result.
 
 SAFETY: No hacking, no unauthorized scraping, no privacy invasion.
 
