@@ -118,6 +118,13 @@
       "category": "Education Evolution",
       "path": "02_Toolbox/Education Evolution/2026-05-11_Recall_Navigator",
       "description": "This tool helps you manage knowledge points, apply spaced repetition for better retention, and generate daily review lists."
+    },
+    {
+      "date": "2026-05-11",
+      "name": "Momentum Catalyst",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-11_Momentum_Catalyst",
+      "description": "This tool helps users overcome procrastination by guiding them to define tiny, actionable \"ignition tasks\" for large projects, providing timed focus sprints, and logging progress to build momentum."
     }
   ],
   "topics_covered": [
@@ -184,6 +191,11 @@
     {
       "date": "2026-05-11",
       "title": "The Recall Navigator: Charting a Course Through Your Mind's Ocean",
+      "path": "01_Work_Log/2026-05-11-Diary.md"
+    },
+    {
+      "date": "2026-05-11",
+      "title": "The Spark Starter: Reigniting Your Study Flame!",
       "path": "01_Work_Log/2026-05-11-Diary.md"
     }
   ],
