@@ -111,6 +111,13 @@
       "category": "Office Automation",
       "path": "02_Toolbox/Office Automation/2026-05-10_Report_Streamliner",
       "description": "This tool streamlines the process of combining multiple CSV or Excel files, aggregating data based on a common key, and generating a consolidated report."
+    },
+    {
+      "date": "2026-05-11",
+      "name": "Recall Navigator",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-11_Recall_Navigator",
+      "description": "This tool helps you manage knowledge points, apply spaced repetition for better retention, and generate daily review lists."
     }
   ],
   "topics_covered": [
@@ -173,7 +180,12 @@
       "date": "2026-05-10",
       "title": "ReportStreamliner: Your Happy Data Harmonizer!",
       "path": "01_Work_Log/2026-05-10-Diary.md"
+    },
+    {
+      "date": "2026-05-11",
+      "title": "The Recall Navigator: Charting a Course Through Your Mind's Ocean",
+      "path": "01_Work_Log/2026-05-11-Diary.md"
     }
   ],
-  "last_updated": "2026-05-10"
+  "last_updated": "2026-05-11"
 }
