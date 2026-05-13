@@ -5,7 +5,8 @@ on:
     types: [opened]        # Fires immediately when a new issue is opened
   schedule:
     # Also scan daily at 21:30 BJ = 13:30 UTC to catch any missed issues
-    - cron: '30 13 * * *'
+    # 08:15 Beijing Time = 00:15 UTC (runs after daily diary)
+    - cron: '15 0 * * *'
   workflow_dispatch:
 
 jobs:

@@ -2,8 +2,8 @@ name: 🌸 Super-Lili Daily Adventure
 
 on:
   schedule:
-    # 21:15 Beijing Time = 13:15 UTC every day
-    - cron: '15 13 * * *'
+    # 08:00 Beijing Time = 00:00 UTC every day
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
