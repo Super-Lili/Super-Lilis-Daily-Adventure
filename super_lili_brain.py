@@ -335,6 +335,26 @@ def parse_response(content: str) -> dict:
 # SAVING
 # ─────────────────────────────────────────────────────────────
 
+def _extract_requirements(code: str) -> str:
+    """Extract the pip dependencies listed in the # requirements: comment block."""
+    lines = code.splitlines()
+    reqs = []
+    in_block = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.lower().startswith("# requirements:") or stripped.lower() == "# requirements":
+            in_block = True
+            continue
+        if in_block:
+            if stripped.startswith("#"):
+                pkg = stripped.lstrip("#").strip()
+                if pkg:
+                    reqs.append(pkg)
+            else:
+                break
+    return "\n".join(reqs)
+
+
 def save_tool(today: str, parsed: dict, source_badge: str) -> str:
     safe_name = re.sub(r"[^\w\s-]", "", parsed["solution"]).strip().replace(" ", "_")
     skill_dir = f"02_Toolbox/{parsed['category']}/{today}_{safe_name}"
@@ -347,16 +367,37 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
         with open(f"{skill_dir}/test_main.py", "w", encoding="utf-8") as f:
             f.write(parsed["test"])
 
+    # Per-tool requirements.txt extracted from code comment block
+    reqs = _extract_requirements(parsed["code"])
+    if reqs:
+        with open(f"{skill_dir}/requirements.txt", "w", encoding="utf-8") as f:
+            f.write(reqs + "\n")
+
+    deps_block = f"```\n{reqs}\n```" if reqs else "_See comment block at top of main.py_"
+    test_section = (
+        "## Run Tests\n```bash\npython test_main.py\n```\n\n"
+        if parsed.get("test") else ""
+    )
+
     with open(f"{skill_dir}/README.md", "w", encoding="utf-8") as f:
         f.write(
             f"# 🛠️ {parsed['solution']}\n\n"
             f"> *{parsed['title']}*\n\n"
+            f"---\n\n"
+            f"**The problem:** {parsed.get('summary') or parsed['description']}\n\n"
             f"**What it does:** {parsed['description']}\n\n"
             f"**Born from:** {source_badge} [{parsed['source']}]({parsed['source']})\n\n"
-            f"## Quick Start\n"
-            f"```bash\npip install -r requirements.txt\npython main.py --help\n```\n\n"
-            f"## Run Tests\n"
-            f"```bash\npython test_main.py\n```\n\n"
+            f"---\n\n"
+            f"## Quick Start\n\n"
+            f"```bash\n"
+            f"# 1. Install dependencies\n"
+            f"pip install -r requirements.txt\n\n"
+            f"# 2. See all options\n"
+            f"python main.py --help\n"
+            f"```\n\n"
+            f"## Dependencies\n\n"
+            f"{deps_block}\n\n"
+            f"{test_section}"
             f"---\n*Forged by Super-Lili on {today} with love ✨*"
         )
 
