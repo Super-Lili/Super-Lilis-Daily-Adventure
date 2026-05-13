@@ -213,13 +213,22 @@ CROSS-DISCIPLINARY THINKING (the heart of Lili's work):
 
 TRULY USABLE (non-negotiable):
   1. Accepts the user's OWN data — real file paths, real inputs, not hardcoded examples.
+     At least ONE required argument must be a path or input the user provides themselves.
      Use argparse with at least 3 meaningful arguments + --help clear enough for a stranger.
-  2. Handles messy real-world input gracefully: missing files, empty data, wrong formats.
+  ✗ WRONG: python main.py              ← runs on fake internal data, user learns nothing
+  ✓ RIGHT:  python main.py --file my_data.csv --month 2024-05 --output report.png
+
+  2. The demo block (if __name__ == "__main__":) must CREATE a realistic sample input file
+     (e.g. write a demo CSV to disk), then call the tool with that file as argument —
+     exactly as a real user would. Never hardcode data inside the function itself.
+  ✗ WRONG: analyze([{"date": "2024-01", "value": 100}])   ← fake internal data
+  ✓ RIGHT:  write_demo_csv("demo_input.csv"); main(["--file", "demo_input.csv", ...])
+
+  3. Handles messy real-world input gracefully: missing files, empty data, wrong formats.
      Friendly error messages at every failure point. No raw tracebacks ever.
-  3. Produces output the user can KEEP and USE: a saved file (PNG chart, CSV, Excel, report).
+
+  4. Produces output the user can KEEP and USE: a saved file (PNG chart, CSV, Excel, report).
      Not just terminal output that disappears when the window closes.
-  4. The demo block (if __name__ == "__main__":) must generate realistic sample data and
-     run the complete tool end-to-end, producing a real output file.
 
 CODE QUALITY:
   - Minimum 4 well-named functions with type hints, each doing ONE thing
@@ -406,7 +415,7 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
 
 def validate_tool(skill_dir: str) -> tuple[bool, str]:
     """Run --help and test file to verify the tool actually works."""
-    import subprocess, sys
+    import subprocess, sys, ast as _ast
     main_py = f"{skill_dir}/main.py"
     test_py = f"{skill_dir}/test_main.py"
 
@@ -420,6 +429,23 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
             return False, f"Syntax error: {result.stderr[:200]}"
     except Exception as e:
         return False, f"Syntax check failed: {e}"
+
+    # Real-data check: at least one argparse argument must have no default (required)
+    try:
+        source = open(main_py, encoding="utf-8").read()
+        if "add_argument" in source:
+            has_required = (
+                'required=True' in source
+                or "add_argument('--" not in source  # positional arg = always required
+                or re.search(r"add_argument\(['\"](?!--)[^'\"]+['\"]", source)  # positional
+            )
+            if not has_required and source.count("default=") >= source.count("add_argument("):
+                return False, (
+                    "All argparse arguments have defaults — tool runs on internal fake data. "
+                    "At least one argument must require real user input (no default)."
+                )
+    except Exception:
+        pass
 
     # --help check
     try:
