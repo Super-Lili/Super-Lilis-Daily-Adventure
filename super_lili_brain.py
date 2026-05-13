@@ -495,7 +495,8 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
                     continue
                 for tool_dir in cat_dir.iterdir():
                     if tool_dir.is_dir() and tool_dir.name.startswith(date_str):
-                        tool_link = f" · [🛠️]({tool_dir}/main.py)"
+                        encoded_tool = str(tool_dir).replace(" ", "%20")
+                        tool_link = f" · [🛠️]({encoded_tool}/main.py)"
                         break
                 if tool_link:
                     break
@@ -552,6 +553,11 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
 def evolve():
     today = datetime.utcnow().strftime("%Y-%m-%d")
     print(f"\n🌸 Super-Lili awakens — {today}")
+
+    # Guard against double-runs on the same day (GitHub Actions cron can fire twice)
+    if Path(f"01_Work_Log/{today}-Diary.md").exists():
+        print(f"✓ Already ran today ({today}) — diary exists, skipping.")
+        return
 
     prompt = build_prompt(today)
 

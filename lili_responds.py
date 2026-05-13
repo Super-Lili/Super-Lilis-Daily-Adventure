@@ -194,7 +194,7 @@ English version first, then --- divider, then Chinese version.
 
 def craft_response(issue: dict) -> str | None:
     prompt = build_response_prompt(issue)
-    models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+    models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
 
     for model_name in models:
         try:

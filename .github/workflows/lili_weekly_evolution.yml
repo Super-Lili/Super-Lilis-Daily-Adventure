@@ -3,7 +3,7 @@ name: 🌸 Super-Lili Weekly Evolution
 on:
   schedule:
     # Every Sunday at 22:00 Beijing Time = 14:00 UTC
-    # Runs after the daily job (21:15 BJ) so today's diary is included
+    # Daily job runs at 08:00 BJ (00:00 UTC) — evolution runs 14h later, after diary is in
     - cron: '0 14 * * 0'
   workflow_dispatch:
 
