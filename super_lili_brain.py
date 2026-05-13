@@ -550,7 +550,7 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
 # ─────────────────────────────────────────────────────────────
 
 def evolve():
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.utcnow().strftime("%Y-%m-%d")
     print(f"\n🌸 Super-Lili awakens — {today}")
 
     prompt = build_prompt(today)

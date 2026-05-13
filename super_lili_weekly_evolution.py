@@ -39,7 +39,7 @@ def collect_week_tools(n: int = 7) -> list[str]:
     toolbox = Path("02_Toolbox")
     if not toolbox.exists():
         return []
-    cutoff = datetime.now() - timedelta(days=n)
+    cutoff = datetime.utcnow() - timedelta(days=n)
     tools = []
     for cat_dir in sorted(toolbox.iterdir()):
         if not cat_dir.is_dir():
@@ -377,7 +377,7 @@ def update_readme_evolution_section(today_str: str):
 # ─────────────────────────────────────────────────────────────
 
 def weekly_evolution():
-    today = datetime.now()
+    today = datetime.utcnow()
     today_str = today.strftime("%Y-%m-%d")
     week_start = (today - timedelta(days=6)).strftime("%Y-%m-%d")
 
