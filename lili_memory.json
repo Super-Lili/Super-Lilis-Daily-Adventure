@@ -125,6 +125,13 @@
       "category": "Education Evolution",
       "path": "02_Toolbox/Education Evolution/2026-05-11_Momentum_Catalyst",
       "description": "This tool helps users overcome procrastination by guiding them to define tiny, actionable \"ignition tasks\" for large projects, providing timed focus sprints, and logging progress to build momentum."
+    },
+    {
+      "date": "2026-05-13",
+      "name": "Content Current Catalyst",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-13_Content_Current_Catalyst",
+      "description": "This tool generates a weekly content strategy and specific post ideas for small businesses, helping them align their social media with their goals and audience, and exports the plan to Markdown and CSV files."
     }
   ],
   "topics_covered": [
@@ -197,7 +204,12 @@
       "date": "2026-05-11",
       "title": "The Spark Starter: Reigniting Your Study Flame!",
       "path": "01_Work_Log/2026-05-11-Diary.md"
+    },
+    {
+      "date": "2026-05-13",
+      "title": "The Content Current Catalyst: Surfing the Social Wave!",
+      "path": "01_Work_Log/2026-05-13-Diary.md"
     }
   ],
-  "last_updated": "2026-05-11"
+  "last_updated": "2026-05-13"
 }
