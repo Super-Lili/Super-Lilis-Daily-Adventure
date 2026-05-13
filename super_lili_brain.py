@@ -411,6 +411,57 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
     return True, "ok"
 
 
+def save_rest_day(today: str, reason: str):
+    """Write a rest-day diary entry and update README so the gap is visible."""
+    log_dir = Path("01_Work_Log")
+    log_dir.mkdir(exist_ok=True)
+    log_path = log_dir / f"{today}-Diary.md"
+
+    log_path.write_text(
+        f"# 今天莉莉在休息 🌙\n\n"
+        f"**{today}** · *有些日子，沉默本身就是答案。*\n\n"
+        f"---\n\n"
+        f"今天我没能出现。\n\n"
+        f"不是不想，是力气暂时不够了——就像你有时候盯着一个空白页，什么都写不出来，"
+        f"但那个空白本身也是真实的。\n\n"
+        f"明天我会回来的。带着新的工具，新的故事，还有一杯续满的热茶。\n\n"
+        f"*技术备注：{reason}*\n\n"
+        f"---\n\n"
+        f"干杯。砰。🐝",
+        encoding="utf-8"
+    )
+    print(f"  ✓ Rest-day diary saved: {log_path}")
+
+    # Update README featured entry so the gap shows
+    readme_path = Path("README.md")
+    if not readme_path.exists():
+        return
+
+    readme = readme_path.read_text(encoding="utf-8")
+    anchor = "### 📬 Daily Diary"
+    if anchor not in readme:
+        return
+
+    featured = (
+        f"#### 📅 {today} — 今天莉莉在休息 🌙\n\n"
+        f"*有些日子，沉默本身就是答案。*\n\n"
+        f"今天我没能出现。不是不想，是力气暂时不够了。明天我会回来的。\n\n"
+        f"[📖 Read]({log_path})"
+    )
+
+    parts = readme.split(anchor)
+    remaining = parts[1]
+    footer = ""
+    for sep in ["\n---\n", "\n### "]:
+        if sep in remaining:
+            footer = remaining[remaining.index(sep):]
+            break
+
+    updated = parts[0] + anchor + "\n\n" + featured + "\n\n" + footer.lstrip()
+    readme_path.write_text(updated, encoding="utf-8")
+    print(f"  ✓ README updated with rest-day entry.")
+
+
 def save_diary(today: str, parsed: dict, source_badge: str) -> str:
     log_dir = "01_Work_Log"
     os.makedirs(log_dir, exist_ok=True)
@@ -566,6 +617,7 @@ def evolve():
 
     if not content:
         print("❌ All models failed. Lili rests today.")
+        save_rest_day(today, reason="API quota exhausted — all models returned errors.")
         return
 
     parsed = parse_response(content)
@@ -573,6 +625,7 @@ def evolve():
     if not all([parsed["title"], parsed["diary"], parsed["code"]]):
         print("❌ Incomplete response — missing title, diary, or code.")
         print("Raw preview:", content[:300])
+        save_rest_day(today, reason="Incomplete response from model — missing title, diary, or code.")
         return
 
     # Validate source URL
