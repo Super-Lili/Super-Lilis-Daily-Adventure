@@ -20,7 +20,10 @@ except ImportError:
     LILI_SKILLS = []
     EVOLUTION_NOTES = ""
 
-EDITOR_INTELLIGENCE = Path("editor.md").read_text(encoding="utf-8") if Path("editor.md").exists() else ""
+try:
+    from lili_editor import LILI_EDITOR_CONTEXT
+except ImportError:
+    LILI_EDITOR_CONTEXT = ""
 
 try:
     from lili_memory import get_memory_context, add_tool, add_topic, rebuild_memory_from_repo
@@ -94,7 +97,7 @@ def build_prompt(today: str) -> str:
     skills_list = "\n".join(f"  • {s}" for s in LILI_SKILLS) if LILI_SKILLS else "  • Python standard library"
     evolution_ctx = f"\n\nEVOLUTION NOTES FROM LAST WEEK:\n{EVOLUTION_NOTES}" if EVOLUTION_NOTES.strip() else ""
     memory_ctx = get_memory_context()
-    editor_ctx = f"\n\n═══════════════════════════════════════════════════════\nYOUR EDITORIAL INTELLIGENCE\n═══════════════════════════════════════════════════════\n{EDITOR_INTELLIGENCE}" if EDITOR_INTELLIGENCE else ""
+    editor_ctx = f"\n\n═══════════════════════════════════════════════════════\nYOUR EDITORIAL INTELLIGENCE\n═══════════════════════════════════════════════════════\n{LILI_EDITOR_CONTEXT}" if LILI_EDITOR_CONTEXT else ""
 
     recent_cats = _get_recent_categories(4)
     cat_counts = {c: recent_cats.count(c) for c in set(recent_cats)}
