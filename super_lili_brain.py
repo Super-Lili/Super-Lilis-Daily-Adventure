@@ -168,14 +168,16 @@ Before moving on, ask yourself: what domains does this problem actually touch?
 A good friction point sits at the intersection of at least 2 fields.
 Name them before you start designing the tool.
 
-URL RULES — READ CAREFULLY:
-  ✓ Provide the ACTUAL original URL of the post/article/thread
-  ✓ Must be a real permalink: reddit.com/r/..., news site, x.com/..., etc.
-  ✗ NEVER output a vertexaisearch.cloud.google.com link — that is an internal API URL,
-    not a real source. Always dig through to find the actual underlying URL.
-  ✗ NEVER output a grounding-api-redirect link
-  ✓ If you can only find the topic but not a permalink, write the source as:
-    "Reddit r/[subreddit] — [post title]" rather than a fake link
+URL RULES — THIS IS CRITICAL, READ CAREFULLY:
+  ✓ Use Google Search (you have it) to find the ACTUAL original URL before writing anything.
+  ✓ Must be a real, working permalink: reddit.com/r/..., news site, x.com/..., etc.
+  ✓ Verify the URL exists before outputting it — if you are not 100% certain it is real, do NOT output it as a link.
+  ✗ NEVER invent or guess a URL. A made-up URL that looks real is worse than no URL at all.
+  ✗ NEVER output a vertexaisearch.cloud.google.com link — internal API URL, not a real source.
+  ✗ NEVER output a grounding-api-redirect link.
+  ✓ If you cannot find a confirmed working permalink, write the source in PLAIN TEXT:
+    "Reddit r/[subreddit] — [exact post title]" or "HackerNews — [exact title] (May 2026)"
+    A plain text description of a real story is far better than a broken link.
 
 STEP 2 — DIARY ENTRY (write as Super-Lili):
 
@@ -412,7 +414,7 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
             f"---\n\n"
             f"**The problem:** {parsed.get('summary') or parsed['description']}\n\n"
             f"**What it does:** {parsed['description']}\n\n"
-            f"**Born from:** {source_badge} [{parsed['source']}]({parsed['source']})\n\n"
+            f"**Born from:** {source_badge} {parsed.get('_source_display', parsed['source'])}\n\n"
             f"---\n\n"
             f"## Quick Start\n\n"
             f"```bash\n"
@@ -581,7 +583,7 @@ def save_diary(today: str, parsed: dict, source_badge: str) -> str:
             f"{f'### {title_zh}' if title_zh else ''}\n\n"
             f"**{today}** · *{parsed['mood']}*\n\n"
             f"---\n\n"
-            f"**Friction found here:** {source_badge} [{parsed['source']}]({parsed['source']})\n\n"
+            f"**Friction found here:** {source_badge} {parsed.get('_source_display', parsed['source'])}\n\n"
             f"{parsed['diary']}"
             f"{zh_section}\n\n"
             f"---\n\n"
@@ -728,14 +730,24 @@ def evolve():
 
     if is_valid:
         source_badge = "✅"
+        parsed["_source_display"] = f"[{parsed['source']}]({parsed['source']})"
         print(f"  ✓ Source is live ({status})")
     else:
         source_badge = "⚠️"
-        print(f"  ⚠ Source check failed ({status}) — flagging in diary")
-        parsed["diary"] += (
-            "\n\n*(Note: The original link may have moved since Lili found it. "
-            "The story was real when she wrote this.)*"
-        )
+        print(f"  ⚠ Source check failed ({status}) — will not render as clickable link")
+        raw = parsed["source"]
+        # If it looks like a URL, convert to search fallback rather than broken link
+        if raw.startswith("http"):
+            # Extract domain + path hint for a Google search
+            search_q = requests.utils.quote(raw.split("//")[-1][:80])
+            parsed["_source_display"] = (
+                f"`{raw}`  \n"
+                f"  *(link could not be verified — "
+                f"[🔍 search for this story](https://www.google.com/search?q={search_q}))*"
+            )
+        else:
+            # Already descriptive text — display as-is, no broken link
+            parsed["_source_display"] = raw
 
     # Save tool + validate, retry up to 3 times if validation fails
     skill_dir = None
