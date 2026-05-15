@@ -676,7 +676,7 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
 # ─────────────────────────────────────────────────────────────
 
 def evolve():
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today = os.environ.get("LILI_DATE") or datetime.utcnow().strftime("%Y-%m-%d")
     print(f"\n🌸 Super-Lili awakens — {today}")
 
     # Guard against double-runs on the same day (GitHub Actions cron can fire twice)

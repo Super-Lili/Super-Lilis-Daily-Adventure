@@ -132,6 +132,20 @@
       "category": "Design Alchemy",
       "path": "02_Toolbox/Design Alchemy/2026-05-13_Content_Current_Catalyst",
       "description": "This tool generates a weekly content strategy and specific post ideas for small businesses, helping them align their social media with their goals and audience, and exports the plan to Markdown and CSV files."
+    },
+    {
+      "date": "2026-05-14",
+      "name": "FocusFlow Guardian",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-14_FocusFlow_Guardian",
+      "description": "This tool analyzes your meeting schedule from a CSV file and proposes dedicated focus blocks to help you balance collaborative time with essential deep work, exporting the suggested schedule to a new CSV file."
+    },
+    {
+      "date": "2026-05-15",
+      "name": "Presence Weaver",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-15_Presence_Weaver",
+      "description": "This tool guides you to set an intention before engaging in digital activities and prompts you to reflect afterward, helping you cultivate presence and intentionality in your digital life."
     }
   ],
   "topics_covered": [
@@ -209,7 +223,17 @@
       "date": "2026-05-13",
       "title": "The Content Current Catalyst: Surfing the Social Wave!",
       "path": "01_Work_Log/2026-05-13-Diary.md"
+    },
+    {
+      "date": "2026-05-14",
+      "title": "The FocusFlow Guardian: Your Sanctuary in the Meeting Storm",
+      "path": "01_Work_Log/2026-05-14-Diary.md"
+    },
+    {
+      "date": "2026-05-15",
+      "title": "The Presence Weaver: Reclaiming Your Digital Soul",
+      "path": "01_Work_Log/2026-05-15-Diary.md"
     }
   ],
-  "last_updated": "2026-05-13"
+  "last_updated": "2026-05-15"
 }
