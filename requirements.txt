@@ -1,2 +1,10 @@
 google-genai
 requests
+pandas
+matplotlib
+numpy
+rich
+openpyxl
+python-dateutil
+tabulate
+Pillow

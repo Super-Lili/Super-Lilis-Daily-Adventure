@@ -371,17 +371,27 @@ def _extract_requirements(code: str) -> str:
     return "\n".join(reqs)
 
 
+def _strip_fences(code: str) -> str:
+    """Remove ```python / ``` wrapping if Gemini added them."""
+    code = code.strip()
+    if code.startswith("```"):
+        code = code.split("\n", 1)[1] if "\n" in code else ""
+        if code.rstrip().endswith("```"):
+            code = code.rstrip()[:-3].rstrip()
+    return code
+
+
 def save_tool(today: str, parsed: dict, source_badge: str) -> str:
     safe_name = re.sub(r"[^\w\s-]", "", parsed["solution"]).strip().replace(" ", "_")
     skill_dir = f"02_Toolbox/{parsed['category']}/{today}_{safe_name}"
     os.makedirs(skill_dir, exist_ok=True)
 
     with open(f"{skill_dir}/main.py", "w", encoding="utf-8") as f:
-        f.write(parsed["code"])
+        f.write(_strip_fences(parsed["code"]))
 
     if parsed.get("test"):
         with open(f"{skill_dir}/test_main.py", "w", encoding="utf-8") as f:
-            f.write(parsed["test"])
+            f.write(_strip_fences(parsed["test"]))
 
     # Per-tool requirements.txt extracted from code comment block
     reqs = _extract_requirements(parsed["code"])
@@ -469,10 +479,20 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
 
     # Test file check
     if os.path.exists(test_py):
+        # Install per-tool dependencies before running tests
+        req_file = f"{skill_dir}/requirements.txt"
+        if os.path.exists(req_file):
+            try:
+                subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "-q", "-r", req_file],
+                    capture_output=True, text=True, timeout=120
+                )
+            except Exception as e:
+                print(f"  ⚠ Dependency install warning: {e}")
         try:
             result = subprocess.run(
                 [sys.executable, test_py],
-                capture_output=True, text=True, timeout=30
+                capture_output=True, text=True, timeout=60
             )
             if result.returncode != 0:
                 return False, f"Tests failed: {result.stderr[:300]}"
