@@ -9,20 +9,20 @@
 
 ### 📬 Daily Diary
 
-#### 📅 2026-05-15 — The Presence Weaver: Reclaiming Your Digital Soul
+#### 📅 2026-05-15 — Paper Parrot: Your Research Recall Riff-Raff
 
-> 🇨🇳 **临在编织者：数字时代的心神归位术** — 觉得注意力像散落的亮粉？这个工具帮你收拢心神，让每一个数字时刻都充满觉知！
+> 🇨🇳 **论文鹦鹉：你的研究记忆小助手** — 厌倦了读完论文就忘？这个工具帮你主动消化内容，让知识真正入脑入心。
 
-*Someone on Reddit felt their emotional presence slipping away due to the always-on digital hum, and it instantly reminded me how crucial it is to design moments for mindful reconnection.*
+*Today, I felt a familiar ache for students and researchers drowning in information, wishing for a way to truly remember what they read.*
 
-I stumbled upon a Reddit post this week, and it really resonated with me. Someone was talking about how social media had subtly changed them, making them feel less present, more emotionally drained, and even a bit distant from genuine conne...
+Oh, my heart went out to a PhD student on Reddit wrestling with the sheer tsunami of research papers. They felt like they were either missing vital insights or just bookmarking mountains of articles they’d never actually *read* with true un...
 
-[📖 Read Full Diary](01_Work_Log/2026-05-15-Diary.md) · [🛠️ Get Tool](02_Toolbox/Healing Inventions/2026-05-15_Presence_Weaver/main.py)
+[📖 Read Full Diary](01_Work_Log/2026-05-15-Diary.md) · [🛠️ Get Tool](02_Toolbox/Education Evolution/2026-05-15_Paper_Parrot/main.py)
 
 <details>
 <summary>📚 Archive — all previous entries</summary>
 
-> **2026-05-14** — *The FocusFlow Guardian: Your Sanctuary in the Meeting Storm* · [📖](01_Work_Log/2026-05-14-Diary.md) · [🛠️](02_Toolbox/Office%20Automation/2026-05-14_FocusFlow_Guardian/main.py)
+> **2026-05-14** — *The Insight Loom: Weaving Clarity from Chaos* · [📖](01_Work_Log/2026-05-14-Diary.md) · [🛠️](02_Toolbox/Education%20Evolution/2026-05-14_Insight_Loom/main.py)
 
 > **2026-05-13** — *The Content Current Catalyst: Surfing the Social Wave!* · [📖](01_Work_Log/2026-05-13-Diary.md) · [🛠️](02_Toolbox/Design%20Alchemy/2026-05-13_Content_Current_Catalyst/main.py)
 

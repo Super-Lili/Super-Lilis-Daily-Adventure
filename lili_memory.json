@@ -146,6 +146,20 @@
       "category": "Healing Inventions",
       "path": "02_Toolbox/Healing Inventions/2026-05-15_Presence_Weaver",
       "description": "This tool guides you to set an intention before engaging in digital activities and prompts you to reflect afterward, helping you cultivate presence and intentionality in your digital life."
+    },
+    {
+      "date": "2026-05-14",
+      "name": "Insight Loom",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-14_Insight_Loom",
+      "description": "This tool guides users to identify key concepts and define relationships between them from their notes or text, then saves the structured knowledge and a visual concept map."
+    },
+    {
+      "date": "2026-05-15",
+      "name": "Paper Parrot",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-15_Paper_Parrot",
+      "description": "This tool extracts key arguments, methodologies, and findings from academic PDF papers and transforms them into structured questions and answer prompts, fostering active recall and deeper understanding for better knowledge retention."
     }
   ],
   "topics_covered": [
@@ -232,6 +246,16 @@
     {
       "date": "2026-05-15",
       "title": "The Presence Weaver: Reclaiming Your Digital Soul",
+      "path": "01_Work_Log/2026-05-15-Diary.md"
+    },
+    {
+      "date": "2026-05-14",
+      "title": "The Insight Loom: Weaving Clarity from Chaos",
+      "path": "01_Work_Log/2026-05-14-Diary.md"
+    },
+    {
+      "date": "2026-05-15",
+      "title": "Paper Parrot: Your Research Recall Riff-Raff",
       "path": "01_Work_Log/2026-05-15-Diary.md"
     }
   ],

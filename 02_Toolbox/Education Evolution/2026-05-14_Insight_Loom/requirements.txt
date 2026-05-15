@@ -1,0 +1,5 @@
+pandas
+networkx
+matplotlib (optional, for visualization)
+argparse
+pathlib
