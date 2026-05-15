@@ -228,7 +228,7 @@ TRULY USABLE (non-negotiable):
   2. The demo block (if __name__ == "__main__":) must CREATE a realistic sample input file
      (e.g. write a demo CSV to disk), then call the tool with that file as argument —
      exactly as a real user would. Never hardcode data inside the function itself.
-  ✗ WRONG: analyze([{"date": "2024-01", "value": 100}])   ← fake internal data
+  ✗ WRONG: analyze([{{"date": "2024-01", "value": 100}}])   ← fake internal data
   ✓ RIGHT:  write_demo_csv("demo_input.csv"); main(["--file", "demo_input.csv", ...])
 
   3. Handles messy real-world input gracefully: missing files, empty data, wrong formats.
