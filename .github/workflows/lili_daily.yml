@@ -34,8 +34,12 @@ jobs:
         id: check
         run: |
           DATE=$(TZ='Asia/Shanghai' date +'%Y-%m-%d')
+          DOW=$(TZ='Asia/Shanghai' date +'%u')  # 7 = Sunday
           DIARY="01_Work_Log/${DATE}-Diary.md"
-          if [ -f "$DIARY" ]; then
+          if [ "$DOW" = "7" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "🌸 Sunday — weekly evolution day, skipping daily diary."
+          elif [ -f "$DIARY" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "✅ Diary for $DATE already exists — skipping."
           else
