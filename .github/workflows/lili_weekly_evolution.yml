@@ -2,9 +2,8 @@ name: 🌸 Super-Lili Weekly Evolution
 
 on:
   schedule:
-    # Every Sunday at 22:00 Beijing Time = 14:00 UTC
-    # Daily job runs at 08:00 BJ (00:00 UTC) — evolution runs 14h later, after diary is in
-    - cron: '0 14 * * 0'
+    - cron: '5 14 * * 0'  # 22:05 Beijing Sunday (primary)
+    - cron: '5 20 * * 0'  # 04:05 Beijing Monday (backup)
   workflow_dispatch:
 
 jobs:
@@ -41,6 +40,7 @@ jobs:
         run: |
           git config --global user.name "Super-Lili (Evolution)"
           git config --global user.email "lili-bot@users.noreply.github.com"
+          git pull --rebase origin main
           git add .
           git diff --cached --quiet || git commit -m "🌸 Weekly Evolution: $(date -u +'%Y-%m-%d') | Soul Upgraded"
           git push
