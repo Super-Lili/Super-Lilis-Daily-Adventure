@@ -9,18 +9,20 @@
 
 ### 📬 Daily Diary
 
-#### 📅 2026-05-15 — Paper Parrot: Your Research Recall Riff-Raff
+#### 📅 2026-05-16 — Decision Digestor: Your Navigator Through the Communication Maze
 
-> 🇨🇳 **论文鹦鹉：你的研究记忆小助手** — 厌倦了读完论文就忘？这个工具帮你主动消化内容，让知识真正入脑入心。
+> 🇨🇳 **决策提炼器：穿越沟通迷宫的导航者** — 受够了行动项在聊天深渊中消失？这个工具帮你从数字对话中提炼决策和任务，让混乱变得清晰。
 
-*Today, I felt a familiar ache for students and researchers drowning in information, wishing for a way to truly remember what they read.*
+*Today, I stumbled upon a real plea for clarity in the digital whirlwind, realizing how much energy we spend just trying to find the "what now."*
 
-Oh, my heart went out to a PhD student on Reddit wrestling with the sheer tsunami of research papers. They felt like they were either missing vital insights or just bookmarking mountains of articles they’d never actually *read* with true un...
+Oh, the "chat graveyard" feeling! I saw a post today from someone drowning in chat apps – Slack, Teams, WhatsApp – just trying to keep track of action items and decisions. "Tasks often get buried inside long threads," they said, and honestl...
 
-[📖 Read Full Diary](01_Work_Log/2026-05-15-Diary.md) · [🛠️ Get Tool](02_Toolbox/Education Evolution/2026-05-15_Paper_Parrot/main.py)
+[📖 Read Full Diary](01_Work_Log/2026-05-16-Diary.md) · [🛠️ Get Tool](02_Toolbox/Office Automation/2026-05-16_Decision_Digestor/main.py)
 
 <details>
 <summary>📚 Archive — all previous entries</summary>
+
+> **2026-05-15** — *Paper Parrot: Your Research Recall Riff-Raff* · [📖](01_Work_Log/2026-05-15-Diary.md) · [🛠️](02_Toolbox/Education%20Evolution/2026-05-15_Paper_Parrot/main.py)
 
 > **2026-05-14** — *The Insight Loom: Weaving Clarity from Chaos* · [📖](01_Work_Log/2026-05-14-Diary.md) · [🛠️](02_Toolbox/Education%20Evolution/2026-05-14_Insight_Loom/main.py)
 

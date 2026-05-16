@@ -1,0 +1,8 @@
+
+    Meeting Notes - Project Alpha
+    Decision: We will use the new cloud provider for stage 2.
+    Action: Migrate existing data to the new provider. Owner: Jane Doe. Due by: 2026-06-30.
+    Another Decision: The budget for Q3 is approved.
+    Action Item: Draft the Q3 budget report. Responsible for: John Smith. Deadline: 07/15/2026.
+    Please ensure all team members are informed.
+    

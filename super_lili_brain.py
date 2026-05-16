@@ -529,7 +529,11 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
         if os.path.exists(req_file):
             try:
                 subprocess.run(
-                    [sys.executable, "-m", "pip", "install", "-q", "-r", req_file],
+                    [sys.executable, "-m", "pip", "install", "-q",
+                     "--trusted-host", "pypi.org",
+                     "--trusted-host", "pypi.python.org",
+                     "--trusted-host", "files.pythonhosted.org",
+                     "-r", req_file],
                     capture_output=True, text=True, timeout=120
                 )
             except Exception as e:

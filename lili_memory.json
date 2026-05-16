@@ -160,6 +160,13 @@
       "category": "Education Evolution",
       "path": "02_Toolbox/Education Evolution/2026-05-15_Paper_Parrot",
       "description": "This tool extracts key arguments, methodologies, and findings from academic PDF papers and transforms them into structured questions and answer prompts, fostering active recall and deeper understanding for better knowledge retention."
+    },
+    {
+      "date": "2026-05-16",
+      "name": "Decision Digestor",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-16_Decision_Digestor",
+      "description": "This tool extracts potential action items, decisions, owners, and due dates from unstructured text (like chat logs or meeting notes) and compiles them into a structured CSV report, helping you cut through communication noise."
     }
   ],
   "topics_covered": [
@@ -257,7 +264,12 @@
       "date": "2026-05-15",
       "title": "Paper Parrot: Your Research Recall Riff-Raff",
       "path": "01_Work_Log/2026-05-15-Diary.md"
+    },
+    {
+      "date": "2026-05-16",
+      "title": "Decision Digestor: Your Navigator Through the Communication Maze",
+      "path": "01_Work_Log/2026-05-16-Diary.md"
     }
   ],
-  "last_updated": "2026-05-15"
+  "last_updated": "2026-05-16"
 }
