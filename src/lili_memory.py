@@ -9,7 +9,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-MEMORY_FILE = Path("lili_memory.json")
+MEMORY_FILE = Path(__file__).parent.parent / "data" / "lili_memory.json"
 
 
 def load_memory() -> dict:

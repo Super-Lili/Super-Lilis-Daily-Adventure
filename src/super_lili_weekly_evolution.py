@@ -57,7 +57,7 @@ def collect_week_tools(n: int = 7) -> list[str]:
 
 
 def read_current_soul() -> str:
-    soul_path = Path("lili_soul.py")
+    soul_path = Path(__file__).parent / "lili_soul.py"
     return soul_path.read_text(encoding="utf-8") if soul_path.exists() else "(No soul config found)"
 
 
@@ -256,7 +256,7 @@ LILI_SKILLS = {skills_raw}
 
 EVOLUTION_NOTES = """{notes}"""
 '''
-    Path("lili_soul.py").write_text(soul_content, encoding="utf-8")
+    (Path(__file__).parent / "lili_soul.py").write_text(soul_content, encoding="utf-8")
     print("  ✓ lili_soul.py updated.")
 
 

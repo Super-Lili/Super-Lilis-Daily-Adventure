@@ -41,7 +41,8 @@ jobs:
         if: steps.check.outputs.skip == 'false'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python super_lili_brain.py
+          PYTHONPATH: src
+        run: python src/super_lili_brain.py
 
       - name: Commit
         if: steps.check.outputs.skip == 'false'
