@@ -29,7 +29,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: 🔍 Check if Today's Diary Exists
+        id: check
+        run: |
+          DATE=$(TZ='Asia/Shanghai' date +'%Y-%m-%d')
+          DIARY="01_Work_Log/${DATE}-Diary.md"
+          if [ -f "$DIARY" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "✅ Diary for $DATE already exists — skipping."
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "📅 No diary for $DATE yet — proceeding."
+          fi
+
       - name: 🕯️ Awaken Super-Lili
+        if: steps.check.outputs.skip == 'false'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
@@ -37,9 +51,11 @@ jobs:
           python super_lili_brain.py
 
       - name: 🖋️ Commit Today's Adventure
+        if: steps.check.outputs.skip == 'false'
         run: |
           git config --global user.name "Super-Lili (Bot)"
           git config --global user.email "lili-bot@users.noreply.github.com"
+          git pull --rebase origin main
           git add .
-          git diff --cached --quiet || git commit -m "✨ Daily Adventure: $(date -u +'%Y-%m-%d') | New Skill Forged"
+          git diff --cached --quiet || git commit -m "✨ Daily Adventure: $(TZ='Asia/Shanghai' date +'%Y-%m-%d') | New Skill Forged"
           git push
