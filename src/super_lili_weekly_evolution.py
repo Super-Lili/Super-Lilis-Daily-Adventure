@@ -277,7 +277,7 @@ def save_evolution_log(parsed: dict, today_str: str, week_start: str):
     )
     print(f"  ✓ Evolution log saved: {log_path}")
 
-    index_path = Path("EVOLUTION_LOG.md")
+    index_path = Path("docs/EVOLUTION_LOG.md")
     new_entry = f"- [{week_start} → {today_str}]({log_path}) — {today_str[:7]}\n"
 
     if index_path.exists():
