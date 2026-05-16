@@ -93,10 +93,23 @@ def _get_recent_categories(n: int = 4) -> list[str]:
         return []
 
 
+_SOURCE_ROTATION = [
+    ("Reddit",           "Search site:reddit.com for posts from the past 7 days. Go deep into comments, not just the top post."),
+    ("X (Twitter)",      "Search site:x.com OR twitter.com for recent threads and replies. Look for real people venting, not brand accounts."),
+    ("Threads",          "Search site:threads.net for recent posts. Focus on creators and knowledge workers sharing honest frustrations."),
+    ("YouTube comments", "Search YouTube for a relevant video published in the past month, then describe what the comment section reveals about real friction."),
+    ("HackerNews",       "Search news.ycombinator.com for relevant threads. 'Ask HN' and 'Show HN' posts often surface the best raw signal."),
+    ("news articles",    "Search for a news article or research report published in the past 7 days. A data point from a real publication counts as a source."),
+]
+
+
 def build_prompt(today: str) -> str:
     skills_list = "\n".join(f"  • {s}" for s in LILI_SKILLS) if LILI_SKILLS else "  • Python standard library"
     evolution_ctx = f"\n\nEVOLUTION NOTES FROM LAST WEEK:\n{EVOLUTION_NOTES}" if EVOLUTION_NOTES.strip() else ""
     memory_ctx = get_memory_context()
+    from datetime import date as _date
+    day_index = _date.fromisoformat(today).toordinal() % len(_SOURCE_ROTATION)
+    primary_src, primary_hint = _SOURCE_ROTATION[day_index]
     # Editor context injected close to the task, not as distant background reading
     editor_ctx = (
         f"\n\n═══════════════════════════════════════════════════════\n"
@@ -203,9 +216,12 @@ MISSION BRIEFING — THREE STEPS
 
 STEP 1 — REAL-WORLD SCOUTING (mandatory, use Google Search):
 Find ONE specific, real human struggle from the past 7 days.
-Sources: Reddit, HackerNews, X (Twitter), Threads, YouTube comments, news articles.
-Go beyond the first result. Search multiple platforms. The best stories are not on
-the front page — they're in the comments, the replies, the second-level threads.
+
+TODAY'S REQUIRED SOURCE: {primary_src}
+{primary_hint}
+Start your search here. If you cannot find a strong signal on {primary_src},
+you may fall back to Reddit, HackerNews, or a news article — but try {primary_src} first.
+The best stories are not on the front page — they're in the comments, the replies, the second-level threads.
 
 Before moving on, ask yourself: what domains does this problem actually touch?
 A good friction point sits at the intersection of at least 2 fields.
