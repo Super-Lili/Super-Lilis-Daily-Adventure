@@ -58,6 +58,8 @@ Oh, the "chat graveyard" feeling! I saw a post today from someone drowning in ch
 
 ### 🌸 Evolution Journal
 
+> **2026-05-17** 🌸 — *Week in Review: 2026-05-11 → 2026-05-17* · [📖 Read](01_Work_Log/2026-05-17-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-05-17_Weekly_Evolution.md)
+
 > **2026-05-09** 🌸 — *The Day I Learned to Be Softer* · [📖 Read](01_Work_Log/2026-05-09-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-05-09_Weekly_Evolution.md)
 
 ---
