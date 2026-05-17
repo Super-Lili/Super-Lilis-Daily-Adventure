@@ -82,13 +82,35 @@ def validate_url(url: str, timeout: int = 8) -> tuple[bool, str]:
 # PROMPT BUILDER
 # ─────────────────────────────────────────────────────────────
 
+TOOL_PATTERNS = [
+    "extract",    # reads text, pulls out structured info
+    "generate",   # creates new content (writing, emails, reports)
+    "visualize",  # turns data into charts or visual output
+    "track",      # monitors state over time (habits, logs, progress)
+    "score",      # evaluates or rates something against criteria
+    "transform",  # converts one format/structure to another
+    "interact",   # guided flow, questionnaire, decision tree
+    "alert",      # monitors conditions and notifies
+    "gamify",     # adds game mechanics, points, streaks
+]
+
+
 def _get_recent_categories(n: int = 4) -> list[str]:
-    """Return categories used in the last n days, to avoid repetition."""
     try:
         from lili_memory import load_memory
         memory = load_memory()
         recent = memory["tools"][-n:] if memory["tools"] else []
         return [t["category"] for t in recent]
+    except Exception:
+        return []
+
+
+def _get_recent_patterns(n: int = 4) -> list[str]:
+    try:
+        from lili_memory import load_memory
+        memory = load_memory()
+        recent = memory["tools"][-n:] if memory["tools"] else []
+        return [t.get("pattern", "") for t in recent if t.get("pattern")]
     except Exception:
         return []
 
@@ -122,6 +144,12 @@ def build_prompt(today: str) -> str:
     cat_counts = {c: recent_cats.count(c) for c in set(recent_cats)}
     overused = [c for c, n in cat_counts.items() if n >= 2]
     avoid_cats = f"\nAVOID these categories today (used too recently): {', '.join(overused)}" if overused else ""
+
+    recent_patterns = _get_recent_patterns(4)
+    pat_counts = {p: recent_patterns.count(p) for p in set(recent_patterns)}
+    overused_patterns = [p for p, n in pat_counts.items() if n >= 2]
+    patterns_list = " | ".join(TOOL_PATTERNS)
+    avoid_patterns = f"\nAVOID these solution patterns today (used too recently): {', '.join(overused_patterns)}" if overused_patterns else ""
 
     return f"""Today is {today}.
 
@@ -175,6 +203,28 @@ You work within exactly these 4 areas. Every friction point must fit one of them
   parents in weeks", "I used to paint but haven't in years"
 
 {editor_ctx}
+
+═══════════════════════════════════════════════════════
+SOLUTION PATTERNS — PICK ONE, AVOID REPEATS
+═══════════════════════════════════════════════════════
+
+Every tool must declare its solution pattern. Choose one:
+
+  extract   — reads input text/data, pulls out structured info
+  generate  — creates new content (writing, emails, summaries, reports)
+  visualize — turns data into charts, graphs, or visual output
+  track     — monitors state over time (habits, logs, streaks, progress)
+  score     — evaluates or rates something against criteria
+  transform — converts one format or structure into another
+  interact  — guided flow, questionnaire, decision tree, wizard
+  alert     — monitors conditions and notifies when triggered
+  gamify    — adds game mechanics: points, levels, streaks, rewards
+{avoid_patterns}
+
+THE PATTERN ANTI-SAMENESS TEST:
+Look at recent tools in your memory above. If most of them are "extract" —
+you MUST pick a different pattern today, even if extract feels natural.
+Imagination means solving the same human problem in a completely different way.
 
 ═══════════════════════════════════════════════════════
 EDITORIAL PRE-FLIGHT — RUN THIS BEFORE SCOUTING
@@ -343,6 +393,8 @@ Lili speaks Chinese like a thoughtful friend, not a textbook.
 [Tool name in Title Case, 2-5 words]
 ---CATEGORY---
 [Exactly one of: Education Evolution | Design Alchemy | Office Automation | Healing Inventions]
+---PATTERN---
+[Exactly one of: extract | generate | visualize | track | score | transform | interact | alert | gamify]
 ---CODE---
 [Full Python code — 150+ real lines, type hints, pipeline architecture, requirements block at top]
 ---TEST---
@@ -402,7 +454,8 @@ def parse_response(content: str) -> dict:
         "summary_zh":  extract("---SUMMARY_ZH---",   "---DESCRIPTION---"),
         "description": extract("---DESCRIPTION---",  "---SOLUTION---"),
         "solution":    extract("---SOLUTION---",     "---CATEGORY---"),
-        "category":    extract("---CATEGORY---",     "---CODE---"),
+        "category":    extract("---CATEGORY---",     "---PATTERN---"),
+        "pattern":     extract("---PATTERN---",      "---CODE---"),
         "code":        extract("---CODE---",         "---TEST---"),
         "test":        extract("---TEST---",         "---END---"),
     }
@@ -872,6 +925,7 @@ def evolve():
             description=parsed["description"],
             path=skill_dir,
             date=today,
+            pattern=parsed.get("pattern", ""),
         )
         add_topic(date=today, title=parsed["title"], path=log_path)
         print("  ✓ Memory updated.")

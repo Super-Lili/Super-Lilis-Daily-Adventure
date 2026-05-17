@@ -92,12 +92,13 @@ def rebuild_memory_from_repo() -> dict:
     return memory
 
 
-def add_tool(name: str, category: str, description: str, path: str, date: str):
+def add_tool(name: str, category: str, description: str, path: str, date: str, pattern: str = ""):
     memory = load_memory()
     memory["tools"].append({
         "date": date,
         "name": name,
         "category": category,
+        "pattern": pattern,
         "path": path,
         "description": description,
     })
@@ -127,7 +128,7 @@ def get_memory_context() -> str:
     # Last 30 tools
     recent_tools = memory["tools"][-30:]
     tools_text = "\n".join(
-        f"  • [{t['date']}] {t['name']} ({t['category']}): {t['description']}"
+        f"  • [{t['date']}] {t['name']} ({t['category']}, pattern:{t.get('pattern', '?')}): {t['description']}"
         for t in recent_tools
     )
 
