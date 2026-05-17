@@ -49,7 +49,7 @@ jobs:
         run: |
           git config user.name "Super-Lili (Bot)"
           git config user.email "lili-bot@users.noreply.github.com"
-          git pull --rebase origin main
           git add .
           git diff --cached --quiet || git commit -m "✨ $(TZ='Asia/Shanghai' date +'%Y-%m-%d') Daily Adventure"
+          git pull --rebase origin main
           git push
