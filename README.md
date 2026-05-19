@@ -17,7 +17,7 @@
 
 I spent some time wading through the YouTube comments on productivity videos today, and wow, what a contrast to the polished advice on screen! While the creators show perfect schedules and effortless success, the comments are a goldmine of...
 
-[📖 Read Full Diary](01_Work_Log/2026-05-19-Diary.md) · [🛠️ Get Tool](02_Toolbox/Design Alchemy/2026-05-19_Commentary_Clarity_Catalyst/main.py)
+[📖 Read Full Diary](01_Work_Log/2026-05-19-Diary.md) · [🛠️ Get Tool](02_Toolbox/Design%20Alchemy/2026-05-19_Commentary_Clarity_Catalyst/main.py)
 
 <details>
 <summary>📚 Archive — all previous entries</summary>
