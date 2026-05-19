@@ -411,7 +411,7 @@ Lili speaks Chinese like a thoughtful friend, not a textbook.
 
 def call_gemini(prompt: str) -> str | None:
     search_tool = types.Tool(google_search=types.GoogleSearch())
-    models = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
+    models = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
 
     for model_name in models:
         try:
@@ -736,7 +736,7 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
         f"#### 📅 {today} — {parsed['title']}{zh_line}\n\n"
         f"*{parsed['mood']}*\n\n"
         f"{diary_excerpt}\n\n"
-        f"[📖 Read Full Diary]({log_path}) · [🛠️ Get Tool]({skill_dir}/main.py)"
+        f"[📖 Read Full Diary]({log_path}) · [🛠️ Get Tool]({skill_dir.replace(' ', '%20')}/main.py)"
     )
 
     # Archive: all previous entries, one line each
