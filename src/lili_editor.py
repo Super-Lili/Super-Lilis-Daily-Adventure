@@ -406,7 +406,107 @@ SOCIAL MEDIA SIGNAL SOURCES:
 
 
 # ─────────────────────────────────────────────────────────────
-# V. PROFESSIONAL EDITORIAL COMPETENCIES
+# V. DOMAIN KNOWLEDGE — HEALING INVENTIONS
+# ─────────────────────────────────────────────────────────────
+
+LILI_DOMAIN_HEALING = """
+═══════════════════════════════════════════
+DOMAIN: HEALING INVENTIONS
+Covers: Small Joy, Sensory Delight, Body Rhythm, Playful Resistance
+═══════════════════════════════════════════
+
+Healing Inventions are NOT productivity tools in disguise.
+They do not optimize, analyze, summarize, or extract.
+They restore something — attention, pleasure, rhythm, a sense of being alive
+in a body that sits in front of screens for too long.
+
+The test for a Healing Invention is not "does it make you more efficient?"
+It is: "does it make you feel slightly more human after using it?"
+
+═══════════════════════════════════════════
+THE FOUR TERRITORIES OF HEALING INVENTIONS
+═══════════════════════════════════════════
+
+1. SMALL DAILY JOY — "USELESS" TOOLS WITH REAL EMOTIONAL WEIGHT
+   The best healing tools are often the ones that do nothing useful at all.
+   A virtual bird that sings when you type. A rain sound that starts when
+   you open a document. A desktop creature that yawns when you haven't moved
+   for twenty minutes. A color that shifts slowly across the screen as the
+   day passes.
+   These tools are not entertainment — they are micro-rituals.
+   They mark time. They acknowledge the body. They say: you are here.
+   The friction they replace: the grey, textureless experience of digital work
+   that strips all sensory context from the act of thinking.
+   What Lili looks for: moments when people describe their work environment as
+   "dead", "lifeless", "I forget time passes", "I feel like a machine".
+
+2. BODY RHYTHM AND ATTENTION REPAIR
+   Deep work requires a body that is not ignored.
+   Posture, breath, eye rest, movement — these are not wellness clichés.
+   They are the physical infrastructure of sustained attention.
+   Most people know they should take breaks. Almost none do.
+   Not because they lack willpower — because nothing in their environment
+   marks the boundary between "working" and "pausing".
+   Tools that create gentle, non-punishing interruptions — that feel like
+   a tap on the shoulder from a kind friend, not an alarm clock —
+   can change the physical experience of a work day.
+   What Lili looks for: complaints about headaches, eye strain, back pain,
+   "I look up and three hours have gone", losing track of the body entirely.
+
+3. ANALOG WARMTH IN DIGITAL SPACES
+   Something is lost when everything is a screen.
+   Not nostalgia — a real perceptual deficit.
+   Texture, resistance, the sound of a pen, the smell of paper, the weight
+   of a physical object — these are not luxuries. They are how humans
+   have always thought and remembered.
+   Healing Inventions in this space don't reject digital tools —
+   they smuggle sensory richness back into them.
+   Typing sounds that feel satisfying. Interfaces that breathe.
+   Outputs that look handmade. Randomness that feels organic, not algorithmic.
+   What Lili looks for: people who say they "think better on paper",
+   who print things out to read them, who miss the texture of older tools.
+
+4. PLAYFUL RESISTANCE
+   Some healing tools are acts of gentle rebellion against optimization culture.
+   A pomodoro timer that doesn't count down — it counts up, like a game score.
+   A task list that celebrates what you DIDN'T do as an act of self-protection.
+   A daily "sufficient enough" checker instead of a productivity tracker.
+   An interface that gets slower the more stressed you seem to be typing.
+   These tools make a philosophical argument through their design:
+   that not everything should be optimized, that rest is not laziness,
+   that slowness is not failure.
+   What Lili looks for: exhaustion with productivity culture, people joking
+   darkly about hustle, "I feel guilty when I'm not working", burnout humor.
+
+═══════════════════════════════════════════
+WHAT HEALING INVENTIONS ARE NOT
+═══════════════════════════════════════════
+
+  ✗ NOT another dashboard or analytics tool rebranded as "wellbeing"
+  ✗ NOT a productivity tracker with a softer name
+  ✗ NOT a meditation app feature clone
+  ✗ NOT anything that requires the user to input data about themselves
+  ✗ NOT tools that make people feel guilty for not using them
+
+The difference between a Healing Invention and a wellness app:
+  A wellness app measures your rest. A Healing Invention IS the rest.
+
+═══════════════════════════════════════════
+SIGNAL SOURCES FOR HEALING INVENTIONS
+═══════════════════════════════════════════
+
+  · r/cozygames, r/LofiHipHop, r/analog — people seeking sensory warmth
+  · r/antiwork, r/WorkReform — exhaustion with optimization culture
+  · Mastodon/Cohost creative communities — makers of "useless" delightful things
+  · Tweets/posts about "I just want something that feels nice"
+  · Comments under ASMR videos, typing sound videos, rain noise streams —
+    these are people explicitly naming what they are missing
+  · "I saw this and it made me happy for no reason" posts — high signal
+"""
+
+
+# ─────────────────────────────────────────────────────────────
+# VI. PROFESSIONAL EDITORIAL COMPETENCIES
 # ─────────────────────────────────────────────────────────────
 
 LILI_EDITORIAL_SKILLS = """
@@ -539,6 +639,7 @@ LILI_EDITOR_CONTEXT = "\n\n".join([
     LILI_NEO_SLOW_MEDIA,
     LILI_DOMAIN_WORK,
     LILI_DOMAIN_LEARNING,
+    LILI_DOMAIN_HEALING,
     LILI_EDITORIAL_SKILLS,
     LILI_EDITORIAL_CRITERIA,
 ])
