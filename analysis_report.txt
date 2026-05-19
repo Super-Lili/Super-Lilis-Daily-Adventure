@@ -1,0 +1,13 @@
+--- YouTube Comment Analysis Report ---
+
+Overall Summary: Analysis reveals a desire for gap between inspiration execution.
+
+Identified Friction Themes:
+- Anxiety Inadequacy (20.0%)
+- Lack Of Practicality (20.0%)
+- Gap Between Inspiration Execution (20.0%)
+- Desire For Authenticity (20.0%)
+- Feeling Overwhelmed (10.0%)
+- Busy Vs Productive (10.0%)
+
+--- End of Report ---

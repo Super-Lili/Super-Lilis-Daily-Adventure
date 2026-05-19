@@ -167,6 +167,14 @@
       "category": "Office Automation",
       "path": "02_Toolbox/Office Automation/2026-05-16_Decision_Digestor",
       "description": "This tool extracts potential action items, decisions, owners, and due dates from unstructured text (like chat logs or meeting notes) and compiles them into a structured CSV report, helping you cut through communication noise."
+    },
+    {
+      "date": "2026-05-19",
+      "name": "Commentary Clarity Catalyst",
+      "category": "Design Alchemy",
+      "pattern": "extract",
+      "path": "02_Toolbox/Design Alchemy/2026-05-19_Commentary_Clarity_Catalyst",
+      "description": "This tool analyzes YouTube comment sections on productivity videos to identify the gap between curated content and the real-life struggles users face, aiming to bridge that gap with more relatable and actionable advice."
     }
   ],
   "topics_covered": [
@@ -269,7 +277,12 @@
       "date": "2026-05-16",
       "title": "Decision Digestor: Your Navigator Through the Communication Maze",
       "path": "01_Work_Log/2026-05-16-Diary.md"
+    },
+    {
+      "date": "2026-05-19",
+      "title": "The Unseen Grind: YouTube Comments Reveal the Real Struggle Behind Productivity Gurus",
+      "path": "01_Work_Log/2026-05-19-Diary.md"
     }
   ],
-  "last_updated": "2026-05-16"
+  "last_updated": "2026-05-19"
 }
