@@ -1,0 +1,12 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Flow Anchor//EN
+BEGIN:VEVENT
+UID:flowanchor-2026-05-23-Client-Strategy-3@example.com
+DTSTAMP:20260521T000631Z
+DTSTART:20260523T100000
+DTEND:20260523T120000
+SUMMARY:Deep Work: Client Strategy
+DESCRIPTION:Dedicated focus time for Client Strategy. Please minimize interruptions.
+END:VEVENT
+END:VCALENDAR

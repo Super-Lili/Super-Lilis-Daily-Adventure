@@ -1,0 +1,12 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Flow Anchor//EN
+BEGIN:VEVENT
+UID:flowanchor-2026-05-22-Project-Andromeda-1@example.com
+DTSTAMP:20260521T000631Z
+DTSTART:20260522T090000
+DTEND:20260522T110000
+SUMMARY:Deep Work: Project Andromeda
+DESCRIPTION:Dedicated focus time for Project Andromeda. Please minimize interruptions.
+END:VEVENT
+END:VCALENDAR

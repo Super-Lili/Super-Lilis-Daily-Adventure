@@ -1,0 +1,3 @@
+pandas (for robust CSV reading, though simple csv module is used here to reduce dependencies for a small script)
+ics (for .ics file generation)
+pytz (for timezone awareness in ICS, though basic local time is used in demo for simplicity)

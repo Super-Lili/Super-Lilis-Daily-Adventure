@@ -175,6 +175,14 @@
       "pattern": "extract",
       "path": "02_Toolbox/Design Alchemy/2026-05-19_Commentary_Clarity_Catalyst",
       "description": "This tool analyzes YouTube comment sections on productivity videos to identify the gap between curated content and the real-life struggles users face, aiming to bridge that gap with more relatable and actionable advice."
+    },
+    {
+      "date": "2026-05-21",
+      "name": "Flow Anchor",
+      "category": "Office Automation",
+      "pattern": "generate",
+      "path": "02_Toolbox/Office Automation/2026-05-21_Flow_Anchor",
+      "description": "This tool helps you proactively create and communicate your deep work focus blocks by generating ICS calendar files and customizable status messages from a simple CSV input."
     }
   ],
   "topics_covered": [
@@ -282,7 +290,12 @@
       "date": "2026-05-19",
       "title": "The Unseen Grind: YouTube Comments Reveal the Real Struggle Behind Productivity Gurus",
       "path": "01_Work_Log/2026-05-19-Diary.md"
+    },
+    {
+      "date": "2026-05-21",
+      "title": "Flow Anchor: Reclaiming Your Deep Work Oasis",
+      "path": "01_Work_Log/2026-05-21-Diary.md"
     }
   ],
-  "last_updated": "2026-05-19"
+  "last_updated": "2026-05-21"
 }
