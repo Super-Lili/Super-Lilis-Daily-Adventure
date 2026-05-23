@@ -1,0 +1,7 @@
+
+    This article introduces the core concept of 'Data Flow Diagrams'.
+    A key concept is that DFDs illustrate how data moves through a system.
+    They are not about process logic, but rather the information path.
+    Another key concept is 'External Entities', which are sources or sinks of data.
+    DFDs often relate to 'Process Modeling' in software engineering.
+    
