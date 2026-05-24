@@ -116,12 +116,98 @@ def _get_recent_patterns(n: int = 4) -> list[str]:
 
 
 _SOURCE_ROTATION = [
-    ("Reddit",           "Search site:reddit.com for posts from the past 7 days. Go deep into comments, not just the top post."),
-    ("X (Twitter)",      "Search site:x.com OR twitter.com for recent threads and replies. Look for real people venting, not brand accounts."),
-    ("Threads",          "Search site:threads.net for recent posts. Focus on creators and knowledge workers sharing honest frustrations."),
-    ("YouTube comments", "Search YouTube for a relevant video published in the past month, then describe what the comment section reveals about real friction."),
-    ("HackerNews",       "Search news.ycombinator.com for relevant threads. 'Ask HN' and 'Show HN' posts often surface the best raw signal."),
-    ("news articles",    "Search for a news article or research report published in the past 7 days. A data point from a real publication counts as a source."),
+    # ── KNOWLEDGE WORKERS & PRODUCTIVITY ──
+    ("Reddit (knowledge workers)",
+     "Search r/productivity, r/gtd, r/remotework for posts from the past 7 days. "
+     "Focus on people drowning in tools, notifications, or the performance of busyness. "
+     "Go deep into comments — the real signal is in the replies, not the post."),
+
+    # ── PARENTS & FAMILY LIFE ──
+    ("Reddit (parents)",
+     "Search r/Parenting, r/beyondthebump, r/SingleParents for posts from the past 7 days. "
+     "Look for friction around maintaining identity, attention, and personal time "
+     "while caring for others. What do parents wish existed that nobody has built for them?"),
+
+    # ── STUDENTS & LEARNING ──
+    ("YouTube comments (students)",
+     "Search YouTube for a study, exam prep, or 'how I actually learned X' video from the past month. "
+     "Read the comment section carefully — students are brutally honest about what fails them. "
+     "Look for patterns around memory, motivation collapse, and tutorial hell."),
+
+    # ── OLDER ADULTS & CAREGIVERS ──
+    ("Reddit (older adults & caregivers)",
+     "Search r/eldertech, r/AgingParents, r/Caregiver for posts from the past 7 days. "
+     "Look for friction where digital life fails older people, or where adult children "
+     "struggle to bridge the gap between their parents and technology."),
+
+    # ── TEACHERS & EDUCATORS ──
+    ("Reddit (teachers)",
+     "Search r/Teachers, r/teaching, r/OnlinEducators for posts from the past 7 days. "
+     "Look for burnout signals, the gap between what teachers wish they could do "
+     "and what their actual constraints allow. What invisible labor do they carry?"),
+
+    # ── CREATIVE PROFESSIONALS ──
+    ("Threads & X (creative workers)",
+     "Search threads.net and x.com for designers, illustrators, writers, and musicians "
+     "posting about creative blocks, platform anxiety, algorithm fatigue, or the pressure "
+     "to produce content instead of art. Look for the grief underneath the productivity language."),
+
+    # ── MENTAL HEALTH & NEURODIVERGENCE ──
+    ("Reddit (ADHD & mental health)",
+     "Search r/ADHD, r/anxiety, r/depression for posts from the past 7 days. "
+     "Focus on daily friction — not clinical discussions, but real moments where "
+     "ordinary tasks feel impossible. What small environmental changes help people function?"),
+
+    # ── FINANCIAL STRESS ──
+    ("Reddit (money & financial anxiety)",
+     "Search r/personalfinance, r/povertyfinance, r/financialindependence for recent posts. "
+     "Look for the emotional and cognitive friction of financial uncertainty — "
+     "not investment advice needs, but the mental load of scarcity and decision fatigue."),
+
+    # ── SMALL BUSINESS & FREELANCERS ──
+    ("HackerNews & Reddit (freelancers)",
+     "Search news.ycombinator.com and r/freelance, r/smallbusiness for posts from the past week. "
+     "Look for friction where solo workers and small teams fall through the gaps — "
+     "tools built for enterprises that crush individuals, invisible admin overhead, "
+     "the loneliness of working without a team."),
+
+    # ── BODY, HEALTH & PHYSICAL EXPERIENCE ──
+    ("Reddit (chronic illness & body)",
+     "Search r/ChronicIllness, r/ChronicPain, r/disability for posts from the past 7 days. "
+     "Look for friction where digital tools ignore the reality of living in a body "
+     "that doesn't behave predictably. What does the world assume about people "
+     "that chronic illness patients know is false?"),
+
+    # ── COMMUTERS & URBAN LIFE ──
+    ("X & Threads (urban daily life)",
+     "Search x.com and threads.net for people posting about commuting, urban friction, "
+     "the texture of daily city life — transit delays, noise, crowds, the small indignities "
+     "of shared space. What moment in an ordinary day quietly costs people something?"),
+
+    # ── INTROVERTS & SOCIAL ENERGY ──
+    ("Reddit (introverts & social exhaustion)",
+     "Search r/introvert, r/socialskills, r/hsp for posts from the past 7 days. "
+     "Look for friction around social energy management, the cost of performing "
+     "extroversion, and the absence of tools designed for people who need recovery time."),
+
+    # ── LIFE TRANSITIONS ──
+    ("Reddit (major life changes)",
+     "Search r/divorce, r/GriefSupport, r/NewToCollege, r/retirement for recent posts. "
+     "Look for people navigating identity ruptures — the friction of becoming someone "
+     "different than you were, without any map for the new territory."),
+
+    # ── NIGHT SHIFT & IRREGULAR SCHEDULES ──
+    ("Reddit (shift workers & irregular hours)",
+     "Search r/nightshift, r/ShiftWork, r/nursing for posts from the past 7 days. "
+     "Look for friction where the entire world is designed for 9-to-5 rhythms "
+     "and people with different schedules constantly fall outside the default."),
+
+    # ── RESEARCH & NEWS SIGNAL ──
+    ("news & research reports",
+     "Search for a research report, academic study, or long-form journalism piece "
+     "published in the past 14 days about human behavior, social friction, wellbeing, "
+     "or work/learning/health. A surprising data point from a credible source "
+     "is more valuable than a trending tweet. Look for the finding that changes how you see something."),
 ]
 
 
