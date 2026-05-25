@@ -35,7 +35,21 @@ CATEGORY_LABELS = {
     "Office Automation":   "Office",
     "Healing Inventions":  "Healing",
 }
-CATEGORY_DEFAULT_COLOR = "#888888"
+# Muted, editorial cover colors — not saturated badges
+CATEGORY_COVER = {
+    "Education Evolution": "#d4e8e1",  # sage
+    "Design Alchemy":      "#dce0ec",  # slate
+    "Office Automation":   "#e8e4d8",  # sand
+    "Healing Inventions":  "#ecdde0",  # blush
+}
+CATEGORY_COVER_TEXT = {
+    "Education Evolution": "#2a5a4a",
+    "Design Alchemy":      "#2a3a5a",
+    "Office Automation":   "#5a4a2a",
+    "Healing Inventions":  "#5a2a36",
+}
+CATEGORY_DEFAULT_COVER      = "#e8e8e8"
+CATEGORY_DEFAULT_COVER_TEXT = "#444444"
 
 
 # ── Data readers ───────────────────────────────────────────────────────────────
@@ -175,7 +189,7 @@ def read_tools() -> list[dict]:
                 "requirements": requirements,
                 "readme_path":  readme_path,
                 "github":       f"{REPO_URL}/blob/main/02_Toolbox/{category}/{dir_name}/main.py",
-                "category_color": CATEGORY_DEFAULT_COLOR,
+                "category_color": CATEGORY_DEFAULT_COVER,
             })
 
     return tools
@@ -212,8 +226,8 @@ def shared_css() -> str:
 
 body {
     font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-    background: #fafafa;
-    color: #111111;
+    background: #ffffff;
+    color: #1a1a1a;
     line-height: 1.6;
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
@@ -223,292 +237,320 @@ a { color: inherit; text-decoration: none; }
 a:hover { color: #2ABBA8; }
 
 /* ── Layout ── */
-.container { max-width: 1080px; margin: 0 auto; padding: 0 40px; }
+.container { max-width: 1120px; margin: 0 auto; padding: 0 40px; }
 
-/* ── Header ── */
-.site-header {
-    background: #111111;
-    padding: 0;
-    border-bottom: none;
+/* ── Top nav ── */
+.site-nav {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
-.site-header .header-inner {
+.site-nav .nav-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 28px 0;
-    border-bottom: 1px solid #222;
+    height: 56px;
 }
-.site-header .wordmark {
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: #ffffff;
-}
-.site-header .wordmark span { color: #2ABBA8; }
-.site-header .tagline {
-    font-size: 0.75rem;
-    color: #666;
+.nav-logo {
+    font-size: 0.78rem;
+    font-weight: 700;
     letter-spacing: 0.05em;
+    color: #1a1a1a;
 }
-.hero {
-    padding: 80px 0 72px;
-    background: #111111;
+.nav-logo .accent { color: #2ABBA8; }
+.nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
 }
-.hero-date {
+.nav-links a {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #666;
+    transition: color 0.15s;
+}
+.nav-links a:hover { color: #1a1a1a; }
+
+/* ── Hero ── */
+.site-hero {
+    padding: 80px 0 64px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fff;
+}
+.hero-eyebrow {
     font-size: 0.7rem;
+    font-weight: 600;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: #2ABBA8;
     margin-bottom: 20px;
 }
-.hero h1 {
-    font-size: clamp(2rem, 5vw, 3.6rem);
+.hero-title {
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
     font-weight: 700;
-    line-height: 1.1;
-    color: #ffffff;
-    letter-spacing: -0.03em;
-    max-width: 720px;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    color: #1a1a1a;
+    max-width: 760px;
+    margin-bottom: 20px;
+}
+.hero-sub {
+    font-size: 1rem;
+    color: #777;
+    max-width: 480px;
+    line-height: 1.65;
+}
+
+/* ── Section headers ── */
+.section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-top: 2px solid #1a1a1a;
+    padding-top: 14px;
+    margin-bottom: 36px;
+}
+.section-head h2 {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #1a1a1a;
+}
+.section-head .section-count {
+    font-size: 0.72rem;
+    color: #aaa;
+    letter-spacing: 0.05em;
+}
+
+/* ── Featured latest entry ── */
+.featured-row {
+    padding: 64px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+.featured-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+.featured-cover {
+    aspect-ratio: 4/3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 28px;
+}
+.featured-cover .cover-date {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0.6;
+}
+.featured-cover .cover-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+.featured-body {
+    padding: 40px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 1px solid #e0e0e0;
+}
+.featured-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #2ABBA8;
     margin-bottom: 16px;
 }
-.hero .subtitle {
-    font-size: 1rem;
-    color: #888;
-    max-width: 480px;
-    line-height: 1.6;
-    margin-bottom: 32px;
+.featured-body h3 {
+    font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    margin-bottom: 10px;
+    color: #1a1a1a;
 }
-.hero .hero-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.featured-title-zh {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 18px;
+}
+.featured-excerpt {
+    font-size: 0.92rem;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+.featured-links { display: flex; gap: 12px; flex-wrap: wrap; }
 
 /* ── Buttons ── */
 .btn {
     display: inline-block;
-    padding: 10px 22px;
-    font-size: 0.8rem;
+    padding: 9px 20px;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     border: 1px solid transparent;
     cursor: pointer;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
-    text-decoration: none;
 }
 .btn:hover { text-decoration: none; }
-.btn-primary { background: #2ABBA8; color: #fff; border-color: #2ABBA8; }
-.btn-primary:hover { background: #229990; border-color: #229990; color: #fff; }
-.btn-secondary { background: transparent; color: #ffffff; border-color: #444; }
-.btn-secondary:hover { border-color: #2ABBA8; color: #2ABBA8; }
-.btn-dark { background: transparent; color: #111; border-color: #ccc; }
-.btn-dark:hover { border-color: #2ABBA8; color: #2ABBA8; }
+.btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.btn-primary:hover { background: #2ABBA8; border-color: #2ABBA8; }
+.btn-outline { background: transparent; color: #1a1a1a; border-color: #ccc; }
+.btn-outline:hover { border-color: #1a1a1a; }
+.btn-teal { background: #2ABBA8; color: #fff; border-color: #2ABBA8; }
+.btn-teal:hover { background: #229990; border-color: #229990; }
 
-/* ── Section layout ── */
-.section { padding: 72px 0; border-top: 1px solid #e8e8e8; }
-.section-label {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: #2ABBA8;
-    margin-bottom: 36px;
-}
-
-/* ── Today's entry (featured) ── */
-.featured {
-    padding: 72px 0;
-    border-top: 1px solid #222;
-    background: #111111;
-}
-.featured .section-label { color: #2ABBA8; }
-.featured-grid {
+/* ── Tool card grid ── */
+.section-block { padding: 56px 0; border-bottom: 1px solid #e0e0e0; }
+.card-grid {
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 60px;
-    align-items: start;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: #e0e0e0;
+    border: 1px solid #e0e0e0;
 }
-.featured-meta .entry-date {
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: #555;
-    margin-bottom: 12px;
-}
-.featured-meta .entry-category {
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #2ABBA8;
-    margin-bottom: 8px;
-}
-.featured-content h2 {
-    font-size: clamp(1.4rem, 3vw, 2rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: #ffffff;
-    line-height: 1.2;
-    margin-bottom: 8px;
-}
-.featured-content .title-zh {
-    font-size: 0.95rem;
-    color: #666;
-    margin-bottom: 20px;
-}
-.featured-content .excerpt {
-    color: #aaa;
-    font-size: 0.95rem;
-    line-height: 1.75;
-    margin-bottom: 28px;
-    max-width: 560px;
-}
-.featured-content .links { display: flex; gap: 14px; flex-wrap: wrap; }
-
-/* ── Tool list (editorial, not grid) ── */
-.tool-list { list-style: none; }
-.tool-item {
-    border-top: 1px solid #e8e8e8;
-    display: grid;
-    grid-template-columns: 100px 1fr auto;
-    gap: 32px;
-    align-items: start;
-    padding: 24px 0;
-    text-decoration: none;
+.tool-card {
+    background: #fff;
+    display: block;
     color: inherit;
-    transition: background 0.1s;
-    position: relative;
+    text-decoration: none;
+    transition: background 0.15s;
 }
-.tool-item::before {
-    content: '';
-    position: absolute;
-    left: -40px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #2ABBA8;
-    opacity: 0;
-    transition: opacity 0.15s;
+.tool-card:hover { background: #f5f5f5; }
+.tool-card:hover .tc-name { color: #2ABBA8; }
+.tc-cover {
+    aspect-ratio: 16/9;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px 20px;
 }
-.tool-item:hover::before { opacity: 1; }
-.tool-item:hover { color: inherit; }
-.tool-item:hover .tool-item-name { color: #2ABBA8; }
-.tool-item-date {
-    font-size: 0.75rem;
-    color: #999;
-    letter-spacing: 0.05em;
-    padding-top: 3px;
-}
-.tool-item-name {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 4px;
-    transition: color 0.15s;
-    letter-spacing: -0.01em;
-}
-.tool-item-desc {
-    font-size: 0.85rem;
-    color: #666;
-    line-height: 1.5;
-}
-.tool-item-cat {
-    font-size: 0.68rem;
-    font-weight: 600;
+.tc-cover-date {
+    font-size: 0.65rem;
+    font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #999;
-    padding-top: 3px;
-    text-align: right;
-    white-space: nowrap;
+    opacity: 0.55;
+}
+.tc-body { padding: 16px 20px 20px; }
+.tc-cat {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-bottom: 6px;
+}
+.tc-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    transition: color 0.15s;
+    color: #1a1a1a;
+}
+.tc-desc {
+    font-size: 0.8rem;
+    color: #777;
+    line-height: 1.5;
 }
 
 /* ── Evolution list ── */
-.evolution-list { list-style: none; }
-.evolution-list li {
-    padding: 18px 0;
-    border-top: 1px solid #e8e8e8;
+.evo-list { list-style: none; }
+.evo-item {
     display: grid;
-    grid-template-columns: 100px 1fr;
-    gap: 32px;
+    grid-template-columns: 120px 1fr;
+    gap: 24px;
+    padding: 20px 0;
+    border-bottom: 1px solid #e8e8e8;
     align-items: baseline;
 }
-.evo-date { font-size: 0.75rem; color: #999; }
-.evo-title { font-size: 0.95rem; }
-.evo-title a { color: #111; transition: color 0.15s; }
+.evo-date { font-size: 0.75rem; color: #aaa; font-variant-numeric: tabular-nums; }
+.evo-title { font-size: 0.92rem; color: #1a1a1a; }
+.evo-title a { transition: color 0.15s; }
 .evo-title a:hover { color: #2ABBA8; }
 
 /* ── Footer ── */
 .site-footer {
-    background: #111111;
+    background: #fff;
+    border-top: 2px solid #1a1a1a;
     padding: 40px 0;
-    border-top: none;
 }
-.site-footer .footer-inner {
+.footer-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.site-footer .footer-copy {
-    font-size: 0.75rem;
-    color: #555;
-    letter-spacing: 0.05em;
-}
-.site-footer a { color: #555; transition: color 0.15s; }
-.site-footer a:hover { color: #2ABBA8; }
+.footer-left { font-size: 0.72rem; color: #aaa; }
+.footer-left strong { color: #1a1a1a; font-weight: 700; }
+.footer-right { font-size: 0.72rem; }
+.footer-right a { color: #aaa; transition: color 0.15s; letter-spacing: 0.05em; }
+.footer-right a:hover { color: #2ABBA8; }
 
-/* ── Tool detail page ── */
-.tool-detail-header {
-    background: #111111;
-    padding: 0;
-    border-bottom: none;
-}
-.tool-detail-hero {
-    padding: 72px 0 60px;
-    background: #111111;
-    border-top: 1px solid #222;
+/* ── Tool detail ── */
+.detail-nav {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 0;
 }
 .back-link {
     font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #555;
-    display: inline-block;
-    margin-bottom: 32px;
+    color: #999;
     transition: color 0.15s;
 }
 .back-link:hover { color: #2ABBA8; }
-.back-arrow { margin-right: 6px; }
-.tool-detail-hero h1 {
-    font-size: clamp(1.6rem, 4vw, 2.8rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    color: #ffffff;
-    line-height: 1.1;
-    margin-bottom: 16px;
+.detail-hero {
+    padding: 56px 0 52px;
+    border-bottom: 1px solid #e0e0e0;
 }
-.tool-detail-hero .meta {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-.tool-detail-hero .meta-date {
-    font-size: 0.75rem;
-    color: #555;
-    letter-spacing: 0.1em;
-}
-.tool-detail-hero .meta-cat {
-    font-size: 0.72rem;
+.detail-eyebrow {
+    font-size: 0.68rem;
     font-weight: 600;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: #2ABBA8;
+    margin-bottom: 16px;
 }
-.detail-section { padding: 48px 0; border-top: 1px solid #e8e8e8; }
-.detail-section h2 {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.2em;
+.detail-hero h1 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+    max-width: 700px;
+}
+.detail-meta {
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-top: 8px;
+}
+.detail-section { padding: 48px 0; border-bottom: 1px solid #e0e0e0; }
+.detail-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #999;
-    margin-bottom: 20px;
+    color: #aaa;
+    margin-bottom: 16px;
 }
 .description-text {
     font-size: 1rem;
@@ -519,49 +561,50 @@ a:hover { color: #2ABBA8; }
 }
 .req-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
 .req-list li {
-    background: #f0f0f0;
+    background: #f5f5f5;
     padding: 4px 12px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
-    color: #333;
-    border: 1px solid #ddd;
+    color: #444;
+    border: 1px solid #e8e8e8;
 }
 
-/* ── Pyodide Try-it UI ── */
-.try-it { }
-.try-it .try-label {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.2em;
+/* ── Pyodide runner ── */
+.runner-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #999;
+    color: #aaa;
     display: block;
-    margin-top: 20px;
+    margin-top: 24px;
     margin-bottom: 8px;
 }
+.runner-label:first-child { margin-top: 0; }
 .try-it textarea {
     width: 100%;
     padding: 14px 16px;
-    border: 1px solid #ddd;
-    border-radius: 0;
+    border: 1px solid #e0e0e0;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     background: #fafafa;
-    color: #111;
+    color: #1a1a1a;
     resize: vertical;
     outline: none;
     transition: border-color 0.15s;
+    line-height: 1.6;
 }
 .try-it textarea:focus { border-color: #2ABBA8; }
 #run-btn {
+    display: inline-block;
     background: #2ABBA8;
-    color: white;
+    color: #fff;
     border: none;
-    padding: 12px 28px;
+    padding: 11px 28px;
     cursor: pointer;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     margin-top: 12px;
     transition: background 0.15s;
@@ -571,34 +614,38 @@ a:hover { color: #2ABBA8; }
 #run-btn:disabled { background: #ccc; cursor: not-allowed; }
 #pyodide-status {
     font-size: 0.82rem;
-    color: #999;
+    color: #aaa;
     padding: 12px 0;
     font-style: italic;
 }
 #output {
-    background: #111111;
-    color: #e0e0e0;
+    background: #f8f8f8;
+    color: #1a1a1a;
+    border: 1px solid #e0e0e0;
+    border-left: 3px solid #2ABBA8;
     padding: 20px;
     min-height: 100px;
     white-space: pre-wrap;
     font-size: 0.82rem;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
     margin-top: 12px;
-    border-left: 2px solid #2ABBA8;
-    line-height: 1.6;
+    line-height: 1.65;
 }
 
 /* ── Responsive ── */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .featured-inner { grid-template-columns: 1fr; }
+    .featured-body { border-left: none; border-top: 1px solid #e0e0e0; padding: 28px 0 0; }
+}
+@media (max-width: 600px) {
     .container { padding: 0 20px; }
-    .featured-grid { grid-template-columns: 1fr; gap: 20px; }
-    .tool-item { grid-template-columns: 1fr; gap: 4px; }
-    .tool-item-date { font-size: 0.7rem; }
-    .tool-item-cat { text-align: left; }
-    .tool-item::before { left: -20px; }
-    .site-header .header-inner { flex-direction: column; gap: 8px; align-items: flex-start; }
-    .site-footer .footer-inner { flex-direction: column; gap: 12px; align-items: flex-start; }
-    .evolution-list li { grid-template-columns: 1fr; gap: 4px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .evo-item { grid-template-columns: 1fr; gap: 4px; }
+    .footer-inner { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .hero-title { font-size: 2rem; }
+    .section-head { flex-direction: column; gap: 4px; }
 }
 """
 
@@ -635,34 +682,41 @@ def page_shell(title: str, body: str, css_extra: str = "", root_prefix: str = ""
 
 # ── Index page ─────────────────────────────────────────────────────────────────
 
-def render_featured(diaries: list[dict], tools: list[dict]) -> str:
+def render_featured_row(diaries: list[dict], tools: list[dict]) -> str:
     if not diaries:
         return ""
-
-    d = diaries[0]  # most recent
+    d = diaries[0]
 
     tool_link = ""
     for t in tools:
         if t["date"] == d["date"]:
-            tool_link = f'<a class="btn btn-secondary" href="tools/{h(t["slug"])}/index.html">View Tool</a>'
+            tool_link = f'<a class="btn btn-outline" href="tools/{h(t["slug"])}/index.html">View Tool</a>'
             break
 
-    title_zh_html = f'<div class="title-zh">{h(d["title_zh"])}</div>' if d["title_zh"] else ""
-    excerpt_html  = f'<p class="excerpt">{h(d["excerpt"])}</p>' if d["excerpt"] else ""
+    cover_bg   = CATEGORY_COVER.get("Education Evolution", "#e8e8e8")
+    cover_text = CATEGORY_COVER_TEXT.get("Education Evolution", "#333")
+
+    title_zh_html = f'<div class="featured-title-zh">{h(d["title_zh"])}</div>' if d["title_zh"] else ""
+    excerpt_html  = f'<p class="featured-excerpt">{h(d["excerpt"])}</p>' if d["excerpt"] else ""
 
     return f"""
-<section class="featured">
+<section class="featured-row">
   <div class="container">
-    <div class="section-label">Latest Entry</div>
-    <div class="featured-grid">
-      <div class="featured-meta">
-        <div class="entry-date">{h(d["date"])}</div>
+    <div class="section-head">
+      <h2>Latest Entry</h2>
+      <span class="section-count">{h(d["date"])}</span>
+    </div>
+    <div class="featured-inner">
+      <div class="featured-cover" style="background:{cover_bg};color:{cover_text};">
+        <div class="cover-date">{h(d["date"])}</div>
+        <div class="cover-label">Daily<br>Diary</div>
       </div>
-      <div class="featured-content">
-        <h2>{h(d["title"])}</h2>
+      <div class="featured-body">
+        <div class="featured-tag">Diary Entry</div>
+        <h3>{h(d["title"])}</h3>
         {title_zh_html}
         {excerpt_html}
-        <div class="links">
+        <div class="featured-links">
           <a class="btn btn-primary" href="{h(d['github'])}" target="_blank" rel="noopener">Read Diary</a>
           {tool_link}
         </div>
@@ -672,79 +726,98 @@ def render_featured(diaries: list[dict], tools: list[dict]) -> str:
 </section>"""
 
 
-def render_tool_list(tools: list[dict]) -> str:
+def render_tool_grid(tools: list[dict]) -> str:
     if not tools:
-        return "<p style='color:#999;font-size:0.9rem;padding:20px 0;'>No tools forged yet.</p>"
+        return "<p style='color:#aaa;font-size:0.9rem;padding:20px 0;'>No tools forged yet.</p>"
 
-    items = []
+    cards = []
     for t in tools:
-        cat_label = CATEGORY_LABELS.get(t["category"], t["category"])
-        desc_html = f'<div class="tool-item-desc">{h(t["description"][:140])}{"..." if len(t["description"]) > 140 else ""}</div>' if t["description"] else ""
-        items.append(f"""<a class="tool-item" href="tools/{h(t['slug'])}/index.html">
-  <div class="tool-item-date">{h(t['date'])}</div>
-  <div>
-    <div class="tool-item-name">{h(t['name'])}</div>
+        cat_label  = CATEGORY_LABELS.get(t["category"], t["category"])
+        cover_bg   = CATEGORY_COVER.get(t["category"], CATEGORY_DEFAULT_COVER)
+        cover_text = CATEGORY_COVER_TEXT.get(t["category"], CATEGORY_DEFAULT_COVER_TEXT)
+        desc_html  = f'<div class="tc-desc">{h(t["description"][:110])}{"…" if len(t["description"]) > 110 else ""}</div>' if t["description"] else ""
+        cards.append(f"""<a class="tool-card" href="tools/{h(t['slug'])}/index.html">
+  <div class="tc-cover" style="background:{cover_bg};color:{cover_text};">
+    <div class="tc-cover-date">{h(t['date'])}</div>
+  </div>
+  <div class="tc-body">
+    <div class="tc-cat">{h(cat_label)}</div>
+    <div class="tc-name">{h(t['name'])}</div>
     {desc_html}
   </div>
-  <div class="tool-item-cat">{h(cat_label)}</div>
 </a>""")
 
-    return f'<ul class="tool-list" style="list-style:none;">{"".join(items)}\n<li style="border-top:1px solid #e8e8e8;"></li></ul>'
+    return f'<div class="card-grid">{"".join(cards)}</div>'
 
 
 def render_evolution_list(evolutions: list[dict]) -> str:
     if not evolutions:
-        return "<p style='color:#999;font-size:0.9rem;padding:20px 0;'>No evolution entries yet.</p>"
+        return "<p style='color:#aaa;font-size:0.9rem;padding:20px 0;'>No evolution entries yet.</p>"
 
     items = []
     for e in evolutions:
-        items.append(f"""
-  <li>
-    <span class="evo-date">{h(e['date'])}</span>
-    <span class="evo-title"><a href="{h(e['github'])}" target="_blank" rel="noopener">{h(e['title'])}</a></span>
-  </li>""")
+        items.append(f"""<li class="evo-item">
+  <span class="evo-date">{h(e['date'])}</span>
+  <span class="evo-title"><a href="{h(e['github'])}" target="_blank" rel="noopener">{h(e['title'])}</a></span>
+</li>""")
 
-    return f'<ul class="evolution-list">{"".join(items)}\n</ul>'
+    return f'<ul class="evo-list">{"".join(items)}</ul>'
 
 
 def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) -> str:
-    featured_html   = render_featured(diaries, tools)
-    tool_list_html  = render_tool_list(tools)
-    evo_list_html   = render_evolution_list(evolutions)
+    featured_html = render_featured_row(diaries, tools)
+    tool_grid_html = render_tool_grid(tools)
+    evo_list_html  = render_evolution_list(evolutions)
 
     body = f"""
-<header class="site-header">
+<nav class="site-nav">
   <div class="container">
-    <div class="header-inner">
-      <div class="wordmark">Super-Lili's <span>Daily Adventure</span></div>
-      <div class="tagline">One friction point. One tool. Every day.</div>
+    <div class="nav-inner">
+      <div class="nav-logo">Super-Lili's <span class="accent">Daily Adventure</span></div>
+      <ul class="nav-links">
+        <li><a href="#tools">Tools</a></li>
+        <li><a href="#evolution">Evolution</a></li>
+        <li><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></li>
+      </ul>
     </div>
   </div>
-</header>
+</nav>
+
+<section class="site-hero">
+  <div class="container">
+    <div class="hero-eyebrow">Daily Adventure · 超级莉莉</div>
+    <h1 class="hero-title">One friction point.<br>One tool.<br>Every day.</h1>
+    <p class="hero-sub">Super-Lili scours human communities for real pain points and builds a small, usable tool to address each one.</p>
+  </div>
+</section>
 
 {featured_html}
 
-<main>
+<section class="section-block" id="tools">
   <div class="container">
-
-    <section class="section">
-      <div class="section-label">Tool Archive — {len(tools)} tools</div>
-      {tool_list_html}
-    </section>
-
-    <section class="section">
-      <div class="section-label">Evolution Journal</div>
-      {evo_list_html}
-    </section>
-
+    <div class="section-head">
+      <h2>Tool Archive</h2>
+      <span class="section-count">{len(tools)} tools</span>
+    </div>
+    {tool_grid_html}
   </div>
-</main>
+</section>
+
+<section class="section-block" id="evolution">
+  <div class="container">
+    <div class="section-head">
+      <h2>Evolution Journal</h2>
+      <span class="section-count">{len(evolutions)} entries</span>
+    </div>
+    {evo_list_html}
+  </div>
+</section>
 
 <footer class="site-footer">
   <div class="container">
     <div class="footer-inner">
-      <span class="footer-copy">Super-Lili &copy; 2026 · One friction point. One tool. Every day.</span>
-      <a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a>
+      <div class="footer-left"><strong>Super-Lili</strong> &copy; 2026 &mdash; 由超级莉莉精心策划</div>
+      <div class="footer-right"><a href="{h(REPO_URL)}" target="_blank" rel="noopener">View on GitHub</a></div>
     </div>
   </div>
 </footer>
@@ -808,15 +881,13 @@ def build_pyodide_section(t: dict) -> str:
     )
 
     return f"""
-<div class="try-it">
-  <div id="pyodide-status">&#x23F3; Loading Python engine&hellip;</div>
-  <div id="pyodide-ui" style="display:none">
-    <span class="try-label">Input</span>
-    <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
-    <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
-    <span class="try-label">Output</span>
-    <pre id="output"></pre>
-  </div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip;</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
@@ -873,28 +944,34 @@ def build_tool_page(t: dict) -> str:
     description = read_readme_description(t["readme_path"]) or t["description"] or "A tool forged by Super-Lili."
     cat_label   = CATEGORY_LABELS.get(t["category"], t["category"])
 
-    req_items = "".join(f"<li>{h(r)}</li>" for r in t["requirements"]) if t["requirements"] else "<li style='font-size:0.8rem;color:#999;list-style:none;padding:4px 0;'>None required — runs in browser</li>"
+    req_items = "".join(f"<li>{h(r)}</li>" for r in t["requirements"]) if t["requirements"] else "<li style='color:#aaa;font-style:italic;list-style:none;'>None — runs entirely in browser</li>"
 
     pyodide_section = build_pyodide_section(t)
 
     body = f"""
-<header class="tool-detail-header">
+<nav class="site-nav">
   <div class="container">
-    <div class="header-inner">
-      <div class="wordmark">Super-Lili's <span>Daily Adventure</span></div>
-      <div class="tagline">One friction point. One tool. Every day.</div>
+    <div class="nav-inner">
+      <div class="nav-logo">Super-Lili's <span class="accent">Daily Adventure</span></div>
+      <ul class="nav-links">
+        <li><a href="../../index.html">All Tools</a></li>
+        <li><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></li>
+      </ul>
     </div>
   </div>
-</header>
+</nav>
 
-<div class="tool-detail-hero">
+<div class="detail-nav">
   <div class="container">
-    <a class="back-link" href="../../index.html"><span class="back-arrow">←</span> All Tools</a>
+    <a class="back-link" href="../../index.html">← All Tools</a>
+  </div>
+</div>
+
+<div class="detail-hero">
+  <div class="container">
+    <div class="detail-eyebrow">{h(cat_label)}</div>
     <h1>{h(t['name'])}</h1>
-    <div class="meta">
-      <span class="meta-cat">{h(cat_label)}</span>
-      <span class="meta-date">{h(t['date'])}</span>
-    </div>
+    <div class="detail-meta">{h(t['date'])}</div>
   </div>
 </div>
 
@@ -902,19 +979,21 @@ def build_tool_page(t: dict) -> str:
   <div class="container">
 
     <section class="detail-section">
-      <h2>What it does</h2>
+      <div class="detail-label">What it does</div>
       <p class="description-text">{h(description)}</p>
-      <a class="btn btn-dark" href="{h(t['github'])}" target="_blank" rel="noopener">View Source Code</a>
+      <a class="btn btn-primary" href="{h(t['github'])}" target="_blank" rel="noopener">View Source Code</a>
     </section>
 
     <section class="detail-section">
-      <h2>Dependencies</h2>
+      <div class="detail-label">Dependencies</div>
       <ul class="req-list">{req_items}</ul>
     </section>
 
     <section class="detail-section">
-      <h2>Try it in browser</h2>
-      {pyodide_section}
+      <div class="detail-label">Try it in browser</div>
+      <div class="try-it">
+        {pyodide_section}
+      </div>
     </section>
 
   </div>
@@ -923,8 +1002,8 @@ def build_tool_page(t: dict) -> str:
 <footer class="site-footer">
   <div class="container">
     <div class="footer-inner">
-      <span class="footer-copy">Forged by Super-Lili on {h(t['date'])}</span>
-      <a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a>
+      <div class="footer-left"><strong>Super-Lili</strong> &mdash; Forged on {h(t['date'])}</div>
+      <div class="footer-right"><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></div>
     </div>
   </div>
 </footer>
