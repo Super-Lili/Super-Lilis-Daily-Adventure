@@ -30,26 +30,11 @@ REPO_URL  = "https://github.com/Super-Lili/Super-Lilis-Daily-Adventure"
 SITE_URL  = "https://super-lili.github.io/Super-Lilis-Daily-Adventure/"
 
 CATEGORY_LABELS = {
-    "Education Evolution": "Education",
-    "Design Alchemy":      "Design",
-    "Office Automation":   "Office",
-    "Healing Inventions":  "Healing",
+    "Education Evolution": "教育 Education",
+    "Design Alchemy":      "设计 Design",
+    "Office Automation":   "效率 Office",
+    "Healing Inventions":  "疗愈 Healing",
 }
-# Muted, editorial cover colors — not saturated badges
-CATEGORY_COVER = {
-    "Education Evolution": "#d4e8e1",  # sage
-    "Design Alchemy":      "#dce0ec",  # slate
-    "Office Automation":   "#e8e4d8",  # sand
-    "Healing Inventions":  "#ecdde0",  # blush
-}
-CATEGORY_COVER_TEXT = {
-    "Education Evolution": "#2a5a4a",
-    "Design Alchemy":      "#2a3a5a",
-    "Office Automation":   "#5a4a2a",
-    "Healing Inventions":  "#5a2a36",
-}
-CATEGORY_DEFAULT_COVER      = "#e8e8e8"
-CATEGORY_DEFAULT_COVER_TEXT = "#444444"
 
 
 # ── Data readers ───────────────────────────────────────────────────────────────
@@ -138,7 +123,6 @@ def read_tools() -> list[dict]:
 
             try:
                 date_str  = dir_name[:10]
-                # Validate date format loosely
                 datetime.strptime(date_str, "%Y-%m-%d")
                 tool_name = dir_name[11:].replace("_", " ")
             except (ValueError, IndexError):
@@ -155,7 +139,6 @@ def read_tools() -> list[dict]:
                             description = line.replace("**What it does:**", "").strip()
                             break
                     if not description:
-                        # Fallback: second non-empty, non-heading line
                         for line in readme.splitlines():
                             stripped = line.strip()
                             if stripped and not stripped.startswith("#") and not stripped.startswith(">") and not stripped.startswith("---"):
@@ -176,7 +159,6 @@ def read_tools() -> list[dict]:
             except Exception:
                 pass
 
-            # Tool slug for URL (date + tool slug)
             tool_slug = f"{date_str}-{slugify(tool_name)}"
 
             tools.append({
@@ -189,7 +171,6 @@ def read_tools() -> list[dict]:
                 "requirements": requirements,
                 "readme_path":  readme_path,
                 "github":       f"{REPO_URL}/blob/main/02_Toolbox/{category}/{dir_name}/main.py",
-                "category_color": CATEGORY_DEFAULT_COVER,
             })
 
     return tools
@@ -229,382 +210,298 @@ body {
     background: #ffffff;
     color: #1a1a1a;
     line-height: 1.6;
-    font-size: 16px;
+    font-size: 15px;
     -webkit-font-smoothing: antialiased;
 }
 
 a { color: inherit; text-decoration: none; }
-a:hover { color: #2ABBA8; }
 
 /* ── Layout ── */
-.container { max-width: 1120px; margin: 0 auto; padding: 0 40px; }
+.container { max-width: 1080px; margin: 0 auto; padding: 0 40px; }
 
-/* ── Top nav ── */
+/* ── Nav ── */
 .site-nav {
     background: #fff;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #ebebeb;
     position: sticky;
     top: 0;
     z-index: 100;
 }
-.site-nav .nav-inner {
+.nav-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 56px;
+    height: 52px;
 }
 .nav-logo {
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
+    font-size: 0.82rem;
+    font-weight: 600;
     color: #1a1a1a;
+    letter-spacing: 0.01em;
 }
 .nav-logo .dot { color: #2ABBA8; }
-.nav-links {
-    display: flex;
-    gap: 32px;
-    list-style: none;
-}
+.nav-links { display: flex; gap: 32px; list-style: none; }
 .nav-links a {
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    color: #888;
+    font-size: 0.78rem;
+    color: #999;
     transition: color 0.15s;
 }
 .nav-links a:hover { color: #1a1a1a; }
 
-/* ── Hero ── */
+/* ── Hero: today's diary, reads like a letter opener ── */
 .site-hero {
-    padding: 80px 0 64px;
-    border-bottom: 1px solid #e0e0e0;
-    background: #fff;
+    padding: 72px 0 64px;
+    border-bottom: 1px solid #ebebeb;
 }
-.hero-eyebrow {
-    font-size: 0.7rem;
+.hero-label {
+    font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: #2ABBA8;
     margin-bottom: 20px;
 }
 .hero-title {
-    font-size: clamp(2.4rem, 6vw, 4.2rem);
-    font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 1.05;
-    color: #1a1a1a;
-    max-width: 760px;
-    margin-bottom: 20px;
-}
-.hero-sub {
-    font-size: 1rem;
-    color: #777;
-    max-width: 480px;
-    line-height: 1.65;
-}
-
-/* ── Section headers ── */
-.section-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    border-top: 2px solid #1a1a1a;
-    padding-top: 14px;
-    margin-bottom: 36px;
-    gap: 12px;
-}
-.section-head-left { display: flex; align-items: baseline; gap: 10px; }
-.section-head h2 {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #1a1a1a;
-}
-.section-head .label-zh {
-    font-size: 0.72rem;
-    color: #bbb;
-    font-weight: 400;
-    letter-spacing: 0.02em;
-}
-.section-head .section-count {
-    font-size: 0.72rem;
-    color: #ccc;
-    letter-spacing: 0.05em;
-    margin-left: auto;
-}
-
-/* ── Featured latest entry ── */
-.featured-row {
-    padding: 64px 0;
-    border-bottom: 1px solid #e0e0e0;
-}
-.featured-inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-}
-.featured-cover {
-    aspect-ratio: 4/3;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 28px;
-}
-.featured-cover .cover-date {
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    opacity: 0.6;
-}
-.featured-cover .cover-label {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-}
-.featured-body {
-    padding: 40px 48px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    border-left: 1px solid #e0e0e0;
-}
-.featured-tag {
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: #2ABBA8;
-    margin-bottom: 16px;
-}
-.featured-body h3 {
-    font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+    font-size: clamp(1.8rem, 4.5vw, 3rem);
     font-weight: 700;
     letter-spacing: -0.025em;
-    line-height: 1.2;
-    margin-bottom: 10px;
+    line-height: 1.15;
     color: #1a1a1a;
+    max-width: 680px;
+    margin-bottom: 16px;
 }
-.featured-title-zh {
-    font-size: 0.9rem;
-    color: #888;
-    margin-bottom: 18px;
+.hero-title-zh {
+    font-size: 0.95rem;
+    color: #aaa;
+    margin-bottom: 20px;
+    font-weight: 400;
 }
-.featured-excerpt {
-    font-size: 0.92rem;
+.hero-excerpt {
+    font-size: 1rem;
     color: #555;
-    line-height: 1.7;
-    margin-bottom: 28px;
+    line-height: 1.75;
+    max-width: 560px;
+    margin-bottom: 32px;
 }
-.featured-links { display: flex; gap: 12px; flex-wrap: wrap; }
+.hero-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
 /* ── Buttons ── */
 .btn {
     display: inline-block;
-    padding: 9px 20px;
+    padding: 10px 22px;
     font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0.06em;
     border: 1px solid transparent;
     cursor: pointer;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
+    text-decoration: none;
 }
 .btn:hover { text-decoration: none; }
-.btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.btn-primary:hover { background: #2ABBA8; border-color: #2ABBA8; }
-.btn-outline { background: transparent; color: #1a1a1a; border-color: #ccc; }
-.btn-outline:hover { border-color: #1a1a1a; }
+.btn-dark { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.btn-dark:hover { background: #2ABBA8; border-color: #2ABBA8; }
+.btn-ghost { background: transparent; color: #888; border-color: #d8d8d8; }
+.btn-ghost:hover { color: #1a1a1a; border-color: #1a1a1a; }
 .btn-teal { background: #2ABBA8; color: #fff; border-color: #2ABBA8; }
 .btn-teal:hover { background: #229990; border-color: #229990; }
 
-/* ── Tool card grid ── */
-.section-block { padding: 56px 0; border-bottom: 1px solid #e0e0e0; }
+/* ── Section label ── */
+.section-label {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+.section-label h2 {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #1a1a1a;
+}
+.section-label .label-zh {
+    font-size: 0.72rem;
+    color: #bbb;
+    font-weight: 400;
+}
+.section-label .label-count {
+    font-size: 0.72rem;
+    color: #ccc;
+    margin-left: auto;
+}
+
+/* ── Tool grid ── */
+.tools-section {
+    padding: 56px 0;
+    border-bottom: 1px solid #ebebeb;
+}
 .card-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1px;
-    background: #e0e0e0;
-    border: 1px solid #e0e0e0;
+    background: #ebebeb;
+    border: 1px solid #ebebeb;
 }
 .tool-card {
     background: #fff;
-    display: block;
-    color: inherit;
-    text-decoration: none;
-    transition: background 0.15s;
-}
-.tool-card:hover { background: #f5f5f5; }
-.tool-card:hover .tc-name { color: #2ABBA8; }
-.tc-cover {
-    aspect-ratio: 16/9;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 16px 20px;
+    padding: 24px;
+    text-decoration: none;
+    color: inherit;
+    border-left: 3px solid transparent;
+    transition: border-color 0.15s, background 0.15s;
 }
-.tc-cover-date {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    opacity: 0.55;
+.tool-card:hover {
+    border-left-color: #2ABBA8;
+    background: #fafffe;
 }
-.tc-body { padding: 16px 20px 20px; }
-.tc-cat {
-    font-size: 0.65rem;
+.tc-date {
+    font-size: 0.68rem;
     font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #aaa;
-    margin-bottom: 6px;
+    letter-spacing: 0.1em;
+    color: #2ABBA8;
+    margin-bottom: 10px;
 }
 .tc-name {
-    font-size: 0.95rem;
+    font-size: 0.98rem;
     font-weight: 700;
+    line-height: 1.35;
     letter-spacing: -0.01em;
-    line-height: 1.3;
-    margin-bottom: 6px;
-    transition: color 0.15s;
     color: #1a1a1a;
+    margin-bottom: 8px;
+    flex: 1;
 }
 .tc-desc {
     font-size: 0.8rem;
-    color: #777;
-    line-height: 1.5;
+    color: #888;
+    line-height: 1.55;
+    margin-bottom: 14px;
+}
+.tc-cat {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #ccc;
+    text-transform: uppercase;
+    margin-top: auto;
 }
 
 /* ── Evolution list ── */
+.evo-section { padding: 56px 0; }
 .evo-list { list-style: none; }
 .evo-item {
-    display: grid;
-    grid-template-columns: 120px 1fr;
+    display: flex;
     gap: 24px;
-    padding: 20px 0;
-    border-bottom: 1px solid #e8e8e8;
+    padding: 16px 0;
+    border-bottom: 1px solid #ebebeb;
     align-items: baseline;
 }
-.evo-date { font-size: 0.75rem; color: #2ABBA8; font-weight: 600; font-variant-numeric: tabular-nums; }
-.evo-title { font-size: 0.92rem; color: #1a1a1a; }
-.evo-title a { transition: color 0.15s; }
-.evo-title a:hover { color: #2ABBA8; }
+.evo-date {
+    font-size: 0.72rem;
+    color: #2ABBA8;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    min-width: 90px;
+}
+.evo-title { font-size: 0.92rem; color: #444; }
+.evo-title a { color: #444; transition: color 0.15s; }
+.evo-title a:hover { color: #1a1a1a; }
 
 /* ── Footer ── */
 .site-footer {
-    background: #fff;
-    border-top: 2px solid #1a1a1a;
-    padding: 40px 0;
+    background: #fafafa;
+    border-top: 1px solid #ebebeb;
+    padding: 36px 0;
 }
 .footer-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.footer-left { font-size: 0.72rem; color: #aaa; }
-.footer-left strong { color: #1a1a1a; font-weight: 700; }
-.footer-right { font-size: 0.72rem; }
-.footer-right a { color: #aaa; transition: color 0.15s; letter-spacing: 0.05em; }
-.footer-right a:hover { color: #2ABBA8; }
+.footer-copy { font-size: 0.75rem; color: #bbb; }
+.footer-copy strong { color: #888; font-weight: 600; }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { font-size: 0.75rem; color: #bbb; transition: color 0.15s; }
+.footer-links a:hover { color: #2ABBA8; }
 
-/* ── Tool detail ── */
-.detail-nav {
+/* ── Tool detail page ── */
+.detail-nav-bar {
     background: #fff;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 16px 0;
+    border-bottom: 1px solid #ebebeb;
+    padding: 14px 0;
 }
 .back-link {
     font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #999;
+    letter-spacing: 0.08em;
+    color: #bbb;
     transition: color 0.15s;
 }
 .back-link:hover { color: #2ABBA8; }
 .detail-hero {
-    padding: 56px 0 52px;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 60px 0 52px;
+    border-bottom: 1px solid #ebebeb;
 }
 .detail-eyebrow {
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: #2ABBA8;
     margin-bottom: 16px;
 }
 .detail-hero h1 {
-    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
     font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.025em;
     line-height: 1.1;
     color: #1a1a1a;
+    max-width: 720px;
     margin-bottom: 12px;
-    max-width: 700px;
 }
 .detail-meta {
-    font-size: 0.75rem;
-    color: #aaa;
-    margin-top: 8px;
+    font-size: 0.72rem;
+    color: #bbb;
+    letter-spacing: 0.05em;
 }
-.detail-section { padding: 48px 0; border-bottom: 1px solid #e0e0e0; }
+.detail-section {
+    padding: 44px 0;
+    border-bottom: 1px solid #ebebeb;
+}
 .detail-label {
     font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #aaa;
-    margin-bottom: 16px;
+    color: #bbb;
+    margin-bottom: 14px;
 }
 .description-text {
     font-size: 1rem;
-    line-height: 1.75;
+    line-height: 1.8;
     color: #333;
-    max-width: 640px;
-    margin-bottom: 28px;
+    max-width: 620px;
+    margin-bottom: 24px;
 }
-.req-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.req-list { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
 .req-list li {
     background: #f5f5f5;
     padding: 4px 12px;
     font-size: 0.78rem;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
-    color: #444;
+    color: #555;
     border: 1px solid #e8e8e8;
 }
-
-/* ── Local run instructions ── */
-.local-run { max-width: 640px; }
-.local-run-note {
-    font-size: 0.88rem;
-    color: #555;
-    line-height: 1.6;
-    margin-bottom: 16px;
-}
-.local-run-note em { color: #aaa; font-style: normal; }
-.code-block {
-    background: #f5f5f5;
-    border: 1px solid #e0e0e0;
-    border-left: 3px solid #2ABBA8;
-    padding: 16px 20px;
-    font-family: 'JetBrains Mono', 'Courier New', monospace;
-    font-size: 0.82rem;
-    line-height: 1.8;
-}
-.code-line { color: #1a1a1a; }
-.code-comment { color: #aaa; }
 
 /* ── Pyodide runner ── */
 .runner-label {
     font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #aaa;
+    color: #bbb;
     display: block;
     margin-top: 24px;
     margin-bottom: 8px;
@@ -631,7 +528,7 @@ a:hover { color: #2ABBA8; }
     border: none;
     padding: 11px 28px;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -639,21 +536,16 @@ a:hover { color: #2ABBA8; }
     transition: background 0.15s;
     font-family: inherit;
 }
-#run-btn:hover { background: #229990; }
+#run-btn:hover { background: #1a1a1a; }
 #run-btn:disabled { background: #ccc; cursor: not-allowed; }
-#pyodide-status {
-    font-size: 0.82rem;
-    color: #aaa;
-    padding: 12px 0;
-    font-style: italic;
-}
+#pyodide-status { font-size: 0.82rem; color: #bbb; padding: 12px 0; font-style: italic; }
 #output {
-    background: #f8f8f8;
+    background: #fafafa;
     color: #1a1a1a;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #e8e8e8;
     border-left: 3px solid #2ABBA8;
     padding: 20px;
-    min-height: 100px;
+    min-height: 80px;
     white-space: pre-wrap;
     font-size: 0.82rem;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
@@ -661,20 +553,37 @@ a:hover { color: #2ABBA8; }
     line-height: 1.65;
 }
 
-/* ── Responsive ── */
-@media (max-width: 900px) {
-    .card-grid { grid-template-columns: repeat(2, 1fr); }
-    .featured-inner { grid-template-columns: 1fr; }
-    .featured-body { border-left: none; border-top: 1px solid #e0e0e0; padding: 28px 0 0; }
+/* ── Local run instructions ── */
+.local-run-note {
+    font-size: 0.88rem;
+    color: #666;
+    line-height: 1.7;
+    margin-bottom: 16px;
 }
-@media (max-width: 600px) {
+.local-run-note em { color: #aaa; }
+.code-block {
+    background: #f7f7f7;
+    border: 1px solid #e8e8e8;
+    border-left: 3px solid #2ABBA8;
+    padding: 18px 20px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.8;
+    color: #333;
+}
+.code-comment { color: #aaa; }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
     .container { padding: 0 20px; }
     .card-grid { grid-template-columns: 1fr; }
     .nav-links { display: none; }
-    .evo-item { grid-template-columns: 1fr; gap: 4px; }
-    .footer-inner { flex-direction: column; gap: 12px; align-items: flex-start; }
-    .hero-title { font-size: 2rem; }
-    .section-head { flex-direction: column; gap: 4px; }
+    .footer-inner { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .evo-item { flex-direction: column; gap: 4px; }
+    .hero-title { font-size: 1.8rem; }
 }
 """
 
@@ -711,48 +620,30 @@ def page_shell(title: str, body: str, css_extra: str = "", root_prefix: str = ""
 
 # ── Index page ─────────────────────────────────────────────────────────────────
 
-def render_featured_row(diaries: list[dict], tools: list[dict]) -> str:
+def render_hero(diaries: list[dict], tools: list[dict]) -> str:
     if not diaries:
         return ""
     d = diaries[0]
 
-    tool_link = ""
+    tool_btn = ""
     for t in tools:
         if t["date"] == d["date"]:
-            tool_link = f'<a class="btn btn-outline" href="tools/{h(t["slug"])}/index.html">今日工具 →</a>'
+            tool_btn = f'<a class="btn btn-ghost" href="tools/{h(t["slug"])}/index.html">今日工具 →</a>'
             break
 
-    cover_bg   = CATEGORY_COVER.get("Education Evolution", "#e8e8e8")
-    cover_text = CATEGORY_COVER_TEXT.get("Education Evolution", "#333")
-
-    title_zh_html = f'<div class="featured-title-zh">{h(d["title_zh"])}</div>' if d["title_zh"] else ""
-    excerpt_html  = f'<p class="featured-excerpt">{h(d["excerpt"])}</p>' if d["excerpt"] else ""
+    title_zh = f'<div class="hero-title-zh">{h(d["title_zh"])}</div>' if d.get("title_zh") else ""
+    excerpt  = f'<p class="hero-excerpt">{h(d["excerpt"])}</p>' if d.get("excerpt") else ""
 
     return f"""
-<section class="featured-row">
+<section class="site-hero">
   <div class="container">
-    <div class="section-head">
-      <div class="section-head-left">
-        <h2>Latest Entry</h2>
-        <span class="label-zh">今日日记</span>
-      </div>
-      <span class="section-count">{h(d["date"])}</span>
-    </div>
-    <div class="featured-inner">
-      <div class="featured-cover" style="background:{cover_bg};color:{cover_text};">
-        <div class="cover-date">{h(d["date"])}</div>
-        <div class="cover-label">今日日记<br><span style="font-size:0.7em;font-weight:400;opacity:0.6;">Daily Diary</span></div>
-      </div>
-      <div class="featured-body">
-        <div class="featured-tag">今日日记 · Latest Entry</div>
-        <h3>{h(d["title"])}</h3>
-        {title_zh_html}
-        {excerpt_html}
-        <div class="featured-links">
-          <a class="btn btn-primary" href="{h(d['github'])}" target="_blank" rel="noopener">读日记 Read Diary</a>
-          {tool_link}
-        </div>
-      </div>
+    <div class="hero-label">{h(d["date"])} &nbsp;·&nbsp; 今日日记</div>
+    <h1 class="hero-title">{h(d["title"])}</h1>
+    {title_zh}
+    {excerpt}
+    <div class="hero-actions">
+      <a class="btn btn-dark" href="{h(d['github'])}" target="_blank" rel="noopener">读日记 Read Diary</a>
+      {tool_btn}
     </div>
   </div>
 </section>"""
@@ -760,23 +651,17 @@ def render_featured_row(diaries: list[dict], tools: list[dict]) -> str:
 
 def render_tool_grid(tools: list[dict]) -> str:
     if not tools:
-        return "<p style='color:#aaa;font-size:0.9rem;padding:20px 0;'>No tools forged yet.</p>"
+        return "<p style='color:#bbb;padding:20px 0;font-size:0.9rem;'>No tools yet.</p>"
 
     cards = []
     for t in tools:
-        cat_label  = CATEGORY_LABELS.get(t["category"], t["category"])
-        cover_bg   = CATEGORY_COVER.get(t["category"], CATEGORY_DEFAULT_COVER)
-        cover_text = CATEGORY_COVER_TEXT.get(t["category"], CATEGORY_DEFAULT_COVER_TEXT)
-        desc_html  = f'<div class="tc-desc">{h(t["description"][:110])}{"…" if len(t["description"]) > 110 else ""}</div>' if t["description"] else ""
+        cat_label = CATEGORY_LABELS.get(t["category"], t["category"])
+        desc_html = f'<div class="tc-desc">{h(t["description"][:120])}{"…" if len(t["description"]) > 120 else ""}</div>' if t["description"] else ""
         cards.append(f"""<a class="tool-card" href="tools/{h(t['slug'])}/index.html">
-  <div class="tc-cover" style="background:{cover_bg};color:{cover_text};">
-    <div class="tc-cover-date">{h(t['date'])}</div>
-  </div>
-  <div class="tc-body">
-    <div class="tc-cat">{h(cat_label)}</div>
-    <div class="tc-name">{h(t['name'])}</div>
-    {desc_html}
-  </div>
+  <div class="tc-date">{h(t['date'])}</div>
+  <div class="tc-name">{h(t['name'])}</div>
+  {desc_html}
+  <div class="tc-cat">{h(cat_label)}</div>
 </a>""")
 
     return f'<div class="card-grid">{"".join(cards)}</div>'
@@ -784,7 +669,7 @@ def render_tool_grid(tools: list[dict]) -> str:
 
 def render_evolution_list(evolutions: list[dict]) -> str:
     if not evolutions:
-        return "<p style='color:#aaa;font-size:0.9rem;padding:20px 0;'>No evolution entries yet.</p>"
+        return "<p style='color:#bbb;padding:20px 0;font-size:0.9rem;'>No evolution entries yet.</p>"
 
     items = []
     for e in evolutions:
@@ -797,7 +682,7 @@ def render_evolution_list(evolutions: list[dict]) -> str:
 
 
 def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) -> str:
-    featured_html = render_featured_row(diaries, tools)
+    hero_html      = render_hero(diaries, tools)
     tool_grid_html = render_tool_grid(tools)
     evo_list_html  = render_evolution_list(evolutions)
 
@@ -815,37 +700,24 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
   </div>
 </nav>
 
-<section class="site-hero">
-  <div class="container">
-    <div class="hero-eyebrow">超级莉莉 · Daily Adventure</div>
-    <h1 class="hero-title">One friction point.<br>One tool.<br>Every day.</h1>
-    <p class="hero-sub">超级莉莉每天在社区发现真实的人类痛点，并为每个痛点构建一个小而可用的工具。</p>
-  </div>
-</section>
+{hero_html}
 
-{featured_html}
-
-<section class="section-block" id="tools">
+<section class="tools-section" id="tools">
   <div class="container">
-    <div class="section-head">
-      <div class="section-head-left">
-        <h2>Tool Archive</h2>
-        <span class="label-zh">工具库</span>
-      </div>
-      <span class="section-count">{len(tools)} 个工具</span>
+    <div class="section-label">
+      <h2>Tool Archive</h2>
+      <span class="label-zh">工具库</span>
+      <span class="label-count">{len(tools)} tools</span>
     </div>
     {tool_grid_html}
   </div>
 </section>
 
-<section class="section-block" id="evolution">
+<section class="evo-section" id="evolution">
   <div class="container">
-    <div class="section-head">
-      <div class="section-head-left">
-        <h2>Evolution Journal</h2>
-        <span class="label-zh">成长日志</span>
-      </div>
-      <span class="section-count">{len(evolutions)} 篇</span>
+    <div class="section-label">
+      <h2>Evolution Journal</h2>
+      <span class="label-zh">成长日志</span>
     </div>
     {evo_list_html}
   </div>
@@ -854,13 +726,15 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
 <footer class="site-footer">
   <div class="container">
     <div class="footer-inner">
-      <div class="footer-left"><strong>Super-Lili</strong> &copy; 2026 &nbsp;·&nbsp; 由超级莉莉精心策划</div>
-      <div class="footer-right"><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></div>
+      <span class="footer-copy"><strong>Super-Lili</strong> &copy; 2026 &nbsp;·&nbsp; 由超级莉莉精心策划</span>
+      <div class="footer-links">
+        <a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a>
+      </div>
     </div>
   </div>
 </footer>
 """
-    return page_shell("Super-Lili's Daily Adventure · 超级莉莉每日冒险", body)
+    return page_shell("Super-Lili · Daily Adventure", body)
 
 
 # ── Tool detail page ────────────────────────────────────────────────────────────
@@ -871,7 +745,6 @@ def read_readme_description(readme_path: Path) -> str:
         return ""
     try:
         text = readme_path.read_text(encoding="utf-8")
-        # Return everything between the intro and the Quick Start section
         lines = text.splitlines()
         collecting = False
         desc_lines: list[str] = []
@@ -896,7 +769,6 @@ def read_tool_code(t: dict) -> str:
         return ""
     try:
         code = main_py.read_text(encoding="utf-8")
-        # Escape for JS template literal: backslashes first, then backticks, then ${
         code = code.replace("\\", "\\\\")
         code = code.replace("`", "\\`")
         code = code.replace("${", "\\${")
@@ -910,37 +782,36 @@ def build_local_run_section(t: dict) -> str:
     reqs = t.get("requirements", [])
     req_str = " ".join(reqs) if reqs else "see requirements.txt"
     install_cmd = f"pip install {req_str}" if reqs else "pip install -r requirements.txt"
-    github_raw = f"https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/{t['category']}/{t['dir_name']}/main.py"
+    github_raw = (
+        f"https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure"
+        f"/main/02_Toolbox/{t['category']}/{t['dir_name']}/main.py"
+    )
 
     return f"""
-<div class="local-run">
-  <p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-  <em>This tool runs locally. Open a terminal and run:</em></p>
-  <div class="code-block" translate="no">
-    <div class="code-line"><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-    <div class="code-line">{h(install_cmd)}</div>
-    <div class="code-line">&nbsp;</div>
-    <div class="code-line"><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-    <div class="code-line">curl -O {h(github_raw)}</div>
-    <div class="code-line">&nbsp;</div>
-    <div class="code-line"><span class="code-comment"># 3. 运行 Run</span></div>
-    <div class="code-line">python main.py --help</div>
-  </div>
-  <a class="btn btn-primary" href="{h(t['github'])}" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看完整源码 View Source</a>
-</div>"""
+<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
+<em>This tool runs locally. Open a terminal and run:</em></p>
+<div class="code-block" translate="no">
+  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
+  <div>{h(install_cmd)}</div>
+  <div>&nbsp;</div>
+  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
+  <div>curl -O {h(github_raw)}</div>
+  <div>&nbsp;</div>
+  <div><span class="code-comment"># 3. 运行 Run</span></div>
+  <div>python main.py --help</div>
+</div>
+<a class="btn btn-dark" href="{h(t['github'])}" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>"""
 
 
 def build_pyodide_section(t: dict) -> str:
-    """Return HTML+JS for the Pyodide Try-it section, or local-run fallback."""
+    """Return Pyodide runner HTML+JS, or local-run fallback for tools without USER_INPUT."""
     tool_code = read_tool_code(t)
     if not tool_code:
-        return '<p style="color:#aaa;font-size:0.85rem;font-style:italic;">Source code not found.</p>'
+        return '<p style="color:#999;font-size:0.85rem;font-style:italic;">Source code not found — cannot load runner.</p>'
 
-    # Check browser compatibility: tool must use USER_INPUT dual-mode pattern
     if "USER_INPUT" not in tool_code:
         return build_local_run_section(t)
 
-    # Browser preamble injected before tool code
     preamble = (
         "# Browser adaptation - USER_INPUT is provided by the browser\\n"
         "import sys\\n"
@@ -951,7 +822,7 @@ def build_pyodide_section(t: dict) -> str:
 <div id="pyodide-status">&#x23F3; Loading Python engine&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
-  <textarea id="user-input" rows="6" placeholder="将您的文本粘贴在这里..."></textarea>
+  <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
   <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
   <span class="runner-label">Output</span>
   <pre id="output"></pre>
@@ -982,14 +853,12 @@ async function runTool() {{
   btn.textContent = '⏳ Running...';
 
   try {{
-    // Redirect stdout
     pyodide.runPython(`
 import sys
 from io import StringIO
 sys.stdout = StringIO()
 `);
 
-    // Inject user input and run tool
     pyodide.globals.set('USER_INPUT', userInput);
     pyodide.runPython(TOOL_CODE);
 
@@ -1013,7 +882,6 @@ def build_tool_page(t: dict) -> str:
 
     req_items = "".join(f"<li>{h(r)}</li>" for r in t["requirements"]) if t["requirements"] else "<li style='color:#aaa;font-style:italic;list-style:none;'>None — runs entirely in browser</li>"
 
-    # Check browser compatibility for section label
     tool_code = read_tool_code(t)
     is_browser = bool(tool_code) and "USER_INPUT" in tool_code
     run_label = "在线运行 · Try in browser" if is_browser else "本地运行 · Run locally"
@@ -1033,7 +901,7 @@ def build_tool_page(t: dict) -> str:
   </div>
 </nav>
 
-<div class="detail-nav">
+<div class="detail-nav-bar">
   <div class="container">
     <a class="back-link" href="../../index.html">← 返回工具库</a>
   </div>
@@ -1047,17 +915,17 @@ def build_tool_page(t: dict) -> str:
   </div>
 </div>
 
-<main>
+<div>
   <div class="container">
 
     <section class="detail-section">
       <div class="detail-label">What it does · 工具说明</div>
       <p class="description-text">{h(description)}</p>
-      <a class="btn btn-primary" href="{h(t['github'])}" target="_blank" rel="noopener">查看源码 View Code</a>
+      <a class="btn btn-dark" href="{h(t['github'])}" target="_blank" rel="noopener">View Source Code</a>
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Dependencies · 依赖库</div>
+      <div class="detail-label">Dependencies · 依赖</div>
       <ul class="req-list">{req_items}</ul>
     </section>
 
@@ -1069,18 +937,20 @@ def build_tool_page(t: dict) -> str:
     </section>
 
   </div>
-</main>
+</div>
 
 <footer class="site-footer">
   <div class="container">
     <div class="footer-inner">
-      <div class="footer-left"><strong>Super-Lili</strong> &nbsp;·&nbsp; 由超级莉莉精心策划 &nbsp;·&nbsp; {h(t['date'])}</div>
-      <div class="footer-right"><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></div>
+      <span class="footer-copy"><strong>Super-Lili</strong> &nbsp;·&nbsp; {h(t['date'])}</span>
+      <div class="footer-links">
+        <a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a>
+      </div>
     </div>
   </div>
 </footer>
 """
-    return page_shell(f"{t['name']} — Super-Lili", body)
+    return page_shell(f"{t['name']} · Super-Lili", body)
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
@@ -1088,7 +958,6 @@ def build_tool_page(t: dict) -> str:
 def main() -> None:
     print("🌸 Generating Super-Lili's GitHub Pages site...")
 
-    # Read all content
     diaries    = read_diaries()
     tools      = read_tools()
     evolutions = read_evolutions()
@@ -1097,15 +966,12 @@ def main() -> None:
     print(f"  🛠️  {len(tools)} tools")
     print(f"  📈 {len(evolutions)} evolution entries")
 
-    # Ensure docs/ exists
     DOCS_DIR.mkdir(exist_ok=True)
 
-    # Build index.html
     index_html = build_index(diaries, tools, evolutions)
     (DOCS_DIR / "index.html").write_text(index_html, encoding="utf-8")
     print("  ✓ docs/index.html written")
 
-    # Build tool pages
     tools_dir = DOCS_DIR / "tools"
     tools_dir.mkdir(exist_ok=True)
 
