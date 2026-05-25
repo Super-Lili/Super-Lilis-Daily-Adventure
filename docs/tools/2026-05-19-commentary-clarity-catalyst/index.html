@@ -10,13 +10,13 @@
 
 body {
     font-family: 'Georgia', 'Times New Roman', serif;
-    background: #fdf8f5;
-    color: #2d2d2d;
+    background: #EBF7FD;
+    color: #1a2a3a;
     line-height: 1.7;
     font-size: 16px;
 }
 
-a { color: #c06080; text-decoration: none; }
+a { color: #2B5EA7; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 /* ── Layout ── */
@@ -24,60 +24,60 @@ a:hover { text-decoration: underline; }
 
 /* ── Header ── */
 .site-header {
-    background: linear-gradient(135deg, #fce8e8 0%, #e8d0f0 100%);
+    background: linear-gradient(135deg, #2B5EA7 0%, #2ABBA8 100%);
     padding: 48px 0 40px;
     text-align: center;
-    border-bottom: 1px solid #e8d0d0;
+    border-bottom: 1px solid #C8E8F5;
 }
 .site-header h1 {
     font-size: clamp(1.8rem, 5vw, 2.8rem);
     font-weight: normal;
     letter-spacing: -0.5px;
-    color: #2d2d2d;
+    color: #ffffff;
 }
 .site-header .tagline {
     margin-top: 8px;
-    color: #7a5a6a;
+    color: #C8E8F5;
     font-style: italic;
     font-size: 1.05rem;
 }
 
 /* ── Section headings ── */
 .section { padding: 48px 0; }
-.section + .section { border-top: 1px solid #ede0d8; }
+.section + .section { border-top: 1px solid #C8E8F5; }
 .section-title {
     font-size: 1.4rem;
     font-weight: normal;
-    color: #7a5a6a;
+    color: #2B5EA7;
     margin-bottom: 28px;
     letter-spacing: 0.3px;
 }
 
 /* ── Today's Entry ── */
 .today-card {
-    background: #fff;
-    border: 1px solid #f0ddd0;
+    background: #FFFFFF;
+    border: 1px solid #C8E8F5;
     border-radius: 12px;
     padding: 32px;
-    box-shadow: 0 2px 12px rgba(200,140,140,0.08);
+    box-shadow: 0 2px 12px rgba(43,94,167,0.08);
 }
 .today-card .entry-date {
     font-size: 0.85rem;
-    color: #aaa;
+    color: #4a6a8a;
     margin-bottom: 8px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
-.today-card h2 { font-size: 1.5rem; font-weight: normal; margin-bottom: 4px; }
-.today-card .title-zh { color: #9a7090; font-size: 1rem; margin-bottom: 10px; }
+.today-card h2 { font-size: 1.5rem; font-weight: normal; margin-bottom: 4px; color: #1a2a3a; }
+.today-card .title-zh { color: #2ABBA8; font-size: 1rem; margin-bottom: 10px; }
 .today-card .mood {
     font-style: italic;
-    color: #7a6a7a;
+    color: #4a6a8a;
     margin-bottom: 16px;
     padding-bottom: 16px;
-    border-bottom: 1px dashed #f0ddd0;
+    border-bottom: 1px dashed #C8E8F5;
 }
-.today-card .excerpt { color: #555; line-height: 1.75; margin-bottom: 20px; }
+.today-card .excerpt { color: #1a2a3a; line-height: 1.75; margin-bottom: 20px; }
 .today-card .links { display: flex; gap: 12px; flex-wrap: wrap; }
 .btn {
     display: inline-block;
@@ -87,8 +87,8 @@ a:hover { text-decoration: underline; }
     transition: opacity 0.15s;
 }
 .btn:hover { opacity: 0.8; text-decoration: none; }
-.btn-primary { background: #e8a0a0; color: #fff; }
-.btn-secondary { background: #f0e4f4; color: #6a4a7a; }
+.btn-primary { background: #2B5EA7; color: #fff; }
+.btn-secondary { background: #EBF7FD; color: #2B5EA7; border: 1px solid #C8E8F5; }
 
 /* ── Tool Grid ── */
 .tool-grid {
@@ -97,8 +97,8 @@ a:hover { text-decoration: underline; }
     gap: 20px;
 }
 .tool-card {
-    background: #fff;
-    border: 1px solid #ede0d8;
+    background: #FFFFFF;
+    border: 1px solid #C8E8F5;
     border-radius: 10px;
     padding: 20px 22px;
     cursor: pointer;
@@ -108,13 +108,13 @@ a:hover { text-decoration: underline; }
     color: inherit;
 }
 .tool-card:hover {
-    box-shadow: 0 4px 20px rgba(200,140,140,0.14);
+    box-shadow: 0 4px 20px rgba(43,94,167,0.14);
     transform: translateY(-2px);
     text-decoration: none;
 }
 .tool-card .card-date {
     font-size: 0.78rem;
-    color: #bbb;
+    color: #4a6a8a;
     letter-spacing: 0.5px;
     text-transform: uppercase;
     margin-bottom: 6px;
@@ -124,6 +124,7 @@ a:hover { text-decoration: underline; }
     font-weight: bold;
     margin-bottom: 8px;
     line-height: 1.4;
+    color: #1a2a3a;
 }
 .badge {
     display: inline-block;
@@ -132,82 +133,120 @@ a:hover { text-decoration: underline; }
     font-size: 0.75rem;
     margin-bottom: 10px;
     font-style: normal;
+    color: #fff;
 }
-.tool-card p { font-size: 0.88rem; color: #666; line-height: 1.55; }
+.tool-card p { font-size: 0.88rem; color: #4a6a8a; line-height: 1.55; }
 
 /* ── Evolution list ── */
 .evolution-list { list-style: none; }
 .evolution-list li {
     padding: 14px 0;
-    border-bottom: 1px dashed #ede0d8;
+    border-bottom: 1px dashed #C8E8F5;
     display: flex;
     gap: 16px;
     align-items: baseline;
 }
 .evolution-list li:last-child { border-bottom: none; }
-.evo-date { font-size: 0.82rem; color: #aaa; min-width: 90px; }
+.evo-date { font-size: 0.82rem; color: #4a6a8a; min-width: 90px; }
 .evo-title { font-size: 0.95rem; }
 
 /* ── Footer ── */
 .site-footer {
     text-align: center;
     padding: 36px 0;
-    border-top: 1px solid #ede0d8;
-    color: #aaa;
+    border-top: 1px solid #C8E8F5;
+    color: #4a6a8a;
     font-size: 0.88rem;
 }
-.site-footer a { color: #c06080; }
+.site-footer a { color: #2B5EA7; }
 
 /* ── Tool detail page ── */
 .tool-detail-header {
-    background: linear-gradient(135deg, #fce8e8 0%, #e8d0f0 100%);
+    background: linear-gradient(135deg, #2B5EA7 0%, #2ABBA8 100%);
     padding: 40px 0 32px;
-    border-bottom: 1px solid #e8d0d0;
+    border-bottom: 1px solid #C8E8F5;
 }
 .back-link {
     font-size: 0.9rem;
-    color: #c06080;
+    color: #C8E8F5;
     display: inline-block;
     margin-bottom: 20px;
 }
-.tool-detail-header h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: normal; }
+.back-link:hover { color: #fff; }
+.tool-detail-header h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: normal; color: #fff; }
 .tool-detail-header .meta {
     margin-top: 10px;
-    color: #9a7090;
+    color: #C8E8F5;
     font-size: 0.9rem;
 }
 .detail-section { padding: 36px 0; }
-.detail-section + .detail-section { border-top: 1px solid #ede0d8; }
+.detail-section + .detail-section { border-top: 1px solid #C8E8F5; }
 .detail-section h2 {
     font-size: 1.1rem;
     font-weight: bold;
     margin-bottom: 14px;
-    color: #5a3a5a;
+    color: #2B5EA7;
 }
 .description-text {
     font-size: 1rem;
     line-height: 1.75;
-    color: #444;
+    color: #1a2a3a;
     max-width: 680px;
 }
 .req-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
 .req-list li {
-    background: #f5f0f8;
+    background: #EBF7FD;
     border-radius: 6px;
     padding: 4px 12px;
     font-size: 0.85rem;
     font-family: 'Courier New', monospace;
-    color: #5a3a7a;
+    color: #2B5EA7;
+    border: 1px solid #C8E8F5;
 }
-.try-it-box {
-    background: linear-gradient(135deg, #fdf0ff 0%, #fff5f0 100%);
-    border: 1px dashed #d8b0d8;
-    border-radius: 12px;
-    padding: 32px;
-    text-align: center;
-    color: #7a5a7a;
-    font-style: italic;
-    font-size: 1.05rem;
+
+/* ── Pyodide Try-it UI ── */
+.try-it { margin: 2rem 0; }
+.try-it label {
+    display: block;
+    font-weight: bold;
+    color: #2B5EA7;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+}
+.try-it textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #C8E8F5;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    box-sizing: border-box;
+    background: #fff;
+    color: #1a2a3a;
+}
+#run-btn {
+    background: #2ABBA8;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 0.5rem 0;
+}
+#run-btn:hover { background: #229990; }
+#run-btn:disabled { background: #aaa; cursor: not-allowed; }
+#pyodide-status { color: #4a6a8a; font-style: italic; padding: 1rem 0; }
+#output {
+    background: #1a2a3a;
+    color: #e8f5fd;
+    padding: 1rem;
+    border-radius: 8px;
+    min-height: 80px;
+    white-space: pre-wrap;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
 }
 
 /* ── Responsive ── */
@@ -228,7 +267,7 @@ a:hover { text-decoration: underline; }
     <a class="back-link" href="../../index.html">← Back to all adventures</a>
     <h1>Commentary Clarity Catalyst</h1>
     <div class="meta">
-      <span class="badge" style="background:#a8c8e8">Design Alchemy</span>
+      <span class="badge" style="background:#2B5EA7">Design Alchemy</span>
       &nbsp; 2026-05-19
     </div>
   </div>
@@ -250,10 +289,277 @@ a:hover { text-decoration: underline; }
     </section>
 
     <section class="detail-section">
-      <h2>Try it</h2>
-      <div class="try-it-box">
-        Interactive browser version coming soon 🌸
-      </div>
+      
+<div class="try-it">
+  <h2>Try it</h2>
+  <div id="pyodide-status">&#x23F3; Loading Python engine...</div>
+  <div id="pyodide-ui" style="display:none">
+    <label>Input:</label>
+    <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
+    <button id="run-btn" onclick="runTool()">&#x25B6; Run</button>
+    <label>Output:</label>
+    <pre id="output"></pre>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+
+const TOOL_CODE = `# Browser adaptation - USER_INPUT is provided by the browser\nimport sys\nsys.argv = ['tool']  # Reset argv to prevent argparse errors\n
+import argparse
+import csv
+from pathlib import Path
+from typing import List, Dict, Any
+
+def extract_comments(video_url: str, output_csv: Path):
+    """
+    Placeholder function for extracting YouTube comments.
+    In a real-world scenario, this would involve using a YouTube API
+    or a web scraping library to fetch comments.
+    For this example, we'll simulate fetching and processing.
+    """
+    print(f"Simulating comment extraction for: {video_url}")
+    # In a real implementation, you'd fetch comments here.
+    # For now, we'll use a dummy list of comments.
+    dummy_comments = [
+        {"author": "GamerPro123", "text": "This is great! But I always feel anxious after watching these videos. Like I'm not doing enough.", "timestamp": "2024-05-18T10:00:00Z"},
+        {"author": "StudyBug88", "text": "I buy all these courses but finish none. How do I actually start?", "timestamp": "2024-05-18T11:30:00Z"},
+        {"author": "LifeHacker42", "text": "So much advice, so little time. Feels like I'm just busy, not productive.", "timestamp": "2024-05-18T12:45:00Z"},
+        {"author": "CreativeSoul99", "text": "They make it look so easy. I wish they showed the messy parts too.", "timestamp": "2024-05-18T14:00:00Z"},
+        {"author": "RealistReader", "text": "Love the tips, but these videos often make me feel inadequate. Need more practical steps.", "timestamp": "2024-05-18T15:15:00Z"},
+        {"author": "MotivatedMinds", "text": "This is inspiring, but I still struggle with the 'doing' part. Where's the bridge?", "timestamp": "2024-05-18T16:30:00Z"},
+        {"author": "ProductivitySeeker", "text": "Always the same advice. Need something that addresses the *why* behind the struggle.", "timestamp": "2024-05-18T17:45:00Z"},
+        {"author": "DigitalDetoxDude", "text": "Feeling overwhelmed by all the 'hacks'. Need simplicity.", "timestamp": "2024-05-18T19:00:00Z"},
+        {"author": "StudentStruggles", "text": "I feel like I'm just watching videos instead of doing the work!", "timestamp": "2024-05-18T20:15:00Z"},
+        {"author": "GoalGetter", "text": "How to bridge the gap between inspiration and execution? That's the real question.", "timestamp": "2024-05-18T21:30:00Z"}
+    ]
+
+    if not dummy_comments:
+        print("No comments found or simulated.")
+        return
+
+    try:
+        with open(output_csv, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = ['author', 'text', 'timestamp']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for comment in dummy_comments:
+                writer.writerow(comment)
+        print(f"Successfully extracted and saved {len(dummy_comments)} simulated comments to {output_csv}")
+    except IOError as e:
+        print(f"Error writing to CSV file {output_csv}: {e}")
+
+def analyze_comments(input_csv: Path) -> Dict[str, Any]:
+    """
+    Analyzes the extracted comments to find common themes of friction.
+    Focuses on identifying the gap between curated content and user reality.
+    """
+    if not input_csv.exists():
+        print(f"Error: Input CSV file not found at {input_csv}")
+        return {"summary": "Input file not found.", "themes": []}
+
+    comments_data = []
+    try:
+        with open(input_csv, 'r', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                comments_data.append(row)
+    except IOError as e:
+        print(f"Error reading CSV file {input_csv}: {e}")
+        return {"summary": "Error reading input file.", "themes": []}
+    except Exception as e:
+        print(f"An unexpected error occurred while reading the CSV: {e}")
+        return {"summary": "Unexpected error reading input file.", "themes": []}
+
+    if not comments_data:
+        return {"summary": "No comments to analyze.", "themes": []}
+
+    # Simple theme extraction based on keywords and sentiment
+    themes = {
+        "anxiety_inadequacy": 0,
+        "lack_of_practicality": 0,
+        "gap_between_inspiration_execution": 0,
+        "desire_for_authenticity": 0,
+        "feeling_overwhelmed": 0,
+        "busy_vs_productive": 0
+    }
+    total_comments = len(comments_data)
+
+    for comment in comments_data:
+        text = comment['text'].lower()
+        if "anxious" in text or "inadequate" in text or "not enough" in text or "feel bad" in text:
+            themes["anxiety_inadequacy"] += 1
+        if "practical" in text or "start" in text or "steps" in text or "fit" in text or "real life" in text:
+            themes["lack_of_practicality"] += 1
+        if "gap" in text or "bridge" in text or "execution" in text or "doing part" in text or "inspiration" in text:
+            themes["gap_between_inspiration_execution"] += 1
+        if "easy" in text or "messy parts" in text or "real" in text or "authentic" in text or "honest" in text:
+            themes["desire_for_authenticity"] += 1
+        if "overwhelmed" in text or "too much" in text or "complicated" in text:
+            themes["feeling_overwhelmed"] += 1
+        if "busy" in text and "productive" in text:
+            themes["busy_vs_productive"] += 1
+
+    # Determine the most prominent themes
+    sorted_themes = sorted(themes.items(), key=lambda item: item[1], reverse=True)
+
+    # Create a summary sentence
+    summary_parts = []
+    if sorted_themes[0][1] > total_comments * 0.3: # If top theme is very prominent
+        summary_parts.append(f"many users express {sorted_themes[0][0].replace('_', ' ')}")
+    if sorted_themes[1][1] > total_comments * 0.2:
+        summary_parts.append(f"a strong sense of {sorted_themes[1][0].replace('_', ' ')}")
+    if sorted_themes[2][1] > total_comments * 0.15:
+        summary_parts.append(f"a desire for {sorted_themes[2][0].replace('_', ' ')}")
+
+    summary = f"Analysis reveals {', '.join(summary_parts)}."
+    if not summary_parts:
+        summary = "Analysis shows a general engagement with the content."
+
+    # Format themes for output
+    output_themes = []
+    for theme, count in sorted_themes:
+        percentage = (count / total_comments) * 100
+        if percentage > 5: # Only include themes that appear in at least 5% of comments
+            output_themes.append({"theme": theme.replace('_', ' ').title(), "percentage": f"{percentage:.1f}%"})
+
+    return {"summary": summary, "themes": output_themes}
+
+def generate_report(analysis_results: Dict[str, Any], output_report_txt: Path):
+    """
+    Generates a human-readable report from the analysis results.
+    """
+    try:
+        with open(output_report_txt, 'w', encoding='utf-8') as f:
+            f.write("--- YouTube Comment Analysis Report ---\\n\\n")
+            f.write(f"Overall Summary: {analysis_results.get('summary', 'No summary available.')}\\n\\n")
+
+            themes = analysis_results.get('themes', [])
+            if themes:
+                f.write("Identified Friction Themes:\\n")
+                for theme_info in themes:
+                    f.write(f"- {theme_info['theme']} ({theme_info['percentage']})\\n")
+            else:
+                f.write("No significant friction themes identified.\\n")
+
+            f.write("\\n--- End of Report ---\\n")
+        print(f"Report generated successfully at {output_report_txt}")
+    except IOError as e:
+        print(f"Error writing report to {output_report_txt}: {e}")
+
+def main():
+    parser = argparse.ArgumentParser(description="Analyze YouTube comments for productivity video friction points.")
+    parser.add_argument("--video_url", type=str, required=True, help="URL of the YouTube video to analyze comments from.")
+    parser.add_argument("--output_csv", type=Path, default="youtube_comments.csv", help="Path to save the extracted comments CSV.")
+    parser.add_argument("--output_report", type=Path, default="analysis_report.txt", help="Path to save the analysis report.")
+
+    args = parser.parse_args()
+
+    # Step 1: Extract comments (simulated)
+    extract_comments(args.video_url, args.output_csv)
+
+    # Step 2: Analyze comments
+    analysis_results = analyze_comments(args.output_csv)
+
+    # Step 3: Generate report
+    generate_report(analysis_results, args.output_report)
+
+if __name__ == "__main__":
+    # Example usage when running the script directly:
+    # python your_script_name.py --video_url "https://www.youtube.com/watch?v=25N_y9E_Uf4" --output_csv "comments.csv" --output_report "report.txt"
+    # Since this is a simulation, we'll call main directly within the tool execution context.
+    # In a real script, you'd use:
+    # main()
+
+    # For the purpose of this execution context, we'll simulate calling main with example arguments.
+    # The output files (youtube_comments.csv, analysis_report.txt) will be created in the current directory.
+    print("Simulating tool execution. 'youtube_comments.csv' and 'analysis_report.txt' will be created.")
+    # Dummy call to main for demonstration purposes in this environment.
+    # In a real run, you'd parse actual command-line arguments.
+    # For this simulation, we create dummy files if they don't exist to allow analysis to run.
+    dummy_video_url = "https://www.youtube.com/watch?v=some_video_id"
+    dummy_output_csv = Path("youtube_comments.csv")
+    dummy_output_report = Path("analysis_report.txt")
+
+    # Create dummy CSV if it doesn't exist, so analyze_comments can run.
+    if not dummy_output_csv.exists():
+        print(f"Creating dummy CSV: {dummy_output_csv}")
+        dummy_comments_for_file = [
+            {"author": "GamerPro123", "text": "This is great! But I always feel anxious after watching these videos. Like I'm not doing enough.", "timestamp": "2024-05-18T10:00:00Z"},
+            {"author": "StudyBug88", "text": "I buy all these courses but finish none. How do I actually start?", "timestamp": "2024-05-18T11:30:00Z"},
+            {"author": "LifeHacker42", "text": "So much advice, so little time. Feels like I'm just busy, not productive.", "timestamp": "2024-05-18T12:45:00Z"},
+            {"author": "CreativeSoul99", "text": "They make it look so easy. I wish they showed the messy parts too.", "timestamp": "2024-05-18T14:00:00Z"},
+            {"author": "RealistReader", "text": "Love the tips, but these videos often make me feel inadequate. Need more practical steps.", "timestamp": "2024-05-18T15:15:00Z"},
+            {"author": "MotivatedMinds", "text": "This is inspiring, but I still struggle with the 'doing' part. Where's the bridge?", "timestamp": "2024-05-18T16:30:00Z"},
+            {"author": "ProductivitySeeker", "text": "Always the same advice. Need something that addresses the *why* behind the struggle.", "timestamp": "2024-05-18T17:45:00Z"},
+            {"author": "DigitalDetoxDude", "text": "Feeling overwhelmed by all the 'hacks'. Need simplicity.", "timestamp": "2024-05-18T19:00:00Z"},
+            {"author": "StudentStruggles", "text": "I feel like I'm just watching videos instead of doing the work!", "timestamp": "2024-05-18T20:15:00Z"},
+            {"author": "GoalGetter", "text": "How to bridge the gap between inspiration and execution? That's the real question.", "timestamp": "2024-05-18T21:30:00Z"}
+        ]
+        try:
+            with open(dummy_output_csv, 'w', newline='', encoding='utf-8') as csvfile:
+                fieldnames = ['author', 'text', 'timestamp']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+                for comment in dummy_comments_for_file:
+                    writer.writerow(comment)
+            print(f"Created dummy CSV: {dummy_output_csv}")
+        except IOError as e:
+            print(f"Error creating dummy CSV {dummy_output_csv}: {e}")
+
+    # Now run the analysis and report generation parts
+    # This is a simplified way to get the output without actual CLI arguments in this context.
+    # In a real script, 'main()' would handle argument parsing.
+    try:
+        print("Running analysis and report generation...")
+        analysis_results = analyze_comments(dummy_output_csv)
+        generate_report(analysis_results, dummy_output_report)
+        print(f"Analysis complete. Report saved to {dummy_output_report}.")
+    except Exception as e:
+        print(f"An error occurred during analysis/reporting: {e}")`;
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    // Redirect stdout
+    pyodide.runPython(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+`);
+
+    // Inject user input and run tool
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+
+    const output = pyodide.runPython('sys.stdout.getvalue()');
+    document.getElementById('output').textContent = output || '(no output)';
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
     </section>
 
   </div>

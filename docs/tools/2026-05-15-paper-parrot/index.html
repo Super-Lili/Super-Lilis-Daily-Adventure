@@ -10,13 +10,13 @@
 
 body {
     font-family: 'Georgia', 'Times New Roman', serif;
-    background: #fdf8f5;
-    color: #2d2d2d;
+    background: #EBF7FD;
+    color: #1a2a3a;
     line-height: 1.7;
     font-size: 16px;
 }
 
-a { color: #c06080; text-decoration: none; }
+a { color: #2B5EA7; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 /* ── Layout ── */
@@ -24,60 +24,60 @@ a:hover { text-decoration: underline; }
 
 /* ── Header ── */
 .site-header {
-    background: linear-gradient(135deg, #fce8e8 0%, #e8d0f0 100%);
+    background: linear-gradient(135deg, #2B5EA7 0%, #2ABBA8 100%);
     padding: 48px 0 40px;
     text-align: center;
-    border-bottom: 1px solid #e8d0d0;
+    border-bottom: 1px solid #C8E8F5;
 }
 .site-header h1 {
     font-size: clamp(1.8rem, 5vw, 2.8rem);
     font-weight: normal;
     letter-spacing: -0.5px;
-    color: #2d2d2d;
+    color: #ffffff;
 }
 .site-header .tagline {
     margin-top: 8px;
-    color: #7a5a6a;
+    color: #C8E8F5;
     font-style: italic;
     font-size: 1.05rem;
 }
 
 /* ── Section headings ── */
 .section { padding: 48px 0; }
-.section + .section { border-top: 1px solid #ede0d8; }
+.section + .section { border-top: 1px solid #C8E8F5; }
 .section-title {
     font-size: 1.4rem;
     font-weight: normal;
-    color: #7a5a6a;
+    color: #2B5EA7;
     margin-bottom: 28px;
     letter-spacing: 0.3px;
 }
 
 /* ── Today's Entry ── */
 .today-card {
-    background: #fff;
-    border: 1px solid #f0ddd0;
+    background: #FFFFFF;
+    border: 1px solid #C8E8F5;
     border-radius: 12px;
     padding: 32px;
-    box-shadow: 0 2px 12px rgba(200,140,140,0.08);
+    box-shadow: 0 2px 12px rgba(43,94,167,0.08);
 }
 .today-card .entry-date {
     font-size: 0.85rem;
-    color: #aaa;
+    color: #4a6a8a;
     margin-bottom: 8px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
-.today-card h2 { font-size: 1.5rem; font-weight: normal; margin-bottom: 4px; }
-.today-card .title-zh { color: #9a7090; font-size: 1rem; margin-bottom: 10px; }
+.today-card h2 { font-size: 1.5rem; font-weight: normal; margin-bottom: 4px; color: #1a2a3a; }
+.today-card .title-zh { color: #2ABBA8; font-size: 1rem; margin-bottom: 10px; }
 .today-card .mood {
     font-style: italic;
-    color: #7a6a7a;
+    color: #4a6a8a;
     margin-bottom: 16px;
     padding-bottom: 16px;
-    border-bottom: 1px dashed #f0ddd0;
+    border-bottom: 1px dashed #C8E8F5;
 }
-.today-card .excerpt { color: #555; line-height: 1.75; margin-bottom: 20px; }
+.today-card .excerpt { color: #1a2a3a; line-height: 1.75; margin-bottom: 20px; }
 .today-card .links { display: flex; gap: 12px; flex-wrap: wrap; }
 .btn {
     display: inline-block;
@@ -87,8 +87,8 @@ a:hover { text-decoration: underline; }
     transition: opacity 0.15s;
 }
 .btn:hover { opacity: 0.8; text-decoration: none; }
-.btn-primary { background: #e8a0a0; color: #fff; }
-.btn-secondary { background: #f0e4f4; color: #6a4a7a; }
+.btn-primary { background: #2B5EA7; color: #fff; }
+.btn-secondary { background: #EBF7FD; color: #2B5EA7; border: 1px solid #C8E8F5; }
 
 /* ── Tool Grid ── */
 .tool-grid {
@@ -97,8 +97,8 @@ a:hover { text-decoration: underline; }
     gap: 20px;
 }
 .tool-card {
-    background: #fff;
-    border: 1px solid #ede0d8;
+    background: #FFFFFF;
+    border: 1px solid #C8E8F5;
     border-radius: 10px;
     padding: 20px 22px;
     cursor: pointer;
@@ -108,13 +108,13 @@ a:hover { text-decoration: underline; }
     color: inherit;
 }
 .tool-card:hover {
-    box-shadow: 0 4px 20px rgba(200,140,140,0.14);
+    box-shadow: 0 4px 20px rgba(43,94,167,0.14);
     transform: translateY(-2px);
     text-decoration: none;
 }
 .tool-card .card-date {
     font-size: 0.78rem;
-    color: #bbb;
+    color: #4a6a8a;
     letter-spacing: 0.5px;
     text-transform: uppercase;
     margin-bottom: 6px;
@@ -124,6 +124,7 @@ a:hover { text-decoration: underline; }
     font-weight: bold;
     margin-bottom: 8px;
     line-height: 1.4;
+    color: #1a2a3a;
 }
 .badge {
     display: inline-block;
@@ -132,82 +133,120 @@ a:hover { text-decoration: underline; }
     font-size: 0.75rem;
     margin-bottom: 10px;
     font-style: normal;
+    color: #fff;
 }
-.tool-card p { font-size: 0.88rem; color: #666; line-height: 1.55; }
+.tool-card p { font-size: 0.88rem; color: #4a6a8a; line-height: 1.55; }
 
 /* ── Evolution list ── */
 .evolution-list { list-style: none; }
 .evolution-list li {
     padding: 14px 0;
-    border-bottom: 1px dashed #ede0d8;
+    border-bottom: 1px dashed #C8E8F5;
     display: flex;
     gap: 16px;
     align-items: baseline;
 }
 .evolution-list li:last-child { border-bottom: none; }
-.evo-date { font-size: 0.82rem; color: #aaa; min-width: 90px; }
+.evo-date { font-size: 0.82rem; color: #4a6a8a; min-width: 90px; }
 .evo-title { font-size: 0.95rem; }
 
 /* ── Footer ── */
 .site-footer {
     text-align: center;
     padding: 36px 0;
-    border-top: 1px solid #ede0d8;
-    color: #aaa;
+    border-top: 1px solid #C8E8F5;
+    color: #4a6a8a;
     font-size: 0.88rem;
 }
-.site-footer a { color: #c06080; }
+.site-footer a { color: #2B5EA7; }
 
 /* ── Tool detail page ── */
 .tool-detail-header {
-    background: linear-gradient(135deg, #fce8e8 0%, #e8d0f0 100%);
+    background: linear-gradient(135deg, #2B5EA7 0%, #2ABBA8 100%);
     padding: 40px 0 32px;
-    border-bottom: 1px solid #e8d0d0;
+    border-bottom: 1px solid #C8E8F5;
 }
 .back-link {
     font-size: 0.9rem;
-    color: #c06080;
+    color: #C8E8F5;
     display: inline-block;
     margin-bottom: 20px;
 }
-.tool-detail-header h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: normal; }
+.back-link:hover { color: #fff; }
+.tool-detail-header h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: normal; color: #fff; }
 .tool-detail-header .meta {
     margin-top: 10px;
-    color: #9a7090;
+    color: #C8E8F5;
     font-size: 0.9rem;
 }
 .detail-section { padding: 36px 0; }
-.detail-section + .detail-section { border-top: 1px solid #ede0d8; }
+.detail-section + .detail-section { border-top: 1px solid #C8E8F5; }
 .detail-section h2 {
     font-size: 1.1rem;
     font-weight: bold;
     margin-bottom: 14px;
-    color: #5a3a5a;
+    color: #2B5EA7;
 }
 .description-text {
     font-size: 1rem;
     line-height: 1.75;
-    color: #444;
+    color: #1a2a3a;
     max-width: 680px;
 }
 .req-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
 .req-list li {
-    background: #f5f0f8;
+    background: #EBF7FD;
     border-radius: 6px;
     padding: 4px 12px;
     font-size: 0.85rem;
     font-family: 'Courier New', monospace;
-    color: #5a3a7a;
+    color: #2B5EA7;
+    border: 1px solid #C8E8F5;
 }
-.try-it-box {
-    background: linear-gradient(135deg, #fdf0ff 0%, #fff5f0 100%);
-    border: 1px dashed #d8b0d8;
-    border-radius: 12px;
-    padding: 32px;
-    text-align: center;
-    color: #7a5a7a;
-    font-style: italic;
-    font-size: 1.05rem;
+
+/* ── Pyodide Try-it UI ── */
+.try-it { margin: 2rem 0; }
+.try-it label {
+    display: block;
+    font-weight: bold;
+    color: #2B5EA7;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+}
+.try-it textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #C8E8F5;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    box-sizing: border-box;
+    background: #fff;
+    color: #1a2a3a;
+}
+#run-btn {
+    background: #2ABBA8;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 0.5rem 0;
+}
+#run-btn:hover { background: #229990; }
+#run-btn:disabled { background: #aaa; cursor: not-allowed; }
+#pyodide-status { color: #4a6a8a; font-style: italic; padding: 1rem 0; }
+#output {
+    background: #1a2a3a;
+    color: #e8f5fd;
+    padding: 1rem;
+    border-radius: 8px;
+    min-height: 80px;
+    white-space: pre-wrap;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
 }
 
 /* ── Responsive ── */
@@ -228,7 +267,7 @@ a:hover { text-decoration: underline; }
     <a class="back-link" href="../../index.html">← Back to all adventures</a>
     <h1>Paper Parrot</h1>
     <div class="meta">
-      <span class="badge" style="background:#a8d8a8">Education Evolution</span>
+      <span class="badge" style="background:#2ABBA8">Education Evolution</span>
       &nbsp; 2026-05-15
     </div>
   </div>
@@ -250,10 +289,275 @@ a:hover { text-decoration: underline; }
     </section>
 
     <section class="detail-section">
-      <h2>Try it</h2>
-      <div class="try-it-box">
-        Interactive browser version coming soon 🌸
-      </div>
+      
+<div class="try-it">
+  <h2>Try it</h2>
+  <div id="pyodide-status">&#x23F3; Loading Python engine...</div>
+  <div id="pyodide-ui" style="display:none">
+    <label>Input:</label>
+    <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
+    <button id="run-btn" onclick="runTool()">&#x25B6; Run</button>
+    <label>Output:</label>
+    <pre id="output"></pre>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+
+const TOOL_CODE = `# Browser adaptation - USER_INPUT is provided by the browser\nimport sys\nsys.argv = ['tool']  # Reset argv to prevent argparse errors\n
+import argparse
+import PyPDF2
+import re
+import os
+import csv
+from typing import List, Dict
+
+# Requirements:
+# pip install PyPDF2
+
+def extract_text_from_pdf(pdf_path: str) -> str:
+    """
+    Extracts all text from a PDF file.
+
+    Args:
+        pdf_path: The path to the PDF file.
+
+    Returns:
+        A string containing all text from the PDF, or an empty string if an error occurs.
+    """
+    try:
+        with open(pdf_path, 'rb') as file:
+            reader = PyPDF2.PdfReader(file)
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text() + "\\n"
+            return text
+    except FileNotFoundError:
+        print(f"Error: PDF file not found at '{pdf_path}'. Please check the path.")
+        return ""
+    except Exception as e:
+        print(f"Error extracting text from PDF '{pdf_path}': {e}")
+        return ""
+
+def identify_key_points(text: str) -> List[Dict[str, str]]:
+    """
+    Identifies potential key points (arguments, methods, findings) from the text
+    and suggests questions and prompts for active recall.
+
+    Args:
+        text: The full text of the paper.
+
+    Returns:
+        A list of dictionaries, each containing a 'question', 'answer_prompt',
+        'original_snippet', and 'type'.
+    """
+    key_points = []
+    
+    # Heuristic patterns for arguments, methods, and findings
+    patterns = {
+        "argument": r"(?:this paper|we)\\s+(?:propose|argue|demonstrate|show|present|suggest|contend)\\s+([\\w\\s,-]+(?:\\s+that|\\s+how|\\s+the)?(?:[^.!?\\n]{10,150}[.!?]))",
+        "methodology": r"(?:our approach|the method|we utilized|we employed|the experimental design involved)\\s+([\\w\\s,-]+(?:[^.!?\\n]{10,150}[.!?]))",
+        "finding": r"(?:our results|we found|the study revealed|the data indicate|it was observed)\\s+([\\w\\s,-]+(?:[^.!?\\n]{10,150}[.!?]))"
+    }
+
+    # Split text into paragraphs for better context
+    paragraphs = [p.strip() for p in text.split('\\n') if p.strip()]
+
+    for para_idx, paragraph in enumerate(paragraphs):
+        for key_type, pattern in patterns.items():
+            for match in re.finditer(pattern, paragraph, re.IGNORECASE):
+                snippet = match.group(0).strip()
+                extracted_content = match.group(1).strip()
+
+                question = ""
+                answer_prompt = ""
+
+                if key_type == "argument":
+                    question = f"What is the main argument or proposal of this section?"
+                    answer_prompt = f"Summarize the argument presented: '{extracted_content}'"
+                elif key_type == "methodology":
+                    question = f"Describe the key methodology or approach used here."
+                    answer_prompt = f"Explain the method highlighted: '{extracted_content}'"
+                elif key_type == "finding":
+                    question = f"What are the main findings or results reported in this section?"
+                    answer_prompt = f"Detail the findings: '{extracted_content}'"
+                
+                if question and answer_prompt:
+                    key_points.append({
+                        "Type": key_type.capitalize(),
+                        "Question": question,
+                        "Answer Prompt": answer_prompt,
+                        "Original Snippet": snippet,
+                        "Source Paragraph": para_idx + 1
+                    })
+    return key_points
+
+def save_insights_to_csv(insights: List[Dict[str, str]], output_path: str):
+    """
+    Saves the extracted insights to a CSV file without using pandas.
+
+    Args:
+        insights: A list of dictionaries containing the extracted key points.
+        output_path: The path where the CSV file will be saved.
+    """
+    if not insights:
+        print("No insights to save.")
+        return
+
+    try:
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = list(insights[0].keys())
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+            writer.writeheader()
+            for row in insights:
+                writer.writerow(row)
+        print(f"Insights successfully saved to '{output_path}'")
+    except Exception as e:
+        print(f"Error saving insights to CSV '{output_path}': {e}")
+
+def main(args=None):
+    parser = argparse.ArgumentParser(
+        description="Paper Parrot: Extracts key points from academic PDFs and generates active recall prompts."
+    )
+    parser.add_argument(
+        "--input_pdf",
+        type=str,
+        required=True,
+        help="Path to the input PDF academic paper."
+    )
+    parser.add_argument(
+        "--output_csv",
+        type=str,
+        default="paper_parrot_insights.csv",
+        help="Path to the output CSV file where insights will be saved."
+    )
+
+    parsed_args = parser.parse_args(args)
+
+    print(f"Flapping wings for Paper Parrot to process '{parsed_args.input_pdf}'...")
+
+    # 1. Extract text from PDF
+    paper_text = extract_text_from_pdf(parsed_args.input_pdf)
+    if not paper_text:
+        print("Exiting due to empty or unreadable PDF text.")
+        return
+
+    # 2. Identify key points and generate prompts
+    insights = identify_key_points(paper_text)
+    
+    if not insights:
+        print("Hmm, Paper Parrot couldn't find any prominent arguments, methodologies, or findings in this paper. Try a different document or adjust the patterns!")
+        return
+
+    # 3. Save insights to CSV
+    save_insights_to_csv(insights, parsed_args.output_csv)
+    print("\\nPaper Parrot finished its squawk! Time to engage with your new insights. Go make those ideas stick!")
+
+if __name__ == "__main__":
+    # Create a dummy PDF for demonstration
+    demo_pdf_content = """
+    A Novel Approach to Cognitive Load Reduction in Online Learning Environments
+
+    Abstract
+    Online learning has gained significant traction, yet students often face high cognitive load, impacting retention. This paper proposes a novel algorithm, called 'Adaptive Content Chunking' (ACC), designed to dynamically adjust content presentation based on learner performance metrics. Our methodology involved a randomized controlled trial with 200 university students across various disciplines. We utilized eye-tracking data and post-lecture quizzes to assess cognitive load and comprehension. The experimental design involved three groups: control (standard presentation), static chunking, and ACC.
+
+    Introduction
+    Cognitive overload is a pervasive challenge in digital education. Existing solutions often simplify content uniformly, which may not cater to individual learning paces. This research aims to address this adaptive challenge. We argue that dynamic content delivery can significantly enhance learning outcomes.
+
+    Methodology
+    Our approach employed a custom-built learning platform integrating advanced eye-tracking hardware and a real-time quiz engine. Participants completed modules on introductory physics. The study revealed that students in the ACC group demonstrated a 15% improvement in quiz scores and reported lower perceived cognitive load compared to the control group. Data indicate that early intervention with smaller content chunks was crucial. We found a strong correlation between reduced gaze duration on distracting elements and improved retention.
+
+    Results
+    The primary finding was the significant reduction in cognitive load for students using the ACC algorithm. Specifically, ANOVA tests showed a statistically significant difference (p < 0.01) in quiz performance. We observed that the ACC group required fewer repetitions to achieve mastery.
+
+    Conclusion
+    This study demonstrates the efficacy of the Adaptive Content Chunking algorithm in mitigating cognitive load and improving learning outcomes in online environments. We suggest future work could explore personalized chunking strategies for different subject matters.
+    """
+
+    # Create a dummy PDF file
+    demo_pdf_path = "demo_paper.pdf"
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+
+    try:
+        c = canvas.Canvas(demo_pdf_path, pagesize=letter)
+        textobject = c.beginText()
+        textobject.setTextOrigin(50, 750)
+        textobject.setFont("Helvetica", 12)
+        
+        # Split content into lines and add to PDF
+        for line in demo_pdf_content.split('\\n'):
+            textobject.textLine(line)
+        
+        c.drawText(textobject)
+        c.save()
+        print(f"Created dummy PDF: '{demo_pdf_path}'")
+    except Exception as e:
+        print(f"Error creating dummy PDF: {e}")
+        # If PDF creation fails, ensure the script can still run by simulating text
+        if not os.path.exists(demo_pdf_path):
+            print("Proceeding with simulated text for demo since PDF creation failed.")
+            paper_text_for_demo = demo_pdf_content
+            insights_for_demo = identify_key_points(paper_text_for_demo)
+            save_insights_to_csv(insights_for_demo, "demo_paper_insights_simulated.csv")
+            exit() # Exit after simulated run if PDF creation failed completely
+
+
+    # Run the tool with the dummy PDF
+    main(args=["--input_pdf", demo_pdf_path, "--output_csv", "demo_paper_insights.csv"])
+
+    # Clean up the dummy PDF
+    try:
+        if os.path.exists(demo_pdf_path):
+            os.remove(demo_pdf_path)
+            print(f"Cleaned up dummy PDF: '{demo_pdf_path}'")
+    except Exception as e:
+        print(f"Error cleaning up dummy PDF: {e}")`;
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    // Redirect stdout
+    pyodide.runPython(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+`);
+
+    // Inject user input and run tool
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+
+    const output = pyodide.runPython('sys.stdout.getvalue()');
+    document.getElementById('output').textContent = output || '(no output)';
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
     </section>
 
   </div>

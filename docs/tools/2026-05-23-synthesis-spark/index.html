@@ -10,13 +10,13 @@
 
 body {
     font-family: 'Georgia', 'Times New Roman', serif;
-    background: #fdf8f5;
-    color: #2d2d2d;
+    background: #EBF7FD;
+    color: #1a2a3a;
     line-height: 1.7;
     font-size: 16px;
 }
 
-a { color: #c06080; text-decoration: none; }
+a { color: #2B5EA7; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 /* ── Layout ── */
@@ -24,60 +24,60 @@ a:hover { text-decoration: underline; }
 
 /* ── Header ── */
 .site-header {
-    background: linear-gradient(135deg, #fce8e8 0%, #e8d0f0 100%);
+    background: linear-gradient(135deg, #2B5EA7 0%, #2ABBA8 100%);
     padding: 48px 0 40px;
     text-align: center;
-    border-bottom: 1px solid #e8d0d0;
+    border-bottom: 1px solid #C8E8F5;
 }
 .site-header h1 {
     font-size: clamp(1.8rem, 5vw, 2.8rem);
     font-weight: normal;
     letter-spacing: -0.5px;
-    color: #2d2d2d;
+    color: #ffffff;
 }
 .site-header .tagline {
     margin-top: 8px;
-    color: #7a5a6a;
+    color: #C8E8F5;
     font-style: italic;
     font-size: 1.05rem;
 }
 
 /* ── Section headings ── */
 .section { padding: 48px 0; }
-.section + .section { border-top: 1px solid #ede0d8; }
+.section + .section { border-top: 1px solid #C8E8F5; }
 .section-title {
     font-size: 1.4rem;
     font-weight: normal;
-    color: #7a5a6a;
+    color: #2B5EA7;
     margin-bottom: 28px;
     letter-spacing: 0.3px;
 }
 
 /* ── Today's Entry ── */
 .today-card {
-    background: #fff;
-    border: 1px solid #f0ddd0;
+    background: #FFFFFF;
+    border: 1px solid #C8E8F5;
     border-radius: 12px;
     padding: 32px;
-    box-shadow: 0 2px 12px rgba(200,140,140,0.08);
+    box-shadow: 0 2px 12px rgba(43,94,167,0.08);
 }
 .today-card .entry-date {
     font-size: 0.85rem;
-    color: #aaa;
+    color: #4a6a8a;
     margin-bottom: 8px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
-.today-card h2 { font-size: 1.5rem; font-weight: normal; margin-bottom: 4px; }
-.today-card .title-zh { color: #9a7090; font-size: 1rem; margin-bottom: 10px; }
+.today-card h2 { font-size: 1.5rem; font-weight: normal; margin-bottom: 4px; color: #1a2a3a; }
+.today-card .title-zh { color: #2ABBA8; font-size: 1rem; margin-bottom: 10px; }
 .today-card .mood {
     font-style: italic;
-    color: #7a6a7a;
+    color: #4a6a8a;
     margin-bottom: 16px;
     padding-bottom: 16px;
-    border-bottom: 1px dashed #f0ddd0;
+    border-bottom: 1px dashed #C8E8F5;
 }
-.today-card .excerpt { color: #555; line-height: 1.75; margin-bottom: 20px; }
+.today-card .excerpt { color: #1a2a3a; line-height: 1.75; margin-bottom: 20px; }
 .today-card .links { display: flex; gap: 12px; flex-wrap: wrap; }
 .btn {
     display: inline-block;
@@ -87,8 +87,8 @@ a:hover { text-decoration: underline; }
     transition: opacity 0.15s;
 }
 .btn:hover { opacity: 0.8; text-decoration: none; }
-.btn-primary { background: #e8a0a0; color: #fff; }
-.btn-secondary { background: #f0e4f4; color: #6a4a7a; }
+.btn-primary { background: #2B5EA7; color: #fff; }
+.btn-secondary { background: #EBF7FD; color: #2B5EA7; border: 1px solid #C8E8F5; }
 
 /* ── Tool Grid ── */
 .tool-grid {
@@ -97,8 +97,8 @@ a:hover { text-decoration: underline; }
     gap: 20px;
 }
 .tool-card {
-    background: #fff;
-    border: 1px solid #ede0d8;
+    background: #FFFFFF;
+    border: 1px solid #C8E8F5;
     border-radius: 10px;
     padding: 20px 22px;
     cursor: pointer;
@@ -108,13 +108,13 @@ a:hover { text-decoration: underline; }
     color: inherit;
 }
 .tool-card:hover {
-    box-shadow: 0 4px 20px rgba(200,140,140,0.14);
+    box-shadow: 0 4px 20px rgba(43,94,167,0.14);
     transform: translateY(-2px);
     text-decoration: none;
 }
 .tool-card .card-date {
     font-size: 0.78rem;
-    color: #bbb;
+    color: #4a6a8a;
     letter-spacing: 0.5px;
     text-transform: uppercase;
     margin-bottom: 6px;
@@ -124,6 +124,7 @@ a:hover { text-decoration: underline; }
     font-weight: bold;
     margin-bottom: 8px;
     line-height: 1.4;
+    color: #1a2a3a;
 }
 .badge {
     display: inline-block;
@@ -132,82 +133,120 @@ a:hover { text-decoration: underline; }
     font-size: 0.75rem;
     margin-bottom: 10px;
     font-style: normal;
+    color: #fff;
 }
-.tool-card p { font-size: 0.88rem; color: #666; line-height: 1.55; }
+.tool-card p { font-size: 0.88rem; color: #4a6a8a; line-height: 1.55; }
 
 /* ── Evolution list ── */
 .evolution-list { list-style: none; }
 .evolution-list li {
     padding: 14px 0;
-    border-bottom: 1px dashed #ede0d8;
+    border-bottom: 1px dashed #C8E8F5;
     display: flex;
     gap: 16px;
     align-items: baseline;
 }
 .evolution-list li:last-child { border-bottom: none; }
-.evo-date { font-size: 0.82rem; color: #aaa; min-width: 90px; }
+.evo-date { font-size: 0.82rem; color: #4a6a8a; min-width: 90px; }
 .evo-title { font-size: 0.95rem; }
 
 /* ── Footer ── */
 .site-footer {
     text-align: center;
     padding: 36px 0;
-    border-top: 1px solid #ede0d8;
-    color: #aaa;
+    border-top: 1px solid #C8E8F5;
+    color: #4a6a8a;
     font-size: 0.88rem;
 }
-.site-footer a { color: #c06080; }
+.site-footer a { color: #2B5EA7; }
 
 /* ── Tool detail page ── */
 .tool-detail-header {
-    background: linear-gradient(135deg, #fce8e8 0%, #e8d0f0 100%);
+    background: linear-gradient(135deg, #2B5EA7 0%, #2ABBA8 100%);
     padding: 40px 0 32px;
-    border-bottom: 1px solid #e8d0d0;
+    border-bottom: 1px solid #C8E8F5;
 }
 .back-link {
     font-size: 0.9rem;
-    color: #c06080;
+    color: #C8E8F5;
     display: inline-block;
     margin-bottom: 20px;
 }
-.tool-detail-header h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: normal; }
+.back-link:hover { color: #fff; }
+.tool-detail-header h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: normal; color: #fff; }
 .tool-detail-header .meta {
     margin-top: 10px;
-    color: #9a7090;
+    color: #C8E8F5;
     font-size: 0.9rem;
 }
 .detail-section { padding: 36px 0; }
-.detail-section + .detail-section { border-top: 1px solid #ede0d8; }
+.detail-section + .detail-section { border-top: 1px solid #C8E8F5; }
 .detail-section h2 {
     font-size: 1.1rem;
     font-weight: bold;
     margin-bottom: 14px;
-    color: #5a3a5a;
+    color: #2B5EA7;
 }
 .description-text {
     font-size: 1rem;
     line-height: 1.75;
-    color: #444;
+    color: #1a2a3a;
     max-width: 680px;
 }
 .req-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
 .req-list li {
-    background: #f5f0f8;
+    background: #EBF7FD;
     border-radius: 6px;
     padding: 4px 12px;
     font-size: 0.85rem;
     font-family: 'Courier New', monospace;
-    color: #5a3a7a;
+    color: #2B5EA7;
+    border: 1px solid #C8E8F5;
 }
-.try-it-box {
-    background: linear-gradient(135deg, #fdf0ff 0%, #fff5f0 100%);
-    border: 1px dashed #d8b0d8;
-    border-radius: 12px;
-    padding: 32px;
-    text-align: center;
-    color: #7a5a7a;
-    font-style: italic;
-    font-size: 1.05rem;
+
+/* ── Pyodide Try-it UI ── */
+.try-it { margin: 2rem 0; }
+.try-it label {
+    display: block;
+    font-weight: bold;
+    color: #2B5EA7;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+}
+.try-it textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #C8E8F5;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    box-sizing: border-box;
+    background: #fff;
+    color: #1a2a3a;
+}
+#run-btn {
+    background: #2ABBA8;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 0.5rem 0;
+}
+#run-btn:hover { background: #229990; }
+#run-btn:disabled { background: #aaa; cursor: not-allowed; }
+#pyodide-status { color: #4a6a8a; font-style: italic; padding: 1rem 0; }
+#output {
+    background: #1a2a3a;
+    color: #e8f5fd;
+    padding: 1rem;
+    border-radius: 8px;
+    min-height: 80px;
+    white-space: pre-wrap;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
 }
 
 /* ── Responsive ── */
@@ -228,7 +267,7 @@ a:hover { text-decoration: underline; }
     <a class="back-link" href="../../index.html">← Back to all adventures</a>
     <h1>Synthesis Spark</h1>
     <div class="meta">
-      <span class="badge" style="background:#a8d8a8">Education Evolution</span>
+      <span class="badge" style="background:#2ABBA8">Education Evolution</span>
       &nbsp; 2026-05-23
     </div>
   </div>
@@ -250,10 +289,412 @@ a:hover { text-decoration: underline; }
     </section>
 
     <section class="detail-section">
-      <h2>Try it</h2>
-      <div class="try-it-box">
-        Interactive browser version coming soon 🌸
-      </div>
+      
+<div class="try-it">
+  <h2>Try it</h2>
+  <div id="pyodide-status">&#x23F3; Loading Python engine...</div>
+  <div id="pyodide-ui" style="display:none">
+    <label>Input:</label>
+    <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
+    <button id="run-btn" onclick="runTool()">&#x25B6; Run</button>
+    <label>Output:</label>
+    <pre id="output"></pre>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+
+const TOOL_CODE = `# Browser adaptation - USER_INPUT is provided by the browser\nimport sys\nsys.argv = ['tool']  # Reset argv to prevent argparse errors\n
+import argparse
+import json
+import os
+from pathlib import Path
+from typing import List, Dict, Any, Tuple
+
+# Using a simulated langextract/LLM for demonstration purposes.
+# In a real-world scenario, this would integrate with an actual LLM service
+# (e.g., via an API) to perform advanced text analysis and extraction.
+
+def _simulate_langextract_concepts(text: str) -> List[str]:
+    """
+    Simulates extracting key concepts from text.
+    In a real tool, this would use a robust LLM or langextract.
+    """
+    common_keywords = ['data', 'analysis', 'python', 'tools', 'process',
+                       'information', 'knowledge', 'synthesis', 'learning',
+                       'connections', 'system', 'flow', 'structure', 'context']
+    concepts = [word for word in common_keywords if word in text.lower()]
+    # Add some simple heuristic extraction
+    sentences = text.split('.')
+    for sentence in sentences:
+        if 'key concept' in sentence.lower() or 'main idea' in sentence.lower():
+            start_index = max(sentence.lower().find('key concept'), sentence.lower().find('main idea'))
+            if start_index != -1:
+                potential_concept = sentence[start_index:].split(':')[1].strip() if ':' in sentence[start_index:] else sentence[start_index + len('key concept'):].strip()
+                if len(potential_concept.split()) < 5 and potential_concept: # simple length check
+                    concepts.append(potential_concept.strip('.'))
+    return list(set(concepts[:5])) # Limit to a few for demo clarity
+
+
+def _simulate_langextract_relationships(concept1: str, concept2: str, text: str) -> str:
+    """
+    Simulates identifying a relationship between two concepts from text.
+    In a real tool, this would use a robust LLM or langextract.
+    """
+    text_lower = text.lower()
+    if concept1.lower() in text_lower and concept2.lower() in text_lower:
+        if f"{concept1.lower()} relates to {concept2.lower()}" in text_lower:
+            return f"relates to {concept2}"
+        if f"{concept1.lower()} is a type of {concept2.lower()}" in text_lower:
+            return f"is a type of {concept2}"
+        if f"{concept1.lower()} enables {concept2.lower()}" in text_lower:
+            return f"enables {concept2}"
+        return "is connected to"
+    return "unclear connection"
+
+
+def load_learning_material(file_paths: List[Path]) -> str:
+    """
+    Loads text content from multiple file paths.
+    Handles FileNotFoundError and decoding errors.
+    """
+    combined_text = []
+    for f_path in file_paths:
+        if not f_path.is_file():
+            print(f"Error: File not found at '{f_path}'. Skipping this file.")
+            continue
+        try:
+            with open(f_path, 'r', encoding='utf-8') as f:
+                combined_text.append(f.read())
+        except UnicodeDecodeError:
+            print(f"Error: Could not decode '{f_path}' with UTF-8. Trying Latin-1.")
+            try:
+                with open(f_path, 'r', encoding='latin-1') as f:
+                    combined_text.append(f.read())
+            except Exception as e:
+                print(f"Error: Could not read '{f_path}' due to encoding issue: {e}. Skipping.")
+        except Exception as e:
+            print(f"Error: Failed to read '{f_path}': {e}. Skipping.")
+    return "\\n\\n".join(combined_text)
+
+
+def extract_and_refine_concepts(text: str) -> List[str]:
+    """
+    Extracts initial concepts and allows user to refine them.
+    """
+    if not text.strip():
+        print("No text provided for concept extraction. Returning empty list.")
+        return []
+
+    initial_concepts = _simulate_langextract_concepts(text)
+    print("\\n--- Initial Concept Extraction ---")
+    if not initial_concepts:
+        print("No key concepts automatically identified. Let's add some!")
+    else:
+        print("Here are some concepts I've sparked from your material:")
+        for i, concept in enumerate(initial_concepts):
+            print(f"  {i+1}. {concept}")
+
+    refined_concepts = []
+    while True:
+        user_input = input("\\nAdd a concept (or type 'done' to finish, 'list' to see current, 'clear' to restart): ").strip()
+        if user_input.lower() == 'done':
+            break
+        elif user_input.lower() == 'list':
+            if not refined_concepts:
+                print("No concepts added yet.")
+            else:
+                print("Current concepts:")
+                for i, c in enumerate(refined_concepts):
+                    print(f"  {i+1}. {c}")
+        elif user_input.lower() == 'clear':
+            refined_concepts = []
+            print("Concepts cleared. Starting fresh!")
+        elif user_input:
+            refined_concepts.append(user_input.capitalize())
+            print(f"'{user_input.capitalize()}' added.")
+        else:
+            print("Please enter a valid concept or command.")
+
+    return list(set(refined_concepts)) # Ensure uniqueness
+
+
+def define_relationships(concepts: List[str], full_text: str) -> Dict[str, Dict[str, str]]:
+    """
+    Guides the user to define relationships between concepts.
+    """
+    if len(concepts) < 2:
+        print("\\nNeed at least two concepts to define relationships. Skipping relationship definition.")
+        return {}
+
+    print("\\n--- Defining Relationships ---")
+    print("Let's connect your concepts. For each pair, describe how they relate.")
+    relationships = {} # Format: {concept1: {concept2: "relationship_description"}}
+
+    for i, c1 in enumerate(concepts):
+        for j, c2 in enumerate(concepts):
+            if i >= j: # Avoid self-relations and duplicate pairs
+                continue
+
+            # Suggest an initial relationship based on text (simulated)
+            suggested_rel = _simulate_langextract_relationships(c1, c2, full_text)
+            print(f"\\nHow does '{c1}' relate to '{c2}'? (e.g., 'enables', 'is a type of', '{suggested_rel}')")
+            user_rel = input(f"Relationship for '{c1}' and '{c2}': ").strip()
+
+            if user_rel:
+                if c1 not in relationships:
+                    relationships[c1] = {}
+                relationships[c1][c2] = user_rel
+                print(f"Relationship recorded: '{c1}' --[{user_rel}]--> '{c2}'")
+            else:
+                print("No relationship defined for this pair. Moving on.")
+    return relationships
+
+
+def generate_recall_questions(structured_knowledge: Dict[str, Any]) -> List[str]:
+    """
+    Generates open-ended recall questions from structured knowledge.
+    """
+    print("\\n--- Generating Recall Questions ---")
+    questions = []
+    concepts = structured_knowledge.get("concepts", [])
+    relationships = structured_knowledge.get("relationships", {})
+
+    if not concepts and not relationships:
+        questions.append("Based on your learning, what are the most crucial insights you gained?")
+        questions.append("Can you explain the main theme of the materials in your own words?")
+        return questions
+
+    # Questions based on individual concepts
+    for concept in concepts:
+        questions.append(f"Explain '{concept}' in your own words, assuming I know nothing about it.")
+        questions.append(f"What are the key characteristics or components of '{concept}'?")
+
+    # Questions based on relationships
+    for c1, connections in relationships.items():
+        for c2, relation in connections.items():
+            questions.append(f"How does '{c1}' '{relation}' '{c2}'? Provide a specific example.")
+            questions.append(f"Describe the connection between '{c1}' and '{c2}' and why it's important.")
+
+    # General synthesis questions
+    if concepts:
+        questions.append(f"Considering all the concepts ({', '.join(concepts)}), what is the overarching principle?")
+    questions.append("If you had to teach this to someone, what 3 key takeaways would you emphasize?")
+
+    return list(set(questions)) # Remove duplicates
+
+
+def save_structured_knowledge(structured_data: Dict[str, Any], output_path: Path):
+    """
+    Saves the structured knowledge to a Markdown file.
+    """
+    try:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(f"# Synthesis Spark: Your Knowledge Weave\\n\\n")
+            f.write(f"## Date: {structured_data.get('date', 'N/A')}\\n\\n")
+
+            f.write("## Concepts:\\n")
+            if structured_data.get("concepts"):
+                for concept in structured_data["concepts"]:
+                    f.write(f"- {concept}\\n")
+            else:
+                f.write("No concepts defined.\\n")
+
+            f.write("\\n## Relationships:\\n")
+            if structured_data.get("relationships"):
+                for c1, connections in structured_data["relationships"].items():
+                    for c2, relation in connections.items():
+                        f.write(f"- **{c1}** {relation} **{c2}**\\n")
+            else:
+                f.write("No relationships defined.\\n")
+
+            f.write("\\n---\\n\\n")
+            f.write("## Raw Input Snippets (for reference):\\n")
+            f.write("\`\`\`\\n")
+            f.write(structured_data.get("full_text_snippet", "No raw text snippet saved."))
+            f.write("\\n\`\`\`\\n")
+
+        print(f"\\nStructured knowledge saved to '{output_path}'.")
+    except Exception as e:
+        print(f"Error: Could not save structured knowledge to '{output_path}': {e}.")
+
+
+def save_recall_questions(questions: List[str], output_path: Path):
+    """
+    Saves the generated recall questions to a text file.
+    """
+    try:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write("# Synthesis Spark: Your Recall Questions\\n\\n")
+            f.write(f"## Date: {Path(output_path).stem.split('_')[0]}\\n\\n") # Extract date from filename
+
+            if questions:
+                for i, q in enumerate(questions):
+                    f.write(f"{i+1}. {q}\\n\\n")
+            else:
+                f.write("No recall questions generated.\\n")
+
+        print(f"Recall questions saved to '{output_path}'.")
+    except Exception as e:
+        print(f"Error: Could not save recall questions to '{output_path}': {e}.")
+
+
+def main(args: List[str] = None):
+    """
+    Main function to parse arguments and run the Synthesis Spark tool.
+    """
+    parser = argparse.ArgumentParser(
+        description="""
+        Synthesis Spark: Turn fragmented learning materials into connected knowledge
+        and generate recall questions to reinforce your understanding.
+        """
+    )
+    parser.add_argument(
+        '--files',
+        nargs='+',
+        required=True,
+        type=Path,
+        help="One or more paths to text files containing your learning notes or articles."
+    )
+    parser.add_argument(
+        '--output_prefix',
+        type=str,
+        default="synthesis_spark",
+        help="Prefix for output files (e.g., 'my_topic' will generate 'my_topic_knowledge.md' and 'my_topic_questions.txt')."
+    )
+
+    if args is None:
+        parsed_args = parser.parse_args()
+    else:
+        parsed_args = parser.parse_args(args)
+
+    if not parsed_args.files:
+        print("Error: No input files provided. Please use --files to specify your learning materials.")
+        return
+
+    full_text = load_learning_material(parsed_args.files)
+    if not full_text.strip():
+        print("No content found in the provided files. Exiting.")
+        return
+
+    print(f"\\nHello, human! Let's spark some synthesis from your {len(parsed_args.files)} learning file(s).")
+    print("This tool will guide you to clarify concepts and connect ideas.")
+
+    concepts = extract_and_refine_concepts(full_text)
+    if not concepts:
+        print("\\nNo concepts defined. Cannot proceed with relationships or questions. Exiting.")
+        return
+
+    relationships = define_relationships(concepts, full_text)
+
+    today_date = parsed_args.output_prefix # Using prefix as identifier for simplicity here.
+    structured_knowledge = {
+        "date": today_date,
+        "concepts": concepts,
+        "relationships": relationships,
+        "full_text_snippet": full_text[:500] + "..." if len(full_text) > 500 else full_text # Store a snippet for context
+    }
+
+    questions = generate_recall_questions(structured_knowledge)
+
+    knowledge_output_path = Path(f"{parsed_args.output_prefix}_knowledge.md")
+    questions_output_path = Path(f"{parsed_args.output_prefix}_questions.txt")
+
+    save_structured_knowledge(structured_knowledge, knowledge_output_path)
+    save_recall_questions(questions, questions_output_path)
+
+    print("\\n--- Synthesis Spark Complete! ---")
+    print(f"Your synthesized knowledge is in: {knowledge_output_path}")
+    print(f"Your recall questions are in: {questions_output_path}")
+    print("Go forth and connect those dots!")
+
+if __name__ == "__main__":
+    # Create dummy input files for demonstration
+    demo_content_1 = """
+    This article introduces the core concept of 'Data Flow Diagrams'.
+    A key concept is that DFDs illustrate how data moves through a system.
+    They are not about process logic, but rather the information path.
+    Another key concept is 'External Entities', which are sources or sinks of data.
+    DFDs often relate to 'Process Modeling' in software engineering.
+    """
+    demo_content_2 = """
+    Understanding 'System Analysis' requires grasping several tools.
+    'Use Case Diagrams' are another important tool, showing user interactions.
+    They enable 'Requirements Gathering' by focusing on user goals.
+    Data Flow Diagrams are a component of wider system analysis.
+    The goal of System Analysis is to build robust 'Information Systems'.
+    """
+
+    Path("demo_learning_1.txt").write_text(demo_content_1)
+    Path("demo_learning_2.txt").write_text(demo_content_2)
+
+    print("--- Running Synthesis Spark with Demo Data ---")
+    print("\\nTo experience the full interactive flow, run:")
+    print("python your_script_name.py --files demo_learning_1.txt demo_learning_2.txt --output_prefix my_synthesis")
+    print("and follow the prompts to define concepts and relationships.")
+    print("\\nFor this automated \`if __name__ == '__main__':\` demo, we'll just ensure files are created.")
+
+    print("\\n--- Demo Instructions ---")
+    print("Run this script interactively: \`python synthesis_spark.py --files demo_learning_1.txt demo_learning_2.txt --output_prefix demo_output\`")
+    print("You will be prompted to enter concepts and relationships.")
+    print("Output files will be generated as 'demo_output_knowledge.md' and 'demo_output_questions.txt'.")
+
+    try:
+        main(["--files", "demo_learning_1.txt", "demo_learning_2.txt", "--output_prefix", "demo_output"])
+    except EOFError:
+        print("\\nDemo interrupted: EOFError. Please run interactively to provide input.")
+    except Exception as e:
+        print(f"\\nAn error occurred during demo execution: {e}")
+
+    # Clean up demo files after potential execution
+    # Path("demo_learning_1.txt").unlink(missing_ok=True)
+    # Path("demo_learning_2.txt").unlink(missing_ok=True)
+    # Path("demo_output_knowledge.md").unlink(missing_ok=True)
+    # Path("demo_output_questions.txt").unlink(missing_ok=True)`;
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    // Redirect stdout
+    pyodide.runPython(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+`);
+
+    // Inject user input and run tool
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+
+    const output = pyodide.runPython('sys.stdout.getvalue()');
+    document.getElementById('output').textContent = output || '(no output)';
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
     </section>
 
   </div>
