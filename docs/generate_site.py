@@ -916,7 +916,7 @@ def build_local_run_section(t: dict) -> str:
 <div class="local-run">
   <p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
   <em>This tool runs locally. Open a terminal and run:</em></p>
-  <div class="code-block">
+  <div class="code-block" translate="no">
     <div class="code-line"><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
     <div class="code-line">{h(install_cmd)}</div>
     <div class="code-line">&nbsp;</div>
