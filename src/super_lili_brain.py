@@ -398,27 +398,46 @@ Start your search here. If you cannot find a strong signal on {primary_src},
 you may fall back to Reddit, HackerNews, or a news article — but try {primary_src} first.
 The best stories are not on the front page — they're in the comments, the replies, the second-level threads.
 
-PAIN PORTRAIT — MANDATORY BEFORE PROPOSING ANY TOOL:
-After scouting, you must write a Pain Portrait that passes all 3 checks:
+SOURCE EVIDENCE — MANDATORY, COMES FIRST:
+Before writing anything else, you MUST quote 2-3 sentences VERBATIM from the actual post,
+comment, or article you found. These must be the real words of a real human — not your
+paraphrase, not a summary, not a reconstruction.
 
-  1. WHO (specific person, not a vague demographic):
+Format:
+  SOURCE: [Reddit r/subreddit | X @username | HackerNews | Article name]
+  QUOTE: "[exact words copied from the source]"
+
+Rules:
+  ✗ You MAY NOT proceed if you cannot produce a real verbatim quote.
+  ✗ Do NOT paraphrase and call it a quote.
+  ✗ Do NOT invent a quote that "sounds like" what someone might say.
+  ✓ If you searched and found nothing quotable — keep searching a different community.
+  ✓ A short real quote ("i've rewritten this function 6 times and it still doesn't work lol")
+    is worth more than a polished invented scenario.
+
+This quote is the FOUNDATION of everything that follows. If it's fake, everything built on it is fake.
+
+PAIN PORTRAIT — BUILT FROM THE QUOTE ABOVE:
+Using the real words you just found, construct a Pain Portrait with 3 elements:
+
+  1. WHO (derive from the source — who wrote this? what's their situation?):
      ✗ WEAK: "people who struggle with learning"
      ✓ STRONG: "a 34-year-old nurse working night shifts who bought a Python course
        6 months ago but can't finish it because she's always too tired after her shift"
 
-  2. THE MOMENT OF FAILURE (what were they trying to do, what broke down):
+  2. THE MOMENT OF FAILURE (what exact moment does the quote describe?):
      ✗ WEAK: "they can't stay focused"
      ✓ STRONG: "she opens the course at 7am after her shift, gets through 4 minutes,
        then falls asleep — and when she wakes up she has no idea where she was or
        what she half-learned. The progress bar shows 23% but she feels like she knows nothing."
 
-  3. WHY EXISTING TOOLS FAIL THEM (be specific about what fails):
+  3. WHY EXISTING TOOLS FAIL THEM (what has this person already tried?):
      ✗ WEAK: "current tools aren't good enough"
      ✓ STRONG: "Anki is designed for dedicated study sessions, not 4-minute fragments.
        YouTube doesn't remember where she stopped. Her notes are scattered across
        3 apps. Nothing connects the fragments into cumulative understanding."
 
-If you cannot write a convincing Pain Portrait with all 3 checks, the friction is too vague.
+If you cannot write a convincing Pain Portrait GROUNDED IN THE REAL QUOTE, the friction is too vague.
 Keep searching — do not build a tool for a fuzzy problem.
 
 Before moving on, ask yourself: what domains does this problem actually touch?
@@ -464,6 +483,25 @@ STEP 3 — FORGE A TOOL THAT TRULY SOLVES THE PROBLEM:
 Lili's tools are not demos or proofs-of-concept. They are real instruments built for real
 people having real bad days. Every tool must be immediately usable by a stranger who just
 downloaded it — no code editing required.
+
+TOOL-TO-PORTRAIT FIT CHECK (run this before writing a single line of code):
+Ask yourself these 3 questions. If you can't answer all 3 with a YES, redesign:
+
+  Q1: Does this tool directly address THE SPECIFIC MOMENT OF FAILURE from my Pain Portrait?
+      Not a generic version of the problem — the exact moment I described.
+      ✗ FAIL: "the nurse struggles with learning" → tool = generic note-taker
+      ✓ PASS: "the nurse wakes up not knowing what she half-learned" → tool = micro-session
+              recap generator that produces a 5-bullet summary of any video/text fragment
+
+  Q2: Would THE SPECIFIC PERSON from my Pain Portrait recognize this tool as built for them?
+      If the nurse saw this tool, would she say "this is exactly what I needed"?
+      Or would she say "this is for students, not for someone like me"?
+
+  Q3: Does the tool's OUTPUT directly give the user something they can ACT ON?
+      ✗ FAIL: shows analysis, insights, a score — user still doesn't know what to do
+      ✓ PASS: produces a specific next action, a formatted output they can use immediately
+
+If any answer is NO — go back. The tool is solving a fantasy version of the problem.
 
 CROSS-DISCIPLINARY THINKING (the heart of Lili's work):
   Before writing a single line of code, ask: what domains of knowledge does this problem
@@ -789,22 +827,23 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
     except Exception as e:
         return False, f"--help error: {e}"
 
+    # Install dependencies before running any checks
+    req_file = f"{skill_dir}/requirements.txt"
+    if os.path.exists(req_file):
+        try:
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "-q",
+                 "--trusted-host", "pypi.org",
+                 "--trusted-host", "pypi.python.org",
+                 "--trusted-host", "files.pythonhosted.org",
+                 "-r", req_file],
+                capture_output=True, text=True, timeout=120
+            )
+        except Exception as e:
+            print(f"  ⚠ Dependency install warning: {e}")
+
     # Test file check
     if os.path.exists(test_py):
-        # Install per-tool dependencies before running tests
-        req_file = f"{skill_dir}/requirements.txt"
-        if os.path.exists(req_file):
-            try:
-                subprocess.run(
-                    [sys.executable, "-m", "pip", "install", "-q",
-                     "--trusted-host", "pypi.org",
-                     "--trusted-host", "pypi.python.org",
-                     "--trusted-host", "files.pythonhosted.org",
-                     "-r", req_file],
-                    capture_output=True, text=True, timeout=120
-                )
-            except Exception as e:
-                print(f"  ⚠ Dependency install warning: {e}")
         try:
             result = subprocess.run(
                 [sys.executable, test_py],
@@ -814,9 +853,34 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
                 return False, f"Tests failed: {result.stderr[:300]}"
             print(f"  ✓ Tests passed.")
         except subprocess.TimeoutExpired:
-            return False, "Tests timed out (30s)"
+            return False, "Tests timed out (60s)"
         except Exception as e:
             return False, f"Test error: {e}"
+
+    # Output quality check: run with USER_INPUT to verify demo produces real output
+    try:
+        demo_input = "This is a test input. Please process it and produce meaningful output."
+        result = subprocess.run(
+            [sys.executable, "-c",
+             f"import sys; sys.argv=['tool']\n"
+             f"USER_INPUT = {repr(demo_input)}\n"
+             f"exec(open({repr(main_py)}).read())"
+            ],
+            capture_output=True, text=True, timeout=30,
+            env={**os.environ, "USER_INPUT": demo_input}
+        )
+        output = (result.stdout or "").strip()
+        if not output or len(output) < 20:
+            return False, (
+                f"Tool produces no meaningful output when run with test input. "
+                f"Got: {repr(output[:100])}. "
+                f"The tool must print substantive, actionable results."
+            )
+        print(f"  ✓ Output quality check passed ({len(output)} chars).")
+    except subprocess.TimeoutExpired:
+        return False, "Output check timed out — tool may be hanging on input"
+    except Exception as e:
+        print(f"  ⚠ Output check warning: {e}")  # non-fatal, some tools need real data
 
     return True, "ok"
 
