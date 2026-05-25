@@ -623,6 +623,24 @@ Lili speaks Chinese like a thoughtful friend, not a textbook.
 [Exactly one of: Education Evolution | Design Alchemy | Office Automation | Healing Inventions]
 ---PATTERN---
 [Exactly one of: extract | generate | visualize | track | score | transform | interact | alert | gamify]
+---SPEC---
+Answer ALL 4 questions before writing any code. Be specific — generic answers fail.
+
+Q1-PASS: [In one sentence: which EXACT moment of failure from the Pain Portrait does this tool address?
+  ✗ FAIL: "helps people with learning"
+  ✓ PASS: "addresses the moment the nurse opens a course at 7am after her shift and can't remember where she stopped"]
+
+Q2-PASS: [In one sentence: why would the specific person from the Pain Portrait immediately recognize this tool?
+  ✗ FAIL: "any user will find it helpful"
+  ✓ PASS: "she sees her own fragmented progress bar pattern described exactly in the --help text"]
+
+Q3-PASS: [In one sentence: what SPECIFIC thing does the user receive as output? What can they do with it in the next 5 minutes?
+  ✗ FAIL: "the tool shows insights"
+  ✓ PASS: "a 5-bullet session recap saved to recap.txt she can re-read before her next fragment"]
+
+TEST_INPUT: [Write 3-6 sentences of REALISTIC sample input a real user of this tool would paste in.
+  This must match the tool's actual domain — study notes, meeting transcript, task list, diary entry, etc.
+  NOT generic filler text. This will be used to validate the tool actually works.]
 ---CODE---
 [Full Python code — 150+ real lines, type hints, pipeline architecture, requirements block at top]
 ---TEST---
@@ -659,6 +677,34 @@ def call_gemini(prompt: str) -> str | None:
     return None
 
 
+def call_gemini_simple(prompt: str) -> str | None:
+    """Call Gemini without search tool — for quick scoring/review tasks."""
+    models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
+    for model_name in models:
+        try:
+            response = client.models.generate_content(model=model_name, contents=prompt)
+            if response.text:
+                return response.text
+        except Exception:
+            time.sleep(3)
+    return None
+
+
+def extract_test_input(spec: str) -> str:
+    """Pull the TEST_INPUT block out of the spec section."""
+    if not spec or "TEST_INPUT:" not in spec:
+        return ""
+    try:
+        raw = spec.split("TEST_INPUT:")[1].strip()
+        # Stop at next Q-block or end
+        for stopper in ["Q1-PASS:", "Q2-PASS:", "Q3-PASS:", "---"]:
+            if stopper in raw:
+                raw = raw.split(stopper)[0]
+        return raw.strip()
+    except Exception:
+        return ""
+
+
 # ─────────────────────────────────────────────────────────────
 # PARSING
 # ─────────────────────────────────────────────────────────────
@@ -683,7 +729,8 @@ def parse_response(content: str) -> dict:
         "description": extract("---DESCRIPTION---",  "---SOLUTION---"),
         "solution":    extract("---SOLUTION---",     "---CATEGORY---"),
         "category":    extract("---CATEGORY---",     "---PATTERN---"),
-        "pattern":     extract("---PATTERN---",      "---CODE---"),
+        "pattern":     extract("---PATTERN---",      "---SPEC---"),
+        "spec":        extract("---SPEC---",         "---CODE---"),
         "code":        extract("---CODE---",         "---TEST---"),
         "test":        extract("---TEST---",         "---END---"),
     }
@@ -772,13 +819,13 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
     return skill_dir
 
 
-def validate_tool(skill_dir: str) -> tuple[bool, str]:
-    """Run --help and test file to verify the tool actually works."""
-    import subprocess, sys, ast as _ast
+def validate_tool(skill_dir: str, test_input: str = "", description: str = "") -> tuple[bool, str]:
+    """Validate the tool: syntax, browser compatibility, output quality."""
+    import subprocess, sys
     main_py = f"{skill_dir}/main.py"
     test_py = f"{skill_dir}/test_main.py"
 
-    # Syntax check
+    # 1. Syntax check
     try:
         result = subprocess.run(
             [sys.executable, "-c", f"import ast; ast.parse(open('{main_py}').read())"],
@@ -789,32 +836,29 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
     except Exception as e:
         return False, f"Syntax check failed: {e}"
 
-    # Real-data check + browser-compatibility check
+    # 2. Browser-compatibility + real-input check
     try:
         source = open(main_py, encoding="utf-8").read()
-        is_browser_compatible = "globals().get('USER_INPUT'" in source or "USER_INPUT" in source
-
-        if "add_argument" in source:
-            has_required = (
-                'required=True' in source
-                or "add_argument('--" not in source  # positional arg = always required
-                or re.search(r"add_argument\(['\"](?!--)[^'\"]+['\"]", source)  # positional
+        if "globals().get('USER_INPUT'" not in source and "USER_INPUT" not in source:
+            return False, (
+                "Missing USER_INPUT dual-mode pattern. "
+                "Add: _browser_input = globals().get('USER_INPUT', None) near the bottom."
             )
-            if not has_required and source.count("default=") >= source.count("add_argument("):
+        if "add_argument" in source:
+            all_have_defaults = (
+                source.count("default=") >= source.count("add_argument(")
+                and 'required=True' not in source
+                and not re.search(r"add_argument\(['\"](?!--)[^'\"]+['\"]", source)
+            )
+            if all_have_defaults:
                 return False, (
                     "All argparse arguments have defaults — tool runs on internal fake data. "
                     "At least one argument must require real user input (no default)."
                 )
-
-        if not is_browser_compatible:
-            return False, (
-                "Tool is not browser-compatible: missing USER_INPUT dual-mode pattern. "
-                "Add: _browser_input = globals().get('USER_INPUT', None) near the bottom."
-            )
     except Exception:
         pass
 
-    # --help check (run via _cli_main path to avoid module-level argparse)
+    # 3. --help check
     try:
         result = subprocess.run(
             [sys.executable, main_py, "--help"],
@@ -827,7 +871,7 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
     except Exception as e:
         return False, f"--help error: {e}"
 
-    # Install dependencies before running any checks
+    # 4. Install dependencies
     req_file = f"{skill_dir}/requirements.txt"
     if os.path.exists(req_file):
         try:
@@ -842,7 +886,7 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
         except Exception as e:
             print(f"  ⚠ Dependency install warning: {e}")
 
-    # Test file check
+    # 5. Test file check
     if os.path.exists(test_py):
         try:
             result = subprocess.run(
@@ -857,9 +901,14 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
         except Exception as e:
             return False, f"Test error: {e}"
 
-    # Output quality check: run with USER_INPUT to verify demo produces real output
+    # 6. Output quality check — use domain-specific test_input from spec
+    demo_input = test_input if len(test_input) > 30 else (
+        "Today I spent 3 hours trying to organize my notes from last week's meetings. "
+        "I have 47 browser tabs open, a Notion page I haven't touched in 2 weeks, "
+        "and a sticky note with three half-finished tasks. I feel overwhelmed and "
+        "don't know where to start. The weekly report is due tomorrow morning."
+    )
     try:
-        demo_input = "This is a test input. Please process it and produce meaningful output."
         result = subprocess.run(
             [sys.executable, "-c",
              f"import sys; sys.argv=['tool']\n"
@@ -870,17 +919,41 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
             env={**os.environ, "USER_INPUT": demo_input}
         )
         output = (result.stdout or "").strip()
-        if not output or len(output) < 20:
+        output_lines = [l for l in output.splitlines() if l.strip()]
+
+        if not output or len(output) < 80 or len(output_lines) < 2:
             return False, (
-                f"Tool produces no meaningful output when run with test input. "
-                f"Got: {repr(output[:100])}. "
-                f"The tool must print substantive, actionable results."
+                f"Output too weak: {len(output)} chars, {len(output_lines)} lines. "
+                f"Got: {repr(output[:200])}. "
+                f"Must produce structured, substantive output (80+ chars, 2+ lines)."
             )
-        print(f"  ✓ Output quality check passed ({len(output)} chars).")
+        print(f"  ✓ Output check passed ({len(output)} chars, {len(output_lines)} lines).")
+
+        # 7. Gemini quality score — is this output actually useful?
+        quality_prompt = (
+            f"Rate this tool output quality: 1 (useless) to 5 (genuinely actionable).\n\n"
+            f"Tool purpose: {description or 'a productivity tool'}\n"
+            f"Test input: {demo_input[:300]}\n"
+            f"Tool output:\n{output[:600]}\n\n"
+            f"Reply with exactly: SCORE: X\nREASON: one sentence why."
+        )
+        quality_resp = call_gemini_simple(quality_prompt)
+        if quality_resp:
+            m = re.search(r"SCORE:\s*([1-5])", quality_resp)
+            if m:
+                score = int(m.group(1))
+                reason_line = quality_resp.split("REASON:")[-1].strip()[:120] if "REASON:" in quality_resp else ""
+                if score < 3:
+                    return False, (
+                        f"Output quality score {score}/5 — {reason_line}. "
+                        f"Output was: {repr(output[:200])}"
+                    )
+                print(f"  ✓ Gemini quality score: {score}/5 — {reason_line}")
+
     except subprocess.TimeoutExpired:
         return False, "Output check timed out — tool may be hanging on input"
     except Exception as e:
-        print(f"  ⚠ Output check warning: {e}")  # non-fatal, some tools need real data
+        print(f"  ⚠ Output check warning: {e}")
 
     return True, "ok"
 
@@ -1127,6 +1200,13 @@ def evolve():
             # Already descriptive text — display as-is, no broken link
             parsed["_source_display"] = raw
 
+    # Extract domain-specific test input from spec
+    test_input = extract_test_input(parsed.get("spec", ""))
+    if test_input:
+        print(f"  ✓ Spec test input extracted ({len(test_input)} chars)")
+    else:
+        print(f"  ⚠ No TEST_INPUT in spec — using fallback test data")
+
     # Save tool + validate, retry up to 3 times if validation fails
     skill_dir = None
     for attempt in range(1, 4):
@@ -1136,7 +1216,11 @@ def evolve():
         print(f"  ✓ Tool saved: {skill_dir}/main.py")
 
         print("🔬 Validating tool...")
-        ok, reason = validate_tool(skill_dir)
+        ok, reason = validate_tool(
+            skill_dir,
+            test_input=test_input,
+            description=parsed.get("description", "")
+        )
         if ok:
             print("  ✓ Validation passed.")
             break
@@ -1145,14 +1229,21 @@ def evolve():
             if attempt < 3:
                 print("  ↻ Asking Gemini to fix the tool...")
                 fix_prompt = (
-                    f"The Python tool you just wrote failed validation with this error:\n\n"
-                    f"{reason}\n\n"
-                    f"Here is the broken code:\n\n```python\n{parsed['code']}\n```\n\n"
-                    f"Fix the code so it passes. Return ONLY the fixed code, no explanation."
+                    f"The Python tool you wrote failed validation.\n\n"
+                    f"TOOL PURPOSE: {parsed.get('description', '')}\n\n"
+                    f"TOOL SPEC:\n{parsed.get('spec', 'Not provided')}\n\n"
+                    f"VALIDATION ERROR:\n{reason}\n\n"
+                    f"TEST INPUT USED:\n{test_input or '(fallback generic input)'}\n\n"
+                    f"BROKEN CODE:\n```python\n{parsed['code']}\n```\n\n"
+                    f"Fix requirements:\n"
+                    f"1. Process the TEST INPUT above and produce substantive output (80+ chars, 2+ lines)\n"
+                    f"2. Use USER_INPUT dual-mode: _browser_input = globals().get('USER_INPUT', None)\n"
+                    f"3. Pass --help without crashing\n"
+                    f"4. Output must be specific and actionable, not generic filler\n\n"
+                    f"Return ONLY the fixed Python code, no explanation."
                 )
-                fixed = call_gemini(fix_prompt)
+                fixed = call_gemini_simple(fix_prompt)
                 if fixed:
-                    # Strip markdown code fences if present
                     fixed = re.sub(r"^```python\n?", "", fixed.strip())
                     fixed = re.sub(r"\n?```$", "", fixed)
                     parsed["code"] = fixed
