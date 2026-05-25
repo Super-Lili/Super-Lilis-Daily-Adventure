@@ -191,6 +191,14 @@
       "pattern": "interact",
       "path": "02_Toolbox/Education Evolution/2026-05-23_Synthesis_Spark",
       "description": "This tool helps you synthesize disparate learning notes or articles into structured knowledge by identifying key concepts and relationships, then generates recall questions to reinforce understanding."
+    },
+    {
+      "date": "2026-05-25",
+      "name": "Ambient Prompt Weaver",
+      "category": "Healing Inventions",
+      "pattern": "alert",
+      "path": "02_Toolbox/Healing Inventions/2026-05-25_Ambient_Prompt_Weaver",
+      "description": "This tool takes a CSV file of tasks and their associated time blocks, then generates minimalist HTML \"cue cards\" for each block, displaying a single, gentle task reminder meant to be a quiet ambient prompt."
     }
   ],
   "topics_covered": [
@@ -308,7 +316,12 @@
       "date": "2026-05-23",
       "title": "The Knowledge Weave: Turning Info Overload into Insight",
       "path": "01_Work_Log/2026-05-23-Diary.md"
+    },
+    {
+      "date": "2026-05-25",
+      "title": "The Gentle Nudge Weaver: Crafting Calm Cues for Chaotic Days",
+      "path": "01_Work_Log/2026-05-25-Diary.md"
     }
   ],
-  "last_updated": "2026-05-23"
+  "last_updated": "2026-05-25"
 }
