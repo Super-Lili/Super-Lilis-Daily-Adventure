@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chrono-Search Weaver — Super-Lili&#x27;s Daily Adventure</title>
+  <style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #fdf8f5;
+    color: #2d2d2d;
+    line-height: 1.7;
+    font-size: 16px;
+}
+
+a { color: #c06080; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Layout ── */
+.container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+/* ── Header ── */
+.site-header {
+    background: linear-gradient(135deg, #fce8e8 0%, #e8d0f0 100%);
+    padding: 48px 0 40px;
+    text-align: center;
+    border-bottom: 1px solid #e8d0d0;
+}
+.site-header h1 {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: normal;
+    letter-spacing: -0.5px;
+    color: #2d2d2d;
+}
+.site-header .tagline {
+    margin-top: 8px;
+    color: #7a5a6a;
+    font-style: italic;
+    font-size: 1.05rem;
+}
+
+/* ── Section headings ── */
+.section { padding: 48px 0; }
+.section + .section { border-top: 1px solid #ede0d8; }
+.section-title {
+    font-size: 1.4rem;
+    font-weight: normal;
+    color: #7a5a6a;
+    margin-bottom: 28px;
+    letter-spacing: 0.3px;
+}
+
+/* ── Today's Entry ── */
+.today-card {
+    background: #fff;
+    border: 1px solid #f0ddd0;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(200,140,140,0.08);
+}
+.today-card .entry-date {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.today-card h2 { font-size: 1.5rem; font-weight: normal; margin-bottom: 4px; }
+.today-card .title-zh { color: #9a7090; font-size: 1rem; margin-bottom: 10px; }
+.today-card .mood {
+    font-style: italic;
+    color: #7a6a7a;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed #f0ddd0;
+}
+.today-card .excerpt { color: #555; line-height: 1.75; margin-bottom: 20px; }
+.today-card .links { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.8; text-decoration: none; }
+.btn-primary { background: #e8a0a0; color: #fff; }
+.btn-secondary { background: #f0e4f4; color: #6a4a7a; }
+
+/* ── Tool Grid ── */
+.tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+.tool-card {
+    background: #fff;
+    border: 1px solid #ede0d8;
+    border-radius: 10px;
+    padding: 20px 22px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.15s;
+    text-decoration: none;
+    display: block;
+    color: inherit;
+}
+.tool-card:hover {
+    box-shadow: 0 4px 20px rgba(200,140,140,0.14);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+.tool-card .card-date {
+    font-size: 0.78rem;
+    color: #bbb;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.tool-card h3 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    margin-bottom: 10px;
+    font-style: normal;
+}
+.tool-card p { font-size: 0.88rem; color: #666; line-height: 1.55; }
+
+/* ── Evolution list ── */
+.evolution-list { list-style: none; }
+.evolution-list li {
+    padding: 14px 0;
+    border-bottom: 1px dashed #ede0d8;
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+}
+.evolution-list li:last-child { border-bottom: none; }
+.evo-date { font-size: 0.82rem; color: #aaa; min-width: 90px; }
+.evo-title { font-size: 0.95rem; }
+
+/* ── Footer ── */
+.site-footer {
+    text-align: center;
+    padding: 36px 0;
+    border-top: 1px solid #ede0d8;
+    color: #aaa;
+    font-size: 0.88rem;
+}
+.site-footer a { color: #c06080; }
+
+/* ── Tool detail page ── */
+.tool-detail-header {
+    background: linear-gradient(135deg, #fce8e8 0%, #e8d0f0 100%);
+    padding: 40px 0 32px;
+    border-bottom: 1px solid #e8d0d0;
+}
+.back-link {
+    font-size: 0.9rem;
+    color: #c06080;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+.tool-detail-header h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: normal; }
+.tool-detail-header .meta {
+    margin-top: 10px;
+    color: #9a7090;
+    font-size: 0.9rem;
+}
+.detail-section { padding: 36px 0; }
+.detail-section + .detail-section { border-top: 1px solid #ede0d8; }
+.detail-section h2 {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 14px;
+    color: #5a3a5a;
+}
+.description-text {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: #444;
+    max-width: 680px;
+}
+.req-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.req-list li {
+    background: #f5f0f8;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    font-family: 'Courier New', monospace;
+    color: #5a3a7a;
+}
+.try-it-box {
+    background: linear-gradient(135deg, #fdf0ff 0%, #fff5f0 100%);
+    border: 1px dashed #d8b0d8;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    color: #7a5a7a;
+    font-style: italic;
+    font-size: 1.05rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .today-card { padding: 20px; }
+    .tool-grid { grid-template-columns: 1fr; }
+    .evolution-list li { flex-direction: column; gap: 4px; }
+    .evo-date { min-width: unset; }
+}
+
+
+  </style>
+</head>
+<body>
+
+<header class="tool-detail-header">
+  <div class="container">
+    <a class="back-link" href="../../index.html">← Back to all adventures</a>
+    <h1>Chrono-Search Weaver</h1>
+    <div class="meta">
+      <span class="badge" style="background:#a8c8e8">Design Alchemy</span>
+      &nbsp; 2026-05-04
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <section class="detail-section">
+      <h2>What it does</h2>
+      <p class="description-text">A Python script conceptualizing an intuitive search interface, allowing users to specify keywords and historical filters, thereby highlighting the missing functionality in common social media platform</p>
+      <br>
+      <a class="btn btn-primary" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Design Alchemy/2026-05-04_Chrono-Search_Weaver/main.py" target="_blank" rel="noopener">View Code on GitHub</a>
+    </section>
+
+    <section class="detail-section">
+      <h2>Requirements</h2>
+      <ul class="req-list"><li>See top of main.py</li></ul>
+    </section>
+
+    <section class="detail-section">
+      <h2>Try it</h2>
+      <div class="try-it-box">
+        Interactive browser version coming soon 🌸
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Forged by Super-Lili on 2026-05-04 ·
+      <a href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure" target="_blank" rel="noopener">GitHub</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
