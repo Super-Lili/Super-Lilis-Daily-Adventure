@@ -364,6 +364,27 @@ a:hover { color: #2ABBA8; }
     border: 1px solid #e8e8e8;
 }
 
+/* ── Local run instructions ── */
+.local-run { max-width: 640px; }
+.local-run-note {
+    font-size: 0.88rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+.local-run-note em { color: #aaa; font-style: normal; }
+.code-block {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-left: 3px solid #2ABBA8;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.8;
+}
+.code-line { color: #1a1a1a; }
+.code-comment { color: #aaa; }
+
 /* ── Pyodide runner ── */
 .runner-label {
     font-size: 0.68rem;
@@ -489,125 +510,24 @@ a:hover { color: #2ABBA8; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Try it in browser · 在线运行</div>
+      <div class="detail-label">本地运行 · Run locally</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip;</div>
-<div id="pyodide-ui" style="display:none">
-  <span class="runner-label">Input</span>
-  <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
-  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
-  <span class="runner-label">Output</span>
-  <pre id="output"></pre>
+<div class="local-run">
+  <p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
+  <em>This tool runs locally. Open a terminal and run:</em></p>
+  <div class="code-block">
+    <div class="code-line"><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
+    <div class="code-line">pip install -r requirements.txt</div>
+    <div class="code-line">&nbsp;</div>
+    <div class="code-line"><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
+    <div class="code-line">curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Design Alchemy/2026-05-07_Pixel_Pilot/main.py</div>
+    <div class="code-line">&nbsp;</div>
+    <div class="code-line"><span class="code-comment"># 3. 运行 Run</span></div>
+    <div class="code-line">python main.py --help</div>
+  </div>
+  <a class="btn btn-primary" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Design Alchemy/2026-05-07_Pixel_Pilot/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看完整源码 View Source</a>
 </div>
-
-<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
-<script>
-let pyodide = null;
-
-const TOOL_CODE = `# Browser adaptation - USER_INPUT is provided by the browser\nimport sys\nsys.argv = ['tool']  # Reset argv to prevent argparse errors\n
-\`\`\`python
-import os
-from PIL import Image
-
-def pixel_pilot(file_path, max_size_mb=10, allowed_formats=['jpeg', 'png', 'gif', 'webp']):
-    """
-    Diagnoses a local image file for common web upload issues like excessive size or unsupported format.
-
-    Args:
-        file_path (str): The path to the image file.
-        max_size_mb (int): Maximum allowed file size in megabytes for upload.
-        allowed_formats (list): List of common allowed image formats (e.g., 'jpeg', 'png').
-
-    Returns:
-        dict: A dictionary containing diagnostic results and actionable advice.
-    """
-    results = {
-        'file_exists': False,
-        'size_ok': False,
-        'format_ok': False,
-        'diagnostics': []
-    }
-
-    if not os.path.exists(file_path):
-        results['diagnostics'].append(f"Error: File '{file_path}' does not exist. Please check the file path.")
-        return results
-    results['file_exists'] = True
-
-    file_size_bytes = os.path.getsize(file_path)
-    file_size_mb = file_size_bytes / (1024 * 1024)
-
-    if file_size_mb <= max_size_mb:
-        results['size_ok'] = True
-        results['diagnostics'].append(f"File size ({file_size_mb:.2f} MB) is within the {max_size_mb} MB limit.")
-    else:
-        results['diagnostics'].append(f"Warning: File size ({file_size_mb:.2f} MB) exceeds the {max_size_mb} MB limit. Consider compressing or resizing the image.")
-
-    try:
-        with Image.open(file_path) as img:
-            image_format = img.format.lower()
-            if image_format in allowed_formats:
-                results['format_ok'] = True
-                results['diagnostics'].append(f"Image format ({image_format}) is among the common allowed formats: {', '.join(allowed_formats)}.")
-            else:
-                results['diagnostics'].append(f"Warning: Image format ({image_format}) is not in the recommended list: {', '.join(allowed_formats)}. Consider converting to a more common format.")
-            results['diagnostics'].append(f"Image dimensions: {img.width}x{img.height} pixels.")
-    except Exception as e:
-        results['diagnostics'].append(f"Error: Could not read image format or dimensions. Ensure '{file_path}' is a valid image file. Details: {e}")
-
-    return results
-
-# To use this skill, ensure you have the Pillow library installed: pip install Pillow
-# Example usage (not part of the tool's execution, for user reference only):
-# if __name__ == '__main__':
-#     # Replace 'your_image.jpg' with the actual path to your image file
-#     # You can also adjust max_size_mb and allowed_formats
-#     diagnostic_report = pixel_pilot('path/to/your_image.jpg', max_size_mb=5)
-#     for line in diagnostic_report['diagnostics']:
-#         print(line)
-\`\`\``;
-
-async function loadPyodide_() {
-  try {
-    pyodide = await loadPyodide();
-    document.getElementById('pyodide-status').style.display = 'none';
-    document.getElementById('pyodide-ui').style.display = 'block';
-  } catch(e) {
-    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
-  }
-}
-
-async function runTool() {
-  if (!pyodide) return;
-  const userInput = document.getElementById('user-input').value;
-  const btn = document.getElementById('run-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Running...';
-
-  try {
-    // Redirect stdout
-    pyodide.runPython(`
-import sys
-from io import StringIO
-sys.stdout = StringIO()
-`);
-
-    // Inject user input and run tool
-    pyodide.globals.set('USER_INPUT', userInput);
-    pyodide.runPython(TOOL_CODE);
-
-    const output = pyodide.runPython('sys.stdout.getvalue()');
-    document.getElementById('output').textContent = output || '(no output)';
-  } catch(e) {
-    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
-  }
-
-  btn.disabled = false;
-  btn.textContent = '▶ Run';
-}
-
-loadPyodide_();
-</script>
       </div>
     </section>
 

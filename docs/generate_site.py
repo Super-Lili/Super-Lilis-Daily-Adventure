@@ -577,6 +577,27 @@ a:hover { color: #2ABBA8; }
     border: 1px solid #e8e8e8;
 }
 
+/* ── Local run instructions ── */
+.local-run { max-width: 640px; }
+.local-run-note {
+    font-size: 0.88rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+.local-run-note em { color: #aaa; font-style: normal; }
+.code-block {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-left: 3px solid #2ABBA8;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.8;
+}
+.code-line { color: #1a1a1a; }
+.code-comment { color: #aaa; }
+
 /* ── Pyodide runner ── */
 .runner-label {
     font-size: 0.68rem;
@@ -884,11 +905,40 @@ def read_tool_code(t: dict) -> str:
         return ""
 
 
+def build_local_run_section(t: dict) -> str:
+    """Return 'run locally' instructions for tools without browser support."""
+    reqs = t.get("requirements", [])
+    req_str = " ".join(reqs) if reqs else "see requirements.txt"
+    install_cmd = f"pip install {req_str}" if reqs else "pip install -r requirements.txt"
+    github_raw = f"https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/{t['category']}/{t['dir_name']}/main.py"
+
+    return f"""
+<div class="local-run">
+  <p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
+  <em>This tool runs locally. Open a terminal and run:</em></p>
+  <div class="code-block">
+    <div class="code-line"><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
+    <div class="code-line">{h(install_cmd)}</div>
+    <div class="code-line">&nbsp;</div>
+    <div class="code-line"><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
+    <div class="code-line">curl -O {h(github_raw)}</div>
+    <div class="code-line">&nbsp;</div>
+    <div class="code-line"><span class="code-comment"># 3. 运行 Run</span></div>
+    <div class="code-line">python main.py --help</div>
+  </div>
+  <a class="btn btn-primary" href="{h(t['github'])}" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看完整源码 View Source</a>
+</div>"""
+
+
 def build_pyodide_section(t: dict) -> str:
-    """Return HTML+JS for the Pyodide Try-it section."""
+    """Return HTML+JS for the Pyodide Try-it section, or local-run fallback."""
     tool_code = read_tool_code(t)
     if not tool_code:
-        return '<p style="color:#999;font-size:0.85rem;font-style:italic;">Source code not found — cannot load runner.</p>'
+        return '<p style="color:#aaa;font-size:0.85rem;font-style:italic;">Source code not found.</p>'
+
+    # Check browser compatibility: tool must use USER_INPUT dual-mode pattern
+    if "USER_INPUT" not in tool_code:
+        return build_local_run_section(t)
 
     # Browser preamble injected before tool code
     preamble = (
@@ -901,7 +951,7 @@ def build_pyodide_section(t: dict) -> str:
 <div id="pyodide-status">&#x23F3; Loading Python engine&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
-  <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
+  <textarea id="user-input" rows="6" placeholder="将您的文本粘贴在这里..."></textarea>
   <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
   <span class="runner-label">Output</span>
   <pre id="output"></pre>
@@ -963,6 +1013,11 @@ def build_tool_page(t: dict) -> str:
 
     req_items = "".join(f"<li>{h(r)}</li>" for r in t["requirements"]) if t["requirements"] else "<li style='color:#aaa;font-style:italic;list-style:none;'>None — runs entirely in browser</li>"
 
+    # Check browser compatibility for section label
+    tool_code = read_tool_code(t)
+    is_browser = bool(tool_code) and "USER_INPUT" in tool_code
+    run_label = "在线运行 · Try in browser" if is_browser else "本地运行 · Run locally"
+
     pyodide_section = build_pyodide_section(t)
 
     body = f"""
@@ -1007,7 +1062,7 @@ def build_tool_page(t: dict) -> str:
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Try it in browser · 在线运行</div>
+      <div class="detail-label">{h(run_label)}</div>
       <div class="try-it">
         {pyodide_section}
       </div>

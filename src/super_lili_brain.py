@@ -434,6 +434,40 @@ TRULY USABLE (non-negotiable):
   4. Produces output the user can KEEP and USE: a saved file (PNG chart, CSV, Excel, report).
      Not just terminal output that disappears when the window closes.
 
+BROWSER COMPATIBILITY (mandatory — all new tools must support this):
+  Every tool MUST support both local CLI use AND browser execution via Pyodide.
+  Use this exact dual-mode pattern at the bottom of every tool:
+
+  ```python
+  def process(text: str) -> str:
+      \"\"\"Core logic — takes plain text input, returns plain text result.\"\"\"
+      # ... all the real work happens here ...
+      return result_string
+
+  def _cli_main():
+      import argparse
+      p = argparse.ArgumentParser(description="Tool description")
+      p.add_argument("--input", required=True, help="Paste text or provide file path")
+      # ... other args ...
+      args = p.parse_args()
+      text = open(args.input).read() if os.path.exists(args.input) else args.input
+      print(process(text))
+
+  # Dual-mode: browser (Pyodide sets USER_INPUT) OR local CLI
+  _browser_input = globals().get('USER_INPUT', None)
+  if _browser_input is not None:
+      print(process(_browser_input))
+  elif __name__ == "__main__":
+      _cli_main()
+  ```
+
+  Rules:
+  ✓ The `process()` function MUST accept plain text (string) and return a string result
+  ✓ `globals().get('USER_INPUT', None)` is the ONLY way to detect browser mode
+  ✓ argparse goes inside `_cli_main()`, NOT at module level
+  ✗ NEVER use `if __name__ == "__main__": import argparse` at module level — breaks browser
+  ✗ NEVER use sys.argv directly — always use argparse inside _cli_main()
+
 CODE QUALITY:
   - Minimum 4 well-named functions with type hints, each doing ONE thing
   - At least 3 libraries beyond standard lib
@@ -655,9 +689,11 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
     except Exception as e:
         return False, f"Syntax check failed: {e}"
 
-    # Real-data check: at least one argparse argument must have no default (required)
+    # Real-data check + browser-compatibility check
     try:
         source = open(main_py, encoding="utf-8").read()
+        is_browser_compatible = "globals().get('USER_INPUT'" in source or "USER_INPUT" in source
+
         if "add_argument" in source:
             has_required = (
                 'required=True' in source
@@ -669,10 +705,16 @@ def validate_tool(skill_dir: str) -> tuple[bool, str]:
                     "All argparse arguments have defaults — tool runs on internal fake data. "
                     "At least one argument must require real user input (no default)."
                 )
+
+        if not is_browser_compatible:
+            return False, (
+                "Tool is not browser-compatible: missing USER_INPUT dual-mode pattern. "
+                "Add: _browser_input = globals().get('USER_INPUT', None) near the bottom."
+            )
     except Exception:
         pass
 
-    # --help check
+    # --help check (run via _cli_main path to avoid module-level argparse)
     try:
         result = subprocess.run(
             [sys.executable, main_py, "--help"],
@@ -1025,6 +1067,10 @@ def evolve():
         print("  ✓ Memory updated.")
 
     print(f"\n✨ Adventure complete for {today}!")
+
+    # Regenerate GitHub Pages site
+    import subprocess, sys as _sys
+    subprocess.run([_sys.executable, "docs/generate_site.py"], check=False)
 
 
 if __name__ == "__main__":

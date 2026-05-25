@@ -364,6 +364,27 @@ a:hover { color: #2ABBA8; }
     border: 1px solid #e8e8e8;
 }
 
+/* ── Local run instructions ── */
+.local-run { max-width: 640px; }
+.local-run-note {
+    font-size: 0.88rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+.local-run-note em { color: #aaa; font-style: normal; }
+.code-block {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-left: 3px solid #2ABBA8;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.8;
+}
+.code-line { color: #1a1a1a; }
+.code-comment { color: #aaa; }
+
 /* ── Pyodide runner ── */
 .runner-label {
     font-size: 0.68rem;
@@ -489,94 +510,24 @@ a:hover { color: #2ABBA8; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Try it in browser · 在线运行</div>
+      <div class="detail-label">本地运行 · Run locally</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip;</div>
-<div id="pyodide-ui" style="display:none">
-  <span class="runner-label">Input</span>
-  <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
-  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
-  <span class="runner-label">Output</span>
-  <pre id="output"></pre>
+<div class="local-run">
+  <p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
+  <em>This tool runs locally. Open a terminal and run:</em></p>
+  <div class="code-block">
+    <div class="code-line"><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
+    <div class="code-line">pip install -r requirements.txt</div>
+    <div class="code-line">&nbsp;</div>
+    <div class="code-line"><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
+    <div class="code-line">curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Education Evolution/2026-05-08_RealityRatio_Revealer/main.py</div>
+    <div class="code-line">&nbsp;</div>
+    <div class="code-line"><span class="code-comment"># 3. 运行 Run</span></div>
+    <div class="code-line">python main.py --help</div>
+  </div>
+  <a class="btn btn-primary" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Education Evolution/2026-05-08_RealityRatio_Revealer/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看完整源码 View Source</a>
 </div>
-
-<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
-<script>
-let pyodide = null;
-
-const TOOL_CODE = `# Browser adaptation - USER_INPUT is provided by the browser\nimport sys\nsys.argv = ['tool']  # Reset argv to prevent argparse errors\n
-\`\`\`python
-def affordability_comparison(generation_data):
-    """
-    Compares hypothetical home affordability across generations based on provided data.
-    generation_data: A dictionary where keys are generation names and values are
-                     (average_home_price, average_annual_income) tuples.
-    """
-    print("--- GENERATIONAL AFFORDABILITY SNAPSHOT ---")
-    for generation, data in generation_data.items():
-        home_price, income = data
-        if income > 0:
-            years_to_afford_home = home_price / income
-            print(f"\\n{generation} (Hypothetical):")
-            print(f"  Average Home Price: \${home_price:,.2f}")
-            print(f"  Average Annual Income: \${income:,.2f}")
-            print(f"  Years of income needed to buy a home (approx.): {years_to_afford_home:.1f}")
-        else:
-            print(f"\\n{generation}: Insufficient income data to calculate affordability.")
-
-# Illustrative data based on broad economic trends referenced in the friction point.
-# These figures are not precise economic averages but serve to highlight the relative difference.
-# (Hypothetical Average Home Price, Hypothetical Average Annual Income)
-illustrative_data = {
-    "Boomer Era (e.g., 1970s-1980s)": (65000, 15000), # Article mentions $65k home price
-    "Millennial Era (e.g., 2020s)": (400000, 70000)
-}
-
-affordability_comparison(illustrative_data)
-\`\`\``;
-
-async function loadPyodide_() {
-  try {
-    pyodide = await loadPyodide();
-    document.getElementById('pyodide-status').style.display = 'none';
-    document.getElementById('pyodide-ui').style.display = 'block';
-  } catch(e) {
-    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
-  }
-}
-
-async function runTool() {
-  if (!pyodide) return;
-  const userInput = document.getElementById('user-input').value;
-  const btn = document.getElementById('run-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Running...';
-
-  try {
-    // Redirect stdout
-    pyodide.runPython(`
-import sys
-from io import StringIO
-sys.stdout = StringIO()
-`);
-
-    // Inject user input and run tool
-    pyodide.globals.set('USER_INPUT', userInput);
-    pyodide.runPython(TOOL_CODE);
-
-    const output = pyodide.runPython('sys.stdout.getvalue()');
-    document.getElementById('output').textContent = output || '(no output)';
-  } catch(e) {
-    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
-  }
-
-  btn.disabled = false;
-  btn.textContent = '▶ Run';
-}
-
-loadPyodide_();
-</script>
       </div>
     </section>
 

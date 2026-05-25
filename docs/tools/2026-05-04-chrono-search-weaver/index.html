@@ -364,6 +364,27 @@ a:hover { color: #2ABBA8; }
     border: 1px solid #e8e8e8;
 }
 
+/* ── Local run instructions ── */
+.local-run { max-width: 640px; }
+.local-run-note {
+    font-size: 0.88rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+.local-run-note em { color: #aaa; font-style: normal; }
+.code-block {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-left: 3px solid #2ABBA8;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.8;
+}
+.code-line { color: #1a1a1a; }
+.code-comment { color: #aaa; }
+
 /* ── Pyodide runner ── */
 .runner-label {
     font-size: 0.68rem;
@@ -489,134 +510,24 @@ a:hover { color: #2ABBA8; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Try it in browser · 在线运行</div>
+      <div class="detail-label">本地运行 · Run locally</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip;</div>
-<div id="pyodide-ui" style="display:none">
-  <span class="runner-label">Input</span>
-  <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
-  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
-  <span class="runner-label">Output</span>
-  <pre id="output"></pre>
+<div class="local-run">
+  <p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
+  <em>This tool runs locally. Open a terminal and run:</em></p>
+  <div class="code-block">
+    <div class="code-line"><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
+    <div class="code-line">pip install -r requirements.txt</div>
+    <div class="code-line">&nbsp;</div>
+    <div class="code-line"><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
+    <div class="code-line">curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Design Alchemy/2026-05-04_Chrono-Search_Weaver/main.py</div>
+    <div class="code-line">&nbsp;</div>
+    <div class="code-line"><span class="code-comment"># 3. 运行 Run</span></div>
+    <div class="code-line">python main.py --help</div>
+  </div>
+  <a class="btn btn-primary" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Design Alchemy/2026-05-04_Chrono-Search_Weaver/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看完整源码 View Source</a>
 </div>
-
-<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
-<script>
-let pyodide = null;
-
-const TOOL_CODE = `# Browser adaptation - USER_INPUT is provided by the browser\nimport sys\nsys.argv = ['tool']  # Reset argv to prevent argparse errors\n
-\`\`\`python
-def chrono_search_weaver(query, year=None, platform="Instagram (Hypothetical)"):
-    """
-    Lili's Chrono-Search Weaver:
-    A conceptual tool to imagine a functional, time-filtered search on social platforms.
-    This simulates how a user *should* be able to find content, addressing the
-    frustration of broken or limited search features on platforms like Instagram.
-    """
-    print(f"--- Activating Chrono-Search Weaver for '{platform}' ---")
-    print(f"Attempting to find content related to: '{query}'")
-
-    if year:
-        print(f"Specifically looking for memories/posts from the year: {year}")
-    else:
-        print("Searching across all available historical data (if only it were real!).")
-
-    # Simulate a database of content, organized by keyword and year
-    # In a real scenario, this would interact with a platform's API (if it were robust enough!)
-    mock_content_db = {
-        "travel": {
-            "2026": ["UserA: Sunset over the Mars colony domes!", "UserB: My first trip to Neo-Kyoto's holographic gardens."],
-            "2023": ["UserC: Throwback to when we could actually fly without a biometric scan.", "UserD: Venice, before the sea walls."],
-            "2018": ["UserE: That backpacking trip through Patagonia, pure bliss."],
-            "default": ["UserF: Dream destinations for the digital nomad.", "UserG: Exploring local hidden gems."]
-        },
-        "food": {
-            "2025": ["UserH: Replicating ancient Roman recipes with my food printer!", "UserI: The best synth-sushi in Sector 7."],
-            "default": ["UserJ: What's cooking tonight?", "UserK: Gastro-sensory overload!"]
-        },
-        "art": {
-            "2024": ["UserL: My latest AI-generated masterpiece, tell me what you think.", "UserM: Vintage oil painting techniques revisited."],
-            "default": ["UserN: Infinite creative possibilities.", "UserO: Inspiration strikes!"]
-        }
-    }
-
-    results_found = []
-    lower_query = query.lower()
-
-    if lower_query in mock_content_db:
-        if year and year in mock_content_db[lower_query]:
-            results_found.extend([f"- {post} (Year: {year})" for post in mock_content_db[lower_query][year]])
-        elif not year:
-            # If no year, gather all available content for the query
-            for y_key, posts in mock_content_db[lower_query].items():
-                if y_key != "default": # Exclude 'default' from specific year iteration
-                    results_found.extend([f"- {post} (Year: {y_key})" for post in posts])
-            if "default" in mock_content_db[lower_query]:
-                 results_found.extend([f"- {post} (General/Undated)" for post in mock_content_db[lower_query]["default"]])
-    
-    if results_found:
-        print(f"\\n--- Exhibiting {len(results_found)} Glimmers of Content ---")
-        for res in results_found:
-            print(res)
-    else:
-        print("\\nAlas, the digital dust motes remain undisturbed. No matching historical or current content found.")
-        print("Perhaps the real Instagram search is teaching us the art of letting go?")
-
-    print("\\n--- Chrono-Search Weaver Report Concluded ---")
-
-# Example of how Lili would use this conceptual tool:
-# Looking for travel photos from 2018
-# chrono_search_weaver("travel", "2018")
-
-# Looking for any food-related posts
-# chrono_search_weaver("food")
-
-# Trying to find something niche that doesn't exist in the mock DB
-# chrono_search_weaver("quantum physics", "2026")
-\`\`\``;
-
-async function loadPyodide_() {
-  try {
-    pyodide = await loadPyodide();
-    document.getElementById('pyodide-status').style.display = 'none';
-    document.getElementById('pyodide-ui').style.display = 'block';
-  } catch(e) {
-    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
-  }
-}
-
-async function runTool() {
-  if (!pyodide) return;
-  const userInput = document.getElementById('user-input').value;
-  const btn = document.getElementById('run-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Running...';
-
-  try {
-    // Redirect stdout
-    pyodide.runPython(`
-import sys
-from io import StringIO
-sys.stdout = StringIO()
-`);
-
-    // Inject user input and run tool
-    pyodide.globals.set('USER_INPUT', userInput);
-    pyodide.runPython(TOOL_CODE);
-
-    const output = pyodide.runPython('sys.stdout.getvalue()');
-    document.getElementById('output').textContent = output || '(no output)';
-  } catch(e) {
-    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
-  }
-
-  btn.disabled = false;
-  btn.textContent = '▶ Run';
-}
-
-loadPyodide_();
-</script>
       </div>
     </section>
 
