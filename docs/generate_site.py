@@ -35,21 +35,15 @@ CATEGORY_LABELS = {
     "Office Automation":   "Office",
     "Healing Inventions":  "Healing",
 }
-# Muted, editorial cover colors — not saturated badges
-CATEGORY_COVER = {
-    "Education Evolution": "#d4e8e1",  # sage
-    "Design Alchemy":      "#dce0ec",  # slate
-    "Office Automation":   "#e8e4d8",  # sand
-    "Healing Inventions":  "#ecdde0",  # blush
+# FO-style bold card colors — top graphic area + bottom band
+# Each category: (graphic_bg, graphic_text, band_bg, band_text)
+CATEGORY_CARD = {
+    "Education Evolution": ("#2ABBA8", "#ffffff", "#e8f8f6", "#1a4a44"),
+    "Design Alchemy":      ("#333333", "#ffffff", "#f0f0f0", "#333333"),
+    "Office Automation":   ("#F4E842", "#1a1a1a", "#fefce8", "#1a1a1a"),
+    "Healing Inventions":  ("#f0c4c4", "#5a1a1a", "#fdf0f0", "#5a1a1a"),
 }
-CATEGORY_COVER_TEXT = {
-    "Education Evolution": "#2a5a4a",
-    "Design Alchemy":      "#2a3a5a",
-    "Office Automation":   "#5a4a2a",
-    "Healing Inventions":  "#5a2a36",
-}
-CATEGORY_DEFAULT_COVER      = "#e8e8e8"
-CATEGORY_DEFAULT_COVER_TEXT = "#444444"
+CATEGORY_CARD_DEFAULT = ("#cccccc", "#333333", "#f5f5f5", "#333333")
 
 
 # ── Data readers ───────────────────────────────────────────────────────────────
@@ -189,7 +183,7 @@ def read_tools() -> list[dict]:
                 "requirements": requirements,
                 "readme_path":  readme_path,
                 "github":       f"{REPO_URL}/blob/main/02_Toolbox/{category}/{dir_name}/main.py",
-                "category_color": CATEGORY_DEFAULT_COVER,
+                "category_color": "#cccccc",
             })
 
     return tools
@@ -226,23 +220,23 @@ def shared_css() -> str:
 
 body {
     font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-    background: #ffffff;
+    background: #f5f5f3;
     color: #1a1a1a;
-    line-height: 1.6;
-    font-size: 16px;
+    line-height: 1.5;
+    font-size: 15px;
     -webkit-font-smoothing: antialiased;
 }
 
 a { color: inherit; text-decoration: none; }
-a:hover { color: #2ABBA8; }
+a:hover { opacity: 0.75; }
 
 /* ── Layout ── */
-.container { max-width: 1120px; margin: 0 auto; padding: 0 40px; }
+.container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
 
 /* ── Top nav ── */
 .site-nav {
-    background: #fff;
-    border-bottom: 1px solid #e0e0e0;
+    background: #ffffff;
+    border-bottom: 1px solid #d8d8d8;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -251,340 +245,365 @@ a:hover { color: #2ABBA8; }
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 56px;
+    height: 52px;
 }
 .nav-logo {
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: #1a1a1a;
 }
-.nav-logo .accent { color: #2ABBA8; }
 .nav-links {
     display: flex;
-    gap: 32px;
+    gap: 40px;
     list-style: none;
 }
 .nav-links a {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #666;
-    transition: color 0.15s;
-}
-.nav-links a:hover { color: #1a1a1a; }
-
-/* ── Hero ── */
-.site-hero {
-    padding: 80px 0 64px;
-    border-bottom: 1px solid #e0e0e0;
-    background: #fff;
-}
-.hero-eyebrow {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: #2ABBA8;
-    margin-bottom: 20px;
-}
-.hero-title {
-    font-size: clamp(2.4rem, 6vw, 4.2rem);
-    font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 1.05;
     color: #1a1a1a;
-    max-width: 760px;
-    margin-bottom: 20px;
+}
+
+/* ── Hero (full-width dark band like FO Journal) ── */
+.site-hero {
+    background: #2e2e2e;
+    padding: 56px 32px 52px;
+}
+.site-hero .container { padding: 0; }
+.hero-title {
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    color: #2ABBA8;
+    text-transform: uppercase;
+    margin-bottom: 24px;
 }
 .hero-sub {
-    font-size: 1rem;
-    color: #777;
-    max-width: 480px;
-    line-height: 1.65;
-}
-
-/* ── Section headers ── */
-.section-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    border-top: 2px solid #1a1a1a;
-    padding-top: 14px;
-    margin-bottom: 36px;
-}
-.section-head h2 {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #1a1a1a;
-}
-.section-head .section-count {
-    font-size: 0.72rem;
+    font-size: 0.88rem;
     color: #aaa;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
 }
 
-/* ── Featured latest entry ── */
+/* ── Featured cards: FO-style image+band ── */
 .featured-row {
-    padding: 64px 0;
-    border-bottom: 1px solid #e0e0e0;
+    background: #ffffff;
 }
-.featured-inner {
+.featured-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0;
+    border-bottom: 1px solid #d8d8d8;
 }
-.featured-cover {
-    aspect-ratio: 4/3;
+.feat-card {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    border-right: 1px solid #d8d8d8;
+}
+.feat-card:last-child { border-right: none; }
+.feat-card:hover { opacity: 1; }
+.feat-card:hover .feat-title { text-decoration: underline; }
+.feat-graphic {
+    /* "image" area — large typographic placeholder */
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 28px;
+    align-items: flex-end;
+    padding: 24px 28px;
+    min-height: 280px;
+    position: relative;
+    overflow: hidden;
 }
-.featured-cover .cover-date {
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    opacity: 0.6;
-}
-.featured-cover .cover-label {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-}
-.featured-body {
-    padding: 40px 48px;
+.feat-graphic-bg {
+    position: absolute;
+    inset: 0;
     display: flex;
-    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    border-left: 1px solid #e0e0e0;
+    font-size: clamp(5rem, 14vw, 11rem);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    line-height: 1;
+    opacity: 0.12;
+    user-select: none;
+    pointer-events: none;
 }
-.featured-tag {
+.feat-graphic-date {
+    position: relative;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.feat-band {
+    padding: 20px 28px 24px;
+}
+.feat-meta {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.feat-title {
+    font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+}
+.feat-excerpt {
+    font-size: 0.84rem;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    opacity: 0.8;
+}
+.feat-date-label {
     font-size: 0.68rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #2ABBA8;
-    margin-bottom: 16px;
+    opacity: 0.65;
 }
-.featured-body h3 {
-    font-size: clamp(1.2rem, 2.5vw, 1.7rem);
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
-    margin-bottom: 10px;
-    color: #1a1a1a;
-}
-.featured-title-zh {
-    font-size: 0.9rem;
-    color: #888;
-    margin-bottom: 18px;
-}
-.featured-excerpt {
-    font-size: 0.92rem;
-    color: #555;
-    line-height: 1.7;
-    margin-bottom: 28px;
-}
-.featured-links { display: flex; gap: 12px; flex-wrap: wrap; }
 
-/* ── Buttons ── */
-.btn {
-    display: inline-block;
-    padding: 9px 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+/* ── Section title: huge all-caps like "RESEARCH UPDATES" ── */
+.big-section-title {
+    background: #f5f5f3;
+    padding: 36px 0 28px;
+    border-top: 1px solid #d8d8d8;
+    border-bottom: 1px solid #d8d8d8;
+}
+.big-section-title h2 {
+    font-size: clamp(2.2rem, 7vw, 5.5rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
     text-transform: uppercase;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    color: #1a1a1a;
+    line-height: 1;
 }
-.btn:hover { text-decoration: none; }
-.btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.btn-primary:hover { background: #2ABBA8; border-color: #2ABBA8; }
-.btn-outline { background: transparent; color: #1a1a1a; border-color: #ccc; }
-.btn-outline:hover { border-color: #1a1a1a; }
-.btn-teal { background: #2ABBA8; color: #fff; border-color: #2ABBA8; }
-.btn-teal:hover { background: #229990; border-color: #229990; }
 
-/* ── Tool card grid ── */
-.section-block { padding: 56px 0; border-bottom: 1px solid #e0e0e0; }
+/* ── Tool card grid (3 → 4 col) ── */
+.tool-section { background: #ffffff; padding-bottom: 0; }
 .card-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: #e0e0e0;
-    border: 1px solid #e0e0e0;
+    gap: 0;
+    border-left: 1px solid #d8d8d8;
+    border-top: 1px solid #d8d8d8;
 }
 .tool-card {
     background: #fff;
     display: block;
     color: inherit;
     text-decoration: none;
-    transition: background 0.15s;
+    border-right: 1px solid #d8d8d8;
+    border-bottom: 1px solid #d8d8d8;
+    transition: opacity 0.15s;
 }
-.tool-card:hover { background: #f5f5f5; }
-.tool-card:hover .tc-name { color: #2ABBA8; }
-.tc-cover {
-    aspect-ratio: 16/9;
+.tool-card:hover { opacity: 1; }
+.tool-card:hover .tc-title { text-decoration: underline; }
+.tc-graphic {
+    min-height: 160px;
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 16px 20px;
+    align-items: flex-end;
+    padding: 14px 18px;
+    position: relative;
+    overflow: hidden;
 }
-.tc-cover-date {
+.tc-graphic-num {
+    position: absolute;
+    top: 0; right: 0;
+    font-size: 4.5rem;
+    font-weight: 900;
+    line-height: 1;
+    opacity: 0.12;
+    letter-spacing: -0.04em;
+    user-select: none;
+}
+.tc-graphic-date {
+    position: relative;
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    opacity: 0.55;
+    opacity: 0.6;
 }
-.tc-body { padding: 16px 20px 20px; }
+.tc-band { padding: 12px 18px 18px; }
 .tc-cat {
-    font-size: 0.65rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #aaa;
     margin-bottom: 6px;
+    opacity: 0.6;
 }
-.tc-name {
+.tc-title {
     font-size: 0.95rem;
     font-weight: 700;
-    letter-spacing: -0.01em;
     line-height: 1.3;
+    letter-spacing: -0.01em;
     margin-bottom: 6px;
-    transition: color 0.15s;
-    color: #1a1a1a;
 }
-.tc-desc {
-    font-size: 0.8rem;
-    color: #777;
-    line-height: 1.5;
-}
+.tc-desc { font-size: 0.78rem; line-height: 1.5; opacity: 0.65; }
 
-/* ── Evolution list ── */
+/* ── Evolution section ── */
+.evo-section {
+    background: #f5f5f3;
+    padding: 0;
+}
 .evo-list { list-style: none; }
 .evo-item {
     display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 24px;
-    padding: 20px 0;
-    border-bottom: 1px solid #e8e8e8;
-    align-items: baseline;
+    grid-template-columns: 140px 1fr;
+    gap: 0;
+    border-bottom: 1px solid #d8d8d8;
 }
-.evo-date { font-size: 0.75rem; color: #aaa; font-variant-numeric: tabular-nums; }
-.evo-title { font-size: 0.92rem; color: #1a1a1a; }
-.evo-title a { transition: color 0.15s; }
-.evo-title a:hover { color: #2ABBA8; }
+.evo-date {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+    padding: 22px 24px 22px 0;
+    border-right: 1px solid #d8d8d8;
+}
+.evo-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    padding: 22px 0 22px 28px;
+}
+.evo-title a { color: #1a1a1a; }
+.evo-title a:hover { text-decoration: underline; opacity: 1; }
+
+/* ── Buttons ── */
+.btn {
+    display: inline-block;
+    padding: 10px 22px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.btn:hover { opacity: 1; text-decoration: none; }
+.btn-dark { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.btn-dark:hover { background: #2ABBA8; border-color: #2ABBA8; }
+.btn-ghost { background: transparent; color: #1a1a1a; border-color: #1a1a1a; }
+.btn-ghost:hover { background: #1a1a1a; color: #fff; }
 
 /* ── Footer ── */
 .site-footer {
-    background: #fff;
-    border-top: 2px solid #1a1a1a;
-    padding: 40px 0;
+    background: #1a1a1a;
+    padding: 32px 0;
 }
 .footer-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.footer-left { font-size: 0.72rem; color: #aaa; }
-.footer-left strong { color: #1a1a1a; font-weight: 700; }
+.footer-left {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+}
 .footer-right { font-size: 0.72rem; }
-.footer-right a { color: #aaa; transition: color 0.15s; letter-spacing: 0.05em; }
-.footer-right a:hover { color: #2ABBA8; }
+.footer-right a { color: #888; letter-spacing: 0.06em; text-transform: uppercase; }
+.footer-right a:hover { color: #2ABBA8; opacity: 1; }
 
 /* ── Tool detail ── */
 .detail-nav {
     background: #fff;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 16px 0;
+    border-bottom: 1px solid #d8d8d8;
+    padding: 14px 0;
 }
 .back-link {
-    font-size: 0.72rem;
-    font-weight: 600;
+    font-size: 0.7rem;
+    font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #999;
-    transition: color 0.15s;
+    color: #888;
 }
-.back-link:hover { color: #2ABBA8; }
+.back-link:hover { color: #2ABBA8; opacity: 1; }
 .detail-hero {
-    padding: 56px 0 52px;
-    border-bottom: 1px solid #e0e0e0;
+    background: #2e2e2e;
+    padding: 52px 0 48px;
 }
 .detail-eyebrow {
     font-size: 0.68rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: #2ABBA8;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 .detail-hero h1 {
-    font-size: clamp(1.8rem, 4vw, 3rem);
-    font-weight: 700;
+    font-size: clamp(1.8rem, 4.5vw, 3.5rem);
+    font-weight: 800;
     letter-spacing: -0.03em;
-    line-height: 1.1;
-    color: #1a1a1a;
+    line-height: 1.05;
+    color: #ffffff;
+    text-transform: uppercase;
     margin-bottom: 12px;
-    max-width: 700px;
+    max-width: 800px;
 }
 .detail-meta {
-    font-size: 0.75rem;
-    color: #aaa;
-    margin-top: 8px;
-}
-.detail-section { padding: 48px 0; border-bottom: 1px solid #e0e0e0; }
-.detail-label {
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #666;
+}
+.detail-body { background: #ffffff; }
+.detail-section {
+    padding: 44px 0;
+    border-bottom: 1px solid #d8d8d8;
+}
+.detail-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: #aaa;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 .description-text {
     font-size: 1rem;
     line-height: 1.75;
     color: #333;
     max-width: 640px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
 }
-.req-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.req-list { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
 .req-list li {
-    background: #f5f5f5;
+    background: #f5f5f3;
     padding: 4px 12px;
     font-size: 0.78rem;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
     color: #444;
-    border: 1px solid #e8e8e8;
+    border: 1px solid #d8d8d8;
 }
 
 /* ── Pyodide runner ── */
 .runner-label {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: #aaa;
     display: block;
-    margin-top: 24px;
+    margin-top: 20px;
     margin-bottom: 8px;
 }
 .runner-label:first-child { margin-top: 0; }
 .try-it textarea {
     width: 100%;
     padding: 14px 16px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #d8d8d8;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
     font-size: 0.84rem;
     background: #fafafa;
@@ -600,29 +619,24 @@ a:hover { color: #2ABBA8; }
     background: #2ABBA8;
     color: #fff;
     border: none;
-    padding: 11px 28px;
+    padding: 12px 28px;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     margin-top: 12px;
     transition: background 0.15s;
     font-family: inherit;
 }
-#run-btn:hover { background: #229990; }
+#run-btn:hover { background: #1a1a1a; }
 #run-btn:disabled { background: #ccc; cursor: not-allowed; }
-#pyodide-status {
-    font-size: 0.82rem;
-    color: #aaa;
-    padding: 12px 0;
-    font-style: italic;
-}
+#pyodide-status { font-size: 0.82rem; color: #aaa; padding: 12px 0; font-style: italic; }
 #output {
-    background: #f8f8f8;
+    background: #f5f5f3;
     color: #1a1a1a;
-    border: 1px solid #e0e0e0;
-    border-left: 3px solid #2ABBA8;
+    border: 1px solid #d8d8d8;
+    border-top: 3px solid #2ABBA8;
     padding: 20px;
     min-height: 100px;
     white-space: pre-wrap;
@@ -633,19 +647,20 @@ a:hover { color: #2ABBA8; }
 }
 
 /* ── Responsive ── */
-@media (max-width: 900px) {
+@media (max-width: 960px) {
     .card-grid { grid-template-columns: repeat(2, 1fr); }
-    .featured-inner { grid-template-columns: 1fr; }
-    .featured-body { border-left: none; border-top: 1px solid #e0e0e0; padding: 28px 0 0; }
+    .featured-grid { grid-template-columns: 1fr; }
+    .feat-card { border-right: none; border-bottom: 1px solid #d8d8d8; }
 }
 @media (max-width: 600px) {
-    .container { padding: 0 20px; }
+    .container { padding: 0 16px; }
     .card-grid { grid-template-columns: 1fr; }
     .nav-links { display: none; }
-    .evo-item { grid-template-columns: 1fr; gap: 4px; }
-    .footer-inner { flex-direction: column; gap: 12px; align-items: flex-start; }
-    .hero-title { font-size: 2rem; }
-    .section-head { flex-direction: column; gap: 4px; }
+    .footer-inner { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .evo-item { grid-template-columns: 1fr; }
+    .evo-date { border-right: none; padding: 14px 0 4px; }
+    .evo-title { padding: 0 0 14px; }
+    .hero-title { font-size: 3rem; }
 }
 """
 
@@ -682,67 +697,80 @@ def page_shell(title: str, body: str, css_extra: str = "", root_prefix: str = ""
 
 # ── Index page ─────────────────────────────────────────────────────────────────
 
-def render_featured_row(diaries: list[dict], tools: list[dict]) -> str:
+def render_featured_cards(diaries: list[dict], tools: list[dict]) -> str:
+    """Two featured cards (latest diary + matching tool), FO-style."""
     if not diaries:
         return ""
+
+    # Card 1: latest diary
     d = diaries[0]
+    cat_cards   = CATEGORY_CARD.get("Healing Inventions", CATEGORY_CARD_DEFAULT)
+    g_bg, g_fg, b_bg, b_fg = cat_cards
+    title_zh = f'<div style="font-size:0.82rem;opacity:0.6;margin-bottom:8px;">{h(d["title_zh"])}</div>' if d.get("title_zh") else ""
+    excerpt  = f'<p class="feat-excerpt">{h(d["excerpt"])}</p>' if d.get("excerpt") else ""
 
-    tool_link = ""
+    card1 = f"""<a class="feat-card" href="{h(d['github'])}" target="_blank" rel="noopener">
+  <div class="feat-graphic" style="background:{g_bg};color:{g_fg};">
+    <div class="feat-graphic-bg" aria-hidden="true">DIARY</div>
+    <div class="feat-graphic-date">{h(d["date"])}</div>
+  </div>
+  <div class="feat-band" style="background:{b_bg};color:{b_fg};">
+    <div class="feat-meta">Latest Diary Entry</div>
+    <div class="feat-title">{h(d["title"])}</div>
+    {title_zh}
+    {excerpt}
+    <div class="feat-date-label">Published {h(d["date"])}</div>
+  </div>
+</a>"""
+
+    # Card 2: latest tool
+    card2 = ""
     for t in tools:
-        if t["date"] == d["date"]:
-            tool_link = f'<a class="btn btn-outline" href="tools/{h(t["slug"])}/index.html">View Tool</a>'
-            break
-
-    cover_bg   = CATEGORY_COVER.get("Education Evolution", "#e8e8e8")
-    cover_text = CATEGORY_COVER_TEXT.get("Education Evolution", "#333")
-
-    title_zh_html = f'<div class="featured-title-zh">{h(d["title_zh"])}</div>' if d["title_zh"] else ""
-    excerpt_html  = f'<p class="featured-excerpt">{h(d["excerpt"])}</p>' if d["excerpt"] else ""
+        g_bg2, g_fg2, b_bg2, b_fg2 = CATEGORY_CARD.get(t["category"], CATEGORY_CARD_DEFAULT)
+        cat_label = CATEGORY_LABELS.get(t["category"], t["category"])
+        desc = f'<p class="feat-excerpt">{h(t["description"][:160])}{"…" if len(t["description"]) > 160 else ""}</p>' if t["description"] else ""
+        card2 = f"""<a class="feat-card" href="tools/{h(t['slug'])}/index.html">
+  <div class="feat-graphic" style="background:{g_bg2};color:{g_fg2};">
+    <div class="feat-graphic-bg" aria-hidden="true">TOOL</div>
+    <div class="feat-graphic-date">{h(t['date'])}</div>
+  </div>
+  <div class="feat-band" style="background:{b_bg2};color:{b_fg2};">
+    <div class="feat-meta">{h(cat_label)}</div>
+    <div class="feat-title">{h(t['name'])}</div>
+    {desc}
+    <div class="feat-date-label">Try it in browser</div>
+  </div>
+</a>"""
+        break
 
     return f"""
 <section class="featured-row">
-  <div class="container">
-    <div class="section-head">
-      <h2>Latest Entry</h2>
-      <span class="section-count">{h(d["date"])}</span>
-    </div>
-    <div class="featured-inner">
-      <div class="featured-cover" style="background:{cover_bg};color:{cover_text};">
-        <div class="cover-date">{h(d["date"])}</div>
-        <div class="cover-label">Daily<br>Diary</div>
-      </div>
-      <div class="featured-body">
-        <div class="featured-tag">Diary Entry</div>
-        <h3>{h(d["title"])}</h3>
-        {title_zh_html}
-        {excerpt_html}
-        <div class="featured-links">
-          <a class="btn btn-primary" href="{h(d['github'])}" target="_blank" rel="noopener">Read Diary</a>
-          {tool_link}
-        </div>
-      </div>
-    </div>
+  <div class="featured-grid">
+    {card1}
+    {card2}
   </div>
 </section>"""
 
 
 def render_tool_grid(tools: list[dict]) -> str:
     if not tools:
-        return "<p style='color:#aaa;font-size:0.9rem;padding:20px 0;'>No tools forged yet.</p>"
+        return "<p style='color:#aaa;padding:20px 0;'>No tools yet.</p>"
 
     cards = []
-    for t in tools:
-        cat_label  = CATEGORY_LABELS.get(t["category"], t["category"])
-        cover_bg   = CATEGORY_COVER.get(t["category"], CATEGORY_DEFAULT_COVER)
-        cover_text = CATEGORY_COVER_TEXT.get(t["category"], CATEGORY_DEFAULT_COVER_TEXT)
-        desc_html  = f'<div class="tc-desc">{h(t["description"][:110])}{"…" if len(t["description"]) > 110 else ""}</div>' if t["description"] else ""
+    for i, t in enumerate(tools):
+        g_bg, g_fg, b_bg, b_fg = CATEGORY_CARD.get(t["category"], CATEGORY_CARD_DEFAULT)
+        cat_label = CATEGORY_LABELS.get(t["category"], t["category"])
+        desc_html = f'<div class="tc-desc">{h(t["description"][:100])}{"…" if len(t["description"]) > 100 else ""}</div>' if t["description"] else ""
+        # Show a short day-number in the graphic area
+        day_num = t["date"][8:10]  # e.g. "25"
         cards.append(f"""<a class="tool-card" href="tools/{h(t['slug'])}/index.html">
-  <div class="tc-cover" style="background:{cover_bg};color:{cover_text};">
-    <div class="tc-cover-date">{h(t['date'])}</div>
+  <div class="tc-graphic" style="background:{g_bg};color:{g_fg};">
+    <div class="tc-graphic-num" aria-hidden="true">{day_num}</div>
+    <div class="tc-graphic-date">{h(t['date'])}</div>
   </div>
-  <div class="tc-body">
+  <div class="tc-band" style="background:{b_bg};color:{b_fg};">
     <div class="tc-cat">{h(cat_label)}</div>
-    <div class="tc-name">{h(t['name'])}</div>
+    <div class="tc-title">{h(t['name'])}</div>
     {desc_html}
   </div>
 </a>""")
@@ -752,20 +780,20 @@ def render_tool_grid(tools: list[dict]) -> str:
 
 def render_evolution_list(evolutions: list[dict]) -> str:
     if not evolutions:
-        return "<p style='color:#aaa;font-size:0.9rem;padding:20px 0;'>No evolution entries yet.</p>"
+        return "<p style='color:#aaa;padding:20px 0;'>No evolution entries yet.</p>"
 
     items = []
     for e in evolutions:
         items.append(f"""<li class="evo-item">
-  <span class="evo-date">{h(e['date'])}</span>
-  <span class="evo-title"><a href="{h(e['github'])}" target="_blank" rel="noopener">{h(e['title'])}</a></span>
+  <div class="evo-date">{h(e['date'])}</div>
+  <div class="evo-title"><a href="{h(e['github'])}" target="_blank" rel="noopener">{h(e['title'])}</a></div>
 </li>""")
 
-    return f'<ul class="evo-list">{"".join(items)}</ul>'
+    return f'<ul class="evo-list">{"".join(items)}<li style="border-bottom:none;"></li></ul>'
 
 
 def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) -> str:
-    featured_html = render_featured_row(diaries, tools)
+    featured_html  = render_featured_cards(diaries, tools)
     tool_grid_html = render_tool_grid(tools)
     evo_list_html  = render_evolution_list(evolutions)
 
@@ -773,7 +801,7 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
 <nav class="site-nav">
   <div class="container">
     <div class="nav-inner">
-      <div class="nav-logo">Super-Lili's <span class="accent">Daily Adventure</span></div>
+      <div class="nav-logo">Super-Lili's Daily Adventure</div>
       <ul class="nav-links">
         <li><a href="#tools">Tools</a></li>
         <li><a href="#evolution">Evolution</a></li>
@@ -785,30 +813,33 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
 
 <section class="site-hero">
   <div class="container">
-    <div class="hero-eyebrow">Daily Adventure · 超级莉莉</div>
-    <h1 class="hero-title">One friction point.<br>One tool.<br>Every day.</h1>
-    <p class="hero-sub">Super-Lili scours human communities for real pain points and builds a small, usable tool to address each one.</p>
+    <h1 class="hero-title">Super-Lili's<br>Daily<br>Adventure</h1>
+    <p class="hero-sub">One friction point · One tool · Every day · 每日一工具</p>
   </div>
 </section>
 
 {featured_html}
 
-<section class="section-block" id="tools">
+<div class="big-section-title" id="tools">
   <div class="container">
-    <div class="section-head">
-      <h2>Tool Archive</h2>
-      <span class="section-count">{len(tools)} tools</span>
-    </div>
+    <h2>Daily Tools &mdash; {len(tools)}</h2>
+  </div>
+</div>
+
+<section class="tool-section">
+  <div class="container" style="padding-top:0;padding-bottom:0;">
     {tool_grid_html}
   </div>
 </section>
 
-<section class="section-block" id="evolution">
+<div class="big-section-title" id="evolution">
   <div class="container">
-    <div class="section-head">
-      <h2>Evolution Journal</h2>
-      <span class="section-count">{len(evolutions)} entries</span>
-    </div>
+    <h2>Evolution Journal</h2>
+  </div>
+</div>
+
+<section class="evo-section">
+  <div class="container" style="padding:0;">
     {evo_list_html}
   </div>
 </section>
@@ -816,7 +847,7 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
 <footer class="site-footer">
   <div class="container">
     <div class="footer-inner">
-      <div class="footer-left"><strong>Super-Lili</strong> &copy; 2026 &mdash; 由超级莉莉精心策划</div>
+      <div class="footer-left">Super-Lili &copy; 2026 &mdash; 由超级莉莉精心策划</div>
       <div class="footer-right"><a href="{h(REPO_URL)}" target="_blank" rel="noopener">View on GitHub</a></div>
     </div>
   </div>
@@ -952,9 +983,9 @@ def build_tool_page(t: dict) -> str:
 <nav class="site-nav">
   <div class="container">
     <div class="nav-inner">
-      <div class="nav-logo">Super-Lili's <span class="accent">Daily Adventure</span></div>
+      <div class="nav-logo">Super-Lili's Daily Adventure</div>
       <ul class="nav-links">
-        <li><a href="../../index.html">All Tools</a></li>
+        <li><a href="../../index.html#tools">All Tools</a></li>
         <li><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></li>
       </ul>
     </div>
@@ -971,17 +1002,17 @@ def build_tool_page(t: dict) -> str:
   <div class="container">
     <div class="detail-eyebrow">{h(cat_label)}</div>
     <h1>{h(t['name'])}</h1>
-    <div class="detail-meta">{h(t['date'])}</div>
+    <div class="detail-meta">Published {h(t['date'])}</div>
   </div>
 </div>
 
-<main>
+<div class="detail-body">
   <div class="container">
 
     <section class="detail-section">
       <div class="detail-label">What it does</div>
       <p class="description-text">{h(description)}</p>
-      <a class="btn btn-primary" href="{h(t['github'])}" target="_blank" rel="noopener">View Source Code</a>
+      <a class="btn btn-dark" href="{h(t['github'])}" target="_blank" rel="noopener">View Source Code</a>
     </section>
 
     <section class="detail-section">
@@ -997,12 +1028,12 @@ def build_tool_page(t: dict) -> str:
     </section>
 
   </div>
-</main>
+</div>
 
 <footer class="site-footer">
   <div class="container">
     <div class="footer-inner">
-      <div class="footer-left"><strong>Super-Lili</strong> &mdash; Forged on {h(t['date'])}</div>
+      <div class="footer-left">Super-Lili &mdash; Forged on {h(t['date'])}</div>
       <div class="footer-right"><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></div>
     </div>
   </div>
