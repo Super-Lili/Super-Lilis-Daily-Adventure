@@ -254,12 +254,12 @@ a:hover { color: #2ABBA8; }
     height: 56px;
 }
 .nav-logo {
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.01em;
     color: #1a1a1a;
 }
-.nav-logo .accent { color: #2ABBA8; }
+.nav-logo .dot { color: #2ABBA8; }
 .nav-links {
     display: flex;
     gap: 32px;
@@ -268,9 +268,8 @@ a:hover { color: #2ABBA8; }
 .nav-links a {
     font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #666;
+    letter-spacing: 0.04em;
+    color: #888;
     transition: color 0.15s;
 }
 .nav-links a:hover { color: #1a1a1a; }
@@ -313,7 +312,9 @@ a:hover { color: #2ABBA8; }
     border-top: 2px solid #1a1a1a;
     padding-top: 14px;
     margin-bottom: 36px;
+    gap: 12px;
 }
+.section-head-left { display: flex; align-items: baseline; gap: 10px; }
 .section-head h2 {
     font-size: 0.72rem;
     font-weight: 700;
@@ -321,10 +322,17 @@ a:hover { color: #2ABBA8; }
     text-transform: uppercase;
     color: #1a1a1a;
 }
+.section-head .label-zh {
+    font-size: 0.72rem;
+    color: #bbb;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
 .section-head .section-count {
     font-size: 0.72rem;
-    color: #aaa;
+    color: #ccc;
     letter-spacing: 0.05em;
+    margin-left: auto;
 }
 
 /* ── Featured latest entry ── */
@@ -480,7 +488,7 @@ a:hover { color: #2ABBA8; }
     border-bottom: 1px solid #e8e8e8;
     align-items: baseline;
 }
-.evo-date { font-size: 0.75rem; color: #aaa; font-variant-numeric: tabular-nums; }
+.evo-date { font-size: 0.75rem; color: #2ABBA8; font-weight: 600; font-variant-numeric: tabular-nums; }
 .evo-title { font-size: 0.92rem; color: #1a1a1a; }
 .evo-title a { transition: color 0.15s; }
 .evo-title a:hover { color: #2ABBA8; }
@@ -690,7 +698,7 @@ def render_featured_row(diaries: list[dict], tools: list[dict]) -> str:
     tool_link = ""
     for t in tools:
         if t["date"] == d["date"]:
-            tool_link = f'<a class="btn btn-outline" href="tools/{h(t["slug"])}/index.html">View Tool</a>'
+            tool_link = f'<a class="btn btn-outline" href="tools/{h(t["slug"])}/index.html">今日工具 →</a>'
             break
 
     cover_bg   = CATEGORY_COVER.get("Education Evolution", "#e8e8e8")
@@ -703,21 +711,24 @@ def render_featured_row(diaries: list[dict], tools: list[dict]) -> str:
 <section class="featured-row">
   <div class="container">
     <div class="section-head">
-      <h2>Latest Entry</h2>
+      <div class="section-head-left">
+        <h2>Latest Entry</h2>
+        <span class="label-zh">今日日记</span>
+      </div>
       <span class="section-count">{h(d["date"])}</span>
     </div>
     <div class="featured-inner">
       <div class="featured-cover" style="background:{cover_bg};color:{cover_text};">
         <div class="cover-date">{h(d["date"])}</div>
-        <div class="cover-label">Daily<br>Diary</div>
+        <div class="cover-label">今日日记<br><span style="font-size:0.7em;font-weight:400;opacity:0.6;">Daily Diary</span></div>
       </div>
       <div class="featured-body">
-        <div class="featured-tag">Diary Entry</div>
+        <div class="featured-tag">今日日记 · Latest Entry</div>
         <h3>{h(d["title"])}</h3>
         {title_zh_html}
         {excerpt_html}
         <div class="featured-links">
-          <a class="btn btn-primary" href="{h(d['github'])}" target="_blank" rel="noopener">Read Diary</a>
+          <a class="btn btn-primary" href="{h(d['github'])}" target="_blank" rel="noopener">读日记 Read Diary</a>
           {tool_link}
         </div>
       </div>
@@ -773,10 +784,10 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
 <nav class="site-nav">
   <div class="container">
     <div class="nav-inner">
-      <div class="nav-logo">Super-Lili's <span class="accent">Daily Adventure</span></div>
+      <div class="nav-logo">Super-Lili<span class="dot">.</span></div>
       <ul class="nav-links">
-        <li><a href="#tools">Tools</a></li>
-        <li><a href="#evolution">Evolution</a></li>
+        <li><a href="#tools">工具库</a></li>
+        <li><a href="#evolution">成长日志</a></li>
         <li><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></li>
       </ul>
     </div>
@@ -785,9 +796,9 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
 
 <section class="site-hero">
   <div class="container">
-    <div class="hero-eyebrow">Daily Adventure · 超级莉莉</div>
+    <div class="hero-eyebrow">超级莉莉 · Daily Adventure</div>
     <h1 class="hero-title">One friction point.<br>One tool.<br>Every day.</h1>
-    <p class="hero-sub">Super-Lili scours human communities for real pain points and builds a small, usable tool to address each one.</p>
+    <p class="hero-sub">超级莉莉每天在社区发现真实的人类痛点，并为每个痛点构建一个小而可用的工具。</p>
   </div>
 </section>
 
@@ -796,8 +807,11 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
 <section class="section-block" id="tools">
   <div class="container">
     <div class="section-head">
-      <h2>Tool Archive</h2>
-      <span class="section-count">{len(tools)} tools</span>
+      <div class="section-head-left">
+        <h2>Tool Archive</h2>
+        <span class="label-zh">工具库</span>
+      </div>
+      <span class="section-count">{len(tools)} 个工具</span>
     </div>
     {tool_grid_html}
   </div>
@@ -806,8 +820,11 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
 <section class="section-block" id="evolution">
   <div class="container">
     <div class="section-head">
-      <h2>Evolution Journal</h2>
-      <span class="section-count">{len(evolutions)} entries</span>
+      <div class="section-head-left">
+        <h2>Evolution Journal</h2>
+        <span class="label-zh">成长日志</span>
+      </div>
+      <span class="section-count">{len(evolutions)} 篇</span>
     </div>
     {evo_list_html}
   </div>
@@ -816,13 +833,13 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
 <footer class="site-footer">
   <div class="container">
     <div class="footer-inner">
-      <div class="footer-left"><strong>Super-Lili</strong> &copy; 2026 &mdash; 由超级莉莉精心策划</div>
-      <div class="footer-right"><a href="{h(REPO_URL)}" target="_blank" rel="noopener">View on GitHub</a></div>
+      <div class="footer-left"><strong>Super-Lili</strong> &copy; 2026 &nbsp;·&nbsp; 由超级莉莉精心策划</div>
+      <div class="footer-right"><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></div>
     </div>
   </div>
 </footer>
 """
-    return page_shell("Super-Lili's Daily Adventure", body)
+    return page_shell("Super-Lili's Daily Adventure · 超级莉莉每日冒险", body)
 
 
 # ── Tool detail page ────────────────────────────────────────────────────────────
@@ -952,9 +969,9 @@ def build_tool_page(t: dict) -> str:
 <nav class="site-nav">
   <div class="container">
     <div class="nav-inner">
-      <div class="nav-logo">Super-Lili's <span class="accent">Daily Adventure</span></div>
+      <div class="nav-logo">Super-Lili<span class="dot">.</span></div>
       <ul class="nav-links">
-        <li><a href="../../index.html">All Tools</a></li>
+        <li><a href="../../index.html#tools">工具库</a></li>
         <li><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></li>
       </ul>
     </div>
@@ -963,7 +980,7 @@ def build_tool_page(t: dict) -> str:
 
 <div class="detail-nav">
   <div class="container">
-    <a class="back-link" href="../../index.html">← All Tools</a>
+    <a class="back-link" href="../../index.html">← 返回工具库</a>
   </div>
 </div>
 
@@ -979,18 +996,18 @@ def build_tool_page(t: dict) -> str:
   <div class="container">
 
     <section class="detail-section">
-      <div class="detail-label">What it does</div>
+      <div class="detail-label">What it does · 工具说明</div>
       <p class="description-text">{h(description)}</p>
-      <a class="btn btn-primary" href="{h(t['github'])}" target="_blank" rel="noopener">View Source Code</a>
+      <a class="btn btn-primary" href="{h(t['github'])}" target="_blank" rel="noopener">查看源码 View Code</a>
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Dependencies</div>
+      <div class="detail-label">Dependencies · 依赖库</div>
       <ul class="req-list">{req_items}</ul>
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Try it in browser</div>
+      <div class="detail-label">Try it in browser · 在线运行</div>
       <div class="try-it">
         {pyodide_section}
       </div>
@@ -1002,7 +1019,7 @@ def build_tool_page(t: dict) -> str:
 <footer class="site-footer">
   <div class="container">
     <div class="footer-inner">
-      <div class="footer-left"><strong>Super-Lili</strong> &mdash; Forged on {h(t['date'])}</div>
+      <div class="footer-left"><strong>Super-Lili</strong> &nbsp;·&nbsp; 由超级莉莉精心策划 &nbsp;·&nbsp; {h(t['date'])}</div>
       <div class="footer-right"><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></div>
     </div>
   </div>
