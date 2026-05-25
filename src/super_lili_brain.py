@@ -444,6 +444,14 @@ QUALITY BAR: Would a non-technical person be able to run this and feel like thei
 is actually solved? If no — go deeper. The sophistication should be invisible to the user
 and obvious in the result.
 
+USABILITY CONSTRAINTS (mandatory — no exceptions):
+  ✗ NO external API keys required — the tool must work out of the box, zero setup
+  ✗ NO more than 3 user inputs — if it needs more, redesign it
+  ✗ NO tools that only print text to the terminal — the output must be a file or visual
+  ✓ A stranger with no technical background can use it in under 5 minutes
+  ✓ The tool solves ONE specific problem, not a family of vague problems
+  ✓ Code must be under 200 lines — complexity is the enemy of usability
+
 SAFETY: No hacking, no unauthorized scraping, no privacy invasion.
 
 ═══════════════════════════════════════════════════════
