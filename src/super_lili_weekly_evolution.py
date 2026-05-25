@@ -20,6 +20,34 @@ client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 # DATA COLLECTION
 # ─────────────────────────────────────────────────────────────
 
+def fetch_github_issues(n: int = 30) -> list[dict]:
+    """Fetch recent GitHub Issues from the public repo (no auth needed)."""
+    import urllib.request, json
+    repo = "Super-Lili/Super-Lilis-Daily-Adventure"
+    url = f"https://api.github.com/repos/{repo}/issues?state=all&per_page={n}&sort=created&direction=desc"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Super-Lili-Evolution-Bot"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            items = json.loads(resp.read())
+        issues = [
+            {
+                "number": i["number"],
+                "title":  i["title"],
+                "body":   (i.get("body") or "")[:400].strip(),
+                "state":  i["state"],
+                "date":   i["created_at"][:10],
+                "labels": [l["name"] for l in i.get("labels", [])],
+            }
+            for i in items
+            if not i.get("pull_request")
+        ]
+        print(f"  ✓ Fetched {len(issues)} GitHub issues.")
+        return issues
+    except Exception as e:
+        print(f"  ⚠ Could not fetch GitHub issues: {e}")
+        return []
+
+
 def collect_week_diaries(n: int = 7) -> list[tuple[str, str]]:
     log_dir = Path("01_Work_Log")
     if not log_dir.exists():
@@ -66,12 +94,22 @@ def read_current_soul() -> str:
 # ─────────────────────────────────────────────────────────────
 
 def build_evolution_prompt(today_str: str, week_start: str,
-                            diaries: list, tools: list, soul: str) -> str:
+                            diaries: list, tools: list, soul: str,
+                            issues: list | None = None) -> str:
     diary_block = "\n\n".join(
         f"=== {stem} ===\n{content}" for stem, content in diaries
     ) or "(No diaries this week)"
     tools_block = "\n".join(f"  • {t}" for t in tools) or "  (No new tools this week)"
     soul_excerpt = soul[:1500]
+
+    if issues:
+        issues_block = "\n".join(
+            f"  #{i['number']} [{i['state']}] {i['date']} — {i['title']}"
+            + (f"\n    {i['body'][:200]}" if i['body'] else "")
+            for i in issues
+        )
+    else:
+        issues_block = "  (No issues submitted this week — nobody has tested your tools yet, or nobody has reported back.)"
 
     return f"""You are Super-Lili conducting your weekly self-evolution session.
 Today: {today_str} | Reviewing: {week_start} → {today_str}
@@ -90,6 +128,15 @@ TOOLS BUILT THIS WEEK:
 {tools_block}
 
 ═══════════════════════════════════════════════════════
+USER FEEDBACK — GITHUB ISSUES THIS WEEK:
+═══════════════════════════════════════════════════════
+{issues_block}
+
+Read this feedback carefully. If there are no issues, reflect honestly on what that means:
+are the tools not being found? Not useful enough to prompt a response? What would need to
+change for someone to care enough to open an issue?
+
+═══════════════════════════════════════════════════════
 CURRENT SOUL CONFIG:
 ═══════════════════════════════════════════════════════
 {soul_excerpt}
@@ -102,11 +149,18 @@ EVOLUTION TASKS:
    What was this week really about? What themes keep appearing?
    What human need did you serve most? What did you learn about people?
    Be honest about the quality of your work — no grade inflation.
+   Include: did this week's tools feel genuinely useful, or did they feel like variations
+   of the same idea? Name it plainly if they did.
 
-2. THREE STRENGTHS (specific examples from this week's work):
+2. USER FEEDBACK ANALYSIS:
+   Look at the GitHub Issues above. For each issue: what does it reveal about how people
+   are actually encountering your work? If there are no issues, be honest — what does
+   silence mean? Write 3-5 sentences. This shapes your next week.
+
+3. THREE STRENGTHS (specific examples from this week's work):
    Name the moment, not just the trait.
 
-3. THREE GROWTH AREAS (honest, kind, specific):
+4. THREE GROWTH AREAS (honest, kind, specific):
    Not vague "I should do better" — name the exact pattern.
 
 4. OPEN SOURCE SCOUTING (use Google Search):
@@ -390,7 +444,11 @@ def weekly_evolution():
     print(f"  ✓ Collected {len(tools)} tool records.")
 
     soul = read_current_soul()
-    prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul)
+
+    print("📬 Fetching GitHub Issues...")
+    issues = fetch_github_issues(30)
+
+    prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul, issues)
 
     print("🧠 Running self-evolution with Gemini...")
     content = call_gemini(prompt)

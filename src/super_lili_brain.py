@@ -115,6 +115,33 @@ def _get_recent_patterns(n: int = 4) -> list[str]:
         return []
 
 
+def _get_existing_tools() -> str:
+    """Return a formatted list of all existing tool names + one-line descriptions."""
+    toolbox = Path("02_Toolbox")
+    if not toolbox.exists():
+        return "  (none yet)"
+    lines = []
+    for cat_dir in sorted(toolbox.iterdir()):
+        if not cat_dir.is_dir():
+            continue
+        for tool_dir in sorted(cat_dir.iterdir(), reverse=True):
+            if not tool_dir.is_dir() or len(tool_dir.name) < 11:
+                continue
+            tool_name = tool_dir.name[11:].replace("_", " ")
+            desc = ""
+            readme = tool_dir / "README.md"
+            try:
+                if readme.exists():
+                    for line in readme.read_text(encoding="utf-8").splitlines():
+                        if line.startswith("**What it does:**"):
+                            desc = line.replace("**What it does:**", "").strip()[:90]
+                            break
+            except Exception:
+                pass
+            lines.append(f"  • {tool_name}" + (f" — {desc}" if desc else ""))
+    return "\n".join(lines) if lines else "  (none yet)"
+
+
 _SOURCE_ROTATION = [
     # ── KNOWLEDGE WORKERS & PRODUCTIVITY ──
     ("Reddit (knowledge workers)",
@@ -226,10 +253,13 @@ def build_prompt(today: str) -> str:
         f"{LILI_EDITOR_CONTEXT}"
     ) if LILI_EDITOR_CONTEXT else ""
 
-    recent_cats = _get_recent_categories(4)
-    cat_counts = {c: recent_cats.count(c) for c in set(recent_cats)}
-    overused = [c for c, n in cat_counts.items() if n >= 2]
-    avoid_cats = f"\nAVOID these categories today (used too recently): {', '.join(overused)}" if overused else ""
+    # ③ Category rotation: ban any category used in the last 2 days
+    recent_cats = _get_recent_categories(2)
+    banned_cats = list(set(recent_cats))
+    avoid_cats = f"\nBANNED CATEGORIES TODAY (used in the last 2 days — choose something different):\n  {', '.join(banned_cats)}" if banned_cats else ""
+
+    # ② Similarity check: inject all existing tools into prompt
+    existing_tools_block = _get_existing_tools()
 
     recent_patterns = _get_recent_patterns(4)
     pat_counts = {p: recent_patterns.count(p) for p in set(recent_patterns)}
@@ -244,6 +274,15 @@ def build_prompt(today: str) -> str:
 
 YOUR CURRENT SKILL INVENTORY:
 {skills_list}
+
+═══════════════════════════════════════════════════════
+EXISTING TOOLS — STRICT DUPLICATION BAN
+═══════════════════════════════════════════════════════
+You have already built these tools. Study this list carefully.
+DO NOT build anything conceptually similar to any of them.
+If your proposed tool could be described with the same verb + noun as one below, reject it and find a different problem.
+
+{existing_tools_block}
 
 ═══════════════════════════════════════════════════════
 YOUR MEMORY — WHAT YOU'VE ALREADY DONE
@@ -358,6 +397,29 @@ TODAY'S REQUIRED SOURCE: {primary_src}
 Start your search here. If you cannot find a strong signal on {primary_src},
 you may fall back to Reddit, HackerNews, or a news article — but try {primary_src} first.
 The best stories are not on the front page — they're in the comments, the replies, the second-level threads.
+
+PAIN PORTRAIT — MANDATORY BEFORE PROPOSING ANY TOOL:
+After scouting, you must write a Pain Portrait that passes all 3 checks:
+
+  1. WHO (specific person, not a vague demographic):
+     ✗ WEAK: "people who struggle with learning"
+     ✓ STRONG: "a 34-year-old nurse working night shifts who bought a Python course
+       6 months ago but can't finish it because she's always too tired after her shift"
+
+  2. THE MOMENT OF FAILURE (what were they trying to do, what broke down):
+     ✗ WEAK: "they can't stay focused"
+     ✓ STRONG: "she opens the course at 7am after her shift, gets through 4 minutes,
+       then falls asleep — and when she wakes up she has no idea where she was or
+       what she half-learned. The progress bar shows 23% but she feels like she knows nothing."
+
+  3. WHY EXISTING TOOLS FAIL THEM (be specific about what fails):
+     ✗ WEAK: "current tools aren't good enough"
+     ✓ STRONG: "Anki is designed for dedicated study sessions, not 4-minute fragments.
+       YouTube doesn't remember where she stopped. Her notes are scattered across
+       3 apps. Nothing connects the fragments into cumulative understanding."
+
+If you cannot write a convincing Pain Portrait with all 3 checks, the friction is too vague.
+Keep searching — do not build a tool for a fuzzy problem.
 
 Before moving on, ask yourself: what domains does this problem actually touch?
 A good friction point sits at the intersection of at least 2 fields.
