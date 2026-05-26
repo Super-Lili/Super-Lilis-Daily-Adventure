@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install pip install PyPDF2</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Education Evolution/2026-05-15_Paper_Parrot/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your study notes, article, or learning material here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Education Evolution/2026-05-15_Paper_Parrot/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport argparse\nimport PyPDF2\nimport re\nimport os\nimport csv\nfrom typing import List, Dict\n\n# Requirements:\n# pip install PyPDF2\n\ndef extract_text_from_pdf(pdf_path: str) -> str:\n    \"\"\"\n    Extracts all text from a PDF file.\n\n    Args:\n        pdf_path: The path to the PDF file.\n\n    Returns:\n        A string containing all text from the PDF, or an empty string if an error occurs.\n    \"\"\"\n    try:\n        with open(pdf_path, 'rb') as file:\n            reader = PyPDF2.PdfReader(file)\n            text = \"\"\n            for page in reader.pages:\n                text += page.extract_text() + \"\\\\n\"\n            return text\n    except FileNotFoundError:\n        print(f\"Error: PDF file not found at '{pdf_path}'. Please check the path.\")\n        return \"\"\n    except Exception as e:\n        print(f\"Error extracting text from PDF '{pdf_path}': {e}\")\n        return \"\"\n\ndef identify_key_points(text: str) -> List[Dict[str, str]]:\n    \"\"\"\n    Identifies potential key points (arguments, methods, findings) from the text\n    and suggests questions and prompts for active recall.\n\n    Args:\n        text: The full text of the paper.\n\n    Returns:\n        A list of dictionaries, each containing a 'question', 'answer_prompt',\n        'original_snippet', and 'type'.\n    \"\"\"\n    key_points = []\n    \n    # Heuristic patterns for arguments, methods, and findings\n    patterns = {\n        \"argument\": r\"(?:this paper|we)\\\\s+(?:propose|argue|demonstrate|show|present|suggest|contend)\\\\s+([\\\\w\\\\s,-]+(?:\\\\s+that|\\\\s+how|\\\\s+the)?(?:[^.!?\\\\n]{10,150}[.!?]))\",\n        \"methodology\": r\"(?:our approach|the method|we utilized|we employed|the experimental design involved)\\\\s+([\\\\w\\\\s,-]+(?:[^.!?\\\\n]{10,150}[.!?]))\",\n        \"finding\": r\"(?:our results|we found|the study revealed|the data indicate|it was observed)\\\\s+([\\\\w\\\\s,-]+(?:[^.!?\\\\n]{10,150}[.!?]))\"\n    }\n\n    # Split text into paragraphs for better context\n    paragraphs = [p.strip() for p in text.split('\\\\n') if p.strip()]\n\n    for para_idx, paragraph in enumerate(paragraphs):\n        for key_type, pattern in patterns.items():\n            for match in re.finditer(pattern, paragraph, re.IGNORECASE):\n                snippet = match.group(0).strip()\n                extracted_content = match.group(1).strip()\n\n                question = \"\"\n                answer_prompt = \"\"\n\n                if key_type == \"argument\":\n                    question = f\"What is the main argument or proposal of this section?\"\n                    answer_prompt = f\"Summarize the argument presented: '{extracted_content}'\"\n                elif key_type == \"methodology\":\n                    question = f\"Describe the key methodology or approach used here.\"\n                    answer_prompt = f\"Explain the method highlighted: '{extracted_content}'\"\n                elif key_type == \"finding\":\n                    question = f\"What are the main findings or results reported in this section?\"\n                    answer_prompt = f\"Detail the findings: '{extracted_content}'\"\n                \n                if question and answer_prompt:\n                    key_points.append({\n                        \"Type\": key_type.capitalize(),\n                        \"Question\": question,\n                        \"Answer Prompt\": answer_prompt,\n                        \"Original Snippet\": snippet,\n                        \"Source Paragraph\": para_idx + 1\n                    })\n    return key_points\n\ndef save_insights_to_csv(insights: List[Dict[str, str]], output_path: str):\n    \"\"\"\n    Saves the extracted insights to a CSV file without using pandas.\n\n    Args:\n        insights: A list of dictionaries containing the extracted key points.\n        output_path: The path where the CSV file will be saved.\n    \"\"\"\n    if not insights:\n        print(\"No insights to save.\")\n        return\n\n    try:\n        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:\n            fieldnames = list(insights[0].keys())\n            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)\n\n            writer.writeheader()\n            for row in insights:\n                writer.writerow(row)\n        print(f\"Insights successfully saved to '{output_path}'\")\n    except Exception as e:\n        print(f\"Error saving insights to CSV '{output_path}': {e}\")\n\ndef main(args=None):\n    parser = argparse.ArgumentParser(\n        description=\"Paper Parrot: Extracts key points from academic PDFs and generates active recall prompts.\"\n    )\n    parser.add_argument(\n        \"--input_pdf\",\n        type=str,\n        required=True,\n        help=\"Path to the input PDF academic paper.\"\n    )\n    parser.add_argument(\n        \"--output_csv\",\n        type=str,\n        default=\"paper_parrot_insights.csv\",\n        help=\"Path to the output CSV file where insights will be saved.\"\n    )\n\n    parsed_args = parser.parse_args(args)\n\n    print(f\"Flapping wings for Paper Parrot to process '{parsed_args.input_pdf}'...\")\n\n    # 1. Extract text from PDF\n    paper_text = extract_text_from_pdf(parsed_args.input_pdf)\n    if not paper_text:\n        print(\"Exiting due to empty or unreadable PDF text.\")\n        return\n\n    # 2. Identify key points and generate prompts\n    insights = identify_key_points(paper_text)\n    \n    if not insights:\n        print(\"Hmm, Paper Parrot couldn't find any prominent arguments, methodologies, or findings in this paper. Try a different document or adjust the patterns!\")\n        return\n\n    # 3. Save insights to CSV\n    save_insights_to_csv(insights, parsed_args.output_csv)\n    print(\"\\\\nPaper Parrot finished its squawk! Time to engage with your new insights. Go make those ideas stick!\")\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Identify key points, arguments, methodologies, and findings in academic text.\"\"\"\n    if not text.strip():\n        return \"Paste the text of an academic paper to extract key points and active recall prompts.\"\n    insights = identify_key_points(text)\n    if not insights:\n        return \"No prominent arguments, methodologies, or findings detected in the provided text. Try pasting a longer or more structured excerpt.\"\n    lines = [\"| Type | Question | Answer Prompt | Original Snippet | Source Paragraph |\",\n             \"|---|---|---|---|---|\"]\n    for item in insights:\n        row = \"| \" + \" | \".join(str(item.get(h, \"\")) for h in [\"Type\", \"Question\", \"Answer Prompt\", \"Original Snippet\", \"Source Paragraph\"]) + \" |\"\n        lines.append(row)\n    return \"\\\\n\".join(lines)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    # Create a dummy PDF for demonstration\n    demo_pdf_content = \"\"\"\n    A Novel Approach to Cognitive Load Reduction in Online Learning Environments\n\n    Abstract\n    Online learning has gained significant traction, yet students often face high cognitive load, impacting retention. This paper proposes a novel algorithm, called 'Adaptive Content Chunking' (ACC), designed to dynamically adjust content presentation based on learner performance metrics. Our methodology involved a randomized controlled trial with 200 university students across various disciplines. We utilized eye-tracking data and post-lecture quizzes to assess cognitive load and comprehension. The experimental design involved three groups: control (standard presentation), static chunking, and ACC.\n\n    Introduction\n    Cognitive overload is a pervasive challenge in digital education. Existing solutions often simplify content uniformly, which may not cater to individual learning paces. This research aims to address this adaptive challenge. We argue that dynamic content delivery can significantly enhance learning outcomes.\n\n    Methodology\n    Our approach employed a custom-built learning platform integrating advanced eye-tracking hardware and a real-time quiz engine. Participants completed modules on introductory physics. The study revealed that students in the ACC group demonstrated a 15% improvement in quiz scores and reported lower perceived cognitive load compared to the control group. Data indicate that early intervention with smaller content chunks was crucial. We found a strong correlation between reduced gaze duration on distracting elements and improved retention.\n\n    Results\n    The primary finding was the significant reduction in cognitive load for students using the ACC algorithm. Specifically, ANOVA tests showed a statistically significant difference (p < 0.01) in quiz performance. We observed that the ACC group required fewer repetitions to achieve mastery.\n\n    Conclusion\n    This study demonstrates the efficacy of the Adaptive Content Chunking algorithm in mitigating cognitive load and improving learning outcomes in online environments. We suggest future work could explore personalized chunking strategies for different subject matters.\n    \"\"\"\n\n    # Create a dummy PDF file\n    demo_pdf_path = \"demo_paper.pdf\"\n    from reportlab.pdfgen import canvas\n    from reportlab.lib.pagesizes import letter\n\n    try:\n        c = canvas.Canvas(demo_pdf_path, pagesize=letter)\n        textobject = c.beginText()\n        textobject.setTextOrigin(50, 750)\n        textobject.setFont(\"Helvetica\", 12)\n        \n        # Split content into lines and add to PDF\n        for line in demo_pdf_content.split('\\\\n'):\n            textobject.textLine(line)\n        \n        c.drawText(textobject)\n        c.save()\n        print(f\"Created dummy PDF: '{demo_pdf_path}'\")\n    except Exception as e:\n        print(f\"Error creating dummy PDF: {e}\")\n        # If PDF creation fails, ensure the script can still run by simulating text\n        if not os.path.exists(demo_pdf_path):\n            print(\"Proceeding with simulated text for demo since PDF creation failed.\")\n            paper_text_for_demo = demo_pdf_content\n            insights_for_demo = identify_key_points(paper_text_for_demo)\n            save_insights_to_csv(insights_for_demo, \"demo_paper_insights_simulated.csv\")\n            exit() # Exit after simulated run if PDF creation failed completely\n\n\n    # Run the tool with the dummy PDF\n    main(args=[\"--input_pdf\", demo_pdf_path, \"--output_csv\", \"demo_paper_insights.csv\"])\n\n    # Clean up the dummy PDF\n    try:\n        if os.path.exists(demo_pdf_path):\n            os.remove(demo_pdf_path)\n            print(f\"Cleaned up dummy PDF: '{demo_pdf_path}'\")\n    except Exception as e:\n        print(f\"Error cleaning up dummy PDF: {e}\")";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

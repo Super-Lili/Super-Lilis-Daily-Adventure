@@ -1,82 +1,78 @@
-```python
-def get_task_input(prompt):
-    """Gets validated integer input for task priority."""
-    while True:
-        try:
-            value = int(input(prompt))
-            if value in [1, 2]:
-                return value
-            else:
-                print("Please enter 1 or 2.")
-        except ValueError:
-            print("Invalid input. Please enter a number.")
+import re
 
-def prioritize_tasks():
-    """Helps prioritize tasks based on urgency and importance."""
-    tasks = []
-    print("Welcome to Clarity Compass! Let's prioritize your tasks.")
-    print("For each task, tell me: (1) Urgent, (2) Not Urgent; and (1) Important, (2) Not Important.")
-    
-    while True:
-        task_name = input("\nEnter a task (or 'done' to finish): ").strip()
-        if task_name.lower() == 'done':
-            break
 
-        print(f"\n--- Task: {task_name} ---")
-        urgency = get_task_input("Is this task (1) Urgent or (2) Not Urgent? ")
-        importance = get_task_input("Is this task (1) Important or (2) Not Important? ")
-        
-        tasks.append({'name': task_name, 'urgency': urgency, 'importance': importance})
-
-    if not tasks:
-        print("\nNo tasks to prioritize. Exiting Clarity Compass.")
-        return
-
-    # Categorize tasks
-    do_first = [] # Urgent & Important
-    schedule = [] # Not Urgent & Important
-    delegate = [] # Urgent & Not Important
-    eliminate = [] # Not Urgent & Not Important
-
+def categorize_tasks(tasks: list) -> dict:
+    """Categorize tasks into Eisenhower matrix quadrants."""
+    do_first, schedule, delegate, eliminate = [], [], [], []
     for task in tasks:
-        if task['urgency'] == 1 and task['importance'] == 1:
+        u = task.get('urgency', 2)
+        i = task.get('importance', 2)
+        if u == 1 and i == 1:
             do_first.append(task['name'])
-        elif task['urgency'] == 2 and task['importance'] == 1:
+        elif u == 2 and i == 1:
             schedule.append(task['name'])
-        elif task['urgency'] == 1 and task['importance'] == 2:
+        elif u == 1 and i == 2:
             delegate.append(task['name'])
-        else: # task['urgency'] == 2 and task['importance'] == 2
+        else:
             eliminate.append(task['name'])
+    return {"do_first": do_first, "schedule": schedule, "delegate": delegate, "eliminate": eliminate}
 
-    print("\n--- Your Prioritized Tasks ---")
-    if do_first:
-        print("\n⚡️ DO FIRST (Urgent & Important):")
-        for t in do_first:
-            print(f"- {t}")
-    else:
-        print("\n⚡️ DO FIRST (Urgent & Important): None")
 
-    if schedule:
-        print("\n🗓️ SCHEDULE (Not Urgent & Important):")
-        for t in schedule:
-            print(f"- {t}")
-    else:
-        print("\n🗓️ SCHEDULE (Not Urgent & Important): None")
+def process(text: str = "") -> str:
+    """Parse a task list and sort into the Eisenhower priority matrix.
 
-    if delegate:
-        print("\n🤝 DELEGATE (Urgent & Not Important):")
-        for t in delegate:
-            print(f"- {t}")
-    else:
-        print("\n🤝 DELEGATE (Urgent & Not Important): None")
+    Format: one task per line. Optionally append [urgent] and/or [important] tags.
+    Lines without tags are treated as non-urgent and important (schedule).
+    """
+    if not text.strip():
+        return (
+            "Paste your task list (one per line) to sort into the Eisenhower Matrix.\n\n"
+            "Add tags to each line: [urgent] [important] — e.g.:\n"
+            "  Fix production bug [urgent] [important]\n"
+            "  Write weekly report [important]\n"
+            "  Reply to newsletter [urgent]\n"
+            "  Browse social media"
+        )
+    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
+    tasks = []
+    for line in lines:
+        urgent = 1 if re.search(r'\[urgent\]', line, re.IGNORECASE) else 2
+        important = 1 if re.search(r'\[important\]', line, re.IGNORECASE) else 2
+        name = re.sub(r'\[(urgent|important)\]', '', line, flags=re.IGNORECASE).strip()
+        if name:
+            tasks.append({'name': name, 'urgency': urgent, 'importance': important})
+    if not tasks:
+        return "No tasks found. Paste one task per line."
+    cats = categorize_tasks(tasks)
+    out = ["## Clarity Compass: Eisenhower Matrix", ""]
 
-    if eliminate:
-        print("\n🗑️ ELIMINATE (Not Urgent & Not Important):")
-        for t in eliminate:
-            print(f"- {t}")
-    else:
-        print("\n🗑️ ELIMINATE (Not Urgent & Not Important): None")
+    def section(title, items):
+        result = [f"### {title}"]
+        if items:
+            for t in items:
+                result.append(f"- {t}")
+        else:
+            result.append("- (none)")
+        return result
 
-if __name__ == "__main__":
-    prioritize_tasks()
-```
+    out += section("DO FIRST — Urgent & Important", cats["do_first"])
+    out += [""]
+    out += section("SCHEDULE — Not Urgent & Important", cats["schedule"])
+    out += [""]
+    out += section("DELEGATE — Urgent & Not Important", cats["delegate"])
+    out += [""]
+    out += section("ELIMINATE — Not Urgent & Not Important", cats["eliminate"])
+    return "\n".join(out)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
+    demo = (
+        "Fix production bug [urgent] [important]\n"
+        "Write weekly report [important]\n"
+        "Reply to newsletter [urgent]\n"
+        "Browse social media"
+    )
+    print(process(demo))

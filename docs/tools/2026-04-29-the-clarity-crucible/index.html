@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install -r requirements.txt</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Office Automation/2026-04-29_The_Clarity_Crucible/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your meeting notes, task list, or work text here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Office Automation/2026-04-29_The_Clarity_Crucible/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n\\`\\`\\`python\nimport datetime\n\ndef generate_status_report(project_name, known_progress, pending_info, next_steps_awaiting_clarity):\n    \"\"\"\n    Generates a structured, honest status report to communicate project uncertainty.\n\n    Args:\n        project_name (str): The name of the project.\n        known_progress (list): A list of strings detailing confirmed progress/deliverables.\n        pending_info (list): A list of strings detailing specific information currently unavailable.\n        next_steps_awaiting_clarity (list): A list of strings for next steps dependent on pending_info.\n\n    Returns:\n        str: A formatted status report.\n    \"\"\"\n    report_date = datetime.date.today().strftime(\"%Y-%m-%d\")\n    report = f\"--- Project Status Report: {project_name} ---\\\\n\"\n    report += f\"Date: {report_date}\\\\n\\\\n\"\n    report += \"## Executive Summary:\\\\n\"\n    report += \"Current status reflects ongoing progress in defined areas, with key planning elements awaiting further input from relevant stakeholders.\\\\n\\\\n\"\n\n    report += \"## Confirmed Progress/Deliverables:\\\\n\"\n    if known_progress:\n        for item in known_progress:\n            report += f\"- {item}\\\\n\"\n    else:\n        report += \"- No specific confirmed progress to report at this moment, focusing on foundational elements.\\\\n\"\n    report += \"\\\\n\"\n\n    report += \"## Critical Information Pending:\\\\n\"\n    if pending_info:\n        for item in pending_info:\n            report += f\"- Awaiting {item}\\\\n\"\n    else:\n        report += \"- All necessary information for immediate next steps is available.\\\\n\"\n    report += \"\\\\n\"\n\n    report += \"## Next Steps (Dependent on Clarity):\\\\n\"\n    if next_steps_awaiting_clarity:\n        for item in next_steps_awaiting_clarity:\n            report += f\"- {item}\\\\n\"\n    else:\n        report += \"- Next steps are clearly defined and in progress.\\\\n\"\n    report += \"\\\\n\"\n\n    report += \"## Outlook:\\\\n\"\n    report += \"We are poised to accelerate once critical information becomes available. Will provide an updated outlook upon receiving necessary inputs.\"\n    return report\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Parse project status notes and generate a structured status report.\"\"\"\n    if not text.strip():\n        return generate_status_report(\n            \"Your Project\",\n            [\"Initial team alignment completed.\"],\n            [\"Product roadmap specifics.\", \"Leadership directives on strategic priorities.\"],\n            [\"Finalize budget proposal.\", \"Assign detailed sprint tasks.\"]\n        )\n    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]\n    project_name = lines[0] if lines else \"Your Project\"\n    known, pending, next_steps = [], [], []\n    current = None\n    for line in lines[1:]:\n        lower = line.lower()\n        if lower.startswith(\"known:\") or lower.startswith(\"progress:\"):\n            current = \"known\"\n        elif lower.startswith(\"pending:\") or lower.startswith(\"awaiting:\"):\n            current = \"pending\"\n        elif lower.startswith(\"next:\") or lower.startswith(\"steps:\"):\n            current = \"next\"\n        elif line.startswith(\"-\"):\n            item = line.lstrip(\"- \").strip()\n            if current == \"known\":\n                known.append(item)\n            elif current == \"pending\":\n                pending.append(item)\n            elif current == \"next\":\n                next_steps.append(item)\n    return generate_status_report(project_name, known, pending, next_steps)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == '__main__':\n    # Example usage based on the Reddit friction point\n    project = \"Q3 Initiative Planning\"\n    known = [\"Initial team alignment completed.\", \"Resource allocation models drafted (pending scope).\"]\n    pending = [\"Product roadmap specifics for Q3 from Product Management.\",\n               \"Confirmed leadership directives on strategic priorities for the next quarter.\"]\n    next_steps = [\"Finalize budget proposal (contingent on roadmap and directives).\",\n                  \"Assign detailed tasks for Q3 sprints (contingent on roadmap).\"]\n\n    report_output = generate_status_report(project, known, pending, next_steps)\n    print(report_output)\n\\`\\`\\`";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

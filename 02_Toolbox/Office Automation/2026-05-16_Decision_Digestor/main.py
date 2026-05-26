@@ -202,7 +202,24 @@ def main():
     else:
         print("No relevant information was extracted.")
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Extract action items and decisions from meeting notes or chat logs."""
+    if not text.strip():
+        return "Paste meeting notes or chat logs to extract action items and decisions."
+    entities = extract_communication_entities(text)
+    if not entities:
+        return "No action items or decisions found in the provided text."
+    headers = ["Type", "Description", "Owner", "DueDate"]
+    lines = ["| " + " | ".join(headers) + " |", "|---|---|---|---|"]
+    for item in entities:
+        lines.append("| " + " | ".join(str(item.get(h, "")) for h in headers) + " |")
+    return "\n".join(lines)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     demo_content = """
     Team Sync Meeting - 2026-05-16
 

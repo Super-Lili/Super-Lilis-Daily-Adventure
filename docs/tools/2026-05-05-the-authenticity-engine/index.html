@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install -r requirements.txt</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Design Alchemy/2026-05-05_The_Authenticity_Engine/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your brief, content, or design description here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Design Alchemy/2026-05-05_The_Authenticity_Engine/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nclass UserFeed:\n    def __init__(self, username):\n        self.username = username\n        self.explicit_interests = []\n        self.trusted_connections = []\n        self.content_queue = []\n\n    def add_interest(self, interest):\n        if interest not in self.explicit_interests:\n            self.explicit_interests.append(interest)\n\n    def add_trusted_connection(self, connection_id):\n        if connection_id not in self.trusted_connections:\n            self.trusted_connections.append(connection_id)\n\n    def receive_content(self, content_item):\n        self.content_queue.append(content_item)\n\n    def get_curated_feed(self) -> list:\n        curated_feed = []\n        for content in self.content_queue:\n            if content.get('author_id') in self.trusted_connections:\n                curated_feed.append(content)\n        for content in self.content_queue:\n            if any(interest in content.get('tags', []) for interest in self.explicit_interests) and \\\\\n               content not in curated_feed:\n                curated_feed.append(content)\n        return curated_feed\n\n    def generate_curated_feed(self):\n        feed = self.get_curated_feed()\n        print(f\"\\\\n--- {self.username}'s Authenticity Engine Feed ---\")\n        if not feed:\n            print(\"Your curated feed is empty. Try adding more connections or interests!\")\n        for item in feed:\n            print(f\"[{item.get('author_id', 'Unknown')}] - '{item.get('text', 'No content')}' (Tags: {', '.join(item.get('tags', []))})\")\n        print(\"--------------------------------------------------\")\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Simulate a user-curated feed. Paste interests/connections or use defaults.\n\n    Format (optional):\n      interests: AI ethics, creative activism\n      connections: DigitalNomad_X, ArtRebel_Y\n    \"\"\"\n    import re\n    interests = []\n    connections = []\n    if text.strip():\n        m = re.search(r'interests?:\\\\s*(.+)', text, re.IGNORECASE)\n        if m:\n            interests = [i.strip() for i in m.group(1).split(',') if i.strip()]\n        m = re.search(r'connections?:\\\\s*(.+)', text, re.IGNORECASE)\n        if m:\n            connections = [c.strip() for c in m.group(1).split(',') if c.strip()]\n    if not interests:\n        interests = [\"AI ethics\", \"creative activism\"]\n    if not connections:\n        connections = [\"DigitalNomad_X\", \"ArtRebel_Y\"]\n\n    feed_obj = UserFeed(\"You\")\n    for i in interests:\n        feed_obj.add_interest(i)\n    for c in connections:\n        feed_obj.add_trusted_connection(c)\n\n    content_stream = [\n        {'author_id': 'DigitalNomad_X', 'text': 'Thought-provoking article on AI bias in image generation.', 'tags': ['AI ethics', 'tech']},\n        {'author_id': 'RandomInfluencer', 'text': 'My new morning routine!', 'tags': ['lifestyle', 'wellness']},\n        {'author_id': 'ArtRebel_Y', 'text': 'New street art project challenging corporate surveillance.', 'tags': ['creative activism', 'art']},\n        {'author_id': 'NewsBot', 'text': 'Breaking news on market fluctuations.', 'tags': ['finance', 'news']},\n        {'author_id': 'DigitalNomad_X', 'text': 'Quick update on my latest activism hack.', 'tags': ['creative activism', 'digital rights']},\n        {'author_id': 'DataWhiz', 'text': 'Deep dive into privacy concerns with AI models.', 'tags': ['AI ethics', 'data privacy']},\n        {'author_id': 'ArtRebel_Y', 'text': 'Behind the scenes of our latest protest installation.', 'tags': ['creative activism', 'social justice']},\n        {'author_id': 'LocalBakery', 'text': 'Fresh sourdough loaves available!', 'tags': ['food', 'local']},\n    ]\n    for item in content_stream:\n        feed_obj.receive_content(item)\n\n    curated = feed_obj.get_curated_feed()\n    out = [f\"## Authenticity Engine: Your Curated Feed\", \"\",\n           f\"Interests: {', '.join(interests)}\",\n           f\"Trusted connections: {', '.join(connections)}\", \"\",\n           f\"Showing {len(curated)} of {len(content_stream)} posts:\", \"\"]\n    for item in curated:\n        tags = ', '.join(item.get('tags', []))\n        out.append(f\"- **[{item['author_id']}]** {item['text']}  _(tags: {tags})_\")\n    if not curated:\n        out.append(\"No matching posts found. Try adding more interests or connections.\")\n    return \"\\\\n\".join(out)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    print(process(\"\"))";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

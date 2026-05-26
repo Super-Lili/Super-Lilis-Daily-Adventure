@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install -r requirements.txt</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Healing Inventions/2026-05-06_The_Focus_Alchemist/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste a few sentences about how you're feeling or what's on your mind…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Healing Inventions/2026-05-06_The_Focus_Alchemist/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\ndef get_pomodoro_plan(work_minutes: int = 25, break_minutes: int = 5, cycles: int = 4) -> str:\n    \"\"\"Returns a Pomodoro session plan as text.\"\"\"\n    total_work = work_minutes * cycles\n    total_break = break_minutes * (cycles - 1)\n    total_time = total_work + total_break\n    lines = [\n        f\"## The Focus Alchemist: Pomodoro Plan\",\n        f\"\",\n        f\"- **Work block:** {work_minutes} min\",\n        f\"- **Break block:** {break_minutes} min\",\n        f\"- **Cycles:** {cycles}\",\n        f\"- **Total session time:** {total_time} min\",\n        f\"\",\n        f\"### Schedule:\",\n    ]\n    elapsed = 0\n    for i in range(1, cycles + 1):\n        lines.append(f\"  Cycle {i}: Work {elapsed:02d}m \u2192 {elapsed + work_minutes:02d}m\")\n        elapsed += work_minutes\n        if i < cycles:\n            lines.append(f\"  Break:   {elapsed:02d}m \u2192 {elapsed + break_minutes:02d}m\")\n            elapsed += break_minutes\n    lines += [\"\", \"Start your timer and focus \u2014 you've got this!\"]\n    return \"\\\\n\".join(lines)\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Return a Pomodoro session plan. Optionally parse 'work=25 break=5 cycles=4' from text.\"\"\"\n    import re\n    work, brk, cycles = 25, 5, 4\n    if text.strip():\n        m = re.search(r'work\\\\s*[=:]\\\\s*(\\\\d+)', text, re.IGNORECASE)\n        if m:\n            work = int(m.group(1))\n        m = re.search(r'break\\\\s*[=:]\\\\s*(\\\\d+)', text, re.IGNORECASE)\n        if m:\n            brk = int(m.group(1))\n        m = re.search(r'cycles?\\\\s*[=:]\\\\s*(\\\\d+)', text, re.IGNORECASE)\n        if m:\n            cycles = int(m.group(1))\n    return get_pomodoro_plan(work, brk, cycles)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    # Example usage: 25 minutes work, 5 minutes break, 4 cycles\n    print(get_pomodoro_plan(work_minutes=25, break_minutes=5, cycles=4))";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

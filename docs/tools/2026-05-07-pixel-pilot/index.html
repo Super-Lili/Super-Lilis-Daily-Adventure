@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install -r requirements.txt</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Design Alchemy/2026-05-07_Pixel_Pilot/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your brief, content, or design description here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Design Alchemy/2026-05-07_Pixel_Pilot/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport re\n\n\ndef analyze_image_info_text(text: str) -> str:\n    \"\"\"Parse image metadata from text description and give upload advice.\"\"\"\n    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]\n    size_mb = None\n    fmt = None\n    width = height = None\n    allowed_formats = ['jpeg', 'jpg', 'png', 'gif', 'webp']\n\n    for line in lines:\n        m = re.search(r'(\\\\d+(?:\\\\.\\\\d+)?)\\\\s*(?:mb|megabyte)', line, re.IGNORECASE)\n        if m:\n            size_mb = float(m.group(1))\n        m = re.search(r'\\\\b(jpe?g|png|gif|webp|bmp|tiff?|svg)\\\\b', line, re.IGNORECASE)\n        if m:\n            fmt = m.group(1).lower()\n        m = re.search(r'(\\\\d+)\\\\s*[x\u00d7]\\\\s*(\\\\d+)', line, re.IGNORECASE)\n        if m:\n            width, height = int(m.group(1)), int(m.group(2))\n\n    out = [\"## Pixel Pilot Diagnostic Report\", \"\"]\n    if size_mb is not None:\n        if size_mb <= 10:\n            out.append(f\"- File size: {size_mb:.2f} MB \u2014 within the 10 MB limit.\")\n        else:\n            out.append(f\"- File size: {size_mb:.2f} MB \u2014 EXCEEDS 10 MB limit. Consider compressing or resizing.\")\n    else:\n        out.append(\"- File size: not detected in input.\")\n    if fmt:\n        if fmt in allowed_formats:\n            out.append(f\"- Format: {fmt} \u2014 allowed for web upload.\")\n        else:\n            out.append(f\"- Format: {fmt} \u2014 not in recommended list ({', '.join(allowed_formats)}). Consider converting.\")\n    else:\n        out.append(\"- Format: not detected in input.\")\n    if width and height:\n        mp = (width * height) / 1_000_000\n        out.append(f\"- Dimensions: {width}x{height} px ({mp:.1f} megapixels).\")\n        if width > 4000 or height > 4000:\n            out.append(\"  Warning: very large dimensions \u2014 resize for faster uploads.\")\n    else:\n        out.append(\"- Dimensions: not detected in input.\")\n    out += [\"\", \"Tip: For web use, JPEG/PNG under 2 MB at 1920px wide is ideal.\"]\n    return \"\\\\n\".join(out)\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Analyze image metadata from text description for web upload readiness.\"\"\"\n    if not text.strip():\n        return (\n            \"Paste image info (filename, size in MB, format, dimensions) to get upload advice.\\\\n\\\\n\"\n            \"Example:\\\\n  photo.jpg, 3.2 MB, JPEG, 4000x3000\"\n        )\n    return analyze_image_info_text(text)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    print(process(\"portrait.png, 12.5 MB, PNG, 6000x4000\"))";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

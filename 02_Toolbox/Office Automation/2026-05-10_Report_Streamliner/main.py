@@ -192,7 +192,57 @@ def main():
         args.file_type
     )
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Parse CSV data and aggregate numeric columns grouped by the first column."""
+    if not text.strip():
+        return "Paste CSV data (with a key column and numeric columns) to aggregate and summarize it."
+    import io
+    import csv as _csv
+    try:
+        reader = _csv.DictReader(io.StringIO(text.strip()))
+        rows = list(reader)
+        fieldnames = reader.fieldnames or []
+    except Exception as e:
+        return f"Could not parse CSV: {e}"
+    if not rows or len(fieldnames) < 2:
+        return "Could not parse CSV or not enough columns found."
+    key_col = fieldnames[0]
+    num_cols = []
+    for col in fieldnames[1:]:
+        try:
+            float(rows[0].get(col, ""))
+            num_cols.append(col)
+        except (ValueError, TypeError):
+            pass
+    if not num_cols:
+        return f"No numeric columns found after '{key_col}'. Ensure your CSV has numeric data columns."
+    # Aggregate by key column
+    agg = {}
+    for row in rows:
+        key = row.get(key_col, "").strip()
+        if not key:
+            continue
+        if key not in agg:
+            agg[key] = {c: 0.0 for c in num_cols}
+        for c in num_cols:
+            try:
+                agg[key][c] += float(row.get(c, 0) or 0)
+            except (ValueError, TypeError):
+                pass
+    if not agg:
+        return "No data to aggregate after parsing."
+    header_cols = [key_col] + num_cols
+    lines = ["| " + " | ".join(header_cols) + " |", "|" + "---|" * len(header_cols)]
+    for key, totals in sorted(agg.items()):
+        vals = [key] + [f"{totals[c]:.2f}" for c in num_cols]
+        lines.append("| " + " | ".join(vals) + " |")
+    return "\n".join(lines)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     # Demo usage:
     # 1. Create a directory named 'demo_data'
     # 2. Create a few CSV or XLSX files inside 'demo_data'

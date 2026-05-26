@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install -r requirements.txt</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Design Alchemy/2026-05-03_Feed_Transparency_Alchemist/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your brief, content, or design description here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Design Alchemy/2026-05-03_Feed_Transparency_Alchemist/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport re\n\n\ndef analyze_instagram_feed(feed_posts: list) -> dict:\n    \"\"\"Analyze a list of post dicts with 'type' keys.\"\"\"\n    counts = {'followed_user': 0, 'ad': 0, 'suggested_page': 0, 'total': 0}\n    for post in feed_posts:\n        post_type = post.get('type')\n        if post_type in counts:\n            counts[post_type] += 1\n        counts['total'] += 1\n    non_followed = counts['ad'] + counts['suggested_page']\n    non_pct = (non_followed / counts['total'] * 100) if counts['total'] > 0 else 0\n    return {\n        'followed_posts': counts['followed_user'],\n        'ads': counts['ad'],\n        'suggested_pages': counts['suggested_page'],\n        'total_posts': counts['total'],\n        'non_followed_percentage': round(non_pct, 2)\n    }\n\n\ndef format_feed_report(r: dict) -> str:\n    total = r['total_posts']\n    followed = r['followed_posts']\n    ads = r['ads']\n    suggested = r['suggested_pages']\n    pct = r['non_followed_percentage']\n    followed_pct = round(followed / total * 100, 1) if total else 0\n    lines = [\n        \"## Feed Transparency Alchemist Report\",\n        \"\",\n        f\"| Type | Count | % of feed |\",\n        \"|---|---|---|\",\n        f\"| Followed user posts | {followed} | {followed_pct}% |\",\n        f\"| Advertisements | {ads} | {round(ads/total*100,1) if total else 0}% |\",\n        f\"| Suggested pages | {suggested} | {round(suggested/total*100,1) if total else 0}% |\",\n        f\"| **Total** | **{total}** | 100% |\",\n        \"\",\n        f\"**Non-followed content (ads + suggested): {pct}%**\",\n    ]\n    if pct > 60:\n        lines.append(\"Your feed is dominated by non-followed content. Consider curating your follows or using a chronological feed mode.\")\n    elif pct > 30:\n        lines.append(\"A significant portion of your feed is ads or suggested content.\")\n    else:\n        lines.append(\"Your feed is mostly from people you follow. Healthy ratio!\")\n    return \"\\\\n\".join(lines)\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Analyze feed composition from counts or auto-use example data.\n\n    Input format (optional): 'followed=6 ads=15 suggested=14'\n    Or just paste the text and defaults will parse what's there.\n    \"\"\"\n    followed = ads = suggested = None\n    if text.strip():\n        m = re.search(r'followed\\\\s*[=:]\\\\s*(\\\\d+)', text, re.IGNORECASE)\n        if m:\n            followed = int(m.group(1))\n        m = re.search(r'ads?\\\\s*[=:]\\\\s*(\\\\d+)', text, re.IGNORECASE)\n        if m:\n            ads = int(m.group(1))\n        m = re.search(r'suggested\\\\s*[=:]\\\\s*(\\\\d+)', text, re.IGNORECASE)\n        if m:\n            suggested = int(m.group(1))\n        # Try bare numbers: e.g. \"6 15 14\"\n        if followed is None:\n            nums = re.findall(r'\\\\d+', text)\n            if len(nums) >= 3:\n                followed, ads, suggested = int(nums[0]), int(nums[1]), int(nums[2])\n    if followed is None:\n        followed, ads, suggested = 6, 15, 14\n    posts = (\n        [{'type': 'followed_user'}] * followed +\n        [{'type': 'ad'}] * ads +\n        [{'type': 'suggested_page'}] * suggested\n    )\n    result = analyze_instagram_feed(posts)\n    return format_feed_report(result)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    print(process(\"followed=6 ads=15 suggested=14\"))";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

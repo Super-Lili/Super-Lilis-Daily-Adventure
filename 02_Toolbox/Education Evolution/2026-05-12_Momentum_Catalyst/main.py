@@ -293,7 +293,33 @@ def _run_demos(): # Renamed to private to distinguish from a potential CLI comma
     # Final verification of log files for testing
     print(f"Demo log files created: {Path('demo_momentum_log_1.csv').exists()}, {Path('demo_momentum_log_no_rich.csv').exists()}")
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Break down a task description into micro-tasks and a momentum plan."""
+    if not text.strip():
+        return "Paste a task or goal description to get a micro-task breakdown and momentum plan."
+    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
+    main_task = lines[0]
+    # If user provided bullet points, treat them as micro-tasks
+    micro_tasks = [l.lstrip("-*• ").strip() for l in lines[1:] if l.lstrip("-*• ").strip()]
+    if not micro_tasks:
+        # Auto-generate generic micro-tasks
+        micro_tasks = [
+            f"Open a document or workspace for: {main_task}",
+            f"Write down one sentence about what done looks like for: {main_task}",
+            f"Identify the single next physical action for: {main_task}",
+            f"Set a 5-minute timer and start on: {main_task}",
+        ]
+    out = [f"# Momentum Plan: {main_task}", "", "## Micro-Tasks (start tiny!):"]
+    for i, t in enumerate(micro_tasks, 1):
+        out.append(f"{i}. {t}")
+    out += ["", "## Tips:", "- Start with the smallest possible action.", "- Each completed step builds real momentum.", "- Consistency over intensity!"]
+    return "\n".join(out)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     args = setup_cli_arguments()
 
     if args.run_demos:

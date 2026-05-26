@@ -263,7 +263,35 @@ def main():
     except Exception as e:
         catalyst.console.print(Panel(f"[bold red]An unexpected error occurred:[/bold red] {e}", title="[bold red]Uh Oh![/bold red]", border_style="red"))
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Generate a weekly social media content plan from business info."""
+    if not text.strip():
+        return "Paste business info as: business type, target audience, goal (engagement/sales/awareness/education) — one per line or comma-separated."
+    from datetime import datetime
+    parts = [p.strip() for p in text.replace("\n", ",").split(",") if p.strip()]
+    business_type = parts[0] if len(parts) > 0 else "small business"
+    target_audience = parts[1] if len(parts) > 1 else "general audience"
+    main_goal_raw = parts[2].lower() if len(parts) > 2 else "engagement"
+    valid_goals = ["engagement", "sales", "awareness", "education"]
+    main_goal = main_goal_raw if main_goal_raw in valid_goals else "engagement"
+    start_date = datetime.now().strftime("%Y-%m-%d")
+    catalyst = ContentStrategyGenerator()
+    plan = catalyst.generate_weekly_plan(business_type, target_audience, main_goal, start_date)
+    if not plan:
+        return "Could not generate a content plan. Please check your inputs."
+    out = [f"# Weekly Content Plan: {plan[0]['Weekly Theme']}", "",
+           f"**Business:** {business_type} | **Goal:** {main_goal.capitalize()} | **Audience:** {target_audience}", "",
+           "| Date | Day | Pillar | Content Idea | Call to Action |",
+           "|---|---|---|---|---|"]
+    for entry in plan:
+        out.append(f"| {entry['Date']} | {entry['Day']} | {entry['Pillar']} | {entry['Content Idea']} | {entry['Call to Action']} |")
+    return "\n".join(out)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     # Demo with realistic sample data
     # This block ensures the tool runs end-to-end with sample data,
     # demonstrating its full functionality and producing output files.

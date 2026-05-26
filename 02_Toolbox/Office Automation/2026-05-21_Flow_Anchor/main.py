@@ -216,7 +216,42 @@ def main():
     args = parser.parse_args()
     process_focus_blocks(args.file, args.output_dir, args.timezone)
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Parse CSV-style focus block data and return status messages for each block."""
+    if not text.strip():
+        return "Paste CSV data with columns: Date, Start Time, End Time, Project/Task (and optional Custom Message) to generate focus block status messages."
+    import io
+    import csv as _csv
+    lines_in = text.strip().splitlines()
+    # Try to parse as CSV
+    try:
+        reader = _csv.DictReader(io.StringIO(text))
+        rows = list(reader)
+    except Exception:
+        rows = []
+    if not rows:
+        return "Could not parse CSV data. Expected columns: Date, Start Time, End Time, Project/Task"
+    required = ["Date", "Start Time", "End Time", "Project/Task"]
+    if not all(h in (reader.fieldnames or []) for h in required):
+        return f"Missing required columns. Expected: {', '.join(required)}"
+    out = []
+    for row in rows:
+        date_str = row.get("Date", "").strip()
+        start = row.get("Start Time", "").strip()
+        end = row.get("End Time", "").strip()
+        project = row.get("Project/Task", "").strip()
+        custom = row.get("Custom Message", "").strip()
+        if not (date_str and start and end and project):
+            continue
+        msg = generate_status_message(project, custom, start, end)
+        out.append(f"--- {date_str} ({start}-{end}): {project} ---\n{msg}")
+    return "\n\n".join(out) if out else "No valid focus blocks found in input."
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     demo_csv_path = "demo_focus_blocks.csv"
     create_demo_csv(demo_csv_path)
     print("\n--- Running Flow Anchor with demo data ---")

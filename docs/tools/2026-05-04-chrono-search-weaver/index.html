@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install -r requirements.txt</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Design Alchemy/2026-05-04_Chrono-Search_Weaver/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your brief, content, or design description here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Design Alchemy/2026-05-04_Chrono-Search_Weaver/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport re\n\n\nmock_content_db = {\n    \"travel\": {\n        \"2026\": [\"UserA: Sunset over the Mars colony domes!\", \"UserB: My first trip to Neo-Kyoto's holographic gardens.\"],\n        \"2023\": [\"UserC: Throwback to when we could actually fly without a biometric scan.\", \"UserD: Venice, before the sea walls.\"],\n        \"2018\": [\"UserE: That backpacking trip through Patagonia, pure bliss.\"],\n        \"default\": [\"UserF: Dream destinations for the digital nomad.\", \"UserG: Exploring local hidden gems.\"]\n    },\n    \"food\": {\n        \"2025\": [\"UserH: Replicating ancient Roman recipes with my food printer!\", \"UserI: The best synth-sushi in Sector 7.\"],\n        \"default\": [\"UserJ: What's cooking tonight?\", \"UserK: Gastro-sensory overload!\"]\n    },\n    \"art\": {\n        \"2024\": [\"UserL: My latest AI-generated masterpiece, tell me what you think.\", \"UserM: Vintage oil painting techniques revisited.\"],\n        \"default\": [\"UserN: Infinite creative possibilities.\", \"UserO: Inspiration strikes!\"]\n    }\n}\n\n\ndef chrono_search_weaver(query: str, year: str = None, platform: str = \"Instagram (Hypothetical)\") -> str:\n    \"\"\"Run a simulated chronological search and return results as text.\"\"\"\n    lower_query = query.lower()\n    results_found = []\n    if lower_query in mock_content_db:\n        if year and year in mock_content_db[lower_query]:\n            results_found.extend([f\"- {post} (Year: {year})\" for post in mock_content_db[lower_query][year]])\n        elif not year:\n            for y_key, posts in mock_content_db[lower_query].items():\n                if y_key != \"default\":\n                    results_found.extend([f\"- {post} (Year: {y_key})\" for post in posts])\n            if \"default\" in mock_content_db[lower_query]:\n                results_found.extend([f\"- {post} (General/Undated)\" for post in mock_content_db[lower_query][\"default\"]])\n\n    lines = [f\"## Chrono-Search Weaver: '{query}'\" + (f\" ({year})\" if year else \"\") + f\" on {platform}\", \"\"]\n    if results_found:\n        lines.append(f\"Found {len(results_found)} result(s):\")\n        lines += results_found\n    else:\n        lines.append(\"No matching content found in the simulated database.\")\n        lines.append(\"Try: travel, food, or art \u2014 optionally with a year like 2018 or 2024.\")\n    return \"\\\\n\".join(lines)\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Simulate a chronological content search. Input: 'query [year]' e.g. 'travel 2018'\"\"\"\n    if not text.strip():\n        return chrono_search_weaver(\"travel\")\n    parts = text.strip().split()\n    year_match = re.search(r'\\\\b(20\\\\d{2})\\\\b', text)\n    year = year_match.group(1) if year_match else None\n    query_parts = [p for p in parts if not re.match(r'^20\\\\d{2}$', p)]\n    query = \" \".join(query_parts).strip() or \"travel\"\n    return chrono_search_weaver(query, year)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    print(chrono_search_weaver(\"travel\", \"2018\"))\n    print()\n    print(chrono_search_weaver(\"food\"))";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

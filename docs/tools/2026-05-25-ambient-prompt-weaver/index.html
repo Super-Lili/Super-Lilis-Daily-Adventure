@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install pandas</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Healing Inventions/2026-05-25_Ambient_Prompt_Weaver/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste a few sentences about how you're feeling or what's on your mind…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Healing Inventions/2026-05-25_Ambient_Prompt_Weaver/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport pandas as pd\nimport random\nimport argparse\nfrom datetime import datetime\nimport os\n\n# Requirements:\n# pandas\n\ndef create_demo_csv(filepath=\"tasks_input.csv\"):\n    \"\"\"\n    Creates a sample CSV file for demonstration purposes.\n    \"\"\"\n    data = {\n        'task_name': [\n            \"Drink water\", \"Stretch for 5 minutes\", \"Review morning emails\",\n            \"Take a short walk\", \"Hydrate again\", \"Process 2 urgent items\",\n            \"Plan tomorrow's top 3 tasks\", \"Quick tidy up desk\", \"Read a chapter\"\n        ],\n        'time_block': [\n            \"morning\", \"morning\", \"morning\",\n            \"afternoon\", \"afternoon\", \"afternoon\",\n            \"evening\", \"evening\", \"evening\"\n        ]\n    }\n    df = pd.DataFrame(data)\n    df.to_csv(filepath, index=False)\n    print(f\"Demo CSV '{filepath}' created successfully.\")\n\ndef generate_cue_card_html(task_name, output_dir, time_block, title_prefix=\"Ambient Cue\"):\n    \"\"\"\n    Generates a minimalist HTML file displaying a single ambient task prompt.\n    \"\"\"\n    timestamp = datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\n    html_content = f\"\"\"\n    <!DOCTYPE html>\n    <html lang=\"en\">\n    <head>\n        <meta charset=\"UTF-8\">\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n        <title>{title_prefix} - {time_block.capitalize()}</title>\n        <style>\n            body {{\n                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n                background-color: #f0f4f8; /* Soft, calming background */\n                color: #334e68;\n                display: flex;\n                justify-content: center;\n                align-items: center;\n                min-height: 100vh;\n                margin: 0;\n                padding: 20px;\n                box-sizing: border-box;\n                text-align: center;\n            }}\n            .card {{\n                background-color: #ffffff;\n                border-radius: 12px;\n                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);\n                padding: 40px 30px;\n                max-width: 600px;\n                width: 100%;\n                border-left: 6px solid #6699ff; /* Subtle accent color */\n            }}\n            h1 {{\n                font-size: 2.5em;\n                margin-bottom: 20px;\n                color: #4a6fa5;\n            }}\n            p {{\n                font-size: 1.2em;\n                line-height: 1.6;\n                color: #555;\n            }}\n            .timestamp {{\n                margin-top: 30px;\n                font-size: 0.85em;\n                color: #777;\n            }}\n        </style>\n    </head>\n    <body>\n        <div class=\"card\">\n            <h1>Your Gentle Nudge:</h1>\n            <p>{task_name}</p>\n            <div class=\"timestamp\">Generated: {timestamp}</div>\n        </div>\n    </body>\n    </html>\n    \"\"\"\n    filename = os.path.join(output_dir, f\"ambient_cue_{time_block}.html\")\n    try:\n        with open(filename, 'w', encoding='utf-8') as f:\n            f.write(html_content)\n        return filename\n    except IOError as e:\n        print(f\"Error writing file {filename}: {e}\")\n        return None\n\ndef process_tasks(input_filepath: str, output_dir: str):\n    \"\"\"\n    Reads tasks from a CSV, groups them by time block, and generates\n    a single ambient cue HTML file for each time block.\n    \"\"\"\n    if not os.path.exists(input_filepath):\n        print(f\"Error: Input file '{input_filepath}' not found. Please check the path.\")\n        return\n\n    try:\n        df = pd.read_csv(input_filepath)\n    except pd.errors.EmptyDataError:\n        print(f\"Error: Input file '{input_filepath}' is empty.\")\n        return\n    except Exception as e:\n        print(f\"Error reading CSV file '{input_filepath}': {e}\")\n        return\n\n    if df.empty:\n        print(\"No tasks found in the input file. Nothing to generate.\")\n        return\n\n    required_columns = ['task_name', 'time_block']\n    if not all(col in df.columns for col in required_columns):\n        print(f\"Error: CSV must contain the columns: {', '.join(required_columns)}\")\n        return\n\n    os.makedirs(output_dir, exist_ok=True)\n    generated_files = []\n\n    for time_block, group_df in df.groupby('time_block'):\n        if not group_df.empty:\n            chosen_task = random.choice(group_df['task_name'].tolist())\n            print(f\"Generating cue for {time_block.capitalize()}: '{chosen_task}'\")\n            html_file = generate_cue_card_html(chosen_task, output_dir, time_block)\n            if html_file:\n                generated_files.append(html_file)\n        else:\n            print(f\"No tasks defined for time block: {time_block}\")\n\n    if generated_files:\n        print(f\"\\\\nSuccessfully generated {len(generated_files)} ambient cue files in '{output_dir}':\")\n        for f in generated_files:\n            print(f\"- {os.path.basename(f)}\")\n        print(\"\\\\nTip: Keep these files open in separate browser tabs for gentle, ambient reminders throughout your day!\")\n    else:\n        print(\"No ambient cue files were generated.\")\n\n\ndef main(args=None):\n    parser = argparse.ArgumentParser(\n        description=\"Ambient Prompt Weaver: Creates subtle HTML cue cards for daily tasks, \"\n                    \"helping with focus without overwhelming visual clutter. \"\n                    \"Each cue card displays one randomly selected task for a specific time block.\"\n    )\n    parser.add_argument(\n        '--input_file',\n        type=str,\n        default='tasks_input.csv',\n        help=\"Path to the CSV file containing tasks. \"\n             \"It must have 'task_name' and 'time_block' columns. \"\n             \"Example time_blocks: 'morning', 'afternoon', 'evening'.\"\n    )\n    parser.add_argument(\n        '--output_dir',\n        type=str,\n        default='ambient_cues',\n        help=\"Directory to save the generated HTML ambient cue files.\"\n    )\n    parser.add_argument(\n        '--create_demo',\n        action='store_true',\n        help=\"Create a sample 'tasks_input.csv' file in the current directory and exit.\"\n    )\n\n    parsed_args = parser.parse_args(args)\n\n    if parsed_args.create_demo:\n        create_demo_csv(parsed_args.input_file)\n        return\n\n    process_tasks(parsed_args.input_file, parsed_args.output_dir)\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Parse task list and generate ambient cue suggestions grouped by time block.\"\"\"\n    if not text.strip():\n        return \"Paste tasks in CSV format (task_name,time_block per line) or as plain text to get ambient cue suggestions.\"\n    import io\n    import csv as _csv\n    tasks_by_block = {}\n    # Try CSV parse first\n    try:\n        reader = _csv.DictReader(io.StringIO(text.strip()))\n        rows = list(reader)\n        if rows and \"task_name\" in (reader.fieldnames or []):\n            for row in rows:\n                name = row.get(\"task_name\", \"\").strip()\n                block = row.get(\"time_block\", \"general\").strip().lower()\n                if name:\n                    tasks_by_block.setdefault(block, []).append(name)\n        else:\n            raise ValueError(\"not csv with headers\")\n    except Exception:\n        # Treat each line as a task\n        for line in text.strip().splitlines():\n            line = line.strip().lstrip(\"-*\u2022 \")\n            if line:\n                tasks_by_block.setdefault(\"general\", []).append(line)\n    if not tasks_by_block:\n        return \"No tasks found. Try pasting tasks as plain text (one per line) or CSV with task_name,time_block columns.\"\n    import random as _random\n    out = [\"## Ambient Cue Suggestions\", \"\"]\n    for block, tasks in sorted(tasks_by_block.items()):\n        chosen = _random.choice(tasks)\n        out.append(f\"**{block.capitalize()} focus:** {chosen}\")\n        out.append(f\"  _(from {len(tasks)} task(s) in this block)_\")\n        out.append(\"\")\n    out.append(\"Tip: Keep a tab open with your ambient cue for gentle, distraction-free reminders!\")\n    return \"\\\\n\".join(out)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    # Create a demo input file for the test run\n    demo_input_filename = \"demo_tasks_for_weaver.csv\"\n    create_demo_csv(demo_input_filename)\n\n    # Run the main function with the demo file and a specific output directory\n    output_directory = \"demo_ambient_cues\"\n    main([\"--input_file\", demo_input_filename, \"--output_dir\", output_directory])\n\n    # Clean up demo files after potential inspection\n    # import shutil\n    # if os.path.exists(output_directory):\n    #     shutil.rmtree(output_directory)\n    # if os.path.exists(demo_input_filename):\n    #     os.remove(demo_input_filename)";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

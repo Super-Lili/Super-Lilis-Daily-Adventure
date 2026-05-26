@@ -180,7 +180,48 @@ def main(args=None):
 
     process_tasks(parsed_args.input_file, parsed_args.output_dir)
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Parse task list and generate ambient cue suggestions grouped by time block."""
+    if not text.strip():
+        return "Paste tasks in CSV format (task_name,time_block per line) or as plain text to get ambient cue suggestions."
+    import io
+    import csv as _csv
+    tasks_by_block = {}
+    # Try CSV parse first
+    try:
+        reader = _csv.DictReader(io.StringIO(text.strip()))
+        rows = list(reader)
+        if rows and "task_name" in (reader.fieldnames or []):
+            for row in rows:
+                name = row.get("task_name", "").strip()
+                block = row.get("time_block", "general").strip().lower()
+                if name:
+                    tasks_by_block.setdefault(block, []).append(name)
+        else:
+            raise ValueError("not csv with headers")
+    except Exception:
+        # Treat each line as a task
+        for line in text.strip().splitlines():
+            line = line.strip().lstrip("-*• ")
+            if line:
+                tasks_by_block.setdefault("general", []).append(line)
+    if not tasks_by_block:
+        return "No tasks found. Try pasting tasks as plain text (one per line) or CSV with task_name,time_block columns."
+    import random as _random
+    out = ["## Ambient Cue Suggestions", ""]
+    for block, tasks in sorted(tasks_by_block.items()):
+        chosen = _random.choice(tasks)
+        out.append(f"**{block.capitalize()} focus:** {chosen}")
+        out.append(f"  _(from {len(tasks)} task(s) in this block)_")
+        out.append("")
+    out.append("Tip: Keep a tab open with your ambient cue for gentle, distraction-free reminders!")
+    return "\n".join(out)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     # Create a demo input file for the test run
     demo_input_filename = "demo_tasks_for_weaver.csv"
     create_demo_csv(demo_input_filename)

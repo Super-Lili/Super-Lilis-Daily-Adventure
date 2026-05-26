@@ -1,60 +1,63 @@
-```python
-import os
-from PIL import Image
+import re
 
-def pixel_pilot(file_path, max_size_mb=10, allowed_formats=['jpeg', 'png', 'gif', 'webp']):
-    """
-    Diagnoses a local image file for common web upload issues like excessive size or unsupported format.
 
-    Args:
-        file_path (str): The path to the image file.
-        max_size_mb (int): Maximum allowed file size in megabytes for upload.
-        allowed_formats (list): List of common allowed image formats (e.g., 'jpeg', 'png').
+def analyze_image_info_text(text: str) -> str:
+    """Parse image metadata from text description and give upload advice."""
+    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
+    size_mb = None
+    fmt = None
+    width = height = None
+    allowed_formats = ['jpeg', 'jpg', 'png', 'gif', 'webp']
 
-    Returns:
-        dict: A dictionary containing diagnostic results and actionable advice.
-    """
-    results = {
-        'file_exists': False,
-        'size_ok': False,
-        'format_ok': False,
-        'diagnostics': []
-    }
+    for line in lines:
+        m = re.search(r'(\d+(?:\.\d+)?)\s*(?:mb|megabyte)', line, re.IGNORECASE)
+        if m:
+            size_mb = float(m.group(1))
+        m = re.search(r'\b(jpe?g|png|gif|webp|bmp|tiff?|svg)\b', line, re.IGNORECASE)
+        if m:
+            fmt = m.group(1).lower()
+        m = re.search(r'(\d+)\s*[x×]\s*(\d+)', line, re.IGNORECASE)
+        if m:
+            width, height = int(m.group(1)), int(m.group(2))
 
-    if not os.path.exists(file_path):
-        results['diagnostics'].append(f"Error: File '{file_path}' does not exist. Please check the file path.")
-        return results
-    results['file_exists'] = True
-
-    file_size_bytes = os.path.getsize(file_path)
-    file_size_mb = file_size_bytes / (1024 * 1024)
-
-    if file_size_mb <= max_size_mb:
-        results['size_ok'] = True
-        results['diagnostics'].append(f"File size ({file_size_mb:.2f} MB) is within the {max_size_mb} MB limit.")
+    out = ["## Pixel Pilot Diagnostic Report", ""]
+    if size_mb is not None:
+        if size_mb <= 10:
+            out.append(f"- File size: {size_mb:.2f} MB — within the 10 MB limit.")
+        else:
+            out.append(f"- File size: {size_mb:.2f} MB — EXCEEDS 10 MB limit. Consider compressing or resizing.")
     else:
-        results['diagnostics'].append(f"Warning: File size ({file_size_mb:.2f} MB) exceeds the {max_size_mb} MB limit. Consider compressing or resizing the image.")
+        out.append("- File size: not detected in input.")
+    if fmt:
+        if fmt in allowed_formats:
+            out.append(f"- Format: {fmt} — allowed for web upload.")
+        else:
+            out.append(f"- Format: {fmt} — not in recommended list ({', '.join(allowed_formats)}). Consider converting.")
+    else:
+        out.append("- Format: not detected in input.")
+    if width and height:
+        mp = (width * height) / 1_000_000
+        out.append(f"- Dimensions: {width}x{height} px ({mp:.1f} megapixels).")
+        if width > 4000 or height > 4000:
+            out.append("  Warning: very large dimensions — resize for faster uploads.")
+    else:
+        out.append("- Dimensions: not detected in input.")
+    out += ["", "Tip: For web use, JPEG/PNG under 2 MB at 1920px wide is ideal."]
+    return "\n".join(out)
 
-    try:
-        with Image.open(file_path) as img:
-            image_format = img.format.lower()
-            if image_format in allowed_formats:
-                results['format_ok'] = True
-                results['diagnostics'].append(f"Image format ({image_format}) is among the common allowed formats: {', '.join(allowed_formats)}.")
-            else:
-                results['diagnostics'].append(f"Warning: Image format ({image_format}) is not in the recommended list: {', '.join(allowed_formats)}. Consider converting to a more common format.")
-            results['diagnostics'].append(f"Image dimensions: {img.width}x{img.height} pixels.")
-    except Exception as e:
-        results['diagnostics'].append(f"Error: Could not read image format or dimensions. Ensure '{file_path}' is a valid image file. Details: {e}")
 
-    return results
+def process(text: str = "") -> str:
+    """Analyze image metadata from text description for web upload readiness."""
+    if not text.strip():
+        return (
+            "Paste image info (filename, size in MB, format, dimensions) to get upload advice.\n\n"
+            "Example:\n  photo.jpg, 3.2 MB, JPEG, 4000x3000"
+        )
+    return analyze_image_info_text(text)
 
-# To use this skill, ensure you have the Pillow library installed: pip install Pillow
-# Example usage (not part of the tool's execution, for user reference only):
-# if __name__ == '__main__':
-#     # Replace 'your_image.jpg' with the actual path to your image file
-#     # You can also adjust max_size_mb and allowed_formats
-#     diagnostic_report = pixel_pilot('path/to/your_image.jpg', max_size_mb=5)
-#     for line in diagnostic_report['diagnostics']:
-#         print(line)
-```
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
+    print(process("portrait.png, 12.5 MB, PNG, 6000x4000"))

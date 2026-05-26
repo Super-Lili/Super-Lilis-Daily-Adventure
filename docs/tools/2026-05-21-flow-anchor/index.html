@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install pandas (for robust CSV reading, though simple csv module is used here to reduce dependencies for a small script) ics (for .ics file generation) pytz (for timezone awareness in ICS, though basic local time is used in demo for simplicity)</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Office Automation/2026-05-21_Flow_Anchor/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your meeting notes, task list, or work text here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Office Automation/2026-05-21_Flow_Anchor/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport argparse\nimport csv\nfrom datetime import datetime, timedelta\nimport os\nimport textwrap\n\n# Third-party libraries\n# pip install ics pytz\n\n# Note: pytz is generally recommended for robust timezone handling,\n# but for simplicity in this demo where the user's local timezone is assumed\n# for output, it's not strictly required unless cross-timezone scheduling is needed.\n# However, including it in requirements for robustness in real-world use.\n\n# Requirements:\n# pandas (for robust CSV reading, though simple csv module is used here to reduce dependencies for a small script)\n# ics (for .ics file generation)\n# pytz (for timezone awareness in ICS, though basic local time is used in demo for simplicity)\n\n\ndef validate_time_format(time_str: str) -> bool:\n    \"\"\"Validates if a string is in HH:MM format.\"\"\"\n    try:\n        datetime.strptime(time_str, \"%H:%M\")\n        return True\n    except ValueError:\n        return False\n\ndef generate_ics_event(\n    start_time: datetime,\n    end_time: datetime,\n    summary: str,\n    description: str,\n    uid: str\n) -> str:\n    \"\"\"Generates a single ICS event string.\"\"\"\n    dtstamp = datetime.now().strftime(\"%Y%m%dT%H%M%SZ\")\n    start_dt = start_time.strftime(\"%Y%m%dT%H%M%S\")\n    end_dt = end_time.strftime(\"%Y%m%dT%H%M%S\")\n\n    ics_content = f\"\"\"BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Flow Anchor//EN\nBEGIN:VEVENT\nUID:{uid}\nDTSTAMP:{dtstamp}\nDTSTART:{start_dt}\nDTEND:{end_dt}\nSUMMARY:{summary}\nDESCRIPTION:{description}\nEND:VEVENT\nEND:VCALENDAR\"\"\"\n    return ics_content\n\ndef generate_status_message(project_name: str, custom_message: str, start_time: str, end_time: str) -> str:\n    \"\"\"Generates a customizable status message.\"\"\"\n    if custom_message:\n        message = custom_message.format(\n            project=project_name,\n            start=start_time,\n            end=end_time\n        )\n    else:\n        message = (\n            f\"Heads up! I'm in deep focus on '{project_name}' from {start_time} to {end_time} today. \"\n            \"I'll be checking messages afterward. Thanks for understanding!\"\n        )\n    return textwrap.dedent(message).strip()\n\ndef process_focus_blocks(\n    input_csv_path: str,\n    output_dir: str,\n    ics_timezone: str = \"America/New_York\" # Default timezone for ICS events\n):\n    \"\"\"\n    Reads focus block data from a CSV, generates ICS calendar files and status messages.\n\n    Args:\n        input_csv_path (str): Path to the input CSV file.\n        output_dir (str): Directory to save generated files.\n        ics_timezone (str): IANA timezone string for ICS events.\n    \"\"\"\n    if not os.path.exists(input_csv_path):\n        print(f\"Error: Input CSV file not found at '{input_csv_path}'. Please check the path.\")\n        return\n\n    os.makedirs(output_dir, exist_ok=True)\n    status_messages = []\n    processed_count = 0\n\n    try:\n        with open(input_csv_path, 'r', encoding='utf-8') as f:\n            reader = csv.DictReader(f)\n            # Expected headers: Date, Start Time, End Time, Project/Task, Custom Message (Optional)\n            required_headers = [\"Date\", \"Start Time\", \"End Time\", \"Project/Task\"]\n            if not all(header in reader.fieldnames for header in required_headers):\n                print(f\"Error: CSV is missing required headers. Expected: {', '.join(required_headers)}\")\n                print(f\"Found: {', '.join(reader.fieldnames)}\")\n                return\n\n            for i, row in enumerate(reader):\n                try:\n                    date_str = row[\"Date\"].strip()\n                    start_time_str = row[\"Start Time\"].strip()\n                    end_time_str = row[\"End Time\"].strip()\n                    project_name = row[\"Project/Task\"].strip()\n                    custom_msg_template = row.get(\"Custom Message\", \"\").strip()\n\n                    if not (date_str and start_time_str and end_time_str and project_name):\n                        print(f\"Warning: Skipping row {i+2} due to missing required data: {row}\")\n                        continue\n                    if not (validate_time_format(start_time_str) and validate_time_format(end_time_str)):\n                        print(f\"Warning: Skipping row {i+2} due to invalid time format (HH:MM required) for '{start_time_str}' or '{end_time_str}': {row}\")\n                        continue\n\n                    # Parse date and time\n                    focus_date = datetime.strptime(date_str, \"%Y-%m-%d\").date()\n                    start_dt_obj = datetime.strptime(start_time_str, \"%H:%M\").time()\n                    end_dt_obj = datetime.strptime(end_time_str, \"%H:%M\").time()\n\n                    start_combined = datetime.combine(focus_date, start_dt_obj)\n                    end_combined = datetime.combine(focus_date, end_dt_obj)\n\n                    if end_combined <= start_combined:\n                        print(f\"Warning: Skipping row {i+2} as end time is not after start time: {row}\")\n                        continue\n\n                    # Generate ICS file\n                    ics_summary = f\"Deep Work: {project_name}\"\n                    ics_description = f\"Dedicated focus time for {project_name}. Please minimize interruptions.\"\n                    # A unique ID for the event, combining date and project for simplicity\n                    uid = f\"flowanchor-{focus_date.isoformat()}-{project_name.replace(' ', '-')}-{i+1}@example.com\"\n                    ics_content = generate_ics_event(start_combined, end_combined, ics_summary, ics_description, uid)\n                    \n                    ics_filename = os.path.join(output_dir, f\"{focus_date.isoformat()}-{project_name.replace(' ', '_')}.ics\")\n                    with open(ics_filename, 'w', encoding='utf-8') as ics_file:\n                        ics_file.write(ics_content)\n                    print(f\"Generated ICS: {ics_filename}\")\n\n                    # Generate status message\n                    status_msg = generate_status_message(\n                        project_name,\n                        custom_msg_template,\n                        start_time_str,\n                        end_time_str\n                    )\n                    status_messages.append(f\"--- Focus Block for {date_str} ({start_time_str}-{end_time_str}) ---\\\\n{status_msg}\\\\n\")\n                    processed_count += 1\n\n                except Exception as e:\n                    print(f\"Error processing row {i+2}: {row}. Error: {e}\")\n                    continue\n\n        if status_messages:\n            status_filename = os.path.join(output_dir, \"focus_status_messages.txt\")\n            with open(status_filename, 'w', encoding='utf-8') as status_file:\n                status_file.write(\"\\\\n\\\\n\".join(status_messages))\n            print(f\"\\\\nGenerated status messages: {status_filename}\")\n        \n        if processed_count > 0:\n            print(f\"\\\\nFlow Anchor successfully generated {processed_count} focus block items.\")\n        else:\n            print(\"No valid focus blocks were processed. Please check your input CSV data.\")\n\n    except Exception as e:\n        print(f\"An unexpected error occurred while reading the CSV: {e}\")\n\ndef create_demo_csv(filepath: str):\n    \"\"\"Creates a sample CSV file for demonstration.\"\"\"\n    demo_content = \"\"\"Date,Start Time,End Time,Project/Task,Custom Message\n2026-05-22,09:00,11:00,Project Andromeda,Deep diving into {project}! Please hold all non-urgent queries until after {end}.\n2026-05-22,14:00,16:30,Budget Analysis,Crunching numbers for {project} from {start} to {end}. Back shortly!\n2026-05-23,10:00,12:00,Client Strategy,Strategizing for {project} today.\n2026-05-24,13:00,15:00,Documentation Update,Updating project docs.\n\"\"\"\n    with open(filepath, 'w', encoding='utf-8') as f:\n        f.write(demo_content)\n    print(f\"Created demo CSV: {filepath}\")\n\ndef main():\n    parser = argparse.ArgumentParser(\n        description=\"Flow Anchor: Generate ICS calendar files and status messages for deep work blocks.\",\n        formatter_class=argparse.RawTextHelpFormatter\n    )\n    parser.add_argument(\n        \"--file\",\n        type=str,\n        required=True,\n        help=textwrap.dedent(\"\"\"\\\\\n        Path to the input CSV file containing your focus blocks.\n        The CSV should have the following columns:\n        'Date' (YYYY-MM-DD), 'Start Time' (HH:MM), 'End Time' (HH:MM),\n        'Project/Task', and optionally 'Custom Message'.\n        \n        Example 'Custom Message': \"Deep diving into {project}! Back after {end}.\"\n        Variables {project}, {start}, {end} will be replaced.\n        \"\"\")\n    )\n    parser.add_argument(\n        \"--output_dir\",\n        type=str,\n        default=\"flow_anchor_output\",\n        help=\"Directory to save the generated ICS files and status messages. Defaults to 'flow_anchor_output'.\"\n    )\n    parser.add_argument(\n        \"--timezone\",\n        type=str,\n        default=\"UTC\", # Using UTC as a robust default for ICS events\n        help=textwrap.dedent(\"\"\"\\\\\n        IANA timezone string for generated ICS events (e.g., 'America/New_York', 'Europe/London').\n        Defaults to 'UTC'. Ensure your system's clock is correctly set or\n        adjust this if you need events in a specific local timezone.\n        \"\"\")\n    )\n\n    args = parser.parse_args()\n    process_focus_blocks(args.file, args.output_dir, args.timezone)\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Parse CSV-style focus block data and return status messages for each block.\"\"\"\n    if not text.strip():\n        return \"Paste CSV data with columns: Date, Start Time, End Time, Project/Task (and optional Custom Message) to generate focus block status messages.\"\n    import io\n    import csv as _csv\n    lines_in = text.strip().splitlines()\n    # Try to parse as CSV\n    try:\n        reader = _csv.DictReader(io.StringIO(text))\n        rows = list(reader)\n    except Exception:\n        rows = []\n    if not rows:\n        return \"Could not parse CSV data. Expected columns: Date, Start Time, End Time, Project/Task\"\n    required = [\"Date\", \"Start Time\", \"End Time\", \"Project/Task\"]\n    if not all(h in (reader.fieldnames or []) for h in required):\n        return f\"Missing required columns. Expected: {', '.join(required)}\"\n    out = []\n    for row in rows:\n        date_str = row.get(\"Date\", \"\").strip()\n        start = row.get(\"Start Time\", \"\").strip()\n        end = row.get(\"End Time\", \"\").strip()\n        project = row.get(\"Project/Task\", \"\").strip()\n        custom = row.get(\"Custom Message\", \"\").strip()\n        if not (date_str and start and end and project):\n            continue\n        msg = generate_status_message(project, custom, start, end)\n        out.append(f\"--- {date_str} ({start}-{end}): {project} ---\\\\n{msg}\")\n    return \"\\\\n\\\\n\".join(out) if out else \"No valid focus blocks found in input.\"\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    demo_csv_path = \"demo_focus_blocks.csv\"\n    create_demo_csv(demo_csv_path)\n    print(\"\\\\n--- Running Flow Anchor with demo data ---\")\n    # Simulate command-line arguments for testing\n    import sys\n    sys_argv_backup = sys.argv\n    sys.argv = [\"flow_anchor.py\", \"--file\", demo_csv_path, \"--output_dir\", \"demo_flow_anchor_output\"]\n    try:\n        main()\n    finally:\n        sys.argv = sys_argv_backup # Restore original sys.argv\n    print(\"\\\\n--- Demo run complete. Check 'demo_flow_anchor_output' folder. ---\")\n    print(\"To run with your own data: python flow_anchor.py --file YOUR_FILE.csv\")\n    print(\"For help: python flow_anchor.py --help\")";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

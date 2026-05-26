@@ -183,7 +183,30 @@ def main():
     
     save_knowledge_base(df, knowledge_filepath)
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Parse a list of knowledge points and show a spaced repetition schedule."""
+    if not text.strip():
+        return "Paste a list of knowledge points (one per line) to generate a spaced repetition review schedule."
+    from datetime import datetime, timedelta
+    lines = [l.strip().lstrip("-*•123456789. ").strip() for l in text.strip().splitlines() if l.strip()]
+    if not lines:
+        return "No knowledge points found. Paste one item per line."
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    headers = ["#", "Knowledge Point", "First Review", "Level 1 Review", "Level 2 Review"]
+    out = ["| " + " | ".join(headers) + " |", "|---|---|---|---|---|"]
+    for i, kp in enumerate(lines, 1):
+        r0 = (today + timedelta(days=REVIEW_INTERVALS[0])).strftime("%Y-%m-%d")
+        r1 = (today + timedelta(days=REVIEW_INTERVALS[1])).strftime("%Y-%m-%d")
+        r2 = (today + timedelta(days=REVIEW_INTERVALS[2])).strftime("%Y-%m-%d")
+        out.append(f"| {i} | {kp} | {r0} | {r1} | {r2} |")
+    out += ["", f"*Review intervals: {REVIEW_INTERVALS}*"]
+    return "\n".join(out)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     # Demo for the tool:
     # This block generates realistic sample data and runs the complete tool end-to-end.
 

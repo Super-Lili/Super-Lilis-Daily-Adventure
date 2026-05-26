@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install -r requirements.txt</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Education Evolution/2026-05-11_Recall_Navigator/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your study notes, article, or learning material here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Education Evolution/2026-05-11_Recall_Navigator/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport pandas as pd\nimport numpy as np\nimport argparse\nfrom datetime import datetime, timedelta\nfrom pathlib import Path\nimport csv\nfrom tabulate import tabulate\n\n# Requirements:\n# pandas\n# numpy\n# tabulate\n\n# Define spaced repetition intervals in days\n# Level 0: New item, review next day\n# Level 1: Recalled once, review in 3 days\n# Level 2: Recalled twice, review in 7 days\n# Level 3: Recalled thrice, review in 14 days\n# Level 4: Mastered, review in 30 days\nREVIEW_INTERVALS = {\n    0: 1,\n    1: 3,\n    2: 7,\n    3: 14,\n    4: 30\n}\nMAX_RECALL_LEVEL = max(REVIEW_INTERVALS.keys())\n\ndef load_knowledge_base(filepath: Path) -> pd.DataFrame:\n    \"\"\"\n    Loads the knowledge base from a CSV file. If the file does not exist or is empty,\n    it returns an empty DataFrame with the correct columns.\n    \"\"\"\n    if not filepath.exists():\n        print(f\"Heads up! No knowledge base found at '{filepath}'. Starting fresh!\")\n        return pd.DataFrame(columns=['id', 'knowledge_point', 'last_reviewed', 'next_review', 'recall_level'])\n    \n    try:\n        df = pd.read_csv(filepath, parse_dates=['last_reviewed', 'next_review'])\n        if df.empty:\n            print(f\"Oops! The knowledge base at '{filepath}' is empty. Let's fill it up!\")\n            return pd.DataFrame(columns=['id', 'knowledge_point', 'last_reviewed', 'next_review', 'recall_level'])\n        \n        # Ensure 'id' column is integer and unique\n        if 'id' not in df.columns:\n            df['id'] = range(len(df))\n        else:\n            df['id'] = df['id'].astype(int)\n        df = df.set_index('id', drop=False) # Keep 'id' as a column too\n        \n        # Ensure correct dtypes and fill NaNs if any (e.g., new entries might not have review dates)\n        df['recall_level'] = df['recall_level'].fillna(0).astype(int)\n        df['last_reviewed'] = df['last_reviewed'].fillna(pd.NaT)\n        df['next_review'] = df['next_review'].fillna(pd.NaT)\n\n        print(f\"Knowledge base loaded with {len(df)} items!\")\n        return df\n    except Exception as e:\n        print(f\"Oh dear, couldn't load the knowledge base from '{filepath}'. Error: {e}. Starting fresh!\")\n        return pd.DataFrame(columns=['id', 'knowledge_point', 'last_reviewed', 'next_review', 'recall_level'])\n\ndef save_knowledge_base(df: pd.DataFrame, filepath: Path) -> None:\n    \"\"\"\n    Saves the current knowledge base DataFrame to a CSV file.\n    \"\"\"\n    try:\n        df.to_csv(filepath, index=False)\n        print(f\"Super-duper! Knowledge base saved to '{filepath}'.\")\n    except Exception as e:\n        print(f\"Whoopsie! Couldn't save the knowledge base to '{filepath}'. Error: {e}.\")\n\ndef add_knowledge_item(df: pd.DataFrame, knowledge_point: str) -> pd.DataFrame:\n    \"\"\"\n    Adds a new knowledge point to the DataFrame with an initial review schedule.\n    \"\"\"\n    if knowledge_point.strip() == \"\":\n        print(\"Whoa there! An empty knowledge point? Let's add something real!\")\n        return df\n\n    # Generate a new unique ID\n    next_id = df['id'].max() + 1 if not df.empty else 1\n    \n    today = datetime.now().normalize()\n    new_item = {\n        'id': next_id,\n        'knowledge_point': knowledge_point,\n        'last_reviewed': pd.NaT,  # Not reviewed yet\n        'next_review': today + timedelta(days=REVIEW_INTERVALS[0]),\n        'recall_level': 0\n    }\n    \n    new_row_df = pd.DataFrame([new_item]).set_index('id', drop=False)\n    df = pd.concat([df, new_row_df])\n    \n    print(f\"Zoom! Added new knowledge point (ID: {next_id}): '{knowledge_point}'. Get ready to recall!\")\n    return df\n\ndef update_review_schedule(df: pd.DataFrame, item_id: int, recalled: bool) -> pd.DataFrame:\n    \"\"\"\n    Updates the review schedule for a specific knowledge point based on recall success.\n    \"\"\"\n    if item_id not in df.index:\n        print(f\"Hmm, can't find item with ID {item_id}. Double-check that number!\")\n        return df\n\n    today = datetime.now().normalize()\n    item = df.loc[item_id]\n    current_level = item['recall_level']\n\n    if recalled:\n        new_level = min(current_level + 1, MAX_RECALL_LEVEL)\n        next_interval = REVIEW_INTERVALS.get(new_level, REVIEW_INTERVALS[MAX_RECALL_LEVEL])\n        df.loc[item_id, 'recall_level'] = new_level\n        df.loc[item_id, 'next_review'] = today + timedelta(days=next_interval)\n        print(f\"Brilliant! Item ID {item_id} moved to recall level {new_level}. Next review in {next_interval} days.\")\n    else:\n        # Reset to initial level if forgotten\n        new_level = 0\n        next_interval = REVIEW_INTERVALS[new_level]\n        df.loc[item_id, 'recall_level'] = new_level\n        df.loc[item_id, 'next_review'] = today + timedelta(days=next_interval)\n        print(f\"No worries! Item ID {item_id} reset to recall level {new_level}. We'll try again tomorrow (in {next_interval} day!).\")\n    \n    df.loc[item_id, 'last_reviewed'] = today\n    return df\n\ndef get_due_reviews(df: pd.DataFrame) -> pd.DataFrame:\n    \"\"\"\n    Returns knowledge points that are due for review today or in the past.\n    \"\"\"\n    today = datetime.now().normalize()\n    due_items = df[df['next_review'] <= today].copy()\n    if due_items.empty:\n        print(\"Yay! Nothing due for review today. Go enjoy your day (or add more knowledge!).\")\n    else:\n        print(f\"Time to shine! You have {len(due_items)} items due for review today:\")\n        print(tabulate(due_items[['id', 'knowledge_point', 'next_review', 'recall_level']], headers='keys', tablefmt='pretty'))\n    return due_items\n\ndef main():\n    parser = argparse.ArgumentParser(\n        description=\"Recall Navigator: Your friendly guide to remembering more of what you learn!\"\n    )\n    parser.add_argument(\n        \"filepath\", type=str, help=\"Path to your knowledge base CSV file (e.g., 'my_knowledge.csv').\"\n    )\n\n    group = parser.add_mutually_exclusive_group(required=True)\n    group.add_argument(\n        \"--add\", type=str, \n        help=\"Add a new knowledge point. Provide the point as a string (e.g., --add 'What is the capital of France?').\"\n    )\n    group.add_argument(\n        \"--review\", action=\"store_true\", \n        help=\"Show all knowledge points due for review today.\"\n    )\n    group.add_argument(\n        \"--update\", nargs=2, metavar=('ITEM_ID', 'RECALLED'), \n        help=\"Update the review status for an item. Provide the item ID and 'true' or 'false' (e.g., --update 5 true).\"\n    )\n\n    args = parser.parse_args()\n    knowledge_filepath = Path(args.filepath)\n\n    df = load_knowledge_base(knowledge_filepath)\n\n    if args.add:\n        df = add_knowledge_item(df, args.add)\n    elif args.review:\n        get_due_reviews(df)\n    elif args.update:\n        try:\n            item_id = int(args.update[0])\n            recalled_str = args.update[1].lower()\n            recalled = True if recalled_str == 'true' else False\n            if recalled_str not in ['true', 'false']:\n                raise ValueError(\"RECALLED must be 'true' or 'false'.\")\n            df = update_review_schedule(df, item_id, recalled)\n        except ValueError as e:\n            print(f\"Oops! Problem with your update command: {e}. Make sure ITEM_ID is a number and RECALLED is 'true' or 'false'.\")\n        except Exception as e:\n            print(f\"An unexpected error occurred during update: {e}.\")\n    \n    save_knowledge_base(df, knowledge_filepath)\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Parse a list of knowledge points and show a spaced repetition schedule.\"\"\"\n    if not text.strip():\n        return \"Paste a list of knowledge points (one per line) to generate a spaced repetition review schedule.\"\n    from datetime import datetime, timedelta\n    lines = [l.strip().lstrip(\"-*\u2022123456789. \").strip() for l in text.strip().splitlines() if l.strip()]\n    if not lines:\n        return \"No knowledge points found. Paste one item per line.\"\n    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)\n    headers = [\"#\", \"Knowledge Point\", \"First Review\", \"Level 1 Review\", \"Level 2 Review\"]\n    out = [\"| \" + \" | \".join(headers) + \" |\", \"|---|---|---|---|---|\"]\n    for i, kp in enumerate(lines, 1):\n        r0 = (today + timedelta(days=REVIEW_INTERVALS[0])).strftime(\"%Y-%m-%d\")\n        r1 = (today + timedelta(days=REVIEW_INTERVALS[1])).strftime(\"%Y-%m-%d\")\n        r2 = (today + timedelta(days=REVIEW_INTERVALS[2])).strftime(\"%Y-%m-%d\")\n        out.append(f\"| {i} | {kp} | {r0} | {r1} | {r2} |\")\n    out += [\"\", f\"*Review intervals: {REVIEW_INTERVALS}*\"]\n    return \"\\\\n\".join(out)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    # Demo for the tool:\n    # This block generates realistic sample data and runs the complete tool end-to-end.\n\n    DEMO_FILE = Path(\"demo_knowledge_base.csv\")\n\n    # Clean up previous demo file if it exists\n    if DEMO_FILE.exists():\n        DEMO_FILE.unlink()\n\n    print(\"\\\\n--- DEMO: Initializing new knowledge base ---\")\n    # Simulate adding initial items\n    initial_df = pd.DataFrame(columns=['id', 'knowledge_point', 'last_reviewed', 'next_review', 'recall_level'])\n    initial_df = add_knowledge_item(initial_df, \"What is the capital of France?\")\n    initial_df = add_knowledge_item(initial_df, \"Explain Newton's first law of motion.\")\n    initial_df = add_knowledge_item(initial_df, \"Who painted the Mona Lisa?\")\n    initial_df = add_knowledge_item(initial_df, \"What is the purpose of the 'finally' block in Python?\")\n    save_knowledge_base(initial_df, DEMO_FILE)\n\n    print(\"\\\\n--- DEMO: Loading knowledge base and checking reviews for today ---\")\n    # Simulate loading and checking reviews\n    df_loaded = load_knowledge_base(DEMO_FILE)\n    get_due_reviews(df_loaded) # All items added today should be due tomorrow\n\n    print(\"\\\\n--- DEMO: Simulating a day later, and some reviews ---\")\n    # Manually adjust dates for demo purposes to simulate passage of time\n    df_loaded['next_review'] = datetime.now().normalize() - timedelta(days=1) # Make all due \"yesterday\"\n    # Let's add an item that's already been reviewed once and is due\n    today = datetime.now().normalize()\n    # Simulate a \"past\" review\n    df_loaded.loc[0, 'last_reviewed'] = today - timedelta(days=3) # Assuming item with id 1 is the first one\n    df_loaded.loc[0, 'next_review'] = today # It's due today\n    df_loaded.loc[0, 'recall_level'] = 1 # It was level 1\n\n    get_due_reviews(df_loaded) # Now some items should show as due\n\n    print(\"\\\\n--- DEMO: Updating review status for an item ---\")\n    # Simulating --update 1 true\n    if not df_loaded.empty:\n        first_id = df_loaded['id'].iloc[0] # Get the first item's ID\n        df_updated = update_review_schedule(df_loaded, first_id, True)\n        # Simulating --update 2 false\n        if len(df_updated) > 1:\n            second_id = df_updated['id'].iloc[1] # Get the second item's ID\n            df_updated = update_review_schedule(df_updated, second_id, False)\n        save_knowledge_base(df_updated, DEMO_FILE)\n\n    print(\"\\\\n--- DEMO: Checking reviews again after updates ---\")\n    df_final = load_knowledge_base(DEMO_FILE)\n    get_due_reviews(df_final)\n\n    print(\"\\\\n--- DEMO COMPLETE ---\")\n    print(f\"You can find the demo knowledge base at: {DEMO_FILE.resolve()}\")\n    # To run manually:\n    # python your_script_name.py demo_knowledge_base.csv --add \"New fact to learn!\"\n    # python your_script_name.py demo_knowledge_base.csv --review\n    # python your_script_name.py demo_knowledge_base.csv --update 1 true";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

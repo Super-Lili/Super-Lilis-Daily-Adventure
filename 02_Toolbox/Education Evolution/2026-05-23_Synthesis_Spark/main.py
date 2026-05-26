@@ -301,7 +301,28 @@ def main(args: List[str] = None):
     print(f"Your recall questions are in: {questions_output_path}")
     print("Go forth and connect those dots!")
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Extract key concepts from learning notes and generate recall questions."""
+    if not text.strip():
+        return "Paste your learning notes or article text to extract concepts and generate recall questions."
+    concepts = _simulate_langextract_concepts(text)
+    if not concepts:
+        concepts = ["main theme", "key idea"]
+    sk = {"concepts": concepts, "relationships": {}}
+    questions = generate_recall_questions(sk)
+    out = ["## Key Concepts Identified:", ""]
+    for c in concepts:
+        out.append(f"- {c}")
+    out += ["", "## Recall Questions:", ""]
+    for i, q in enumerate(questions[:10], 1):
+        out.append(f"{i}. {q}")
+    return "\n".join(out)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     # Create dummy input files for demonstration
     demo_content_1 = """
     This article introduces the core concept of 'Data Flow Diagrams'.

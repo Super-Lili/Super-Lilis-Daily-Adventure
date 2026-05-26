@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install -r requirements.txt</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Office Automation/2026-05-10_Report_Streamliner/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your meeting notes, task list, or work text here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Office Automation/2026-05-10_Report_Streamliner/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n# requirements:\n# pandas>=1.0.0\n# openpyxl (if outputting to xlsx, pandas dependency)\n# xlsxwriter (pandas dependency for to_excel engine)\n\nimport argparse\nimport pandas as pd\nfrom pathlib import Path\nimport sys\n\ndef streamliner(input_dir: Path, output_file: Path, key_column: str, agg_columns: list, file_type: str):\n    \"\"\"\n    Combines and aggregates data from multiple CSV or Excel files into a single report.\n\n    Args:\n        input_dir (Path): Directory containing input data files.\n        output_file (Path): Path and filename for the consolidated output report.\n        key_column (str): The column name to use for merging/joining and grouping.\n        agg_columns (list): List of column names to aggregate (sum) after grouping.\n        file_type (str): Type of input files ('csv' or 'xlsx').\n    \"\"\"\n    print(f\"Hey there! Super-Lili here, ready to make your reports sparkle! \u2728\")\n    print(f\"Looking for {file_type.upper()} files in '{input_dir}' to combine and aggregate...\")\n\n    if not input_dir.is_dir():\n        print(f\"Oopsie! The input directory '{input_dir}' doesn't seem to exist. Can you double-check?\")\n        sys.exit(1)\n\n    files = list(input_dir.glob(f'*.{file_type}'))\n    if not files:\n        print(f\"Aww, no {file_type.upper()} files found in '{input_dir}'. Let's find some data to work with!\")\n        sys.exit(1)\n\n    print(f\"Found {len(files)} files. Let's get them organized and aggregated!\")\n    processed_dfs = [] # To store pre-aggregated dataframes from each file\n\n    for i, file in enumerate(files):\n        try:\n            if file_type == 'csv':\n                df = pd.read_csv(file)\n            elif file_type == 'xlsx':\n                df = pd.read_excel(file)\n            else: # This case should ideally be caught by argparse choices, but good for robustness\n                print(f\"Whoops! Unknown file type '{file_type}'. I only know 'csv' and 'xlsx' right now. Maybe next time?\")\n                continue # Skip to next file if an unexpected type somehow slips through\n\n            if key_column not in df.columns:\n                print(f\"Uh oh! The key column '{key_column}' is missing in '{file.name}'. Can't process this file without it!\")\n                continue # Skip to the next file if key_column is missing\n\n            current_agg_cols = []\n            for col in agg_columns:\n                if col in df.columns:\n                    # Convert to numeric, filling non-convertible values with 0 for summation\n                    df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)\n                    current_agg_cols.append(col)\n                else:\n                    print(f\"Heads up! Aggregation column '{col}' is missing in '{file.name}'. I'll just skip it for this file.\")\n\n            if not current_agg_cols:\n                print(f\"Looks like there are no valid aggregation columns in '{file.name}'. Skipping aggregation for this file.\")\n                continue # Skip if no columns to aggregate\n\n            # Group by key_column and sum the specified aggregate columns for *this* file\n            file_aggregated_df = df.groupby(key_column, as_index=False)[current_agg_cols].sum()\n            processed_dfs.append(file_aggregated_df)\n            print(f\"  Processed and aggregated '{file.name}'! ({i+1}/{len(files)})\")\n\n        except pd.errors.EmptyDataError:\n            print(f\"Hmm, '{file.name}' seems to be empty. Skipping it for now!\")\n            continue\n        except Exception as e:\n            print(f\"Oh dear, something went wrong processing '{file.name}': {e}. Skipping this one for now!\")\n            continue # Move to the next file\n\n    if not processed_dfs:\n        print(\"Looks like I couldn't process and aggregate any files. Let's try again with some valid data!\")\n        sys.exit(1)\n\n    # Now, concatenate all pre-aggregated dataframes and perform a final aggregation\n    print(f\"Alright, let's weave all these aggregated bits into one grand report!\")\n    combined_dfs_for_final_agg = pd.concat(processed_dfs, ignore_index=True)\n\n    # Ensure all original agg_columns are present in the combined DataFrame, filling missing ones with 0\n    for col in agg_columns:\n        if col not in combined_dfs_for_final_agg.columns:\n            combined_dfs_for_final_agg[col] = 0\n        else:\n            # Re-ensure numeric type in case of mixed types after concat\n            combined_dfs_for_final_agg[col] = pd.to_numeric(combined_dfs_for_final_agg[col], errors='coerce').fillna(0)\n\n    # Final aggregation across all concatenated data\n    print(f\"One last powerful sum! Grouping everything by '{key_column}'...\")\n    final_report_df = combined_dfs_for_final_agg.groupby(key_column, as_index=False)[agg_columns].sum()\n\n    # Save the output\n    try:\n        if output_file.suffix == '.csv':\n            final_report_df.to_csv(output_file, index=False)\n            print(f\"Woohoo! Your shiny new CSV report is ready at '{output_file}'! \ud83c\udf89\")\n        elif output_file.suffix == '.xlsx':\n            # Create a Pandas Excel writer using XlsxWriter as the engine.\n            with pd.ExcelWriter(output_file, engine='xlsxwriter') as writer:\n                final_report_df.to_excel(writer, sheet_name='Consolidated Report', index=False)\n                print(f\"Woohoo! Your shiny new Excel report is ready at '{output_file}'! \ud83c\udf89\")\n        else:\n            print(f\"Gah! I only know how to save as '.csv' or '.xlsx'. Please give me a proper file extension for '{output_file.name}'.\")\n            sys.exit(1)\n    except Exception as e:\n        print(f\"Oh no, I couldn't save the report! Here's what happened: {e}. Let's try again!\")\n        sys.exit(1)\n\ndef main():\n    \"\"\"\n    Parses command-line arguments and initiates the ReportStreamliner.\n    \"\"\"\n    parser = argparse.ArgumentParser(\n        description=\"\"\"\n        Super-Lili's ReportStreamliner: Your cheerful helper for merging and aggregating\n        data from multiple CSV or Excel files into one beautiful report!\n        Say goodbye to repetitive copy-pasting and hello to automated awesomeness! \u2728\n        \"\"\",\n        formatter_class=argparse.RawTextHelpFormatter # For better multiline description display\n    )\n    parser.add_argument(\n        '--input-dir',\n        type=Path,\n        required=True,\n        help=\"\"\"\n        Path to the directory containing your input data files (CSV or XLSX).\n        All files of the specified type in this directory will be processed.\n        Example: --input-dir /path/to/my/data_folder\n        \"\"\"\n    )\n    parser.add_argument(\n        '--output-file',\n        type=Path,\n        required=True,\n        help=\"\"\"\n        Path and filename for the consolidated output report.\n        The file extension must be '.csv' or '.xlsx'.\n        Example: --output-file /path/to/my/reports/monthly_summary.xlsx\n        \"\"\"\n    )\n    parser.add_argument(\n        '--key-column',\n        type=str,\n        required=True,\n        help=\"\"\"\n        The column name to use for grouping and aggregating your datasets.\n        This column must exist in all input files you wish to process.\n        Example: --key-column 'CustomerID'\n        \"\"\"\n    )\n    parser.add_argument(\n        '--agg-columns',\n        type=str,\n        required=True,\n        help=\"\"\"\n        Comma-separated list of column names to aggregate (sum) after grouping.\n        These columns should contain numerical data.\n        Example: --agg-columns 'SalesAmount,QuantitySold'\n        \"\"\"\n    )\n    parser.add_argument(\n        '--file-type',\n        type=str,\n        choices=['csv', 'xlsx'],\n        default='csv',\n        help=\"\"\"\n        Type of input files you're using. Choose 'csv' or 'xlsx'.\n        Defaults to 'csv' if not specified.\n        Example: --file-type xlsx\n        \"\"\"\n    )\n\n    args = parser.parse_args()\n\n    # Split the comma-separated string of aggregate columns into a list\n    agg_columns_list = [col.strip() for col in args.agg_columns.split(',')]\n\n    # Check if the output file extension is valid\n    if args.output_file.suffix not in ['.csv', '.xlsx']:\n        print(f\"Oh no! The output file '{args.output_file.name}' needs to end with '.csv' or '.xlsx'. Let's fix that!\")\n        sys.exit(1)\n\n    streamliner(\n        args.input_dir,\n        args.output_file,\n        args.key_column,\n        agg_columns_list,\n        args.file_type\n    )\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Parse CSV data and aggregate numeric columns grouped by the first column.\"\"\"\n    if not text.strip():\n        return \"Paste CSV data (with a key column and numeric columns) to aggregate and summarize it.\"\n    import io\n    import csv as _csv\n    try:\n        reader = _csv.DictReader(io.StringIO(text.strip()))\n        rows = list(reader)\n        fieldnames = reader.fieldnames or []\n    except Exception as e:\n        return f\"Could not parse CSV: {e}\"\n    if not rows or len(fieldnames) < 2:\n        return \"Could not parse CSV or not enough columns found.\"\n    key_col = fieldnames[0]\n    num_cols = []\n    for col in fieldnames[1:]:\n        try:\n            float(rows[0].get(col, \"\"))\n            num_cols.append(col)\n        except (ValueError, TypeError):\n            pass\n    if not num_cols:\n        return f\"No numeric columns found after '{key_col}'. Ensure your CSV has numeric data columns.\"\n    # Aggregate by key column\n    agg = {}\n    for row in rows:\n        key = row.get(key_col, \"\").strip()\n        if not key:\n            continue\n        if key not in agg:\n            agg[key] = {c: 0.0 for c in num_cols}\n        for c in num_cols:\n            try:\n                agg[key][c] += float(row.get(c, 0) or 0)\n            except (ValueError, TypeError):\n                pass\n    if not agg:\n        return \"No data to aggregate after parsing.\"\n    header_cols = [key_col] + num_cols\n    lines = [\"| \" + \" | \".join(header_cols) + \" |\", \"|\" + \"---|\" * len(header_cols)]\n    for key, totals in sorted(agg.items()):\n        vals = [key] + [f\"{totals[c]:.2f}\" for c in num_cols]\n        lines.append(\"| \" + \" | \".join(vals) + \" |\")\n    return \"\\\\n\".join(lines)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    # Demo usage:\n    # 1. Create a directory named 'demo_data'\n    # 2. Create a few CSV or XLSX files inside 'demo_data'\n    #    Example file 'data1.csv':\n    #    CustomerID,SalesAmount,QuantitySold,Region\n    #    101,150.50,2,East\n    #    102,200.00,1,West\n    #    103,75.25,3,North\n    #\n    #    Example file 'data2.csv':\n    #    CustomerID,SalesAmount,QuantitySold,ProductCategory\n    #    101,50.00,1,Electronics\n    #    104,120.75,2,Apparel\n    #    102,30.00,1,Books\n    #\n    # 3. Run the script from your terminal:\n    # python your_script_name.py --input-dir demo_data --output-file reports/summary.xlsx --key-column CustomerID --agg-columns SalesAmount,QuantitySold --file-type csv\n\n    # Example setup for quick local testing without manual file creation:\n    # (Comment out or remove for actual production use, as it creates dummy files)\n    demo_dir = Path(\"demo_data\")\n    demo_dir.mkdir(exist_ok=True)\n    Path(\"reports\").mkdir(exist_ok=True) # Ensure reports directory exists\n\n    # Create dummy CSV files\n    data_csv_1 = \"\"\"CustomerID,SalesAmount,QuantitySold,Region\n101,150.50,2,East\n102,200.00,1,West\n103,75.25,3,North\"\"\"\n    (demo_dir / \"sales_q1.csv\").write_text(data_csv_1)\n\n    data_csv_2 = \"\"\"CustomerID,SalesAmount,QuantitySold,ProductCategory\n101,50.00,1,Electronics\n104,120.75,2,Apparel\n102,30.00,1,Books\"\"\"\n    (demo_dir / \"sales_q2.csv\").write_text(data_csv_2)\n\n    # You could also make dummy XLSX files if needed using pandas\n    # For example:\n    # df_xlsx_1 = pd.DataFrame({'CustomerID':, 'SalesAmount': [90.0, 110.0], 'QuantitySold':, 'Dept': ['HR', 'IT']})\n    # df_xlsx_1.to_excel(demo_dir / \"hr_spending.xlsx\", index=False)\n\n\n    # Simulate command-line arguments for demo\n    sys.argv = [\n        \"your_script.py\", # Placeholder for script name\n        \"--input-dir\", str(demo_dir),\n        \"--output-file\", \"reports/monthly_summary.xlsx\",\n        \"--key-column\", \"CustomerID\",\n        \"--agg-columns\", \"SalesAmount,QuantitySold\",\n        \"--file-type\", \"csv\"\n    ]\n\n    print(\"\\\\n--- Running ReportStreamliner Demo ---\")\n    print(f\"Using input directory: {sys.argv}\")\n    print(f\"Output file: {sys.argv}\")\n    print(f\"Key column: {sys.argv}\")\n    print(f\"Aggregate columns: {sys.argv}\")\n    print(f\"File type: {sys.argv}\\\\n\")\n\n    main()\n    print(\"\\\\n--- Demo Finished! Check 'reports/monthly_summary.xlsx' ---\")\n\n    # Clean up demo files (optional)\n    # import shutil\n    # shutil.rmtree(demo_dir)\n    # Path(\"reports/monthly_summary.xlsx\").unlink()";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

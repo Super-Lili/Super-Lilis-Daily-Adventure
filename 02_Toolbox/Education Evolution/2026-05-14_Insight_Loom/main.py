@@ -221,7 +221,32 @@ def main(args=None):
     parsed_args = parser.parse_args(args)
     create_concept_map_data(parsed_args.input_file, parsed_args.output_json, parsed_args.output_graph_png)
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Extract key concepts from text and show identified relationships."""
+    if not text.strip():
+        return "Paste your notes or article text to identify core concepts and connections."
+    concepts = _simulate_langextract_concepts(text)
+    if not concepts:
+        return "No key concepts automatically identified. Try a more detailed passage with technical terms."
+    out = ["## Concepts Identified:", ""]
+    for c in concepts:
+        out.append(f"- **{c}**")
+    out += ["", "## How to use Insight Loom interactively:", "",
+            "Run the tool from the command line to define relationships between these concepts",
+            "and generate a visual concept map PNG.",
+            "",
+            "**Suggested concept pairs to explore:**"]
+    for i, c1 in enumerate(concepts):
+        for c2 in concepts[i+1:]:
+            rel = _simulate_langextract_relationships(c1, c2, text)
+            out.append(f"- '{c1}' {rel} '{c2}'")
+    return "\n".join(out)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     # Create a dummy input file for demonstration and testing purposes
     demo_content = """
     The attention economy is a system where human attention is treated as a commodity.

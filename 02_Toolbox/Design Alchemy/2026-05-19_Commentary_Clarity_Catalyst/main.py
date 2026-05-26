@@ -156,7 +156,54 @@ def main():
     # Step 3: Generate report
     generate_report(analysis_results, args.output_report)
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Analyze comment text for friction themes and return a summary report."""
+    if not text.strip():
+        return "Paste YouTube or social media comments (one per line or as plain text) to identify common friction themes."
+    # Parse lines as comment texts
+    comment_lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
+    comments_data = [{"text": line} for line in comment_lines]
+    if not comments_data:
+        return "No comments found in the provided text."
+    themes = {
+        "anxiety_inadequacy": 0,
+        "lack_of_practicality": 0,
+        "gap_between_inspiration_execution": 0,
+        "desire_for_authenticity": 0,
+        "feeling_overwhelmed": 0,
+        "busy_vs_productive": 0
+    }
+    total = len(comments_data)
+    for comment in comments_data:
+        t = comment["text"].lower()
+        if "anxious" in t or "inadequate" in t or "not enough" in t or "feel bad" in t:
+            themes["anxiety_inadequacy"] += 1
+        if "practical" in t or "start" in t or "steps" in t or "real life" in t:
+            themes["lack_of_practicality"] += 1
+        if "gap" in t or "bridge" in t or "execution" in t or "doing part" in t or "inspiration" in t:
+            themes["gap_between_inspiration_execution"] += 1
+        if "easy" in t or "messy parts" in t or "authentic" in t or "honest" in t:
+            themes["desire_for_authenticity"] += 1
+        if "overwhelmed" in t or "too much" in t or "complicated" in t:
+            themes["feeling_overwhelmed"] += 1
+        if "busy" in t and "productive" in t:
+            themes["busy_vs_productive"] += 1
+    sorted_themes = sorted(themes.items(), key=lambda x: x[1], reverse=True)
+    out = [f"## Comment Analysis ({total} comments)", "",
+           "| Theme | Count | % |", "|---|---|---|"]
+    for theme, count in sorted_themes:
+        pct = (count / total * 100) if total else 0
+        label = theme.replace("_", " ").title()
+        out.append(f"| {label} | {count} | {pct:.1f}% |")
+    dominant = sorted_themes[0]
+    out += ["", f"**Top friction theme:** {dominant[0].replace('_', ' ').title()} ({dominant[1]} mentions)"]
+    return "\n".join(out)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     # Example usage when running the script directly:
     # python your_script_name.py --video_url "https://www.youtube.com/watch?v=25N_y9E_Uf4" --output_csv "comments.csv" --output_report "report.txt"
     # Since this is a simulation, we'll call main directly within the tool execution context.

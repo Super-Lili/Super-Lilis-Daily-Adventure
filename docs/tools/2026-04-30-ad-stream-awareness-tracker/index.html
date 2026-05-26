@@ -511,22 +511,76 @@ a { color: inherit; text-decoration: none; }
     </section>
 
     <section class="detail-section">
-      <div class="detail-label">Run Locally</div>
+      <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<p class="local-run-note">这个工具需要在本地运行 — 在你的电脑终端执行以下命令：<br>
-<em>This tool runs locally. Open a terminal and run:</em></p>
-<div class="code-block" translate="no">
-  <div><span class="code-comment"># 1. 安装依赖 Install dependencies</span></div>
-  <div>pip install -r requirements.txt</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 2. 下载工具 Download the tool</span></div>
-  <div>curl -O https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/02_Toolbox/Healing Inventions/2026-04-30_Ad-Stream_Awareness_Tracker/main.py</div>
-  <div>&nbsp;</div>
-  <div><span class="code-comment"># 3. 运行 Run</span></div>
-  <div>python main.py --help</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste a few sentences about how you're feeling or what's on your mind…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
-<a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Healing Inventions/2026-04-30_Ad-Stream_Awareness_Tracker/main.py" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport re\n\n\ndef analyze_ad_session(ad_count: int, session_minutes: float) -> str:\n    \"\"\"Analyze ad frequency for a browsing session.\"\"\"\n    total_seconds = session_minutes * 60\n    lines = [\"## Ad-Stream Awareness Tracker: Session Report\", \"\"]\n    lines.append(f\"- Session duration: {session_minutes:.1f} minutes\")\n    lines.append(f\"- Ads encountered: {ad_count}\")\n    if ad_count > 0 and total_seconds > 0:\n        avg_secs = total_seconds / ad_count\n        lines.append(f\"- Average time between ads: {avg_secs:.0f} seconds ({avg_secs/60:.1f} min)\")\n        ads_per_hour = (ad_count / session_minutes) * 60\n        lines.append(f\"- Ad rate: ~{ads_per_hour:.0f} ads/hour\")\n        lines += [\"\"]\n        if ads_per_hour > 30:\n            lines.append(\"Heavy ad load. Consider an ad blocker or ad-free subscription.\")\n        elif ads_per_hour > 15:\n            lines.append(\"Moderate ad load. A digital detox or ad-free mode might help.\")\n        else:\n            lines.append(\"Relatively light ad load for this session.\")\n    elif ad_count == 0:\n        lines += [\"\", \"No ads logged \u2014 great session!\"]\n    return \"\\\\n\".join(lines)\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Analyze an ad-tracking session from text description.\n\n    Input format: 'ads=12 minutes=30' or just numbers like '12 ads in 30 minutes'\n    \"\"\"\n    if not text.strip():\n        return (\n            \"Paste your session summary to analyze ad frequency.\\\\n\\\\n\"\n            \"Format: ads=12 minutes=30\\\\n\"\n            \"Or just describe it: '12 ads in 30 minutes'\"\n        )\n    ad_count = 0\n    session_min = 10.0\n    m = re.search(r'ads?\\\\s*[=:]\\\\s*(\\\\d+)', text, re.IGNORECASE)\n    if m:\n        ad_count = int(m.group(1))\n    m = re.search(r'(?:minutes?|mins?)\\\\s*[=:]\\\\s*(\\\\d+(?:\\\\.\\\\d+)?)', text, re.IGNORECASE)\n    if m:\n        session_min = float(m.group(1))\n    # fallback: bare numbers\n    if not re.search(r'ads?\\\\s*[=:]', text, re.IGNORECASE):\n        nums = re.findall(r'\\\\d+(?:\\\\.\\\\d+)?', text)\n        if len(nums) >= 2:\n            ad_count = int(float(nums[0]))\n            session_min = float(nums[1])\n        elif len(nums) == 1:\n            ad_count = int(float(nums[0]))\n    return analyze_ad_session(ad_count, session_min)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    print(process(\"ads=18 minutes=20\"))";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool() {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
       </div>
     </section>
 

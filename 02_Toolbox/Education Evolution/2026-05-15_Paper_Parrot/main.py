@@ -147,7 +147,25 @@ def main(args=None):
     save_insights_to_csv(insights, parsed_args.output_csv)
     print("\nPaper Parrot finished its squawk! Time to engage with your new insights. Go make those ideas stick!")
 
-if __name__ == "__main__":
+def process(text: str = "") -> str:
+    """Identify key points, arguments, methodologies, and findings in academic text."""
+    if not text.strip():
+        return "Paste the text of an academic paper to extract key points and active recall prompts."
+    insights = identify_key_points(text)
+    if not insights:
+        return "No prominent arguments, methodologies, or findings detected in the provided text. Try pasting a longer or more structured excerpt."
+    lines = ["| Type | Question | Answer Prompt | Original Snippet | Source Paragraph |",
+             "|---|---|---|---|---|"]
+    for item in insights:
+        row = "| " + " | ".join(str(item.get(h, "")) for h in ["Type", "Question", "Answer Prompt", "Original Snippet", "Source Paragraph"]) + " |"
+        lines.append(row)
+    return "\n".join(lines)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     # Create a dummy PDF for demonstration
     demo_pdf_content = """
     A Novel Approach to Cognitive Load Reduction in Online Learning Environments
