@@ -961,10 +961,6 @@ async function loadPyodide_() {{
 async function runTool() {{
   if (!pyodide) return;
   const userInput = document.getElementById('user-input').value.trim();
-  if (!userInput) {{
-    document.getElementById('output').textContent = '⬆ Paste some text above, then click Run.';
-    return;
-  }}
   const btn = document.getElementById('run-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Running...';
@@ -973,8 +969,26 @@ async function runTool() {{
     pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
     pyodide.globals.set('USER_INPUT', userInput);
     pyodide.runPython(TOOL_CODE);
-    const output = pyodide.runPython('sys.stdout.getvalue()');
-    document.getElementById('output').textContent = output.trim() || '(no output — tool may write to a file instead)';
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<svg') || output.startsWith('<?xml')) {{
+      // SVG output — render as real image
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    }} else {{
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }}
   }} catch(e) {{
     document.getElementById('output').textContent = '❌ Error:\\n' + e.message;
   }}
