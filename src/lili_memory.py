@@ -23,6 +23,7 @@ def load_memory() -> dict:
 
 def save_memory(memory: dict):
     memory["last_updated"] = datetime.now().strftime("%Y-%m-%d")
+    MEMORY_FILE.parent.mkdir(parents=True, exist_ok=True)
     MEMORY_FILE.write_text(
         json.dumps(memory, ensure_ascii=False, indent=2),
         encoding="utf-8"
