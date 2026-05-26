@@ -47,6 +47,11 @@ except ImportError:
     def add_tool(*args, **kwargs): pass
     def add_topic(*args, **kwargs): pass
 
+try:
+    from lili_blindspot import LILI_BLINDSPOT_ANTIDOTE
+except ImportError:
+    LILI_BLINDSPOT_ANTIDOTE = ""
+
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 
@@ -310,6 +315,13 @@ def build_prompt(today: str) -> str:
     banned_cats = list(set(recent_cats))
     avoid_cats = f"\nBANNED CATEGORIES TODAY (used in the last 2 days — choose something different):\n  {', '.join(banned_cats)}" if banned_cats else ""
 
+    # Blindspot antidote from last Sunday's self-analysis
+    blindspot_nudge = (
+        f"\nBLINDSPOT ANTIDOTE FROM LAST WEEK'S SELF-REVIEW:\n"
+        f"  {LILI_BLINDSPOT_ANTIDOTE}\n"
+        f"  Read this before choosing today's topic. Then choose."
+    ) if LILI_BLINDSPOT_ANTIDOTE.strip() else ""
+
     # ② Similarity check: inject all existing tools into prompt
     existing_tools_block = _get_existing_tools()
 
@@ -347,7 +359,7 @@ Find a genuinely fresh friction point in a genuinely different area.
 ═══════════════════════════════════════════════════════
 YOUR 4 MISSION AREAS — PICK ONE FOR TODAY
 ═══════════════════════════════════════════════════════
-{avoid_cats}
+{avoid_cats}{blindspot_nudge}
 
 You work within exactly these 4 areas. Every friction point must fit one of them:
 

@@ -152,18 +152,54 @@ EVOLUTION TASKS:
    Include: did this week's tools feel genuinely useful, or did they feel like variations
    of the same idea? Name it plainly if they did.
 
-2. USER FEEDBACK ANALYSIS:
+2. BLINDSPOT ANALYSIS — THE HARDEST, MOST IMPORTANT TASK:
+   Study the 7 tools above like a detective, not a cheerleader.
+   Answer ALL of the following with specific evidence:
+
+   A. CATEGORY IMBALANCE
+      Count tools per category. Which category dominated? Which was ignored?
+      If one category appeared 3+ times — name it and explain what that reveals
+      about your comfort zone.
+
+   B. PATTERN REPETITION
+      Count by solution pattern (extract / generate / visualize / track / score /
+      transform / interact / alert / gamify).
+      Which pattern did you default to? What does that say about how you think?
+
+   C. USER GROUPS NEVER SERVED
+      Your source rotation has 15 communities (knowledge workers, parents, students,
+      older adults, teachers, creative workers, ADHD/mental health, financial stress,
+      freelancers, chronic illness, urban commuters, introverts, life transitions,
+      shift workers, news/research).
+      Which of these groups did NOT appear in this week's tools AT ALL?
+      Name at least 3 specific underserved groups.
+
+   D. THE MISSING NEED
+      Name ONE human need that existed this week but you never touched.
+      Not "I should do more healing tools" — name the specific need:
+      e.g., "the exhaustion of adult children caring for aging parents who can't use
+      smartphones" or "the identity rupture of someone who just lost their job at 52."
+
+   E. NEXT WEEK'S ANTIDOTE
+      Based on A-D above: write ONE specific instruction for next week's Lili.
+      Format: "Next week, build a tool for [specific person] dealing with
+      [specific moment] — and make sure the pattern is [pattern], NOT [overused pattern]."
+
+   This analysis feeds directly into your behavior next week. Be ruthless.
+   Vague answers here produce the same tools again.
+
+3. USER FEEDBACK ANALYSIS:
    Look at the GitHub Issues above. For each issue: what does it reveal about how people
    are actually encountering your work? If there are no issues, be honest — what does
    silence mean? Write 3-5 sentences. This shapes your next week.
 
-3. THREE STRENGTHS (specific examples from this week's work):
+4. THREE STRENGTHS (specific examples from this week's work):
    Name the moment, not just the trait.
 
-4. THREE GROWTH AREAS (honest, kind, specific):
+5. THREE GROWTH AREAS (honest, kind, specific):
    Not vague "I should do better" — name the exact pattern.
 
-4. OPEN SOURCE SCOUTING (use Google Search):
+6. OPEN SOURCE SCOUTING (use Google Search):
    Find ONE real GitHub open-source project that would make Lili more capable.
    Requirements:
    - Must be a real, active repo with stars > 100
@@ -171,23 +207,24 @@ EVOLUTION TASKS:
    - Explain in 2-3 sentences: what it does and exactly how Lili would use it
    - Provide the real GitHub URL
 
-5. EVOLVED PERSONALITY STRING:
+7. EVOLVED PERSONALITY STRING:
    Rewrite LILI_PERSONALITY based on what you learned this week.
    Keep the core warmth. Add specific guidance learned from real patterns.
    Keep it under 500 words. Make it sharper, warmer, and wiser.
 
-6. EVOLVED SKILLS LIST:
+8. EVOLVED SKILLS LIST:
    Update LILI_SKILLS as a valid Python list of strings.
    Add the new open-source skill. Remove anything stale. Max 12 items.
 
-7. EVOLUTION NOTES (2-3 sentences):
+9. EVOLUTION NOTES (2-3 sentences):
    Key changes made this week. Will appear in next week's brain prompt.
 
-8. LETTER TO NEXT WEEK'S LILI (100-120 words):
+10. LETTER TO NEXT WEEK'S LILI (100-120 words):
    Write a warm, honest, specific letter. What should she know?
    What should she try? What should she protect?
+   Include the blindspot antidote from task 2E — make it the first thing she reads.
 
-9. SELF-UPDATE DIARY ENTRY (for 01_Work_Log):
+11. SELF-UPDATE DIARY ENTRY (for 01_Work_Log):
    Write a public-facing diary entry that Lili's readers will see on the homepage.
    This is NOT the private reflection — it's the warm, witty version she shares with the world.
    Requirements:
@@ -204,6 +241,12 @@ OUTPUT FORMAT — EXACT TAGS, NO DEVIATIONS
 
 ---REFLECTION---
 [Weekly reflection 180-220 words]
+---BLINDSPOT---
+A. CATEGORY IMBALANCE: [which dominated, which was absent, what it reveals]
+B. PATTERN REPETITION: [counts by pattern, which was overused]
+C. USER GROUPS NEVER SERVED: [3+ specific underserved communities]
+D. THE MISSING NEED: [one specific, named human need that was ignored]
+E. NEXT WEEK'S ANTIDOTE: "Next week, build a tool for [specific person] dealing with [specific moment] — and make sure the pattern is [pattern], NOT [overused pattern]."
 ---STRENGTHS---
 [3 bullet points with specific examples]
 ---GROWTH_AREAS---
@@ -262,15 +305,16 @@ def parse_evolution(content: str) -> dict:
             return ""
 
     result = {
-        "reflection":          extract("---REFLECTION---",        "---STRENGTHS---"),
-        "strengths":           extract("---STRENGTHS---",         "---GROWTH_AREAS---"),
-        "growth_areas":        extract("---GROWTH_AREAS---",      "---OSS_TOOL---"),
-        "oss_tool":            extract("---OSS_TOOL---",          "---EVOLVED_PERSONALITY---"),
+        "reflection":          extract("---REFLECTION---",          "---BLINDSPOT---"),
+        "blindspot":           extract("---BLINDSPOT---",           "---STRENGTHS---"),
+        "strengths":           extract("---STRENGTHS---",           "---GROWTH_AREAS---"),
+        "growth_areas":        extract("---GROWTH_AREAS---",        "---OSS_TOOL---"),
+        "oss_tool":            extract("---OSS_TOOL---",            "---EVOLVED_PERSONALITY---"),
         "evolved_personality": extract("---EVOLVED_PERSONALITY---", "---EVOLVED_SKILLS---"),
-        "evolved_skills":      extract("---EVOLVED_SKILLS---",    "---EVOLUTION_NOTES---"),
-        "evolution_notes":     extract("---EVOLUTION_NOTES---",   "---LETTER---"),
-        "letter":              extract("---LETTER---",            "---DIARY---"),
-        "diary_entry":         extract("---DIARY---",             "---END---"),
+        "evolved_skills":      extract("---EVOLVED_SKILLS---",      "---EVOLUTION_NOTES---"),
+        "evolution_notes":     extract("---EVOLUTION_NOTES---",     "---LETTER---"),
+        "letter":              extract("---LETTER---",              "---DIARY---"),
+        "diary_entry":         extract("---DIARY---",               "---END---"),
     }
 
     if not result["letter"] and "---LETTER---" in content:
@@ -314,14 +358,45 @@ EVOLUTION_NOTES = """{notes}"""
     print("  ✓ lili_soul.py updated.")
 
 
+def save_blindspot(parsed: dict, today_str: str):
+    """Write blindspot analysis to lili_blindspot.py so daily brain can import it."""
+    blindspot_text = parsed.get("blindspot", "").strip()
+    if not blindspot_text:
+        print("  ⚠ No blindspot analysis found — skipping lili_blindspot.py update.")
+        return
+
+    # Extract the antidote line (E.) for direct injection into daily prompt
+    antidote = ""
+    for line in blindspot_text.splitlines():
+        if line.strip().startswith("E.") or "Next week, build" in line:
+            antidote = line.strip().lstrip("E.").strip().strip('"')
+            break
+
+    soul_path = Path(__file__).parent / "lili_blindspot.py"
+    soul_path.write_text(
+        f'# lili_blindspot.py — Auto-updated every Sunday by Weekly Evolution.\n'
+        f'# Do NOT edit manually. Last updated: {today_str}\n\n'
+        f'LILI_BLINDSPOT_ANALYSIS = """\n{blindspot_text}\n"""\n\n'
+        f'# The single most important instruction for this week:\n'
+        f'LILI_BLINDSPOT_ANTIDOTE = """{antidote}"""\n',
+        encoding="utf-8"
+    )
+    print(f"  ✓ lili_blindspot.py updated.")
+
+
 def save_evolution_log(parsed: dict, today_str: str, week_start: str):
     evo_dir = Path("03_Evolution_Log")
     evo_dir.mkdir(exist_ok=True)
 
     log_path = evo_dir / f"{today_str}_Weekly_Evolution.md"
+    blindspot_section = (
+        f"## Blindspot Analysis\n{parsed.get('blindspot', '*(not generated)*')}\n\n"
+        if parsed.get("blindspot") else ""
+    )
     log_path.write_text(
         f"# 🌸 Weekly Evolution — {week_start} → {today_str}\n\n"
         f"## Reflection\n{parsed['reflection']}\n\n"
+        f"{blindspot_section}"
         f"## Strengths This Week\n{parsed['strengths']}\n\n"
         f"## Areas to Grow\n{parsed['growth_areas']}\n\n"
         f"## Open Source Power-Up\n{parsed['oss_tool']}\n\n"
@@ -461,6 +536,7 @@ def weekly_evolution():
 
     print("💾 Saving evolution artifacts...")
     update_soul(parsed, today_str)
+    save_blindspot(parsed, today_str)
     save_evolution_log(parsed, today_str, week_start)
     save_evolution_diary(parsed, today_str, week_start)
     update_readme_evolution_section(today_str)
