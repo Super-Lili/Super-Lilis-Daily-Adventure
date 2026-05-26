@@ -75,16 +75,23 @@ def read_diaries() -> list[dict]:
                     break
 
             # Excerpt: first substantial paragraph after the --- separator
+            # Skip metadata lines: **, #, *(source badges), →, emoji-only lines
             excerpt = ""
             past_separator = False
             for line in lines:
                 if line.strip() == "---":
                     past_separator = True
                     continue
-                if past_separator and line.strip() and not line.startswith("**") and not line.startswith("#"):
-                    excerpt = line.strip()
-                    if len(excerpt) > 20:
-                        break
+                if not past_separator:
+                    continue
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                if stripped.startswith(("**", "#", "*(", "*Note", "➡️", "→", "🇨🇳")):
+                    continue
+                if len(stripped) > 40:
+                    excerpt = stripped
+                    break
 
             date_str = f.stem.replace("-Diary", "")
             diaries.append({
@@ -327,6 +334,8 @@ a { color: inherit; text-decoration: none; }
 .btn-dark:hover { background: #2ABBA8; border-color: #2ABBA8; }
 .btn-ghost { background: transparent; color: #999; border-color: #d0d0d0; }
 .btn-ghost:hover { color: #1a1a1a; border-color: #1a1a1a; }
+.btn-teal { background: #2ABBA8; color: #fff; border-color: #2ABBA8; }
+.btn-teal:hover { background: #229990; border-color: #229990; }
 
 /* ── Section header ── */
 .section-block {
@@ -699,7 +708,7 @@ def render_hero(diaries: list[dict], tools: list[dict]) -> str:
     tool_btn = ""
     for t in tools:
         if t["date"] == d["date"]:
-            tool_btn = f'<a class="btn btn-ghost" href="tools/{h(t["slug"])}/index.html">Today\'s Tool &rarr;</a>'
+            tool_btn = f'<a class="btn btn-teal" href="tools/{h(t["slug"])}/index.html">Today\'s Tool &rarr;</a>'
             break
 
     excerpt = f'<p class="hero-excerpt">{h(d["excerpt"])}</p>' if d.get("excerpt") else ""
