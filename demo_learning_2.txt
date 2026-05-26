@@ -1,7 +1,0 @@
-
-    Understanding 'System Analysis' requires grasping several tools.
-    'Use Case Diagrams' are another important tool, showing user interactions.
-    They enable 'Requirements Gathering' by focusing on user goals.
-    Data Flow Diagrams are a component of wider system analysis.
-    The goal of System Analysis is to build robust 'Information Systems'.
-    

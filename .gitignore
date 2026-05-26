@@ -3,3 +3,10 @@ __pycache__/
 *.pyo
 .DS_Store
 .env
+
+# Tool demo output — generated at runtime, not part of the repo
+demo_*/
+data/
+*.csv
+*.txt
+!requirements.txt
