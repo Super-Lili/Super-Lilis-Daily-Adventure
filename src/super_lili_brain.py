@@ -21,9 +21,22 @@ except ImportError:
     EVOLUTION_NOTES = ""
 
 try:
-    from lili_editor import LILI_EDITOR_CONTEXT
+    from lili_editor import (
+        LILI_DOMAIN_WORK,
+        LILI_DOMAIN_LEARNING,
+        LILI_DOMAIN_HEALING,
+        LILI_EDITORIAL_CRITERIA,
+    )
+    _EDITOR_DOMAINS: dict[str, str] = {
+        "work":     LILI_DOMAIN_WORK,
+        "learning": LILI_DOMAIN_LEARNING,
+        "healing":  LILI_DOMAIN_HEALING,
+        "design":   "",   # Design Alchemy: core lenses already in prompt template
+    }
+    _EDITOR_CRITERIA: str = LILI_EDITORIAL_CRITERIA
 except ImportError:
-    LILI_EDITOR_CONTEXT = ""
+    _EDITOR_DOMAINS = {}
+    _EDITOR_CRITERIA = ""
 
 try:
     from lili_memory import get_memory_context, add_tool, add_topic, rebuild_memory_from_repo
@@ -238,6 +251,28 @@ _SOURCE_ROTATION = [
 ]
 
 
+# Maps each source rotation index to the most relevant domain knowledge block.
+# This drives targeted injection: today only gets the knowledge that matters today.
+# Matches the order of _SOURCE_ROTATION above (15 entries).
+_SOURCE_DOMAIN_HINT = [
+    "work",      # 0  — knowledge workers & productivity
+    "healing",   # 1  — parents & family life
+    "learning",  # 2  — students & learning
+    "healing",   # 3  — older adults & caregivers
+    "learning",  # 4  — teachers & educators
+    "design",    # 5  — creative professionals (Design Alchemy)
+    "healing",   # 6  — ADHD & mental health
+    "healing",   # 7  — financial stress
+    "work",      # 8  — freelancers & small business
+    "healing",   # 9  — chronic illness & body
+    "healing",   # 10 — commuters & urban life
+    "healing",   # 11 — introverts & social exhaustion
+    "healing",   # 12 — life transitions
+    "work",      # 13 — shift workers & irregular hours
+    "work",      # 14 — news & research (default to work)
+]
+
+
 def build_prompt(today: str) -> str:
     skills_list = "\n".join(f"  • {s}" for s in LILI_SKILLS) if LILI_SKILLS else "  • Python standard library"
     evolution_ctx = f"\n\nEVOLUTION NOTES FROM LAST WEEK:\n{EVOLUTION_NOTES}" if EVOLUTION_NOTES.strip() else ""
@@ -245,13 +280,30 @@ def build_prompt(today: str) -> str:
     from datetime import date as _date
     day_index = _date.fromisoformat(today).toordinal() % len(_SOURCE_ROTATION)
     primary_src, primary_hint = _SOURCE_ROTATION[day_index]
-    # Editor context injected close to the task, not as distant background reading
-    editor_ctx = (
-        f"\n\n═══════════════════════════════════════════════════════\n"
-        f"YOUR EDITORIAL INTELLIGENCE (full reference)\n"
-        f"═══════════════════════════════════════════════════════\n"
-        f"{LILI_EDITOR_CONTEXT}"
-    ) if LILI_EDITOR_CONTEXT else ""
+
+    # Targeted domain injection: only the block matching today's source category.
+    # Reduces injection from 578 lines (all domains) → ~150 lines (one domain + criteria).
+    # Positioned right before SOLUTION PATTERNS so domain knowledge is fresh in context.
+    domain_key = _SOURCE_DOMAIN_HINT[day_index]
+    domain_block = _EDITOR_DOMAINS.get(domain_key, "")
+    if domain_block or _EDITOR_CRITERIA:
+        _domain_label = {
+            "work":     "FUTURE OF WORK",
+            "learning": "FUTURE OF LEARNING",
+            "healing":  "HEALING INVENTIONS",
+            "design":   "DESIGN ALCHEMY",
+        }.get(domain_key, domain_key.upper())
+        editor_ctx = (
+            f"\n\n═══════════════════════════════════════════════════════\n"
+            f"DOMAIN INTELLIGENCE — {_domain_label}\n"
+            f"(matched to today's source: {primary_src})\n"
+            f"Apply this knowledge when reading friction signals and designing the tool.\n"
+            f"═══════════════════════════════════════════════════════\n"
+            + (domain_block + "\n\n" if domain_block else "")
+            + _EDITOR_CRITERIA
+        )
+    else:
+        editor_ctx = ""
 
     # ③ Category rotation: ban any category used in the last 2 days
     recent_cats = _get_recent_categories(2)
