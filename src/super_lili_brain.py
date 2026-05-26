@@ -600,6 +600,14 @@ TRULY USABLE (non-negotiable):
 
 BROWSER COMPATIBILITY (mandatory — all new tools must support this):
   Every tool MUST support both local CLI use AND browser execution via Pyodide.
+
+  PYODIDE-SAFE LIBRARIES ONLY — the browser runner cannot install arbitrary packages.
+  ✓ ALLOWED (built into Pyodide): numpy, pandas, matplotlib, scipy, Pillow, regex, dateutil
+  ✓ ALWAYS ALLOWED: Python standard library (json, csv, re, datetime, pathlib, textwrap, etc.)
+  ✗ FORBIDDEN in browser tools: svgwrite, rich, click, requests, openpyxl, ics, pytz,
+    and ANY library not listed above. If you need SVG — generate it with plain strings.
+    If you need charts — use matplotlib (available in Pyodide).
+    When in doubt, use only the standard library.
   Use this exact dual-mode pattern at the bottom of every tool:
 
   ```python
