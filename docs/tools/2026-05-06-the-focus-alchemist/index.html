@@ -283,11 +283,19 @@ a { color: inherit; text-decoration: none; }
 .footer-inner {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
 }
-.footer-copy { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #bbb; }
+.footer-left { display: flex; flex-direction: column; gap: 6px; }
+.footer-tagline {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #1a1a1a;
+}
+.footer-tagline .tagline-dot { color: #2ABBA8; }
+.footer-copy { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #ccc; }
 .footer-links { display: flex; gap: 24px; }
-.footer-links a { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb; transition: color 0.15s; }
+.footer-links a { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb; transition: color 0.15s; }
 .footer-links a:hover { color: #2ABBA8; }
 
 /* ── Tool detail page ── */
@@ -447,7 +455,8 @@ a { color: inherit; text-decoration: none; }
     .container { padding: 0 24px; }
     .card-grid { grid-template-columns: 1fr; }
     .nav-links { display: none; }
-    .footer-inner { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .footer-inner { flex-direction: column; gap: 16px; align-items: flex-start; }
+    .footer-tagline { font-size: 0.88rem; }
     .evo-item { grid-template-columns: 80px 1fr; }
     .evo-arrow { display: none; }
     .hero-title { font-size: 2rem; }
@@ -525,7 +534,10 @@ a { color: inherit; text-decoration: none; }
 <footer class="site-footer">
   <div class="container">
     <div class="footer-inner">
-      <span class="footer-copy"><strong>Super-Lili</strong> &nbsp;·&nbsp; 2026-05-06</span>
+      <div class="footer-left">
+        <div class="footer-tagline">One friction point<span class="tagline-dot">.</span> One tool<span class="tagline-dot">.</span> Every day<span class="tagline-dot">.</span></div>
+        <span class="footer-copy">Super-Lili's Daily Adventure &nbsp;·&nbsp; 2026-05-06</span>
+      </div>
       <div class="footer-links">
         <a href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure" target="_blank" rel="noopener">GitHub</a>
       </div>
