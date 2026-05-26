@@ -903,6 +903,8 @@ def build_local_run_section(t: dict) -> str:
 
 def build_pyodide_section(t: dict) -> str:
     """Return Pyodide runner HTML+JS, or local-run fallback for tools without USER_INPUT."""
+    import json as _json
+
     tool_code = read_tool_code(t)
     if not tool_code:
         return '<p style="color:#999;font-size:0.85rem;font-style:italic;">Source code not found — cannot load runner.</p>'
@@ -911,16 +913,29 @@ def build_pyodide_section(t: dict) -> str:
         return build_local_run_section(t)
 
     preamble = (
-        "# Browser adaptation - USER_INPUT is provided by the browser\\n"
-        "import sys\\n"
-        "sys.argv = ['tool']  # Reset argv to prevent argparse errors\\n"
+        "import sys\n"
+        "sys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n"
     )
+    full_code = preamble + "\n" + tool_code
+
+    # JSON-encode the code so backticks, ${...}, and any special chars are safe in JS
+    code_json = _json.dumps(full_code)
+
+    # Placeholder hint derived from category
+    cat = t.get("category", "")
+    placeholder_hints = {
+        "Education Evolution": "Paste your study notes, article, or learning material here…",
+        "Design Alchemy":      "Paste your brief, content, or design description here…",
+        "Office Automation":   "Paste your meeting notes, task list, or work text here…",
+        "Healing Inventions":  "Paste a few sentences about how you're feeling or what's on your mind…",
+    }
+    placeholder = placeholder_hints.get(cat, "Paste your text here…")
 
     return f"""
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip;</div>
+<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
-  <textarea id="user-input" rows="6" placeholder="Paste your text here..."></textarea>
+  <textarea id="user-input" rows="6" placeholder="{placeholder}"></textarea>
   <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
   <span class="runner-label">Output</span>
   <pre id="output"></pre>
@@ -929,13 +944,13 @@ def build_pyodide_section(t: dict) -> str:
 <script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 <script>
 let pyodide = null;
-
-const TOOL_CODE = `{preamble}
-{tool_code}`;
+const TOOL_CODE = {code_json};
 
 async function loadPyodide_() {{
   try {{
     pyodide = await loadPyodide();
+    // Pre-load any packages the tool imports (pandas, numpy, etc.)
+    try {{ await pyodide.loadPackagesFromImports(TOOL_CODE); }} catch(e) {{}}
     document.getElementById('pyodide-status').style.display = 'none';
     document.getElementById('pyodide-ui').style.display = 'block';
   }} catch(e) {{
@@ -945,23 +960,21 @@ async function loadPyodide_() {{
 
 async function runTool() {{
   if (!pyodide) return;
-  const userInput = document.getElementById('user-input').value;
+  const userInput = document.getElementById('user-input').value.trim();
+  if (!userInput) {{
+    document.getElementById('output').textContent = '⬆ Paste some text above, then click Run.';
+    return;
+  }}
   const btn = document.getElementById('run-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Running...';
 
   try {{
-    pyodide.runPython(`
-import sys
-from io import StringIO
-sys.stdout = StringIO()
-`);
-
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
     pyodide.globals.set('USER_INPUT', userInput);
     pyodide.runPython(TOOL_CODE);
-
     const output = pyodide.runPython('sys.stdout.getvalue()');
-    document.getElementById('output').textContent = output || '(no output)';
+    document.getElementById('output').textContent = output.trim() || '(no output — tool may write to a file instead)';
   }} catch(e) {{
     document.getElementById('output').textContent = '❌ Error:\\n' + e.message;
   }}
