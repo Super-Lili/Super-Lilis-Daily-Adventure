@@ -19,7 +19,7 @@
 pip install -r requirements.txt
 
 # 2. See all options
-python main.py --help
+python3 main.py --help
 ```
 
 ## Dependencies

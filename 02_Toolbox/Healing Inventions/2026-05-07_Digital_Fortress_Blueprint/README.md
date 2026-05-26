@@ -6,4 +6,4 @@
 A symbolic Python script that outlines the principles of digital security for user empowerment against platform negligence.
 
 ### Usage
-Run `python main.py`.
+Run `python3 main.py`.

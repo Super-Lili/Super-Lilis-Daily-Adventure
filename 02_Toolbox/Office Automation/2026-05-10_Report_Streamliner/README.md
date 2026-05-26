@@ -9,7 +9,7 @@
 ## Quick Start
 ```bash
 pip install -r requirements.txt
-python main.py --help
+python3 main.py --help
 ```
 
 ---

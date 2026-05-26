@@ -852,8 +852,14 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
 
     deps_block = f"```\n{reqs}\n```" if reqs else "_See comment block at top of main.py_"
     test_section = (
-        "## Run Tests\n```bash\npython test_main.py\n```\n\n"
+        "## Run Tests\n```bash\npython3 test_main.py\n```\n\n"
         if parsed.get("test") else ""
+    )
+    # URL-encode the skill_dir path for the curl command (spaces → %20)
+    curl_path = skill_dir.replace(" ", "%20")
+    pip_install = (
+        f"pip3 install -r requirements.txt\n"
+        if reqs else "# (no extra dependencies needed)\n"
     )
 
     with open(f"{skill_dir}/README.md", "w", encoding="utf-8") as f:
@@ -867,10 +873,13 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
             f"---\n\n"
             f"## Quick Start\n\n"
             f"```bash\n"
-            f"# 1. Install dependencies\n"
-            f"pip install -r requirements.txt\n\n"
-            f"# 2. See all options\n"
-            f"python main.py --help\n"
+            f"# 1. Download\n"
+            f"curl -O \"https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/{curl_path}/main.py\"\n"
+            + (f"curl -O \"https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure/main/{curl_path}/requirements.txt\"\n\n" if reqs else "\n")
+            + f"# 2. Install dependencies\n"
+            f"{pip_install}\n"
+            f"# 3. See all options\n"
+            f"python3 main.py --help\n"
             f"```\n\n"
             f"## Dependencies\n\n"
             f"{deps_block}\n\n"

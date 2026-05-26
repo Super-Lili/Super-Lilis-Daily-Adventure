@@ -6,4 +6,4 @@
 This script provides a simple, interactive tool to prioritize tasks based on the Eisenhower Matrix principles of urgency and importance.
 
 ### Usage
-Run `python main.py`.
+Run `python3 main.py`.

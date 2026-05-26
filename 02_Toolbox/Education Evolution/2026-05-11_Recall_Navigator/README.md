@@ -9,12 +9,12 @@
 ## Quick Start
 ```bash
 pip install -r requirements.txt
-python main.py --help
+python3 main.py --help
 ```
 
 ## Run Tests
 ```bash
-python test_main.py
+python3 test_main.py
 ```
 
 ---

@@ -6,4 +6,4 @@
 A Python script to generate structured escalation messages, empowering users to bypass unhelpful AI chatbots and reach human customer service.
 
 ### Usage
-Run `python main.py`.
+Run `python3 main.py`.

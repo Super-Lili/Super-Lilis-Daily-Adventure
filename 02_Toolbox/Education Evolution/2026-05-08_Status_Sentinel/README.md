@@ -6,4 +6,4 @@
 A Python script to monitor key status pages for updates during critical system outages, providing proactive notifications.
 
 ### Usage
-Run `python main.py`.
+Run `python3 main.py`.

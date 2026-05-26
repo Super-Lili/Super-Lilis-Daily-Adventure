@@ -19,7 +19,7 @@
 pip install -r requirements.txt
 
 # 2. See all options
-python main.py --help
+python3 main.py --help
 ```
 
 ## Dependencies
@@ -28,7 +28,7 @@ _See comment block at top of main.py_
 
 ## Run Tests
 ```bash
-python test_main.py
+python3 test_main.py
 ```
 
 ---

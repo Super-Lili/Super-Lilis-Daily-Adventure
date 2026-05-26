@@ -20,7 +20,7 @@
 pip install -r requirements.txt
 
 # 2. See all options
-python main.py --help
+python3 main.py --help
 ```
 
 ## Dependencies
@@ -33,7 +33,7 @@ pytz (for timezone awareness in ICS, though basic local time is used in demo for
 
 ## Run Tests
 ```bash
-python test_main.py
+python3 test_main.py
 ```
 
 ---

@@ -6,4 +6,4 @@
 A basic Python script to log repeated safety oversights, making the invisible, maddening patterns visible.
 
 ### Usage
-Run `python main.py`.
+Run `python3 main.py`.
