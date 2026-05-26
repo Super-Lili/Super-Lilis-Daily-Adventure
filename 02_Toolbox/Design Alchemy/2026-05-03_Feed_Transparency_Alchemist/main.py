@@ -1,5 +1,5 @@
-```python
 import random
+
 
 def analyze_instagram_feed(feed_posts):
     """
@@ -39,34 +39,71 @@ def analyze_instagram_feed(feed_posts):
         'non_followed_percentage': round(non_followed_percentage, 2)
     }
 
-# --- Example Usage (simulating user's reported feed) ---
-# Based on the Reddit user's complaint: "29 of them were either ads or posts
-# of pages that I don't follow. There were only 6 posts from people I actually follow."
-# Total = 35 posts.
-simulated_feed_from_complaint = (
-    [{'type': 'followed_user'} for _ in range(6)] +
-    [{'type': 'ad'} for _ in range(15)] +  # Arbitrary split for non-followed
-    [{'type': 'suggested_page'} for _ in range(14)]
-)
 
-# Shuffle the simulated feed to represent a mixed experience
-random.shuffle(simulated_feed_from_complaint)
+def process(text: str) -> str:
+    """
+    Analyze a feed composition described as 'followed=N ads=M suggested=K' or
+    plain counts, e.g. '6 15 14'. Falls back to the canonical Reddit example.
+    """
+    followed = 6
+    ads = 15
+    suggested = 14
 
-# Analyze the feed
-feed_analysis_results = analyze_instagram_feed(simulated_feed_from_complaint)
+    parts = text.strip().split()
+    nums = []
+    for p in parts:
+        try:
+            nums.append(int(p))
+        except ValueError:
+            pass
+    if len(nums) >= 3:
+        followed, ads, suggested = nums[0], nums[1], nums[2]
+    elif len(nums) == 2:
+        followed, ads, suggested = nums[0], nums[1], 0
+    elif len(nums) == 1:
+        followed = nums[0]
 
-# Print the results to the console
-print("--- Feed Analysis Results ---")
-print(f"Total Posts Scrolled: {feed_analysis_results['total_posts']}")
-print(f"Posts from Followed Users: {feed_analysis_results['followed_posts']}")
-print(f"Advertisements: {feed_analysis_results['ads']}")
-print(f"Suggested Pages: {feed_analysis_results['suggested_pages']}")
-print(f"Percentage of Non-Followed Content (Ads + Suggested): {feed_analysis_results['non_followed_percentage']}%")
+    feed = (
+        [{'type': 'followed_user'} for _ in range(followed)] +
+        [{'type': 'ad'} for _ in range(ads)] +
+        [{'type': 'suggested_page'} for _ in range(suggested)]
+    )
+    r = analyze_instagram_feed(feed)
 
-# Expected output based on the user's complaint (approximate due to random split of non-followed)
-# Total Posts Scrolled: 35
-# Posts from Followed Users: 6
-# Advertisements: (around 15)
-# Suggested Pages: (around 14)
-# Percentage of Non-Followed Content (Ads + Suggested): (around 82.86)%
-```
+    lines = [
+        "Feed Analysis Results",
+        "=" * 30,
+        f"Total Posts Scrolled:           {r['total_posts']}",
+        f"Posts from Followed Users:      {r['followed_posts']}",
+        f"Advertisements:                 {r['ads']}",
+        f"Suggested Pages:                {r['suggested_pages']}",
+        f"Non-Followed Content:           {r['non_followed_percentage']}%",
+    ]
+    return "\n".join(lines)
+
+
+def _cli_main():
+    # Example usage (simulating user's reported feed)
+    # Based on the Reddit user's complaint: "29 of them were either ads or posts
+    # of pages that I don't follow. There were only 6 posts from people I actually follow."
+    simulated_feed = (
+        [{'type': 'followed_user'} for _ in range(6)] +
+        [{'type': 'ad'} for _ in range(15)] +
+        [{'type': 'suggested_page'} for _ in range(14)]
+    )
+    random.shuffle(simulated_feed)
+    results = analyze_instagram_feed(simulated_feed)
+
+    print("--- Feed Analysis Results ---")
+    print(f"Total Posts Scrolled: {results['total_posts']}")
+    print(f"Posts from Followed Users: {results['followed_posts']}")
+    print(f"Advertisements: {results['ads']}")
+    print(f"Suggested Pages: {results['suggested_pages']}")
+    print(f"Percentage of Non-Followed Content (Ads + Suggested): {results['non_followed_percentage']}%")
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
+    _cli_main()

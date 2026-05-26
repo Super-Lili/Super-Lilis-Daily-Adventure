@@ -1,19 +1,16 @@
-```python
 import os
-from PIL import Image
 
-def pixel_pilot(file_path, max_size_mb=10, allowed_formats=['jpeg', 'png', 'gif', 'webp']):
+
+def pixel_pilot_local(file_path, max_size_mb=10, allowed_formats=None):
     """
     Diagnoses a local image file for common web upload issues like excessive size or unsupported format.
-
-    Args:
-        file_path (str): The path to the image file.
-        max_size_mb (int): Maximum allowed file size in megabytes for upload.
-        allowed_formats (list): List of common allowed image formats (e.g., 'jpeg', 'png').
-
-    Returns:
-        dict: A dictionary containing diagnostic results and actionable advice.
+    Requires Pillow (PIL) to be installed.
     """
+    if allowed_formats is None:
+        allowed_formats = ['jpeg', 'png', 'gif', 'webp']
+
+    from PIL import Image
+
     results = {
         'file_exists': False,
         'size_ok': False,
@@ -49,12 +46,31 @@ def pixel_pilot(file_path, max_size_mb=10, allowed_formats=['jpeg', 'png', 'gif'
 
     return results
 
-# To use this skill, ensure you have the Pillow library installed: pip install Pillow
-# Example usage (not part of the tool's execution, for user reference only):
-# if __name__ == '__main__':
-#     # Replace 'your_image.jpg' with the actual path to your image file
-#     # You can also adjust max_size_mb and allowed_formats
-#     diagnostic_report = pixel_pilot('path/to/your_image.jpg', max_size_mb=5)
-#     for line in diagnostic_report['diagnostics']:
-#         print(line)
-```
+
+def process(text: str) -> str:
+    """Browser mode: Pixel Pilot needs a local image file and cannot run in the browser."""
+    return "This tool processes image files — use it locally with: python3 main.py --help"
+
+
+def _cli_main():
+    # To use this skill, ensure you have the Pillow library installed: pip install Pillow
+    # Example usage:
+    import sys
+    if len(sys.argv) < 2:
+        print("Usage: python main.py <image_path> [max_size_mb]")
+        print("Example: python main.py photo.jpg 5")
+        return
+
+    file_path = sys.argv[1]
+    max_size_mb = float(sys.argv[2]) if len(sys.argv) > 2 else 10
+
+    diagnostic_report = pixel_pilot_local(file_path, max_size_mb=max_size_mb)
+    for line in diagnostic_report['diagnostics']:
+        print(line)
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
+    _cli_main()

@@ -1,5 +1,5 @@
-```python
 import re
+
 
 def keyword_compass(job_description):
     """
@@ -9,7 +9,6 @@ def keyword_compass(job_description):
     if not isinstance(job_description, str) or not job_description.strip():
         return "Please provide a valid job description (string)."
 
-    # Common separators and stop words to remove or ignore
     stop_words = set([
         "a", "an", "the", "and", "or", "to", "in", "on", "with", "for", "of",
         "is", "are", "be", "has", "have", "you", "we", "our", "your", "this",
@@ -21,21 +20,37 @@ def keyword_compass(job_description):
         "candidate", "team", "project", "systems", "solutions", "environment"
     ])
 
-    # Tokenize, convert to lowercase, and remove punctuation
     words = re.findall(r'\b\w+\b', job_description.lower())
-    
-    # Filter out stop words and single-character words, keep unique
+
     filtered_words = {word for word in words if word not in stop_words and len(word) > 1}
 
-    # Sort for consistent output
     sorted_keywords = sorted(list(filtered_words))
-    
+
     if not sorted_keywords:
         return "No significant keywords found."
 
     return "Suggested keywords: " + ", ".join(sorted_keywords)
 
-if __name__ == '__main__':
+
+def process(text: str) -> str:
+    """
+    Extract keywords from a job description.
+    Input: the job description text.
+    Falls back to a sample job description if empty.
+    """
+    if not text.strip():
+        text = """
+        We are seeking a highly motivated Software Engineer with proven experience in Python,
+        cloud platforms (AWS, Azure), and database management (SQL, NoSQL).
+        The ideal candidate will develop and deploy scalable web applications,
+        contribute to architectural design, and collaborate with cross-functional teams.
+        Strong problem-solving skills and a solid understanding of agile methodologies are required.
+        Experience with Docker and Kubernetes is a plus.
+        """
+    return keyword_compass(text)
+
+
+def _cli_main():
     sample_jd = """
     We are seeking a highly motivated Software Engineer with proven experience in Python,
     cloud platforms (AWS, Azure), and database management (SQL, NoSQL).
@@ -44,7 +59,7 @@ if __name__ == '__main__':
     Strong problem-solving skills and a solid understanding of agile methodologies are required.
     Experience with Docker and Kubernetes is a plus.
     """
-    
+
     keywords = keyword_compass(sample_jd)
     print(keywords)
 
@@ -55,4 +70,10 @@ if __name__ == '__main__':
     sample_jd_empty = ""
     keywords_empty = keyword_compass(sample_jd_empty)
     print(keywords_empty)
-```
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
+    _cli_main()

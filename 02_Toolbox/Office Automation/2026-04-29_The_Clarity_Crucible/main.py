@@ -1,5 +1,5 @@
-```python
 import datetime
+
 
 def generate_status_report(project_name, known_progress, pending_info, next_steps_awaiting_clarity):
     """
@@ -48,7 +48,41 @@ def generate_status_report(project_name, known_progress, pending_info, next_step
     report += "We are poised to accelerate once critical information becomes available. Will provide an updated outlook upon receiving necessary inputs."
     return report
 
-if __name__ == '__main__':
+
+def process(text: str) -> str:
+    """
+    Generate a status report.
+    Input format (one section per line, sections separated by '---'):
+      Project Name
+      ---
+      known progress item 1
+      known progress item 2
+      ---
+      pending info item 1
+      ---
+      next step item 1
+    Falls back to a canonical example if empty.
+    """
+    if not text.strip():
+        return generate_status_report(
+            "Q3 Initiative Planning",
+            ["Initial team alignment completed.", "Resource allocation models drafted (pending scope)."],
+            ["Product roadmap specifics for Q3 from Product Management.",
+             "Confirmed leadership directives on strategic priorities for the next quarter."],
+            ["Finalize budget proposal (contingent on roadmap and directives).",
+             "Assign detailed tasks for Q3 sprints (contingent on roadmap)."]
+        )
+
+    sections = [s.strip() for s in text.split('---')]
+    project_name = sections[0].strip() if len(sections) > 0 else "My Project"
+    known = [l.strip() for l in sections[1].splitlines() if l.strip()] if len(sections) > 1 else []
+    pending = [l.strip() for l in sections[2].splitlines() if l.strip()] if len(sections) > 2 else []
+    next_steps = [l.strip() for l in sections[3].splitlines() if l.strip()] if len(sections) > 3 else []
+
+    return generate_status_report(project_name, known, pending, next_steps)
+
+
+def _cli_main():
     # Example usage based on the Reddit friction point
     project = "Q3 Initiative Planning"
     known = ["Initial team alignment completed.", "Resource allocation models drafted (pending scope)."]
@@ -59,4 +93,10 @@ if __name__ == '__main__':
 
     report_output = generate_status_report(project, known, pending, next_steps)
     print(report_output)
-```
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
+    _cli_main()

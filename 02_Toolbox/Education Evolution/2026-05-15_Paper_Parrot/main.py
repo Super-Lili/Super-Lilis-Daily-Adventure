@@ -1,5 +1,4 @@
 import argparse
-import PyPDF2
 import re
 import os
 import csv
@@ -7,6 +6,7 @@ from typing import List, Dict
 
 # Requirements:
 # pip install PyPDF2
+
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     """
@@ -19,6 +19,7 @@ def extract_text_from_pdf(pdf_path: str) -> str:
         A string containing all text from the PDF, or an empty string if an error occurs.
     """
     try:
+        import PyPDF2
         with open(pdf_path, 'rb') as file:
             reader = PyPDF2.PdfReader(file)
             text = ""
@@ -31,6 +32,7 @@ def extract_text_from_pdf(pdf_path: str) -> str:
     except Exception as e:
         print(f"Error extracting text from PDF '{pdf_path}': {e}")
         return ""
+
 
 def identify_key_points(text: str) -> List[Dict[str, str]]:
     """
@@ -45,15 +47,13 @@ def identify_key_points(text: str) -> List[Dict[str, str]]:
         'original_snippet', and 'type'.
     """
     key_points = []
-    
-    # Heuristic patterns for arguments, methods, and findings
+
     patterns = {
         "argument": r"(?:this paper|we)\s+(?:propose|argue|demonstrate|show|present|suggest|contend)\s+([\w\s,-]+(?:\s+that|\s+how|\s+the)?(?:[^.!?\n]{10,150}[.!?]))",
         "methodology": r"(?:our approach|the method|we utilized|we employed|the experimental design involved)\s+([\w\s,-]+(?:[^.!?\n]{10,150}[.!?]))",
         "finding": r"(?:our results|we found|the study revealed|the data indicate|it was observed)\s+([\w\s,-]+(?:[^.!?\n]{10,150}[.!?]))"
     }
 
-    # Split text into paragraphs for better context
     paragraphs = [p.strip() for p in text.split('\n') if p.strip()]
 
     for para_idx, paragraph in enumerate(paragraphs):
@@ -66,15 +66,15 @@ def identify_key_points(text: str) -> List[Dict[str, str]]:
                 answer_prompt = ""
 
                 if key_type == "argument":
-                    question = f"What is the main argument or proposal of this section?"
+                    question = "What is the main argument or proposal of this section?"
                     answer_prompt = f"Summarize the argument presented: '{extracted_content}'"
                 elif key_type == "methodology":
-                    question = f"Describe the key methodology or approach used here."
+                    question = "Describe the key methodology or approach used here."
                     answer_prompt = f"Explain the method highlighted: '{extracted_content}'"
                 elif key_type == "finding":
-                    question = f"What are the main findings or results reported in this section?"
+                    question = "What are the main findings or results reported in this section?"
                     answer_prompt = f"Detail the findings: '{extracted_content}'"
-                
+
                 if question and answer_prompt:
                     key_points.append({
                         "Type": key_type.capitalize(),
@@ -84,6 +84,7 @@ def identify_key_points(text: str) -> List[Dict[str, str]]:
                         "Source Paragraph": para_idx + 1
                     })
     return key_points
+
 
 def save_insights_to_csv(insights: List[Dict[str, str]], output_path: str):
     """
@@ -101,7 +102,6 @@ def save_insights_to_csv(insights: List[Dict[str, str]], output_path: str):
         with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = list(insights[0].keys())
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
             writer.writeheader()
             for row in insights:
                 writer.writerow(row)
@@ -109,46 +109,60 @@ def save_insights_to_csv(insights: List[Dict[str, str]], output_path: str):
     except Exception as e:
         print(f"Error saving insights to CSV '{output_path}': {e}")
 
+
+def process(text: str) -> str:
+    """
+    Extract key points from plain text (academic paper content).
+    In browser mode, accepts raw text instead of a PDF file.
+    """
+    if not text.strip():
+        return "This tool needs academic paper text as input. Paste the text of a paper to extract key points."
+
+    insights = identify_key_points(text)
+
+    if not insights:
+        return "Paper Parrot couldn't find any prominent arguments, methodologies, or findings in this text. Try pasting a section with phrases like 'we propose', 'our results', 'we found', etc."
+
+    lines = ["Paper Parrot: Active Recall Insights", "=" * 40, ""]
+    for i, insight in enumerate(insights, 1):
+        lines.append(f"[{i}] Type: {insight['Type']}")
+        lines.append(f"    Question: {insight['Question']}")
+        lines.append(f"    Prompt:   {insight['Answer Prompt']}")
+        lines.append("")
+
+    lines.append(f"Found {len(insights)} insight(s). Time to engage with your new knowledge!")
+    return "\n".join(lines)
+
+
 def main(args=None):
     parser = argparse.ArgumentParser(
         description="Paper Parrot: Extracts key points from academic PDFs and generates active recall prompts."
     )
-    parser.add_argument(
-        "--input_pdf",
-        type=str,
-        required=True,
-        help="Path to the input PDF academic paper."
-    )
-    parser.add_argument(
-        "--output_csv",
-        type=str,
-        default="paper_parrot_insights.csv",
-        help="Path to the output CSV file where insights will be saved."
-    )
+    parser.add_argument("--input_pdf", type=str, required=True,
+                        help="Path to the input PDF academic paper.")
+    parser.add_argument("--output_csv", type=str, default="paper_parrot_insights.csv",
+                        help="Path to the output CSV file where insights will be saved.")
 
     parsed_args = parser.parse_args(args)
 
     print(f"Flapping wings for Paper Parrot to process '{parsed_args.input_pdf}'...")
 
-    # 1. Extract text from PDF
     paper_text = extract_text_from_pdf(parsed_args.input_pdf)
     if not paper_text:
         print("Exiting due to empty or unreadable PDF text.")
         return
 
-    # 2. Identify key points and generate prompts
     insights = identify_key_points(paper_text)
-    
+
     if not insights:
-        print("Hmm, Paper Parrot couldn't find any prominent arguments, methodologies, or findings in this paper. Try a different document or adjust the patterns!")
+        print("Hmm, Paper Parrot couldn't find any prominent arguments, methodologies, or findings in this paper.")
         return
 
-    # 3. Save insights to CSV
     save_insights_to_csv(insights, parsed_args.output_csv)
-    print("\nPaper Parrot finished its squawk! Time to engage with your new insights. Go make those ideas stick!")
+    print("\nPaper Parrot finished its squawk! Time to engage with your new insights.")
 
-if __name__ == "__main__":
-    # Create a dummy PDF for demonstration
+
+def _cli_main():
     demo_pdf_content = """
     A Novel Approach to Cognitive Load Reduction in Online Learning Environments
 
@@ -168,42 +182,43 @@ if __name__ == "__main__":
     This study demonstrates the efficacy of the Adaptive Content Chunking algorithm in mitigating cognitive load and improving learning outcomes in online environments. We suggest future work could explore personalized chunking strategies for different subject matters.
     """
 
-    # Create a dummy PDF file
     demo_pdf_path = "demo_paper.pdf"
-    from reportlab.pdfgen import canvas
-    from reportlab.lib.pagesizes import letter
-
     try:
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import letter
+
         c = canvas.Canvas(demo_pdf_path, pagesize=letter)
         textobject = c.beginText()
         textobject.setTextOrigin(50, 750)
         textobject.setFont("Helvetica", 12)
-        
-        # Split content into lines and add to PDF
+
         for line in demo_pdf_content.split('\n'):
             textobject.textLine(line)
-        
+
         c.drawText(textobject)
         c.save()
         print(f"Created dummy PDF: '{demo_pdf_path}'")
-    except Exception as e:
-        print(f"Error creating dummy PDF: {e}")
-        # If PDF creation fails, ensure the script can still run by simulating text
-        if not os.path.exists(demo_pdf_path):
-            print("Proceeding with simulated text for demo since PDF creation failed.")
-            paper_text_for_demo = demo_pdf_content
-            insights_for_demo = identify_key_points(paper_text_for_demo)
-            save_insights_to_csv(insights_for_demo, "demo_paper_insights_simulated.csv")
-            exit() # Exit after simulated run if PDF creation failed completely
 
+        main(args=["--input_pdf", demo_pdf_path, "--output_csv", "demo_paper_insights.csv"])
 
-    # Run the tool with the dummy PDF
-    main(args=["--input_pdf", demo_pdf_path, "--output_csv", "demo_paper_insights.csv"])
-
-    # Clean up the dummy PDF
-    try:
         if os.path.exists(demo_pdf_path):
             os.remove(demo_pdf_path)
             print(f"Cleaned up dummy PDF: '{demo_pdf_path}'")
+
+    except ImportError:
+        print("reportlab not installed — running with simulated text for demo.")
+        insights_for_demo = identify_key_points(demo_pdf_content)
+        save_insights_to_csv(insights_for_demo, "demo_paper_insights_simulated.csv")
     except Exception as e:
-        print(f"Error cleaning up dummy PDF: {e}")
+        print(f"Error during demo: {e}")
+        print("Proceeding with simulated text for demo.")
+        paper_text_for_demo = demo_pdf_content
+        insights_for_demo = identify_key_points(paper_text_for_demo)
+        save_insights_to_csv(insights_for_demo, "demo_paper_insights_simulated.csv")
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
+    _cli_main()

@@ -1,24 +1,64 @@
 # requirements:
 # pandas
-# networkx
+# networkx (optional, for CLI visualization)
 # matplotlib (optional, for visualization)
 # argparse
 # pathlib
 
 import argparse
 import json
-import networkx as nx
 import pandas as pd
 from pathlib import Path
 
-# Try to import matplotlib; if not available, the graph visualization will be skipped.
+# Try to import networkx and matplotlib — only used in CLI visualization
+try:
+    import networkx as nx
+    _NX_AVAILABLE = True
+except ImportError:
+    nx = None
+    _NX_AVAILABLE = False
+
 try:
     import matplotlib.pyplot as plt
-    MATPLOTLIB_AVAILABLE = True
+    _MATPLOTLIB_AVAILABLE = True
 except ImportError:
-    # print("Warning: 'matplotlib' not found. Graph visualization features will be unavailable.")
     plt = None
-    MATPLOTLIB_AVAILABLE = False
+    _MATPLOTLIB_AVAILABLE = False
+
+
+def build_concept_graph_dict(concepts_df: pd.DataFrame, relationships_df: pd.DataFrame) -> dict:
+    """Build a simple dict-based graph representation."""
+    graph = {"nodes": {}, "edges": []}
+    for _, row in concepts_df.iterrows():
+        graph["nodes"][row['concept_name']] = row['definition']
+    for _, row in relationships_df.iterrows():
+        graph["edges"].append({
+            "source": row['source'],
+            "target": row['target'],
+            "type": row['type']
+        })
+    return graph
+
+
+def format_concept_map_text(concepts_df: pd.DataFrame, relationships_df: pd.DataFrame) -> str:
+    """Format the concept map as plain text."""
+    lines = ["=== Insight Loom: Your Woven Concept Map ===", ""]
+
+    if not concepts_df.empty:
+        lines.append("CONCEPTS:")
+        for _, row in concepts_df.iterrows():
+            lines.append(f"  [{row['concept_name']}]: {row['definition']}")
+        lines.append("")
+
+    if not relationships_df.empty:
+        lines.append("RELATIONSHIPS:")
+        for _, row in relationships_df.iterrows():
+            lines.append(f"  {row['source']}  --[{row['type']}]-->  {row['target']}")
+        lines.append("")
+    else:
+        lines.append("No relationships defined yet.")
+
+    return "\n".join(lines)
 
 
 def create_concept_map_data(input_file: Path, output_json: Path, output_graph_png: Path):
@@ -26,8 +66,8 @@ def create_concept_map_data(input_file: Path, output_json: Path, output_graph_pn
     Guides the user through creating a concept map from input text,
     then saves the map data and a visualization.
     """
-    print(f"Hey there, knowledge explorer! Let's weave some insights from {input_file.name}. ✨")
-    
+    print(f"Hey there, knowledge explorer! Let's weave some insights from {input_file.name}.")
+
     if not input_file.exists():
         print(f"Oops! The file '{input_file}' doesn't exist. Double-check your path and try again!")
         return
@@ -39,14 +79,12 @@ def create_concept_map_data(input_file: Path, output_json: Path, output_graph_pn
         print(f"Uh oh, couldn't read your file! Error: {e}")
         return
 
-    print("\nFirst, let's identify the core concepts. Think of the big ideas, the nouns, the key terms.")
+    print("\nFirst, let's identify the core concepts.")
     print("Your text snippet:\n---")
     print(text_content[:500] + "..." if len(text_content) > 500 else text_content)
     print("---\n")
 
-    # Use a DataFrame to store concepts
     concepts_df = pd.DataFrame(columns=['concept_name', 'definition'])
-    # Use a DataFrame to store relationships
     relationships_df = pd.DataFrame(columns=['source', 'target', 'type'])
 
     while True:
@@ -55,8 +93,7 @@ def create_concept_map_data(input_file: Path, output_json: Path, output_graph_pn
             break
         if not concept_name:
             continue
-        
-        # Check for duplicates before adding
+
         if concept_name in concepts_df['concept_name'].values:
             print(f"'{concept_name}' is already a concept. Let's try a new one or 'done'.")
             continue
@@ -68,17 +105,14 @@ def create_concept_map_data(input_file: Path, output_json: Path, output_graph_pn
         print("-" * 30)
 
     if concepts_df.empty:
-        print("No concepts added! We need some ideas to connect. Let's try again another time. 😊")
+        print("No concepts added! We need some ideas to connect.")
         return
 
-    print("\nNow, let's connect those brilliant ideas! What relationships do you see?")
-    print("Think: 'Concept A --[relationship type]--> Concept B'")
-    print("For example: 'Cause-Effect', 'Is-A', 'Part-Of', 'Influences'.")
-
+    print("\nNow, let's connect those brilliant ideas!")
     available_concepts = concepts_df['concept_name'].tolist()
+
     if len(available_concepts) < 2:
-        print("Not enough concepts to form relationships. We need at least two! Maybe add more next time?")
-        # Still save what we have, even if no relationships
+        print("Not enough concepts to form relationships. We need at least two!")
         save_concept_map_data(concepts_df, relationships_df, output_json, output_graph_png)
         return
 
@@ -88,37 +122,34 @@ def create_concept_map_data(input_file: Path, output_json: Path, output_graph_pn
         if source_concept.lower() == 'done':
             break
         if source_concept not in available_concepts:
-            print(f"Hmm, '{source_concept}' isn't in your concept list. Let's pick from: {', '.join(available_concepts)}")
+            print(f"Hmm, '{source_concept}' isn't in your concept list.")
             continue
 
         target_concept = input("Target concept: ").strip()
         if target_concept not in available_concepts:
-            print(f"Looks like '{target_concept}' isn't a defined concept. Choose from: {', '.join(available_concepts)}")
+            print(f"Looks like '{target_concept}' isn't a defined concept.")
             continue
 
         if source_concept == target_concept:
-            print("A concept can't be related to itself in this way! Let's find another connection. 😉")
+            print("A concept can't be related to itself in this way!")
             continue
 
-        relationship_type = input(f"Type of relationship (e.g., 'influences', 'causes', 'is_part_of'): ").strip()
+        relationship_type = input("Type of relationship (e.g., 'influences', 'causes', 'is_part_of'): ").strip()
         if not relationship_type:
-            print("Relationship type can't be empty! Give it a name. 😊")
+            print("Relationship type can't be empty!")
             continue
-        
+
         new_relationship = pd.DataFrame([{'source': source_concept, 'target': target_concept, 'type': relationship_type}])
         relationships_df = pd.concat([relationships_df, new_relationship], ignore_index=True)
         print(f"Connection added: '{source_concept}' --[{relationship_type}]--> '{target_concept}'.")
         print("-" * 30)
 
     save_concept_map_data(concepts_df, relationships_df, output_json, output_graph_png)
-    print("\nYour Insight Loom is woven! Go forth and ponder. ✨")
+    print("\nYour Insight Loom is woven! Go forth and ponder.")
 
 
 def save_concept_map_data(concepts_df: pd.DataFrame, relationships_df: pd.DataFrame, output_json: Path, output_graph_png: Path):
     """Saves the concept map data to JSON and generates a graph visualization."""
-    
-    # Convert DataFrames to dictionary for JSON output
-    # Concepts will be a dict where key is concept_name and value is its definition
     concepts_for_json = concepts_df.set_index('concept_name')['definition'].to_dict()
 
     full_data = {
@@ -133,96 +164,118 @@ def save_concept_map_data(concepts_df: pd.DataFrame, relationships_df: pd.DataFr
     except Exception as e:
         print(f"Couldn't save concept map data to JSON! Error: {e}")
 
-    # Generate graph visualization only if there are relationships to draw and matplotlib is available
     if not relationships_df.empty:
-        if MATPLOTLIB_AVAILABLE:
+        if _MATPLOTLIB_AVAILABLE and _NX_AVAILABLE:
             draw_concept_graph(concepts_df, relationships_df, output_graph_png)
         else:
-            print("Matplotlib is not installed. Skipping graph visualization.")
+            print("matplotlib/networkx not installed. Skipping graph visualization.")
     else:
-        print("No relationships defined, skipping graph visualization for now. Add some connections next time! 📈")
+        print("No relationships defined, skipping graph visualization.")
 
 
 def draw_concept_graph(concepts_df: pd.DataFrame, relationships_df: pd.DataFrame, output_graph_png: Path):
     """Draws and saves the concept map as a PNG image."""
-    if not MATPLOTLIB_AVAILABLE:
-        print("Cannot draw graph: matplotlib is not installed.")
+    if not _MATPLOTLIB_AVAILABLE or not _NX_AVAILABLE:
+        print("Cannot draw graph: matplotlib or networkx is not installed.")
         return
 
-    G = nx.DiGraph() # Directed graph for relationships
+    G = nx.DiGraph()
 
-    # Add nodes with definitions
     for _, row in concepts_df.iterrows():
         G.add_node(row['concept_name'], definition=row['definition'])
 
-    # Add edges (relationships)
     for _, row in relationships_df.iterrows():
         G.add_edge(row['source'], row['target'], type=row['type'])
 
     plt.figure(figsize=(12, 8))
-    # Using spring_layout for aesthetic placement of nodes; k adjusts optimal distance between nodes.
-    # Iterations improve layout quality.
     pos = nx.spring_layout(G, k=0.8, iterations=50)
 
-    # Draw nodes
     nx.draw_networkx_nodes(G, pos, node_color='skyblue', node_size=3000, alpha=0.9)
-
-    # Draw edges
     nx.draw_networkx_edges(G, pos, edgelist=G.edges(), edge_color='gray', width=1.5, arrowsize=20)
-
-    # Draw node labels
     nx.draw_networkx_labels(G, pos, font_size=10, font_weight='bold')
 
-    # Draw edge labels
-    # Extract relationship types to use as labels on edges
     edge_labels = {(u, v): d['type'] for u, v, d in G.edges(data=True)}
     nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='darkgreen', font_size=8)
 
     plt.title("Your Woven Insights: Concept Map", size=15)
-    plt.axis('off') # Hide axes to keep the focus on the map
-    
+    plt.axis('off')
+
     try:
         plt.savefig(output_graph_png, format="png", bbox_inches="tight")
         print(f"Concept map visualization saved to '{output_graph_png}'.")
     except Exception as e:
         print(f"Couldn't save the graph visualization! Error: {e}")
-    plt.close() # Close the plot to free memory
+    plt.close()
+
+
+def process(text: str) -> str:
+    """
+    Build a concept map from plain text.
+    Input: multi-line text with concepts and relationships.
+    Format:
+      Line 1+: text to analyze (shown as context)
+      Concepts are auto-extracted as significant capitalized words or
+      the tool returns a demonstration map of the input text themes.
+
+    For simplicity in browser mode, we extract noun-like words and show
+    a sample relationship map.
+    """
+    if not text.strip():
+        text = """The attention economy treats human attention as a commodity.
+Platforms compete for engagement through algorithms. Deep work requires
+sustained focus. Information overload makes synthesis difficult."""
+
+    # Simple auto-extraction: find unique capitalized or long words as concepts
+    import re
+    words = re.findall(r'\b[A-Z][a-z]{3,}\b|\b[a-z]{6,}\b', text)
+    # De-duplicate while preserving order, take top 6
+    seen = set()
+    concepts = []
+    stop = {'through', 'requires', 'platforms', 'compete', 'treats', 'makes', 'human', 'difficult', 'sustained'}
+    for w in words:
+        wl = w.lower()
+        if wl not in seen and wl not in stop and len(concepts) < 6:
+            seen.add(wl)
+            concepts.append(w.lower())
+
+    if not concepts:
+        concepts = ["attention", "engagement", "learning", "focus"]
+
+    # Build a simple linear relationship chain for demo
+    concepts_df = pd.DataFrame([
+        {'concept_name': c, 'definition': f'Key concept: {c}'} for c in concepts
+    ])
+
+    relationships = []
+    for i in range(len(concepts) - 1):
+        relationships.append({'source': concepts[i], 'target': concepts[i + 1], 'type': 'leads to'})
+    relationships_df = pd.DataFrame(relationships, columns=['source', 'target', 'type'])
+
+    result = format_concept_map_text(concepts_df, relationships_df)
+    result += "\n\nFor interactive concept mapping with file input, run: python3 main.py --input_file notes.txt"
+    return result
 
 
 def main(args=None):
     parser = argparse.ArgumentParser(
-        description="""
-        Welcome to Insight Loom! ✨
-        This tool helps you untangle complex information by guiding you to
-        identify core concepts and map the relationships between them.
-        Turn your raw notes into a beautiful, connected knowledge graph!
-        """,
+        description="Welcome to Insight Loom! This tool helps you untangle complex information.",
         formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument(
-        "--input_file",
-        type=Path,
-        required=True,
-        help="Path to a text file containing your notes or snippets to synthesize."
-    )
-    parser.add_argument(
-        "--output_json",
-        type=Path,
-        default="concept_map.json",
-        help="Path to save the structured concept map data (JSON format)."
-    )
-    parser.add_argument(
-        "--output_graph_png",
-        type=Path,
-        default="concept_map.png",
-        help="Path to save the visual concept map (PNG image)."
-    )
+    parser.add_argument("--input_file", type=Path, required=True,
+                        help="Path to a text file containing your notes or snippets to synthesize.")
+    parser.add_argument("--output_json", type=Path, default="concept_map.json",
+                        help="Path to save the structured concept map data (JSON format).")
+    parser.add_argument("--output_graph_png", type=Path, default="concept_map.png",
+                        help="Path to save the visual concept map (PNG image).")
 
     parsed_args = parser.parse_args(args)
     create_concept_map_data(parsed_args.input_file, parsed_args.output_json, parsed_args.output_graph_png)
 
-if __name__ == "__main__":
-    # Create a dummy input file for demonstration and testing purposes
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
     demo_content = """
     The attention economy is a system where human attention is treated as a commodity.
     Platforms like social media compete for user engagement, often employing
@@ -240,5 +293,5 @@ if __name__ == "__main__":
 
     print(f"Created a demo input file: '{demo_file_path}'")
     print("\nTo run the Insight Loom interactively, open your terminal and use:")
-    print(f"python insight_loom.py --input_file {demo_file_path} --output_json my_concepts.json --output_graph_png my_concept_map.png")
+    print(f"python main.py --input_file {demo_file_path} --output_json my_concepts.json --output_graph_png my_concept_map.png")
     print("\nFollow the prompts to define your concepts and relationships!")
