@@ -1239,7 +1239,10 @@ def build_tool_page(t: dict) -> str:
 <nav class="site-nav">
   <div class="container">
     <div class="nav-inner">
-      <div class="nav-logo">Super-Lili's Daily Adventure<span class="dot">.</span></div>
+      <div class="nav-logo">
+        <img class="nav-avatar" src="../../assets/lili-avatar.png" alt="Super-Lili" onerror="this.style.display='none'">
+        Super-Lili's Daily Adventure<span class="dot">.</span>
+      </div>
       <ul class="nav-links">
         <li><a href="../../index.html#tools">Tool Archive</a></li>
         <li><a href="{h(REPO_URL)}" target="_blank" rel="noopener">GitHub</a></li>

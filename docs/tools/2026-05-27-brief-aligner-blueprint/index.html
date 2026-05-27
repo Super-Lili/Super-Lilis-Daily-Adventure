@@ -29,6 +29,7 @@ a { color: inherit; text-decoration: none; }
 .site-nav {
     background: #fff;
     border-bottom: 2px solid #1a1a1a;
+    box-shadow: 0 3px 0 0 #fff, 0 4px 0 0 #e0e0e0;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -75,7 +76,20 @@ a { color: inherit; text-decoration: none; }
 .site-hero {
     padding: 0 0 80px;
     border-bottom: 3px solid #111;
+    position: relative;
+    overflow: hidden;
 }
+/* Manga screen-tone: halftone dot texture over hero */
+.site-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(17,17,17,0.07) 1.3px, transparent 1.3px);
+    background-size: 14px 14px;
+    pointer-events: none;
+    z-index: 0;
+}
+.site-hero .container { position: relative; z-index: 1; }
 .hero-bar {
     border-top: 3px solid #111;
     border-bottom: 1px solid #ddd;
@@ -168,23 +182,44 @@ a { color: inherit; text-decoration: none; }
     text-transform: uppercase;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    transition: box-shadow 0.12s, transform 0.12s, background 0.12s, border-color 0.12s;
     text-decoration: none;
+    transform: skewX(-2deg);
 }
 .btn:hover { text-decoration: none; }
-.btn-dark { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.btn-dark:hover { background: #2ABBA8; border-color: #2ABBA8; }
+.btn-dark {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+    box-shadow: 3px 3px 0 0 #555;
+}
+.btn-dark:hover {
+    background: #1a1a1a;
+    box-shadow: 5px 5px 0 0 #555;
+    transform: skewX(-2deg) translate(-1px, -1px);
+}
 .btn-ghost { background: transparent; color: #999; border-color: #d0d0d0; }
 .btn-ghost:hover { color: #1a1a1a; border-color: #1a1a1a; }
-.btn-teal { background: #2ABBA8; color: #fff; border-color: #2ABBA8; }
-.btn-teal:hover { background: #229990; border-color: #229990; }
+.btn-teal {
+    background: #2ABBA8;
+    color: #fff;
+    border-color: #2ABBA8;
+    box-shadow: 3px 3px 0 0 #1a8a7a;
+}
+.btn-teal:hover {
+    background: #229990;
+    border-color: #229990;
+    box-shadow: 5px 5px 0 0 #1a8a7a;
+    transform: skewX(-2deg) translate(-1px, -1px);
+}
 
 /* ── Category filter tabs ── */
 .cat-filters {
     display: flex;
     gap: 0;
-    margin-bottom: 28px;
-    border: 1.5px solid #111;
+    margin-bottom: 0;
+    border: 2px solid #111;
+    border-bottom: 2px solid #111;
     overflow: hidden;
 }
 .cat-filter {
@@ -238,7 +273,8 @@ a { color: inherit; text-decoration: none; }
 .cat-filter[data-filter="all"] {
     flex: 0 0 auto;
     min-width: 72px;
-    padding: 18px 16px 14px;
+    padding: 0 16px;
+    justify-content: center;
 }
 .cat-filter[data-filter="all"] .cf-label {
     font-size: 0.65rem;
@@ -260,13 +296,14 @@ a { color: inherit; text-decoration: none; }
     gap: 16px;
     margin-bottom: 36px;
     padding-bottom: 16px;
-    border-bottom: 1px solid #e0e0e0;
+    border-left: 4px solid #111;
+    padding-left: 14px;
 }
 .section-num {
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.14em;
-    color: #2ABBA8;
+    color: #111;
     flex-shrink: 0;
 }
 .section-title {
@@ -296,9 +333,10 @@ a { color: inherit; text-decoration: none; }
 .card-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: #e0e0e0;
-    border: 1px solid #e0e0e0;
+    gap: 2px;
+    background: #111;      /* inner lines + empty cells: black */
+    border: 2.5px solid #111; /* outer manga panel frame */
+    border-top: none;      /* connects flush with cat-filters */
 }
 .tool-card {
     background: #fff;
@@ -307,21 +345,16 @@ a { color: inherit; text-decoration: none; }
     padding: 28px 24px 24px;
     text-decoration: none;
     color: inherit;
-    transition: background 0.15s;
+    transition: background 0.12s, box-shadow 0.12s, transform 0.12s;
     position: relative;
 }
-.tool-card::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 2px;
-    background: #2ABBA8;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.2s ease;
+/* Manga panel depth: offset shadow on hover */
+.tool-card:hover {
+    background: #fafafa;
+    box-shadow: 4px 4px 0 0 #111;
+    transform: translate(-2px, -2px);
+    z-index: 2;
 }
-.tool-card:hover { background: #f9fffe; }
-.tool-card:hover::after { transform: scaleX(1); }
 .tc-top {
     display: flex;
     justify-content: space-between;
@@ -394,7 +427,19 @@ a { color: inherit; text-decoration: none; }
     border-top: 2px solid #1a1a1a;
     padding: 32px 0;
     margin-top: 0;
+    position: relative;
+    overflow: hidden;
 }
+.site-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(17,17,17,0.05) 1px, transparent 1px);
+    background-size: 12px 12px;
+    pointer-events: none;
+    z-index: 0;
+}
+.site-footer .container { position: relative; z-index: 1; }
 .footer-inner {
     display: flex;
     justify-content: space-between;
@@ -593,7 +638,10 @@ a { color: inherit; text-decoration: none; }
 <nav class="site-nav">
   <div class="container">
     <div class="nav-inner">
-      <div class="nav-logo">Super-Lili's Daily Adventure<span class="dot">.</span></div>
+      <div class="nav-logo">
+        <img class="nav-avatar" src="../../assets/lili-avatar.png" alt="Super-Lili" onerror="this.style.display='none'">
+        Super-Lili's Daily Adventure<span class="dot">.</span>
+      </div>
       <ul class="nav-links">
         <li><a href="../../index.html#tools">Tool Archive</a></li>
         <li><a href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure" target="_blank" rel="noopener">GitHub</a></li>
