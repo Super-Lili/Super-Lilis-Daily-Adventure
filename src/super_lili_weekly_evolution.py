@@ -7,6 +7,7 @@ scouts open-source tools to absorb, and rewrites her own soul config.
 
 import os
 import re
+import json
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -191,7 +192,6 @@ def build_evolution_prompt(today_str: str, week_start: str,
 
     # Quality ledger block
     if quality_ledger:
-        import json as _json
         avg_eng   = sum(e.get("engineering", 0) for e in quality_ledger) / len(quality_ledger)
         avg_warm  = sum(e.get("warmth", 0)      for e in quality_ledger) / len(quality_ledger)
         avg_comb  = sum(e.get("combined", 0)    for e in quality_ledger) / len(quality_ledger)
@@ -372,7 +372,7 @@ EVOLUTION TASKS:
    What should she try? What should she protect?
    Include the blindspot antidote from task 2E — make it the first thing she reads.
 
-11. SELF-UPDATE DIARY ENTRY (for 01_Work_Log):
+12. SELF-UPDATE DIARY ENTRY (for 01_Work_Log):
    Write a public-facing diary entry that Lili's readers will see on the homepage.
    This is NOT the private reflection — it's the warm, witty version she shares with the world.
    Requirements:

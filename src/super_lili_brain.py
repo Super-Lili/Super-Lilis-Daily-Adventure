@@ -1091,7 +1091,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "") -
             # Persist to ledger regardless of pass/fail
             _append_quality_ledger(
                 tool_name=description or str(skill_dir),
-                category=str(skill_dir).split("/")[-3] if skill_dir else "",
+                category=str(skill_dir).split("/")[-2] if skill_dir else "",
                 eng_score=eng_score,
                 warm_score=warm_score,
                 reason=reason_line,
