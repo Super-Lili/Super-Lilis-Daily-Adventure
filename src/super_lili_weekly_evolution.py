@@ -516,12 +516,19 @@ def save_blindspot(parsed: dict, today_str: str):
         print("  ⚠ No blindspot analysis found — skipping lili_blindspot.py update.")
         return
 
-    # Extract the antidote line (E.) for direct injection into daily prompt
+    # Extract the "Next week, build..." sentence for direct injection into daily prompt
     antidote = ""
     for line in blindspot_text.splitlines():
-        if line.strip().startswith("E.") or "Next week, build" in line:
-            antidote = line.strip().lstrip("E.").strip().strip('"')
+        if "Next week, build" in line:
+            # Extract from the sentence start, strip surrounding quotes
+            antidote = line[line.index("Next week, build"):].strip().strip('"').strip("'")
             break
+    # Fallback: grab the E. line verbatim if the exact phrase wasn't found
+    if not antidote:
+        for line in blindspot_text.splitlines():
+            if line.strip().startswith("E."):
+                antidote = re.sub(r"^E\.\s*(NEXT WEEK['']?S? ANTIDOTE:?\s*)?", "", line.strip(), flags=re.IGNORECASE).strip().strip('"').strip("'")
+                break
 
     soul_path = Path(__file__).parent / "lili_blindspot.py"
     soul_path.write_text(

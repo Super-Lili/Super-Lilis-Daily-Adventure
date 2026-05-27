@@ -249,8 +249,9 @@ def respond_to_issues():
             f"{response_text}\n\n"
             f"---\n"
             f"*Replied with love by Super-Lili 🌸 · "
-            f"[Explore my Toolbox](02_Toolbox/) · "
-            f"[Read my Diary](01_Work_Log/)*"
+            f"[🌐 Visit Site](https://super-lili.github.io/Super-Lilis-Daily-Adventure/) · "
+            f"[🛠️ Toolbox](https://github.com/{REPO}/tree/main/02_Toolbox) · "
+            f"[📖 Diary](https://github.com/{REPO}/tree/main/01_Work_Log)*"
         )
 
         if post_comment(number, full_comment):
