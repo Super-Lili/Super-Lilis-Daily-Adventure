@@ -45,8 +45,21 @@ a { color: inherit; text-decoration: none; }
     color: #1a1a1a;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
-.nav-logo .dot { color: #2ABBA8; }
+.nav-logo .dot { color: #111; }
+.nav-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #111;
+    object-fit: cover;
+    object-position: center top;
+    filter: grayscale(100%) contrast(1.05);
+    flex-shrink: 0;
+}
 .nav-links { display: flex; gap: 36px; list-style: none; }
 .nav-links a {
     font-size: 0.72rem;
@@ -61,11 +74,11 @@ a { color: inherit; text-decoration: none; }
 /* ── Hero ── */
 .site-hero {
     padding: 0 0 80px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 3px solid #111;
 }
 .hero-bar {
-    border-top: 2px solid #1a1a1a;
-    border-bottom: 1px solid #e0e0e0;
+    border-top: 3px solid #111;
+    border-bottom: 1px solid #ddd;
     padding: 10px 0;
     display: flex;
     align-items: center;
@@ -77,41 +90,71 @@ a { color: inherit; text-decoration: none; }
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #2ABBA8;
+    color: #111;
 }
 .hero-bar-date {
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.12em;
-    color: #bbb;
+    color: #999;
 }
 .hero-bar-rule {
     flex: 1;
     height: 1px;
-    background: #e8e8e8;
+    background: #ddd;
 }
 .hero-bar-label {
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #ccc;
+    color: #bbb;
+}
+.hero-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 56px;
+}
+.hero-text { flex: 1; min-width: 0; }
+.hero-avatar-wrap {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding-top: 8px;
+}
+.hero-avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 3px solid #111;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    filter: grayscale(100%) contrast(1.05);
+}
+.hero-avatar-name {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #111;
 }
 .hero-title {
-    font-size: clamp(2rem, 5.5vw, 3.8rem);
+    font-size: clamp(1.8rem, 4.5vw, 3.2rem);
     font-weight: 800;
-    letter-spacing: -0.035em;
-    line-height: 1.0;
-    color: #1a1a1a;
-    max-width: 820px;
-    margin-bottom: 28px;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: #111;
+    margin-bottom: 24px;
 }
 .hero-excerpt {
-    font-size: 1rem;
-    color: #666;
-    line-height: 1.8;
-    max-width: 540px;
-    margin-bottom: 40px;
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.85;
+    max-width: 520px;
+    margin-bottom: 36px;
 }
 .hero-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
@@ -135,6 +178,76 @@ a { color: inherit; text-decoration: none; }
 .btn-ghost:hover { color: #1a1a1a; border-color: #1a1a1a; }
 .btn-teal { background: #2ABBA8; color: #fff; border-color: #2ABBA8; }
 .btn-teal:hover { background: #229990; border-color: #229990; }
+
+/* ── Category filter tabs ── */
+.cat-filters {
+    display: flex;
+    gap: 0;
+    margin-bottom: 28px;
+    border: 1.5px solid #111;
+    overflow: hidden;
+}
+.cat-filter {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 8px 14px;
+    background: #fff;
+    border: none;
+    border-right: 1.5px solid #111;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+    position: relative;
+}
+.cat-filter:last-child { border-right: none; }
+.cat-filter:hover { background: #f7f7f5; }
+.cat-filter.active { background: #111; }
+.cf-icon {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.cf-icon svg { width: 52px; height: 52px; }
+.cat-filter .cf-icon { color: #111; }
+.cat-filter.active .cf-icon { color: #fff; }
+.cf-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #555;
+    transition: color 0.15s;
+}
+.cat-filter.active .cf-label { color: #fff; }
+.cf-count {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #bbb;
+    transition: color 0.15s;
+}
+.cat-filter.active .cf-count { color: rgba(255,255,255,0.55); }
+
+/* "All" button — no icon, larger label */
+.cat-filter[data-filter="all"] {
+    flex: 0 0 auto;
+    min-width: 72px;
+    padding: 18px 16px 14px;
+}
+.cat-filter[data-filter="all"] .cf-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    color: #111;
+}
+.cat-filter[data-filter="all"].active .cf-label { color: #fff; }
+.cat-filter[data-filter="all"] .cf-count { font-size: 0.65rem; color: #999; }
+.cat-filter[data-filter="all"].active .cf-count { color: rgba(255,255,255,0.6); }
 
 /* ── Section header ── */
 .section-block {
@@ -452,16 +565,23 @@ a { color: inherit; text-decoration: none; }
 /* ── Responsive ── */
 @media (max-width: 900px) {
     .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-avatar { width: 120px; height: 120px; }
+    .cf-icon { width: 40px; height: 40px; }
+    .cf-icon svg { width: 40px; height: 40px; }
 }
 @media (max-width: 580px) {
     .container { padding: 0 24px; }
     .card-grid { grid-template-columns: 1fr; }
+    .cat-filters { flex-wrap: wrap; }
+    .cat-filter { flex: 1 1 40%; }
     .nav-links { display: none; }
     .footer-inner { flex-direction: column; gap: 16px; align-items: flex-start; }
     .footer-tagline { font-size: 0.88rem; }
     .evo-item { grid-template-columns: 80px 1fr; }
     .evo-arrow { display: none; }
-    .hero-title { font-size: 2rem; }
+    .hero-inner { flex-direction: column-reverse; align-items: center; gap: 32px; }
+    .hero-avatar { width: 100px; height: 100px; }
+    .hero-title { font-size: 1.8rem; }
     .hero-bar { flex-wrap: wrap; }
 }
 
@@ -473,7 +593,10 @@ a { color: inherit; text-decoration: none; }
 <nav class="site-nav">
   <div class="container">
     <div class="nav-inner">
-      <div class="nav-logo">Super-Lili's Daily Adventure<span class="dot">.</span></div>
+      <div class="nav-logo">
+        <img class="nav-avatar" src="assets/lili-avatar.png" alt="Super-Lili" onerror="this.style.display='none'">
+        Super-Lili's Daily Adventure<span class="dot">.</span>
+      </div>
       <ul class="nav-links">
         <li><a href="#tools">Tool Archive</a></li>
         <li><a href="#evolution">Evolution Journal</a></li>
@@ -510,7 +633,32 @@ a { color: inherit; text-decoration: none; }
       <span class="section-count">27 tools</span>
     </div>
     <div class="tools-block">
-      <div class="card-grid"><a class="tool-card" href="tools/2026-05-19-commentary-clarity-catalyst/index.html">
+      <div class="cat-filters">
+  <button class="cat-filter active" data-filter="all">
+    <span class="cf-label">All</span>
+    <span class="cf-count">27</span>
+  </button>
+  <button class="cat-filter" data-filter="Office">
+    <span class="cf-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 152"><defs><filter id="f1"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.4" xChannelSelector="R" yChannelSelector="G"/></filter></defs><g filter="url(#f1)"><path fill="white" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" d="M75,12 L85,12 L89,25 Q98,27 106,33 L119,26 L129,36 L122,49 Q128,57 130,66 L143,69 L143,81 L130,84 Q128,93 122,101 L129,114 L119,124 L106,117 Q98,123 89,125 L85,138 L75,138 L71,125 Q62,123 54,117 L41,124 L31,114 L38,101 Q32,93 30,84 L17,81 L17,69 L30,66 Q32,57 38,49 L31,36 L41,26 L54,33 Q62,27 71,25 Z"/><circle fill="white" stroke="currentColor" stroke-width="2.5" cx="80" cy="75" r="30"/><line stroke="currentColor" stroke-width="1.2" stroke-linecap="round" x1="52" y1="46" x2="46" y2="60"/><line stroke="currentColor" stroke-width="1.2" stroke-linecap="round" x1="59" y1="43" x2="52" y2="58"/><line stroke="currentColor" stroke-width="1.2" stroke-linecap="round" x1="105" y1="46" x2="99" y2="60"/><line stroke="currentColor" stroke-width="1.2" stroke-linecap="round" x1="112" y1="52" x2="105" y2="66"/><line stroke="currentColor" stroke-width="1.2" stroke-linecap="round" x1="112" y1="88" x2="105" y2="102"/><line stroke="currentColor" stroke-width="1.2" stroke-linecap="round" x1="105" y1="96" x2="97" y2="108"/><line stroke="currentColor" stroke-width="1.2" stroke-linecap="round" x1="55" y1="95" x2="47" y2="107"/><line stroke="currentColor" stroke-width="1.2" stroke-linecap="round" x1="48" y1="87" x2="41" y2="100"/><circle fill="currentColor" cx="80" cy="75" r="14"/><line stroke="white" stroke-width="3" stroke-linecap="round" x1="80" y1="66" x2="80" y2="84"/><line stroke="white" stroke-width="3" stroke-linecap="round" x1="71" y1="75" x2="89" y2="75"/><circle fill="currentColor" cx="80" cy="47" r="4.5"/><circle fill="currentColor" cx="80" cy="103" r="4.5"/><circle fill="currentColor" cx="52" cy="75" r="4.5"/><circle fill="currentColor" cx="108" cy="75" r="4.5"/></g></svg></span>
+    <span class="cf-label">Office</span>
+    <span class="cf-count">8</span>
+  </button>
+  <button class="cat-filter" data-filter="Education">
+    <span class="cf-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160"><defs><filter id="f2"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.4" xChannelSelector="R" yChannelSelector="G"/></filter></defs><g filter="url(#f2)"><line stroke="currentColor" stroke-width="3.5" stroke-linecap="round" x1="80" y1="114" x2="40" y2="152"/><line stroke="currentColor" stroke-width="3.5" stroke-linecap="round" x1="80" y1="114" x2="120" y2="152"/><line stroke="currentColor" stroke-width="2.5" stroke-linecap="round" x1="49" y1="142" x2="111" y2="142"/><g transform="rotate(-30, 80, 80)"><rect fill="currentColor" x="30" y="67" width="100" height="26" rx="3"/><line stroke="white" stroke-width="3" x1="72" y1="67" x2="72" y2="93"/><line stroke="white" stroke-width="3" x1="98" y1="67" x2="98" y2="93"/><line stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.4" x1="34" y1="70" x2="126" y2="70"/><ellipse fill="currentColor" cx="30" cy="80" rx="9" ry="20"/><ellipse fill="white" cx="30" cy="80" rx="5" ry="12"/><rect fill="currentColor" x="130" y="69" width="18" height="22" rx="2"/><line stroke="white" stroke-width="1.5" stroke-linecap="round" x1="134" y1="73" x2="144" y2="73"/><rect fill="currentColor" stroke="white" stroke-width="1" x="78" y="59" width="12" height="12" rx="2"/></g><polygon fill="currentColor" points="118,22 121,30 130,30 123,35 126,43 118,38 110,43 113,35 106,30 115,30"/><circle fill="currentColor" cx="140" cy="50" r="4.5"/></g></svg></span>
+    <span class="cf-label">Education</span>
+    <span class="cf-count">7</span>
+  </button>
+  <button class="cat-filter" data-filter="Healing">
+    <span class="cf-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 162"><defs><filter id="f3"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.4" xChannelSelector="R" yChannelSelector="G"/></filter></defs><g filter="url(#f3)"><path fill="white" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" d="M46,78 Q42,84 42,96 L42,132 Q42,146 58,146 L102,146 Q118,146 118,132 L118,96 Q118,84 114,78 Z"/><line stroke="currentColor" stroke-width="1.1" stroke-linecap="round" x1="47" y1="84" x2="44" y2="100"/><line stroke="currentColor" stroke-width="1.1" stroke-linecap="round" x1="52" y1="82" x2="48" y2="100"/><line stroke="currentColor" stroke-width="1.1" stroke-linecap="round" x1="113" y1="84" x2="116" y2="100"/><line stroke="currentColor" stroke-width="1.1" stroke-linecap="round" x1="108" y1="82" x2="112" y2="100"/><line stroke="currentColor" stroke-width="1.1" stroke-linecap="round" x1="46" y1="124" x2="44" y2="140"/><line stroke="currentColor" stroke-width="1.1" stroke-linecap="round" x1="52" y1="124" x2="49" y2="142"/><line stroke="currentColor" stroke-width="1.1" stroke-linecap="round" x1="114" y1="124" x2="116" y2="140"/><line stroke="currentColor" stroke-width="1.1" stroke-linecap="round" x1="108" y1="124" x2="111" y2="142"/><path fill="white" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" d="M62,62 L62,78 L98,78 L98,62 Z"/><rect fill="white" stroke="currentColor" stroke-width="2.5" x="66" y="40" width="28" height="24" rx="2"/><path fill="currentColor" d="M64,28 Q64,20 80,20 Q96,20 96,28 L96,44 L64,44 Z"/><line stroke="white" stroke-width="2" stroke-linecap="round" x1="72" y1="22" x2="72" y2="43"/><line stroke="white" stroke-width="2" stroke-linecap="round" x1="80" y1="21" x2="80" y2="43"/><line stroke="white" stroke-width="2" stroke-linecap="round" x1="88" y1="22" x2="88" y2="43"/><rect fill="white" stroke="currentColor" stroke-width="2.5" x="54" y="88" width="52" height="36" rx="2"/><line stroke="currentColor" stroke-width="5.5" stroke-linecap="round" x1="80" y1="95" x2="80" y2="118"/><line stroke="currentColor" stroke-width="5.5" stroke-linecap="round" x1="68" y1="106" x2="92" y2="106"/></g></svg></span>
+    <span class="cf-label">Healing</span>
+    <span class="cf-count">6</span>
+  </button>
+  <button class="cat-filter" data-filter="Design">
+    <span class="cf-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160"><defs><filter id="f4"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.4" xChannelSelector="R" yChannelSelector="G"/></filter></defs><g filter="url(#f4)"><rect fill="currentColor" x="73" y="68" width="14" height="72" rx="5" transform="rotate(-38, 80, 104)"/><line stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.55" x1="96" y1="103" x2="107" y2="115" transform="rotate(-38, 101, 109)"/><line stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.55" x1="96" y1="113" x2="107" y2="125" transform="rotate(-38, 101, 119)"/><line stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.55" x1="96" y1="123" x2="107" y2="135" transform="rotate(-38, 101, 129)"/><polygon fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" points="55,14 61,32 80,32 65,43 71,61 55,50 39,61 45,43 30,32 49,32"/><polygon fill="white" opacity="0.25" points="55,23 59,34 69,34 61,40 64,51 55,45 46,51 49,40 41,34 51,34"/><line stroke="currentColor" stroke-width="4" stroke-linecap="round" x1="55" y1="0" x2="55" y2="9"/><line stroke="currentColor" stroke-width="4" stroke-linecap="round" x1="88" y1="6" x2="82" y2="16"/><line stroke="currentColor" stroke-width="4" stroke-linecap="round" x1="96" y1="36" x2="85" y2="36"/><line stroke="currentColor" stroke-width="4" stroke-linecap="round" x1="86" y1="66" x2="78" y2="58"/><line stroke="currentColor" stroke-width="4" stroke-linecap="round" x1="22" y1="6" x2="28" y2="16"/><line stroke="currentColor" stroke-width="4" stroke-linecap="round" x1="14" y1="36" x2="25" y2="36"/><line stroke="currentColor" stroke-width="4" stroke-linecap="round" x1="24" y1="66" x2="32" y2="58"/><circle fill="currentColor" cx="112" cy="20" r="5"/><circle fill="currentColor" cx="128" cy="46" r="3.5"/><circle fill="currentColor" cx="18" cy="82" r="3"/></g></svg></span>
+    <span class="cf-label">Design</span>
+    <span class="cf-count">6</span>
+  </button>
+</div><div class="card-grid"><a class="tool-card" data-cat="Design" href="tools/2026-05-19-commentary-clarity-catalyst/index.html">
   <div class="tc-top">
     <span class="tc-index">27</span>
     <span class="tc-cat">Design</span>
@@ -518,7 +666,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Commentary Clarity Catalyst</div>
   <div class="tc-desc">This tool analyzes YouTube comment sections on productivity videos to identify the gap between curated content…</div>
   <div class="tc-date">2026-05-19</div>
-</a><a class="tool-card" href="tools/2026-05-13-content-current-catalyst/index.html">
+</a><a class="tool-card" data-cat="Design" href="tools/2026-05-13-content-current-catalyst/index.html">
   <div class="tc-top">
     <span class="tc-index">26</span>
     <span class="tc-cat">Design</span>
@@ -526,7 +674,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Content Current Catalyst</div>
   <div class="tc-desc">This tool generates a weekly content strategy and specific post ideas for small businesses, helping them align…</div>
   <div class="tc-date">2026-05-13</div>
-</a><a class="tool-card" href="tools/2026-05-07-pixel-pilot/index.html">
+</a><a class="tool-card" data-cat="Design" href="tools/2026-05-07-pixel-pilot/index.html">
   <div class="tc-top">
     <span class="tc-index">25</span>
     <span class="tc-cat">Design</span>
@@ -534,7 +682,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Pixel Pilot</div>
   <div class="tc-desc">A Python script to diagnose common client-side issues with image files (size, format) before attempting a web …</div>
   <div class="tc-date">2026-05-07</div>
-</a><a class="tool-card" href="tools/2026-05-05-the-authenticity-engine/index.html">
+</a><a class="tool-card" data-cat="Design" href="tools/2026-05-05-the-authenticity-engine/index.html">
   <div class="tc-top">
     <span class="tc-index">24</span>
     <span class="tc-cat">Design</span>
@@ -542,7 +690,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">The Authenticity Engine</div>
   <div class="tc-desc">A modular Python script that allows users to prioritize content based on personal connections and explicit int…</div>
   <div class="tc-date">2026-05-05</div>
-</a><a class="tool-card" href="tools/2026-05-04-chrono-search-weaver/index.html">
+</a><a class="tool-card" data-cat="Design" href="tools/2026-05-04-chrono-search-weaver/index.html">
   <div class="tc-top">
     <span class="tc-index">23</span>
     <span class="tc-cat">Design</span>
@@ -550,7 +698,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Chrono-Search Weaver</div>
   <div class="tc-desc">A Python script conceptualizing an intuitive search interface, allowing users to specify keywords and historic…</div>
   <div class="tc-date">2026-05-04</div>
-</a><a class="tool-card" href="tools/2026-05-03-feed-transparency-alchemist/index.html">
+</a><a class="tool-card" data-cat="Design" href="tools/2026-05-03-feed-transparency-alchemist/index.html">
   <div class="tc-top">
     <span class="tc-index">22</span>
     <span class="tc-cat">Design</span>
@@ -558,7 +706,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Feed Transparency Alchemist</div>
   <div class="tc-desc">A Python tool to analyze a simulated social media feed, quantifying the prevalence of ads and suggested conten…</div>
   <div class="tc-date">2026-05-03</div>
-</a><a class="tool-card" href="tools/2026-05-23-synthesis-spark/index.html">
+</a><a class="tool-card" data-cat="Education" href="tools/2026-05-23-synthesis-spark/index.html">
   <div class="tc-top">
     <span class="tc-index">21</span>
     <span class="tc-cat">Education</span>
@@ -566,7 +714,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Synthesis Spark</div>
   <div class="tc-desc">This tool helps you synthesize disparate learning notes or articles into structured knowledge by identifying k…</div>
   <div class="tc-date">2026-05-23</div>
-</a><a class="tool-card" href="tools/2026-05-15-paper-parrot/index.html">
+</a><a class="tool-card" data-cat="Education" href="tools/2026-05-15-paper-parrot/index.html">
   <div class="tc-top">
     <span class="tc-index">20</span>
     <span class="tc-cat">Education</span>
@@ -574,7 +722,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Paper Parrot</div>
   <div class="tc-desc">This tool extracts key arguments, methodologies, and findings from academic PDF papers and transforms them int…</div>
   <div class="tc-date">2026-05-15</div>
-</a><a class="tool-card" href="tools/2026-05-14-insight-loom/index.html">
+</a><a class="tool-card" data-cat="Education" href="tools/2026-05-14-insight-loom/index.html">
   <div class="tc-top">
     <span class="tc-index">19</span>
     <span class="tc-cat">Education</span>
@@ -582,7 +730,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Insight Loom</div>
   <div class="tc-desc">This tool guides users to identify key concepts and define relationships between them from their notes or text…</div>
   <div class="tc-date">2026-05-14</div>
-</a><a class="tool-card" href="tools/2026-05-12-momentum-catalyst/index.html">
+</a><a class="tool-card" data-cat="Education" href="tools/2026-05-12-momentum-catalyst/index.html">
   <div class="tc-top">
     <span class="tc-index">18</span>
     <span class="tc-cat">Education</span>
@@ -590,7 +738,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Momentum Catalyst</div>
   <div class="tc-desc">This tool helps users overcome procrastination by guiding them to define tiny, actionable &quot;ignition tasks&quot; for…</div>
   <div class="tc-date">2026-05-12</div>
-</a><a class="tool-card" href="tools/2026-05-11-recall-navigator/index.html">
+</a><a class="tool-card" data-cat="Education" href="tools/2026-05-11-recall-navigator/index.html">
   <div class="tc-top">
     <span class="tc-index">17</span>
     <span class="tc-cat">Education</span>
@@ -598,7 +746,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Recall Navigator</div>
   <div class="tc-desc">This tool helps you manage knowledge points, apply spaced repetition for better retention, and generate daily …</div>
   <div class="tc-date">2026-05-11</div>
-</a><a class="tool-card" href="tools/2026-05-08-status-sentinel/index.html">
+</a><a class="tool-card" data-cat="Education" href="tools/2026-05-08-status-sentinel/index.html">
   <div class="tc-top">
     <span class="tc-index">16</span>
     <span class="tc-cat">Education</span>
@@ -606,7 +754,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Status Sentinel</div>
   <div class="tc-desc">A Python script to monitor key status pages for updates during critical system outages, providing proactive no…</div>
   <div class="tc-date">2026-05-08</div>
-</a><a class="tool-card" href="tools/2026-05-08-realityratio-revealer/index.html">
+</a><a class="tool-card" data-cat="Education" href="tools/2026-05-08-realityratio-revealer/index.html">
   <div class="tc-top">
     <span class="tc-index">15</span>
     <span class="tc-cat">Education</span>
@@ -614,7 +762,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">RealityRatio Revealer</div>
   <div class="tc-desc">A Python utility that quantifies historical and current home affordability to starkly illustrate generational …</div>
   <div class="tc-date">2026-05-08</div>
-</a><a class="tool-card" href="tools/2026-05-26-balance-bloom/index.html">
+</a><a class="tool-card" data-cat="Healing" href="tools/2026-05-26-balance-bloom/index.html">
   <div class="tc-top">
     <span class="tc-index">14</span>
     <span class="tc-cat">Healing</span>
@@ -622,7 +770,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Balance Bloom</div>
   <div class="tc-desc">This tool generates a dynamic SVG image that subtly changes its color gradient throughout the day, providing a…</div>
   <div class="tc-date">2026-05-26</div>
-</a><a class="tool-card" href="tools/2026-05-25-ambient-prompt-weaver/index.html">
+</a><a class="tool-card" data-cat="Healing" href="tools/2026-05-25-ambient-prompt-weaver/index.html">
   <div class="tc-top">
     <span class="tc-index">13</span>
     <span class="tc-cat">Healing</span>
@@ -630,7 +778,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Ambient Prompt Weaver</div>
   <div class="tc-desc">This tool takes a CSV file of tasks and their associated time blocks, then generates minimalist HTML &quot;cue card…</div>
   <div class="tc-date">2026-05-25</div>
-</a><a class="tool-card" href="tools/2026-05-07-digital-fortress-blueprint/index.html">
+</a><a class="tool-card" data-cat="Healing" href="tools/2026-05-07-digital-fortress-blueprint/index.html">
   <div class="tc-top">
     <span class="tc-index">12</span>
     <span class="tc-cat">Healing</span>
@@ -638,7 +786,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Digital Fortress Blueprint</div>
   <div class="tc-desc">A symbolic Python script that outlines the principles of digital security for user empowerment against platfor…</div>
   <div class="tc-date">2026-05-07</div>
-</a><a class="tool-card" href="tools/2026-05-06-the-focus-alchemist/index.html">
+</a><a class="tool-card" data-cat="Healing" href="tools/2026-05-06-the-focus-alchemist/index.html">
   <div class="tc-top">
     <span class="tc-index">11</span>
     <span class="tc-cat">Healing</span>
@@ -646,7 +794,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">The Focus Alchemist</div>
   <div class="tc-desc">A simple, customizable Pomodoro timer designed to create focused work intervals and mindful breaks for overwhe…</div>
   <div class="tc-date">2026-05-06</div>
-</a><a class="tool-card" href="tools/2026-05-01-human-first-escalation-kit/index.html">
+</a><a class="tool-card" data-cat="Healing" href="tools/2026-05-01-human-first-escalation-kit/index.html">
   <div class="tc-top">
     <span class="tc-index">10</span>
     <span class="tc-cat">Healing</span>
@@ -654,7 +802,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Human-First Escalation Kit</div>
   <div class="tc-desc">A Python script to generate structured escalation messages, empowering users to bypass unhelpful AI chatbots a…</div>
   <div class="tc-date">2026-05-01</div>
-</a><a class="tool-card" href="tools/2026-04-30-ad-stream-awareness-tracker/index.html">
+</a><a class="tool-card" data-cat="Healing" href="tools/2026-04-30-ad-stream-awareness-tracker/index.html">
   <div class="tc-top">
     <span class="tc-index">09</span>
     <span class="tc-cat">Healing</span>
@@ -662,7 +810,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Ad-Stream Awareness Tracker</div>
   <div class="tc-desc">A Python script to log and analyze perceived ad interruptions during a browsing session, helping users visuali…</div>
   <div class="tc-date">2026-04-30</div>
-</a><a class="tool-card" href="tools/2026-05-27-brief-aligner-blueprint/index.html">
+</a><a class="tool-card" data-cat="Office" href="tools/2026-05-27-brief-aligner-blueprint/index.html">
   <div class="tc-top">
     <span class="tc-index">08</span>
     <span class="tc-cat">Office</span>
@@ -670,7 +818,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Brief Aligner Blueprint</div>
   <div class="tc-desc">This tool processes raw client communication text (emails, chat logs, notes) to extract and organize key decis…</div>
   <div class="tc-date">2026-05-27</div>
-</a><a class="tool-card" href="tools/2026-05-21-flow-anchor/index.html">
+</a><a class="tool-card" data-cat="Office" href="tools/2026-05-21-flow-anchor/index.html">
   <div class="tc-top">
     <span class="tc-index">07</span>
     <span class="tc-cat">Office</span>
@@ -678,7 +826,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Flow Anchor</div>
   <div class="tc-desc">This tool helps you proactively create and communicate your deep work focus blocks by generating ICS calendar …</div>
   <div class="tc-date">2026-05-21</div>
-</a><a class="tool-card" href="tools/2026-05-16-decision-digestor/index.html">
+</a><a class="tool-card" data-cat="Office" href="tools/2026-05-16-decision-digestor/index.html">
   <div class="tc-top">
     <span class="tc-index">06</span>
     <span class="tc-cat">Office</span>
@@ -686,7 +834,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Decision Digestor</div>
   <div class="tc-desc">This tool extracts potential action items, decisions, owners, and due dates from unstructured text (like chat …</div>
   <div class="tc-date">2026-05-16</div>
-</a><a class="tool-card" href="tools/2026-05-10-report-streamliner/index.html">
+</a><a class="tool-card" data-cat="Office" href="tools/2026-05-10-report-streamliner/index.html">
   <div class="tc-top">
     <span class="tc-index">05</span>
     <span class="tc-cat">Office</span>
@@ -694,7 +842,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Report Streamliner</div>
   <div class="tc-desc">This tool streamlines the process of combining multiple CSV or Excel files, aggregating data based on a common…</div>
   <div class="tc-date">2026-05-10</div>
-</a><a class="tool-card" href="tools/2026-05-04-safety-sentinel-log/index.html">
+</a><a class="tool-card" data-cat="Office" href="tools/2026-05-04-safety-sentinel-log/index.html">
   <div class="tc-top">
     <span class="tc-index">04</span>
     <span class="tc-cat">Office</span>
@@ -702,7 +850,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Safety Sentinel Log</div>
   <div class="tc-desc">A basic Python script to log repeated safety oversights, making the invisible, maddening patterns visible.</div>
   <div class="tc-date">2026-05-04</div>
-</a><a class="tool-card" href="tools/2026-05-04-clarity-compass/index.html">
+</a><a class="tool-card" data-cat="Office" href="tools/2026-05-04-clarity-compass/index.html">
   <div class="tc-top">
     <span class="tc-index">03</span>
     <span class="tc-cat">Office</span>
@@ -710,7 +858,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Clarity Compass</div>
   <div class="tc-desc">This script provides a simple, interactive tool to prioritize tasks based on the Eisenhower Matrix principles …</div>
   <div class="tc-date">2026-05-04</div>
-</a><a class="tool-card" href="tools/2026-05-03-keyword-compass/index.html">
+</a><a class="tool-card" data-cat="Office" href="tools/2026-05-03-keyword-compass/index.html">
   <div class="tc-top">
     <span class="tc-index">02</span>
     <span class="tc-cat">Office</span>
@@ -718,7 +866,7 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">Keyword Compass</div>
   <div class="tc-desc">A Python script to extract common keywords from a job description, helping humans tailor resumes to satisfy al…</div>
   <div class="tc-date">2026-05-03</div>
-</a><a class="tool-card" href="tools/2026-04-29-the-clarity-crucible/index.html">
+</a><a class="tool-card" data-cat="Office" href="tools/2026-04-29-the-clarity-crucible/index.html">
   <div class="tc-top">
     <span class="tc-index">01</span>
     <span class="tc-cat">Office</span>
@@ -726,7 +874,21 @@ a { color: inherit; text-decoration: none; }
   <div class="tc-name">The Clarity Crucible</div>
   <div class="tc-desc">A Python script to generate structured status reports, elegantly articulating knowns and clearly highlighting …</div>
   <div class="tc-date">2026-04-29</div>
-</a></div>
+</a></div><script>
+(function(){
+  var btns = document.querySelectorAll('.cat-filter');
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      btns.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var f = btn.dataset.filter;
+      document.querySelectorAll('.tool-card').forEach(function(c){
+        c.style.display = (f === 'all' || c.dataset.cat === f) ? '' : 'none';
+      });
+    });
+  });
+})();
+</script>
     </div>
   </div>
 </div>
