@@ -1104,7 +1104,7 @@ def build_local_run_section(t: dict) -> str:
     install_cmd = f"pip install {req_str}" if reqs else "pip install -r requirements.txt"
     github_raw = (
         f"https://raw.githubusercontent.com/Super-Lili/Super-Lilis-Daily-Adventure"
-        f"/main/02_Toolbox/{t['category']}/{t['dir_name']}/main.py"
+        f"/main/02_Toolbox/{t['category'].replace(' ', '%20')}/{t['dir_name'].replace(' ', '%20')}/main.py"
     )
 
     return f"""

@@ -717,6 +717,10 @@ def weekly_evolution():
     save_evolution_diary(parsed, today_str, week_start)
     update_readme_evolution_section(today_str)
 
+    print("🌐 Rebuilding GitHub Pages site...")
+    import subprocess as _sp, sys as _sys
+    _sp.run([_sys.executable, "docs/generate_site.py"], check=False)
+
     print(f"\n✨ Super-Lili has evolved! Week {week_start} → {today_str} complete.")
     if parsed.get("letter"):
         print("\n📬 Letter to next week's Lili:")
