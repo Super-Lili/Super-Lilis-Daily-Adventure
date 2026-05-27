@@ -63,6 +63,29 @@ def collect_week_diaries(n: int = 7) -> list[tuple[str, str]]:
     return results
 
 
+def collect_quality_ledger(n_days: int = 14) -> list[dict]:
+    """Read recent entries from tool_quality_ledger.jsonl."""
+    ledger_path = Path("tool_quality_ledger.jsonl")
+    if not ledger_path.exists():
+        return []
+    cutoff = (datetime.utcnow() - timedelta(days=n_days)).strftime("%Y-%m-%d")
+    entries = []
+    try:
+        for line in ledger_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+                if entry.get("date", "") >= cutoff:
+                    entries.append(entry)
+            except json.JSONDecodeError:
+                continue
+    except Exception as e:
+        print(f"  ⚠ Could not read quality ledger: {e}")
+    return entries
+
+
 def collect_week_tool_code(n: int = 7) -> list[dict]:
     """Read actual main.py source for this week's tools for engineering review."""
     toolbox = Path("02_Toolbox")
@@ -140,7 +163,8 @@ def read_current_soul() -> str:
 def build_evolution_prompt(today_str: str, week_start: str,
                             diaries: list, tools: list, soul: str,
                             issues: list | None = None,
-                            tool_codes: list | None = None) -> str:
+                            tool_codes: list | None = None,
+                            quality_ledger: list | None = None) -> str:
     diary_block = "\n\n".join(
         f"=== {stem} ===\n{content}" for stem, content in diaries
     ) or "(No diaries this week)"
@@ -164,6 +188,29 @@ def build_evolution_prompt(today_str: str, week_start: str,
         engineering_block = "\n".join(eng_rows)
     else:
         engineering_block = "  (No tool code collected this week)"
+
+    # Quality ledger block
+    if quality_ledger:
+        import json as _json
+        avg_eng   = sum(e.get("engineering", 0) for e in quality_ledger) / len(quality_ledger)
+        avg_warm  = sum(e.get("warmth", 0)      for e in quality_ledger) / len(quality_ledger)
+        avg_comb  = sum(e.get("combined", 0)    for e in quality_ledger) / len(quality_ledger)
+        passed    = sum(1 for e in quality_ledger if e.get("passed", False))
+        ledger_rows = []
+        for e in quality_ledger[-14:]:  # show last 14
+            ledger_rows.append(
+                f"  {e.get('date','')} [{e.get('category','?')}] {e.get('tool','?')} "
+                f"— Eng:{e.get('engineering','?')} Warm:{e.get('warmth','?')} "
+                f"Combined:{e.get('combined','?')} {'✓' if e.get('passed') else '✗'} "
+                f"— {e.get('reason','')[:80]}"
+            )
+        quality_block = (
+            f"  Total scored: {len(quality_ledger)} tools | Passed: {passed}/{len(quality_ledger)}\n"
+            f"  Avg Engineering: {avg_eng:.1f}/5 | Avg Warmth: {avg_warm:.1f}/5 | Avg Combined: {avg_comb:.1f}/5\n\n"
+            + "\n".join(ledger_rows)
+        )
+    else:
+        quality_block = "  (No quality scores recorded yet — quality ledger is empty)"
 
     if issues:
         issues_block = "\n".join(
@@ -200,6 +247,15 @@ Each tool was auto-checked for:
   • Empty / short input guards (graceful failure)
   • Example inputs present in code or docstring
   • Structured output (sections, headers, not a raw text blob)
+
+═══════════════════════════════════════════════════════
+TOOL QUALITY SCORES — LAST 14 DAYS (Two-Dimension Evaluation):
+═══════════════════════════════════════════════════════
+{quality_block}
+
+Engineering score (1-5): structured, substantive, actionable code
+Warmth score (1-5): specific to real person's situation, warm, not robotic
+Tools with combined average < 3.0 were regenerated. Use these scores to identify patterns.
 
 ═══════════════════════════════════════════════════════
 USER FEEDBACK — GITHUB ISSUES THIS WEEK:
@@ -634,12 +690,15 @@ def weekly_evolution():
     tool_codes = collect_week_tool_code(7)
     print(f"  ✓ Read code for {len(tool_codes)} tools.")
 
+    quality_ledger = collect_quality_ledger(14)
+    print(f"  ✓ Loaded {len(quality_ledger)} quality ledger entries.")
+
     soul = read_current_soul()
 
     print("📬 Fetching GitHub Issues...")
     issues = fetch_github_issues(30)
 
-    prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul, issues, tool_codes)
+    prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul, issues, tool_codes, quality_ledger)
 
     print("🧠 Running self-evolution with Gemini...")
     content = call_gemini(prompt)

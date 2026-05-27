@@ -6,6 +6,8 @@ writes a warm diary entry, and forges a high-quality Python tool.
 
 import os
 import re
+import sys
+import json
 import time
 import requests
 from datetime import datetime
@@ -927,6 +929,25 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
     return skill_dir
 
 
+def _append_quality_ledger(tool_name: str, category: str,
+                           eng_score: int, warm_score: int,
+                           reason: str, passed: bool) -> None:
+    """Persist quality scores to tool_quality_ledger.jsonl for weekly evolution to read."""
+    ledger_path = Path("tool_quality_ledger.jsonl")
+    entry = {
+        "date":      datetime.utcnow().strftime("%Y-%m-%d"),
+        "tool":      tool_name,
+        "category":  category,
+        "engineering": eng_score,
+        "warmth":    warm_score,
+        "combined":  round((eng_score + warm_score) / 2, 1),
+        "reason":    reason,
+        "passed":    passed,
+    }
+    with ledger_path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
 def validate_tool(skill_dir: str, test_input: str = "", description: str = "") -> tuple[bool, str]:
     """Validate the tool: syntax, browser compatibility, output quality."""
     import subprocess, sys
@@ -1037,26 +1058,50 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "") -
             )
         print(f"  ✓ Output check passed ({len(output)} chars, {len(output_lines)} lines).")
 
-        # 7. Gemini quality score — is this output actually useful?
+        # 7. Two-dimension quality score:
+        #    ENGINEERING — structured, substantive, actionable output
+        #    WARMTH      — specific to a real person, not generic, not robotic
         quality_prompt = (
-            f"Rate this tool output quality: 1 (useless) to 5 (genuinely actionable).\n\n"
+            f"Rate this tool output on TWO dimensions (each 1–5).\n\n"
+            f"DIMENSION 1 — ENGINEERING\n"
+            f"  5 = clearly structured, specific sections, immediately actionable\n"
+            f"  3 = readable but could be more organised or concrete\n"
+            f"  1 = vague, too short, or generic filler\n\n"
+            f"DIMENSION 2 — HUMAN WARMTH\n"
+            f"  5 = feels made for this exact person's situation, warm, not robotic\n"
+            f"  3 = useful but could apply to almost anyone\n"
+            f"  1 = template-like, no emotional intelligence, ignores the human behind the input\n\n"
             f"Tool purpose: {description or 'a productivity tool'}\n"
-            f"Test input: {demo_input[:300]}\n"
-            f"Tool output:\n{output[:600]}\n\n"
-            f"Reply with exactly: SCORE: X\nREASON: one sentence why."
+            f"Test input:\n{demo_input[:300]}\n\n"
+            f"Tool output:\n{output[:700]}\n\n"
+            f"Reply with EXACTLY this format:\n"
+            f"ENGINEERING: X\n"
+            f"WARMTH: X\n"
+            f"REASON: one sentence."
         )
         quality_resp = call_gemini_simple(quality_prompt)
         if quality_resp:
-            m = re.search(r"SCORE:\s*([1-5])", quality_resp)
-            if m:
-                score = int(m.group(1))
-                reason_line = quality_resp.split("REASON:")[-1].strip()[:120] if "REASON:" in quality_resp else ""
-                if score < 3:
-                    return False, (
-                        f"Output quality score {score}/5 — {reason_line}. "
-                        f"Output was: {repr(output[:200])}"
-                    )
-                print(f"  ✓ Gemini quality score: {score}/5 — {reason_line}")
+            eng_m   = re.search(r"ENGINEERING:\s*([1-5])", quality_resp)
+            warm_m  = re.search(r"WARMTH:\s*([1-5])",      quality_resp)
+            reason_line = quality_resp.split("REASON:")[-1].strip()[:150] if "REASON:" in quality_resp else ""
+            eng_score  = int(eng_m.group(1))  if eng_m  else 3
+            warm_score = int(warm_m.group(1)) if warm_m else 3
+            combined   = round((eng_score + warm_score) / 2, 1)
+            print(f"  ✓ Quality — Engineering: {eng_score}/5  Warmth: {warm_score}/5  ({combined} avg) — {reason_line}")
+            # Persist to ledger regardless of pass/fail
+            _append_quality_ledger(
+                tool_name=description or str(skill_dir),
+                category=str(skill_dir).split("/")[-3] if skill_dir else "",
+                eng_score=eng_score,
+                warm_score=warm_score,
+                reason=reason_line,
+                passed=(combined >= 3.0),
+            )
+            if combined < 3.0:
+                return False, (
+                    f"Quality too low — Engineering {eng_score}/5, Warmth {warm_score}/5. "
+                    f"{reason_line}. Output was: {repr(output[:200])}"
+                )
 
     except subprocess.TimeoutExpired:
         return False, "Output check timed out — tool may be hanging on input"
