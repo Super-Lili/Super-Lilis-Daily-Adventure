@@ -426,19 +426,24 @@ def call_gemini(prompt: str) -> str | None:
     models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
 
     for model_name in models:
-        try:
-            print(f"  ↳ Trying {model_name}...")
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt,
-                config=types.GenerateContentConfig(tools=[search_tool])
-            )
-            if response.text:
-                print(f"  ✓ {model_name} succeeded.")
-                return response.text
-        except Exception as e:
-            print(f"  ✗ {model_name}: {e}")
-            time.sleep(2)
+        for attempt in range(3):
+            try:
+                print(f"  ↳ Trying {model_name} (attempt {attempt + 1})...")
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(tools=[search_tool])
+                )
+                if response.text:
+                    print(f"  ✓ {model_name} succeeded.")
+                    return response.text
+                break  # empty response — no point retrying this model
+            except Exception as e:
+                wait = 15 * (2 ** attempt)  # 15s, 30s, 60s
+                print(f"  ✗ {model_name} attempt {attempt + 1} failed: {e}")
+                if attempt < 2:
+                    print(f"  ⏳ Waiting {wait}s before retry...")
+                    time.sleep(wait)
 
     return None
 
