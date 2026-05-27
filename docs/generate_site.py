@@ -514,8 +514,8 @@ a { color: inherit; text-decoration: none; }
 .card-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: #bbb;      /* inner lines: medium gray */
+    gap: 2px;
+    background: #111;      /* inner lines + empty cells: black */
     border: 2.5px solid #111; /* outer manga panel frame */
     border-top: none;      /* connects flush with cat-filters */
 }
@@ -791,8 +791,6 @@ a { color: inherit; text-decoration: none; }
 /* ── Responsive ── */
 @media (max-width: 900px) {
     .card-grid { grid-template-columns: repeat(2, 1fr); }
-    /* If odd number of tools: last card spans full row instead of leaving empty cell */
-    .tool-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
     .hero-avatar { width: 120px; height: 120px; }
     .cf-icon { width: 40px; height: 40px; }
     .cf-icon svg { width: 40px; height: 40px; }
