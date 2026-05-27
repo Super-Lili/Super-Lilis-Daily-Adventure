@@ -182,16 +182,36 @@ a { color: inherit; text-decoration: none; }
     text-transform: uppercase;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    transition: box-shadow 0.12s, transform 0.12s, background 0.12s, border-color 0.12s;
     text-decoration: none;
+    transform: skewX(-2deg);
 }
 .btn:hover { text-decoration: none; }
-.btn-dark { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.btn-dark:hover { background: #2ABBA8; border-color: #2ABBA8; }
+.btn-dark {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+    box-shadow: 3px 3px 0 0 #555;
+}
+.btn-dark:hover {
+    background: #1a1a1a;
+    box-shadow: 5px 5px 0 0 #555;
+    transform: skewX(-2deg) translate(-1px, -1px);
+}
 .btn-ghost { background: transparent; color: #999; border-color: #d0d0d0; }
 .btn-ghost:hover { color: #1a1a1a; border-color: #1a1a1a; }
-.btn-teal { background: #2ABBA8; color: #fff; border-color: #2ABBA8; }
-.btn-teal:hover { background: #229990; border-color: #229990; }
+.btn-teal {
+    background: #2ABBA8;
+    color: #fff;
+    border-color: #2ABBA8;
+    box-shadow: 3px 3px 0 0 #1a8a7a;
+}
+.btn-teal:hover {
+    background: #229990;
+    border-color: #229990;
+    box-shadow: 5px 5px 0 0 #1a8a7a;
+    transform: skewX(-2deg) translate(-1px, -1px);
+}
 
 /* ── Category filter tabs ── */
 .cat-filters {
