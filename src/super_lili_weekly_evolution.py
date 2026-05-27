@@ -63,6 +63,50 @@ def collect_week_diaries(n: int = 7) -> list[tuple[str, str]]:
     return results
 
 
+def collect_week_tool_code(n: int = 7) -> list[dict]:
+    """Read actual main.py source for this week's tools for engineering review."""
+    toolbox = Path("02_Toolbox")
+    if not toolbox.exists():
+        return []
+    cutoff = datetime.utcnow() - timedelta(days=n)
+    tool_codes = []
+    for cat_dir in sorted(toolbox.iterdir()):
+        if not cat_dir.is_dir():
+            continue
+        for tool_dir in sorted(cat_dir.iterdir(), reverse=True):
+            if not tool_dir.is_dir():
+                continue
+            date_str = tool_dir.name[:10]
+            try:
+                if datetime.strptime(date_str, "%Y-%m-%d") < cutoff:
+                    continue
+            except ValueError:
+                continue
+            main_py = tool_dir / "main.py"
+            if not main_py.exists():
+                continue
+            try:
+                code = main_py.read_text(encoding="utf-8")
+                has_user_input = "USER_INPUT" in code
+                has_empty_check = any(kw in code for kw in ["if not", "strip()", "len(", "ValueError"])
+                has_examples = "example" in code.lower() or "e.g." in code.lower() or "sample" in code.lower()
+                # Rough output structure check
+                has_structure = any(kw in code for kw in ["##", "---", "\\n\\n", "section", "header"])
+                tool_codes.append({
+                    "name": tool_dir.name,
+                    "category": cat_dir.name,
+                    "code_snippet": code[:800],  # first 800 chars
+                    "has_user_input": has_user_input,
+                    "has_empty_check": has_empty_check,
+                    "has_examples": has_examples,
+                    "has_structure": has_structure,
+                    "loc": len(code.splitlines()),
+                })
+            except Exception as e:
+                print(f"  ⚠ Could not read {main_py}: {e}")
+    return tool_codes
+
+
 def collect_week_tools(n: int = 7) -> list[str]:
     toolbox = Path("02_Toolbox")
     if not toolbox.exists():
@@ -95,12 +139,31 @@ def read_current_soul() -> str:
 
 def build_evolution_prompt(today_str: str, week_start: str,
                             diaries: list, tools: list, soul: str,
-                            issues: list | None = None) -> str:
+                            issues: list | None = None,
+                            tool_codes: list | None = None) -> str:
     diary_block = "\n\n".join(
         f"=== {stem} ===\n{content}" for stem, content in diaries
     ) or "(No diaries this week)"
     tools_block = "\n".join(f"  • {t}" for t in tools) or "  (No new tools this week)"
     soul_excerpt = soul[:1500]
+
+    # Engineering quality block
+    if tool_codes:
+        eng_rows = []
+        for tc in tool_codes:
+            flags = []
+            if not tc["has_user_input"]: flags.append("⚠ NO USER_INPUT dual-mode")
+            if not tc["has_empty_check"]: flags.append("⚠ no empty-input guard")
+            if not tc["has_examples"]:   flags.append("⚠ no examples in code")
+            if not tc["has_structure"]:  flags.append("⚠ output likely unstructured")
+            flag_str = " | ".join(flags) if flags else "✓ basic checks pass"
+            eng_rows.append(
+                f"  [{tc['category']}] {tc['name']} ({tc['loc']} lines) — {flag_str}\n"
+                f"    Code preview: {tc['code_snippet'][:300].replace(chr(10), ' ')}"
+            )
+        engineering_block = "\n".join(eng_rows)
+    else:
+        engineering_block = "  (No tool code collected this week)"
 
     if issues:
         issues_block = "\n".join(
@@ -126,6 +189,17 @@ THIS WEEK'S DIARY ENTRIES:
 TOOLS BUILT THIS WEEK:
 ═══════════════════════════════════════════════════════
 {tools_block}
+
+═══════════════════════════════════════════════════════
+ENGINEERING QUALITY REVIEW — THIS WEEK'S TOOL CODE:
+═══════════════════════════════════════════════════════
+{engineering_block}
+
+Each tool was auto-checked for:
+  • USER_INPUT dual-mode (browser Pyodide compatibility)
+  • Empty / short input guards (graceful failure)
+  • Example inputs present in code or docstring
+  • Structured output (sections, headers, not a raw text blob)
 
 ═══════════════════════════════════════════════════════
 USER FEEDBACK — GITHUB ISSUES THIS WEEK:
@@ -219,7 +293,25 @@ EVOLUTION TASKS:
 9. EVOLUTION NOTES (2-3 sentences):
    Key changes made this week. Will appear in next week's brain prompt.
 
-10. LETTER TO NEXT WEEK'S LILI (100-120 words):
+10. ENGINEERING LESSONS FOR NEXT WEEK:
+   Based on the Engineering Quality Review above, write 3-5 CONCRETE code-level rules
+   that next week's Lili must follow when building tools. These are not vague goals —
+   they are specific, enforceable patterns.
+
+   Format each rule as:
+   RULE: [short rule name]
+   WHY: [one sentence — what went wrong this week without this rule]
+   HOW: [one concrete code snippet or pattern, max 3 lines]
+
+   Focus on what actually failed this week. Examples of good rules:
+   - "Always check if input has < 20 words and return a clear error message"
+   - "Output must have at least 3 labeled sections with ## headers"
+   - "Every process() must include a 3-line docstring with one concrete example"
+   - "Use textwrap.dedent() for all multi-line output strings"
+
+   Bad rules: "write better code", "be more careful" — too vague, will be ignored.
+
+11. LETTER TO NEXT WEEK'S LILI (100-120 words):
    Write a warm, honest, specific letter. What should she know?
    What should she try? What should she protect?
    Include the blindspot antidote from task 2E — make it the first thing she reads.
@@ -259,6 +351,8 @@ E. NEXT WEEK'S ANTIDOTE: "Next week, build a tool for [specific person] dealing 
 [Valid Python list, e.g. ["skill 1", "skill 2", ...]]
 ---EVOLUTION_NOTES---
 [2-3 sentence summary of changes]
+---ENGINEERING_LESSONS---
+[3-5 RULE/WHY/HOW blocks as specified above]
 ---LETTER---
 [Letter to next week's Lili, 100-120 words]
 ---DIARY---
@@ -312,7 +406,8 @@ def parse_evolution(content: str) -> dict:
         "oss_tool":            extract("---OSS_TOOL---",            "---EVOLVED_PERSONALITY---"),
         "evolved_personality": extract("---EVOLVED_PERSONALITY---", "---EVOLVED_SKILLS---"),
         "evolved_skills":      extract("---EVOLVED_SKILLS---",      "---EVOLUTION_NOTES---"),
-        "evolution_notes":     extract("---EVOLUTION_NOTES---",     "---LETTER---"),
+        "evolution_notes":     extract("---EVOLUTION_NOTES---",     "---ENGINEERING_LESSONS---"),
+        "engineering_lessons": extract("---ENGINEERING_LESSONS---", "---LETTER---"),
         "letter":              extract("---LETTER---",              "---DIARY---"),
         "diary_entry":         extract("---DIARY---",               "---END---"),
     }
@@ -382,6 +477,24 @@ def save_blindspot(parsed: dict, today_str: str):
         encoding="utf-8"
     )
     print(f"  ✓ lili_blindspot.py updated.")
+
+
+def save_engineering_lessons(parsed: dict, today_str: str):
+    """Write engineering lessons to lili_engineering.py for injection into daily tool prompt."""
+    lessons = parsed.get("engineering_lessons", "").strip()
+    if not lessons:
+        print("  ⚠ No engineering lessons found — skipping lili_engineering.py update.")
+        return
+
+    eng_path = Path(__file__).parent / "lili_engineering.py"
+    eng_path.write_text(
+        f"# lili_engineering.py — Auto-updated every Sunday by Weekly Evolution.\n"
+        f"# Do NOT edit manually. Last updated: {today_str}\n"
+        f"# These rules are injected into every daily tool generation prompt.\n\n"
+        f'LILI_ENGINEERING_LESSONS = """\n{lessons}\n"""\n',
+        encoding="utf-8"
+    )
+    print(f"  ✓ lili_engineering.py updated with {lessons.count('RULE:')} rules.")
 
 
 def save_evolution_log(parsed: dict, today_str: str, week_start: str):
@@ -518,12 +631,15 @@ def weekly_evolution():
     tools = collect_week_tools(7)
     print(f"  ✓ Collected {len(tools)} tool records.")
 
+    tool_codes = collect_week_tool_code(7)
+    print(f"  ✓ Read code for {len(tool_codes)} tools.")
+
     soul = read_current_soul()
 
     print("📬 Fetching GitHub Issues...")
     issues = fetch_github_issues(30)
 
-    prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul, issues)
+    prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul, issues, tool_codes)
 
     print("🧠 Running self-evolution with Gemini...")
     content = call_gemini(prompt)
@@ -537,6 +653,7 @@ def weekly_evolution():
     print("💾 Saving evolution artifacts...")
     update_soul(parsed, today_str)
     save_blindspot(parsed, today_str)
+    save_engineering_lessons(parsed, today_str)
     save_evolution_log(parsed, today_str, week_start)
     save_evolution_diary(parsed, today_str, week_start)
     update_readme_evolution_section(today_str)

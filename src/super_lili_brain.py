@@ -52,6 +52,11 @@ try:
 except ImportError:
     LILI_BLINDSPOT_ANTIDOTE = ""
 
+try:
+    from lili_engineering import LILI_ENGINEERING_LESSONS
+except ImportError:
+    LILI_ENGINEERING_LESSONS = ""
+
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 
@@ -321,6 +326,15 @@ def build_prompt(today: str) -> str:
         f"  {LILI_BLINDSPOT_ANTIDOTE}\n"
         f"  Read this before choosing today's topic. Then choose."
     ) if LILI_BLINDSPOT_ANTIDOTE.strip() else ""
+
+    # Engineering lessons from last Sunday's code quality review
+    engineering_nudge = (
+        f"\n═══════════════════════════════════════════════════════\n"
+        f"ENGINEERING RULES FROM LAST WEEK'S CODE REVIEW\n"
+        f"(These rules came from real failures in your own tools — follow them.)\n"
+        f"═══════════════════════════════════════════════════════\n"
+        f"{LILI_ENGINEERING_LESSONS}\n"
+    ) if LILI_ENGINEERING_LESSONS.strip() else ""
 
     # ② Similarity check: inject all existing tools into prompt
     existing_tools_block = _get_existing_tools()
@@ -645,7 +659,10 @@ CODE QUALITY:
   - At least 3 libraries beyond standard lib
   - Minimum 150 lines of functional code
   - Requirements comment block at top
-
+  - process() MUST handle empty/very-short input with a clear, friendly error message
+  - Output MUST have labeled sections (## headers or --- dividers) — never a raw text blob
+  - Include at least one concrete example input in the module docstring or process() docstring
+{engineering_nudge}
 QUALITY BAR: Would a non-technical person be able to run this and feel like their problem
 is actually solved? If no — go deeper. The sophistication should be invisible to the user
 and obvious in the result.
