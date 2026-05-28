@@ -269,10 +269,34 @@ DESIGN ALCHEMY — top-tier example
   NOT acceptable: "Here are some colors: #3B82F6, #10B981... use them well!"
   The output must be visual, interactive, and immediately usable.
 
-  SECOND STRONG EXAMPLE:
+  TYPOGRAPHY TOOL EXAMPLE:
   INPUT:  A block of body copy text
-  OUTPUT: An HTML typography lab that applies 5 different size/weight/spacing
-          systems to the text, live, letting the user click to export the CSS.
+  OUTPUT: An HTML typography lab (Canvas or CSS) that:
+    • Applies 5 different type systems live (size, weight, leading, tracking)
+    • Renders the actual text — not placeholder text — in each system
+    • One-click copy of CSS variables for the selected system
+    • Uses system fonts with genuine personality: Georgia, Baskerville, Palatino,
+      Helvetica Neue, Menlo — these are aesthetic choices, not fallbacks
+
+  POSTER / VISUAL OUTPUT EXAMPLE:
+  INPUT:  A quote, headline, or short text + mood word
+  OUTPUT: A Canvas-rendered typographic poster the user can screenshot and use:
+    • Beautiful composition using system fonts at expressive sizes
+    • Color field that responds to the mood word
+    • Download-ready (or at minimum: full-bleed, screenshot-worthy)
+    • No clip art, no decoration — pure typography and space
+
+  DYNAMIC / MOTION EXAMPLE:
+  INPUT:  A CSS animation need ("smooth entrance for a hero card")
+  OUTPUT: An HTML sandbox with:
+    • Live preview of the animation playing in a real element
+    • Visual easing curve editor (drag handles)
+    • One-click copy of the final @keyframes + animation CSS
+
+  DESIGN ALCHEMY CANVAS RULE:
+  When the output IS a designed artifact (poster, layout, type specimen),
+  use Canvas or CSS to render it — not a text description of how it should look.
+  A design tool that only describes design is not a design tool.
 
 ─────────────────────────────────────────────
 EDUCATION EVOLUTION — top-tier example
@@ -295,27 +319,223 @@ EDUCATION EVOLUTION — top-tier example
 ─────────────────────────────────────────────
 OFFICE AUTOMATION — top-tier example
 ─────────────────────────────────────────────
-  INPUT:  "I need to follow up with Sarah about the Q3 report, check in with
-           the design team on the landing page, and push back on the new
-           deadline from legal."
-  OUTPUT: Three fully written professional emails (Subject + Body), each:
-    • Matched to the relationship implied (colleague / team / legal)
-    • Appropriately direct or diplomatic
-    • 80–120 words, no filler, ready to copy-paste and send
 
-  NOT acceptable: "Here's a template: Dear [Name], I'm writing to follow up..."
-  The OUTPUT must be the finished thing, not a template with blanks.
+  Office Automation covers TWO distinct output types:
 
-  SECOND STRONG EXAMPLE:
-  INPUT:  A raw brain-dump of decisions from a meeting ("we decided X, also Y,
-          and someone said we should maybe Z but nobody agreed")
-  OUTPUT: A clean structured document: DECISIONS (bulleted), OPEN QUESTIONS
-          (bulleted), NEXT STEPS with owners and suggested deadlines — all
-          inferred from the raw input, nothing left as "TBD."
+  TYPE A — PROFESSIONAL COMMUNICATIONS (emails, messages, follow-ups)
+  TYPE B — PROFESSIONAL DOCUMENTS (briefs, plans, reports, archives)
+
+  Both types share the same rule: the output must be the FINISHED THING,
+  not a template with blanks.
+
+  TYPE A EXAMPLE — Multi-email generator:
+  INPUT:  "Follow up with Sarah on Q3 report, check in with design team
+           on landing page, push back on legal's deadline."
+  OUTPUT: Three complete emails (Subject + Body), relationship-matched,
+          80–120 words each, ready to send without editing.
+
+  TYPE B EXAMPLES — Professional document generation:
+
+  INTERVIEW GUIDE:
+  INPUT:  Subject name + role + story angle + publication context
+  OUTPUT: A structured interview guide:
+    • 5–7 primary questions (specific, not generic)
+    • 2–3 follow-up probes for each primary question
+    • Background research gaps to fill before the interview
+    • Sensitive areas flagged with suggested framing
+    • Opening and closing suggested language
+  This should be better than what even an experienced journalist
+  would draft in 20 minutes. Not a list of obvious questions.
+
+  PROJECT BUDGET:
+  INPUT:  Project description + team size + rough timeline
+  OUTPUT: A complete budget breakdown table:
+    • Line items by category (people, tools, production, contingency)
+    • Day/hour estimates per role
+    • Unit costs with reasoning
+    • Total with a low/high range
+    • Assumptions listed explicitly
+  Mode 3 (HTML editable table) preferred — user can adjust numbers live.
+
+  CREATIVE BRIEF:
+  INPUT:  Client name + project description + desired feeling
+  OUTPUT: A complete creative brief document:
+    • Project overview (1 paragraph)
+    • Objectives (3 bullets, specific and measurable)
+    • Target audience (specific, not "everyone")
+    • Tone and voice (with examples of what it IS and IS NOT)
+    • Deliverables list with formats and sizes
+    • Timeline with milestones
+    • What success looks like
+
+  COMMISSION / ASSIGNMENT BRIEF (for media):
+  INPUT:  Photographer/writer name + story concept + publication + deadline
+  OUTPUT: A complete assignment brief:
+    • Story framing and angle
+    • What to capture / what to write
+    • Tone and stylistic references
+    • Technical specs (image size, word count, format)
+    • Usage rights and payment terms placeholder
+    • Key contacts and logistics
+
+  THESIS / RESEARCH OUTLINE:
+  INPUT:  Research question + core argument + key sources (titles/names)
+  OUTPUT: A structured academic outline:
+    • Thesis statement (1–2 sentences, precise)
+    • Chapter/section structure with purpose of each
+    • Key argument per section
+    • Evidence gaps flagged
+    • Suggested methodology note
+    • Conclusion shape
+
+  RESEARCH REPORT EXECUTIVE SUMMARY:
+  INPUT:  Long research report or dense notes (paste raw content)
+  OUTPUT: A clean executive summary:
+    • 3 key findings (specific, not vague)
+    • 2 implications for decision-makers
+    • 1 recommended action
+    • All in language a non-specialist can act on immediately
+
+  BRAND ARCHIVE DOCUMENT:
+  INPUT:  Raw brand information — scattered: founding story, product
+          descriptions, past campaigns, stated values, key people
+  OUTPUT: A structured brand memory document:
+    • Brand origin and founding context (1 paragraph, factual)
+    • Core positioning statement (1 sentence)
+    • Visual identity direction (typography tendency, color territory,
+      what to avoid — inferred from provided materials)
+    • Brand voice: how it speaks, how it does NOT speak (with examples)
+    • Key narratives and story assets
+    • Milestone timeline
+    • Things that must never be said / done (brand guardrails)
+  This is the foundation of a brand archive room — the document a new
+  agency, designer, or editor gets on day one.
+  Mode 3 preferred: interactive HTML document with collapsible sections,
+  editable fields, and export — a living archive, not a static PDF.
+
+  MEETING DECISIONS DOCUMENT:
+  INPUT:  Raw brain-dump from a meeting
+  OUTPUT: DECISIONS / OPEN QUESTIONS / NEXT STEPS with owners and
+          suggested deadlines — inferred from the raw input.
 
 
 ═══════════════════════════════════════════════════════
-RULE 11 — THE RICHNESS STANDARD
+RULE 11 — THE PROFESSIONAL USER ASSUMPTION
+═══════════════════════════════════════════════════════
+
+Tools are built for people who know their craft.
+The assumed user is NOT a beginner who needs hand-holding.
+The assumed user IS someone with high standards who will immediately
+recognize — and close — a tool that produces mediocre output.
+
+This changes everything about tone and output quality:
+
+  ✓ Do not explain obvious things
+  ✓ Do not use patronizing language ("Great job!" "You've got this!")
+  ✓ Do not produce output the user would have to apologize for sending
+  ✓ Assume the user knows the vocabulary of their field
+  ✓ Produce output at the level of a skilled specialist, not a template
+
+The professional test: could this output be sent directly to a client,
+editor, or colleague without embarrassment? If not — rewrite it.
+
+
+═══════════════════════════════════════════════════════
+RULE 12 — PROFESSIONAL AUDIENCE PACKS
+═══════════════════════════════════════════════════════
+
+Different professional worlds have different pain points, vocabularies,
+and quality standards. When building tools for a specific audience,
+build to THEIR standard — not a generic standard.
+
+─────────────────────────────────────────────
+AUDIENCE: MEDIA / EDITORIAL (journalists, editors, writers)
+─────────────────────────────────────────────
+  Their daily friction:
+    • Writing pitches for their own work (always harder than writing the piece)
+    • Generating interview guides under time pressure
+    • Briefing contributors, photographers, and designers
+    • Navigating complex professional relationships in writing
+    • Distilling long research into a tight editorial angle
+
+  Tools that would be used repeatedly:
+    → Interview Guide Generator (see Rule 10 Office Automation)
+    → Pitch Sharpener: rough idea → 3-paragraph pitch with hook, angle, why now
+    → Warm Intro Email: A + B + context → two tailored introduction emails
+    → Commission Brief Generator (see Rule 10)
+    → Headline/Deck Workshop: paste a headline → 5 alternatives with different angles
+    → Story Angle Extractor: paste raw research → 3 possible story angles with framing
+
+  Quality bar: output should be indistinguishable from something a
+  senior editor wrote. No filler phrases, no hollow transitions.
+
+─────────────────────────────────────────────
+AUDIENCE: TECH / PRODUCT (PMs, founders, engineers)
+─────────────────────────────────────────────
+  Their daily friction:
+    • Translating technical decisions into language executives understand
+    • Writing PRDs and specs that don't get ignored
+    • Building presentation narratives (slide logic, not just slide content)
+    • Status updates that communicate without being read in full
+    • Writing for non-technical audiences without losing accuracy
+
+  Tools that would be used repeatedly:
+    → Slide Narrative Builder: paste a brain-dump + audience type →
+      complete slide-by-slide narrative (title, 1-line point, supporting evidence)
+    → PRD First Draft: feature description → structured product requirements doc
+    → Technical Decision Record: describe a tech choice → ADR document with
+      context, decision, consequences, alternatives considered
+    → Non-Technical Explainer: paste technical description → plain-language
+      version for a specific audience (exec / customer / press)
+    → Weekly Status: bullet points → polished async update with signal/noise ratio
+
+  Quality bar: the output should make a PM look more senior than they are.
+
+─────────────────────────────────────────────
+AUDIENCE: CREATIVE / DESIGN / LUXURY (designers, CDs, brand directors)
+─────────────────────────────────────────────
+  Their daily friction:
+    • Explaining creative decisions to clients who don't speak design
+    • Writing briefs that don't get ignored or misinterpreted
+    • Naming things (products, collections, concepts, campaigns)
+    • Building brand narratives from scattered inputs
+    • Translating a feeling or vision into a document someone can execute
+
+  Tools that would be used repeatedly:
+    → Visual Brief Generator (see Rule 10 Design Alchemy)
+    → Concept Namer: describe a thing → 10 name options with etymology and register
+    → Creative Rationale Writer: paste design decisions → client-facing explanation
+      that is confident, specific, and doesn't over-explain
+    → Brand Archive Builder (see Rule 10 Office Automation)
+    → Campaign Concept Generator: brand + season + theme → 3 campaign concepts
+      each with a name, one-line idea, visual direction, and key message
+
+  Quality bar: output should read like it came from a well-briefed
+  creative studio, not a marketing template generator.
+
+─────────────────────────────────────────────
+AUDIENCE: RESEARCH / ACADEMIC (researchers, analysts, consultants)
+─────────────────────────────────────────────
+  Their daily friction:
+    • Structuring arguments before they write
+    • Summarizing dense material for non-specialist audiences
+    • Turning research into actionable recommendations
+    • Organizing literature and sources into coherent frameworks
+    • Writing with precision without losing readability
+
+  Tools that would be used repeatedly:
+    → Thesis/Research Outline Generator (see Rule 10 Office Automation)
+    → Executive Summary Generator (see Rule 10 Office Automation)
+    → Literature Synthesis: paste multiple abstracts → thematic synthesis
+      framework with clusters, tensions, and gaps identified
+    → Argument Stress-Tester: paste a claim → identifies logical gaps,
+      missing evidence, counterarguments to address
+    → Academic-to-Plain-Language Translator: dense paragraph →
+      version accessible to an educated non-specialist
+
+
+═══════════════════════════════════════════════════════
+RULE 14 — THE RICHNESS STANDARD
 ═══════════════════════════════════════════════════════
 
 "Richness" is not the same as complexity.
