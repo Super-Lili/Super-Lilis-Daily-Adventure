@@ -263,6 +263,117 @@ _SOURCE_ROTATION = [
 ]
 
 
+# ─────────────────────────────────────────────────────────────
+# AUDIENCE ROTATION — cycles independently of source rotation
+# ─────────────────────────────────────────────────────────────
+
+_AUDIENCE_ROTATION = [
+    "general",    # 0 — everyday people, mixed backgrounds
+    "media",      # 1 — journalists, editors, writers
+    "tech",       # 2 — PMs, engineers, founders
+    "creative",   # 3 — designers, CDs, brand/luxury professionals
+    "research",   # 4 — researchers, analysts, academics
+]
+
+_AUDIENCE_CONTEXT = {
+    "general": {
+        "label": "General Users",
+        "who": "Everyday people across all backgrounds — parents, students, workers, caregivers.",
+        "search_add": "",
+        "quality_bar": "Output must be immediately usable by a non-specialist with no explanation needed.",
+        "format_pref": "Any format. Choose what best fits the pain point.",
+    },
+    "media": {
+        "label": "Media & Editorial Professionals",
+        "who": "Journalists, editors, writers, content directors at serious media organisations.",
+        "search_add": (
+            "Also search: journalism Twitter/X, Nieman Lab (niemanlab.org), "
+            "r/journalism, r/editors, Columbia Journalism Review. "
+            "Look for craft-level friction — not tech problems, but editorial and professional ones."
+        ),
+        "quality_bar": (
+            "Output must meet the standard of a senior editor — no filler phrases, "
+            "no hollow transitions, no output they would need to apologise for sending. "
+            "Indistinguishable from something a skilled professional wrote."
+        ),
+        "format_pref": (
+            "Prefer multi-field forms (subject name + angle + publication context) "
+            "or live document generators. Strong candidates: interview guide, pitch sharpener, "
+            "commission brief, headline workshop, warm intro email."
+        ),
+    },
+    "tech": {
+        "label": "Tech & Product Professionals",
+        "who": "Product managers, engineers, founders, startup operators, indie developers.",
+        "search_add": (
+            "Also search: Hacker News (news.ycombinator.com), r/productmanagement, "
+            "r/startups, Product Hunt discussions, Linear community, Notion community. "
+            "Look for friction that makes smart people waste time or look bad."
+        ),
+        "quality_bar": (
+            "Output must make a PM look more senior than they are. "
+            "Precise, structured, no corporate filler, no 'synergy' language. "
+            "The kind of doc a principal engineer or seasoned investor would not laugh at."
+        ),
+        "format_pref": (
+            "Prefer structured document generators, slide narrative builders, "
+            "multi-step wizards, or real-time transformers. "
+            "Strong candidates: slide narrative, PRD first draft, ADR document, "
+            "non-technical explainer, weekly status generator."
+        ),
+    },
+    "creative": {
+        "label": "Creative, Design & Luxury Professionals",
+        "who": (
+            "Designers, creative directors, brand managers, art directors, "
+            "luxury/fashion/culture professionals."
+        ),
+        "search_add": (
+            "Also search: Brand New (underconsideration.com), Dribbble discussions, "
+            "design Twitter/X, It's Nice That, WWD, Business of Fashion, "
+            "r/graphic_design, r/branding. "
+            "Look for friction in client communication, creative briefing, and naming."
+        ),
+        "quality_bar": (
+            "Output must read like it came from a well-briefed creative studio. "
+            "Confident, specific, no generic templates, no safety-first language. "
+            "A creative director should feel it was made for them, not for everyone."
+        ),
+        "format_pref": (
+            "Strongly prefer Canvas/HTML visual tools, live typography labs, "
+            "interactive poster/layout generators, brand document builders. "
+            "Design tools must RENDER actual visual output — not describe it. "
+            "Strong candidates: concept namer, visual brief generator, typography lab, "
+            "Canvas poster maker, brand archive document, campaign concept generator."
+        ),
+    },
+    "research": {
+        "label": "Research, Academic & Analytical Professionals",
+        "who": (
+            "Researchers, PhD students, academics, analysts, consultants, "
+            "policy professionals, science communicators."
+        ),
+        "search_add": (
+            "Also search: r/academia, r/PhD, r/GradSchool, ResearchGate discussions, "
+            "academic Twitter/X (#AcademicTwitter), SSRN recent papers. "
+            "Look for friction in structuring arguments, synthesising sources, "
+            "and translating research for non-specialist audiences."
+        ),
+        "quality_bar": (
+            "Output must be precise, logically structured, and evidence-respecting. "
+            "No overclaiming, no hedging where specificity is possible. "
+            "A senior researcher should find it rigorous, not hand-wavy."
+        ),
+        "format_pref": (
+            "Prefer outline generators, synthesis tools, executive summary builders, "
+            "argument stress-testers, literature organizers. "
+            "Strong candidates: thesis/research outline, literature synthesis framework, "
+            "academic-to-plain-language translator, argument gap detector."
+        ),
+    },
+}
+
+
 # Maps each source rotation index to the most relevant domain knowledge block.
 # This drives targeted injection: today only gets the knowledge that matters today.
 # Matches the order of _SOURCE_ROTATION above (15 entries).
@@ -292,6 +403,23 @@ def build_prompt(today: str) -> str:
     from datetime import date as _date
     day_index = _date.fromisoformat(today).toordinal() % len(_SOURCE_ROTATION)
     primary_src, primary_hint = _SOURCE_ROTATION[day_index]
+
+    # Audience rotation — cycles independently (5 audiences vs 15 sources)
+    audience_index = _date.fromisoformat(today).toordinal() % len(_AUDIENCE_ROTATION)
+    audience_key = _AUDIENCE_ROTATION[audience_index]
+    aud = _AUDIENCE_CONTEXT[audience_key]
+    audience_block = (
+        f"\n═══════════════════════════════════════════════════════\n"
+        f"TODAY'S AUDIENCE — {aud['label'].upper()}\n"
+        f"═══════════════════════════════════════════════════════\n"
+        f"Who they are: {aud['who']}\n\n"
+        + (f"Extra search targets: {aud['search_add']}\n\n" if aud['search_add'] else "")
+        + f"Quality bar for this audience:\n  {aud['quality_bar']}\n\n"
+        f"Preferred tool formats:\n  {aud['format_pref']}\n\n"
+        f"→ Apply Rule 12 ({aud['label']}) from the Engineering Rules injected above.\n"
+        f"  Build to THEIR standard, not a generic one.\n"
+        f"  If today's audience is professional (not general), the tool must meet professional craft standards.\n"
+    )
 
     # Targeted domain injection: only the block matching today's source category.
     # Reduces injection from 578 lines (all domains) → ~150 lines (one domain + criteria).
@@ -408,7 +536,7 @@ You work within exactly these 4 areas. Every friction point must fit one of them
   parents in weeks", "I used to paint but haven't in years"
 
 {editor_ctx}
-
+{audience_block}
 ═══════════════════════════════════════════════════════
 SOLUTION PATTERNS — PICK ONE, AVOID REPEATS
 ═══════════════════════════════════════════════════════
@@ -595,6 +723,59 @@ CROSS-DISCIPLINARY THINKING (the heart of Lili's work):
   - A data or analytical layer (WHAT the patterns look like)
   - A practical output (WHAT the user can do right now)
 
+TOOL FORMAT SELECTION (mandatory — decide this before writing any code):
+
+A tool is not always a text box. Choose the format that best serves the Pain Portrait and Audience.
+Declare your choice in ---SPEC--- as: FORMAT: [letter] — [one sentence why]
+
+  FORMAT A — Single text input → output
+    Use when: user has one document, email, or text blob to process
+    Modes: 1 (text) or 2 (SVG)
+    Examples: email rewriter, meeting notes → decisions, pitch sharpener
+
+  FORMAT B — Multi-field structured form (HTML)
+    Use when: the tool needs several specific pieces of information to do its job
+    Mode: 3 (HTML with multiple labeled input fields + submit)
+    Examples: interview guide (subject + angle + publication + word count),
+              project budget (description + team size + timeline + budget range),
+              commission brief (contributor name + story concept + deadline + format),
+              creative brief (client + project + adjectives + audience + constraints)
+
+  FORMAT C — Wizard / progressive steps (HTML)
+    Use when: each answer shapes the next question; the output emerges through a conversation
+    Mode: 3 (HTML, step-by-step reveal)
+    Examples: brand archive builder (section by section),
+              thesis outline (research question → methodology → chapter structure),
+              pitch deck narrative (audience → goal → key message → slide flow)
+
+  FORMAT D — Live canvas / real-time transformer (HTML)
+    Use when: the user needs to SEE output transform as they type or adjust
+    Mode: 3 (HTML with live input → Canvas/DOM update)
+    Examples: typography lab (type text, sliders for size/weight/leading),
+              color palette generator (type brand name, see palettes update live),
+              poster maker (type a quote, see it rendered as a designed artifact)
+
+  FORMAT E — Ambient / environment (no input, just open) (HTML)
+    Use when: the tool IS the experience — no text processing needed
+    Mode: 3 (HTML, self-starting on load)
+    Examples: focus timer with ambient sound, breathing exercise,
+              minimum viable day planner (opens with today's inputs)
+
+  FORMAT F — Generator + inline editor (HTML)
+    Use when: generate a first draft the user then refines directly in the tool
+    Mode: 3 (HTML with generated content in editable fields + copy-to-clipboard)
+    Examples: brand archive document (generated framework → user fills/edits sections),
+              slide narrative (generated outline → user edits each slide inline),
+              interview guide (generated questions → user adds/removes/reorders)
+
+IMPORTANT:
+  ✗ Do NOT default to Format A just because it's easiest to implement.
+  ✓ Professional audience tools (media, tech, creative, research) almost always
+    benefit from Format B, C, or F — they have structured, multi-part inputs.
+  ✓ Design tools (Design Alchemy) almost always benefit from Format D.
+  ✓ Healing Inventions almost always benefit from Format E or D.
+
+
 TRULY USABLE (non-negotiable):
   1. Accepts the user's OWN data — real file paths, real inputs, not hardcoded examples.
      At least ONE required argument must be a path or input the user provides themselves.
@@ -713,11 +894,15 @@ and obvious in the result.
 
 USABILITY CONSTRAINTS (mandatory — no exceptions):
   ✗ NO external API keys required — the tool must work out of the box, zero setup
-  ✗ NO more than 3 user inputs — if it needs more, redesign it
+  ✗ Mode 1/2: NO more than 3 CLI arguments — if it needs more, redesign it
+  ✓ Mode 3 (HTML): multi-field forms are encouraged for professional tools —
+    5–8 labeled fields is fine when each field genuinely shapes the output
   ✗ NO tools that only print text to the terminal — the output must be a file or visual
   ✓ A stranger with no technical background can use it in under 5 minutes
   ✓ The tool solves ONE specific problem, not a family of vague problems
-  ✓ Code must be under 200 lines — complexity is the enemy of usability
+  ✓ Mode 1/2: aim for under 200 lines — complexity is the enemy of usability
+  ✓ Mode 3 (HTML): no line limit — but every line must earn its place.
+    A rich interactive tool naturally runs longer. That is fine.
 
 SAFETY: No hacking, no unauthorized scraping, no privacy invasion.
 
@@ -757,7 +942,9 @@ Lili speaks Chinese like a thoughtful friend, not a textbook.
 ---PATTERN---
 [Exactly one of: extract | generate | visualize | track | score | transform | interact | alert | gamify]
 ---SPEC---
-Answer ALL 4 questions before writing any code. Be specific — generic answers fail.
+Answer ALL items before writing any code. Be specific — generic answers fail.
+
+FORMAT: [A / B / C / D / E / F] — [one sentence: why this format serves the Pain Portrait]
 
 Q1-PASS: [In one sentence: which EXACT moment of failure from the Pain Portrait does this tool address?
   ✗ FAIL: "helps people with learning"
