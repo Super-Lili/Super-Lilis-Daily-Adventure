@@ -221,7 +221,115 @@ RULE 9 — CHOOSE THE RIGHT MODE FOR EACH CATEGORY
 ═══════════════════════════════════════════════════════
 
   Healing Inventions    → MODE 3 (HTML interactive) — mandatory
-  Design Alchemy        → MODE 2 (SVG) or MODE 3 (HTML) — prefer visual
-  Education Evolution   → MODE 1 (text) or MODE 3 (HTML) — depends on tool
+  Design Alchemy        → MODE 3 (HTML) preferred; MODE 2 (SVG) only if purely static
+  Education Evolution   → MODE 3 (HTML) for anything interactive; MODE 1 only for
+                          pure reference output (cheat sheets, glossaries)
   Office Automation     → MODE 1 (text) — structured output for copy-paste
+
+  Decision rule: if the user needs to click, type, see feedback, or hear sound
+  → always MODE 3. Static SVG is acceptable only when the output IS the image.
+
+
+═══════════════════════════════════════════════════════
+RULE 10 — WHAT "EXCELLENT" LOOKS LIKE PER CATEGORY
+═══════════════════════════════════════════════════════
+
+This rule describes the CEILING for each category — the standard a tool
+should aim for, not just pass. Use these as the mental target when designing.
+
+─────────────────────────────────────────────
+HEALING INVENTIONS — top-tier example
+─────────────────────────────────────────────
+  INPUT:  "I have a meeting at 3pm, dentist at 6pm, and I'm running on 3 hours sleep."
+  OUTPUT: A "Minimum Viable Day" HTML app that:
+    • Shows only the 2 non-negotiable commitments on a gentle timeline
+    • Automatically inserts 2 recovery windows (20 min each) around them
+    • Has a soft ambient soundscape that plays while the page is open
+    • Shows a single affirmation line based on the energy input ("3 hours sleep")
+    • Zero configuration required — just paste the day and it renders
+
+  The "healing" comes from WHAT the tool does (reschedules, protects rest,
+  reduces visual noise) not from the words it uses.
+
+  SECOND STRONG EXAMPLE:
+  INPUT:  A stressful email draft the user wrote ("I'm extremely frustrated by...")
+  OUTPUT: An HTML textarea where each keystroke rewrites the selected sentence
+          in a calmer register, live, with a side-by-side diff.
+
+─────────────────────────────────────────────
+DESIGN ALCHEMY — top-tier example
+─────────────────────────────────────────────
+  INPUT:  A product name + adjectives ("Aurora — calm, premium, futuristic")
+  OUTPUT: An HTML tool that:
+    • Generates 4 complete color palettes (primary, accent, neutral, semantic)
+    • Shows each palette applied to a live mini UI mockup (card + button + badge)
+    • Lets the user click any palette to copy all HEX values as CSS variables
+    • Shows type pairing suggestions using system fonts at multiple weights
+
+  NOT acceptable: "Here are some colors: #3B82F6, #10B981... use them well!"
+  The output must be visual, interactive, and immediately usable.
+
+  SECOND STRONG EXAMPLE:
+  INPUT:  A block of body copy text
+  OUTPUT: An HTML typography lab that applies 5 different size/weight/spacing
+          systems to the text, live, letting the user click to export the CSS.
+
+─────────────────────────────────────────────
+EDUCATION EVOLUTION — top-tier example
+─────────────────────────────────────────────
+  INPUT:  A concept or topic ("explain compound interest to a 12-year-old")
+  OUTPUT: An HTML interactive explainer that:
+    • Opens with a 1-sentence hook, no jargon
+    • Has a live simulation (e.g., slider for interest rate → animated bar chart)
+    • Includes 3 questions with instant feedback (correct/wrong + why)
+    • Ends with a "try it yourself" number input that shows the real calculation
+
+  NOT acceptable: a wall of text explaining the concept, even if well-written.
+  Education tools must produce UNDERSTANDING, not just reading material.
+
+  SECOND STRONG EXAMPLE:
+  INPUT:  Raw meeting notes or study material
+  OUTPUT: A spaced-repetition flashcard app in HTML — front/back cards, keyboard
+          navigation, "got it / didn't get it" scoring, session summary at end.
+
+─────────────────────────────────────────────
+OFFICE AUTOMATION — top-tier example
+─────────────────────────────────────────────
+  INPUT:  "I need to follow up with Sarah about the Q3 report, check in with
+           the design team on the landing page, and push back on the new
+           deadline from legal."
+  OUTPUT: Three fully written professional emails (Subject + Body), each:
+    • Matched to the relationship implied (colleague / team / legal)
+    • Appropriately direct or diplomatic
+    • 80–120 words, no filler, ready to copy-paste and send
+
+  NOT acceptable: "Here's a template: Dear [Name], I'm writing to follow up..."
+  The OUTPUT must be the finished thing, not a template with blanks.
+
+  SECOND STRONG EXAMPLE:
+  INPUT:  A raw brain-dump of decisions from a meeting ("we decided X, also Y,
+          and someone said we should maybe Z but nobody agreed")
+  OUTPUT: A clean structured document: DECISIONS (bulleted), OPEN QUESTIONS
+          (bulleted), NEXT STEPS with owners and suggested deadlines — all
+          inferred from the raw input, nothing left as "TBD."
+
+
+═══════════════════════════════════════════════════════
+RULE 11 — THE RICHNESS STANDARD
+═══════════════════════════════════════════════════════
+
+"Richness" is not the same as complexity.
+A rich tool does ONE thing but does it completely:
+
+  ✓ Handles multiple realistic input shapes without breaking
+  ✓ Gives the user something to DO immediately (click, copy, submit)
+  ✓ The output has DENSITY: every line earns its place
+  ✓ For HTML tools: there is at least one moment of delight (sound,
+    animation, visual feedback) that makes the experience feel crafted
+  ✓ For text tools: the output has clear sections, is skimmable,
+    and could be sent to someone else without editing
+
+  The test: show the output to someone who didn't use the tool.
+  If they can tell what it IS and how to USE it in 10 seconds — it's rich.
+  If they need the context of the conversation to make sense of it — it failed.
 """
