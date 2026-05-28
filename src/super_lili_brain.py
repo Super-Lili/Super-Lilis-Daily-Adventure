@@ -472,7 +472,6 @@ def build_prompt(today: str) -> str:
     recent_patterns = _get_recent_patterns(4)
     pat_counts = {p: recent_patterns.count(p) for p in set(recent_patterns)}
     overused_patterns = [p for p, n in pat_counts.items() if n >= 2]
-    patterns_list = " | ".join(TOOL_PATTERNS)
     avoid_patterns = f"\nAVOID these solution patterns today (used too recently): {', '.join(overused_patterns)}" if overused_patterns else ""
 
     return f"""Today is {today}.
@@ -1318,35 +1317,73 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         output = (result.stdout or "").strip()
         output_lines = [l for l in output.splitlines() if l.strip()]
 
-        if not output or len(output) < 80 or len(output_lines) < 2:
-            return False, (
-                f"Output too weak: {len(output)} chars, {len(output_lines)} lines. "
-                f"Got: {repr(output[:200])}. "
-                f"Must produce structured, substantive output (80+ chars, 2+ lines)."
-            )
-        print(f"  ✓ Output check passed ({len(output)} chars, {len(output_lines)} lines).")
+        # Detect Mode 3 HTML output — scoring the raw HTML is meaningless
+        is_html_output = output.lstrip().startswith(("<!DOCTYPE", "<html", "<!doctype"))
 
-        # 7. Two-dimension quality score:
-        #    ENGINEERING — structured, substantive, actionable output
-        #    WARMTH      — specific to a real person, not generic, not robotic
-        quality_prompt = (
-            f"Rate this tool output on TWO dimensions (each 1–5).\n\n"
-            f"DIMENSION 1 — ENGINEERING\n"
-            f"  5 = clearly structured, specific sections, immediately actionable\n"
-            f"  3 = readable but could be more organised or concrete\n"
-            f"  1 = vague, too short, or generic filler\n\n"
-            f"DIMENSION 2 — HUMAN WARMTH\n"
-            f"  5 = feels made for this exact person's situation, warm, not robotic\n"
-            f"  3 = useful but could apply to almost anyone\n"
-            f"  1 = template-like, no emotional intelligence, ignores the human behind the input\n\n"
-            f"Tool purpose: {description or 'a productivity tool'}\n"
-            f"Test input:\n{demo_input[:300]}\n\n"
-            f"Tool output:\n{output[:700]}\n\n"
-            f"Reply with EXACTLY this format:\n"
-            f"ENGINEERING: X\n"
-            f"WARMTH: X\n"
-            f"REASON: one sentence."
-        )
+        if is_html_output:
+            # Mode 3: HTML app. Existence check only — structure score inferred from code.
+            if len(output) < 500:
+                return False, (
+                    f"HTML output too short: {len(output)} chars. "
+                    f"Mode 3 tools must return a complete HTML page (500+ chars)."
+                )
+            print(f"  ✓ Output check passed — Mode 3 HTML ({len(output)} chars).")
+        else:
+            # Mode 1/2: text or SVG output — must be substantive
+            if not output or len(output) < 80 or len(output_lines) < 2:
+                return False, (
+                    f"Output too weak: {len(output)} chars, {len(output_lines)} lines. "
+                    f"Got: {repr(output[:200])}. "
+                    f"Must produce structured, substantive output (80+ chars, 2+ lines)."
+                )
+            print(f"  ✓ Output check passed ({len(output)} chars, {len(output_lines)} lines).")
+
+        # 7. Two-dimension quality score.
+        #    Mode 3 HTML tools: score the code structure (not the raw HTML output).
+        #    Mode 1/2 text tools: score the actual output text.
+        if is_html_output:
+            # Score the source code quality instead of the raw HTML blob
+            source_for_scoring = open(main_py, encoding="utf-8").read()
+            output_for_scoring = (
+                f"[Mode 3 HTML tool — source code scored, not raw HTML output]\n\n"
+                f"Source preview (first 700 chars):\n{source_for_scoring[:700]}"
+            )
+            quality_prompt = (
+                f"Rate this interactive HTML tool on TWO dimensions (each 1–5).\n\n"
+                f"DIMENSION 1 — ENGINEERING\n"
+                f"  5 = well-structured HTML/JS, clear interactive purpose, proper error handling\n"
+                f"  3 = functional but basic, could be richer or more polished\n"
+                f"  1 = minimal skeleton, no real interactivity, or just prints static text\n\n"
+                f"DIMENSION 2 — HUMAN WARMTH\n"
+                f"  5 = the interactive experience feels made for a specific human need, warm UX\n"
+                f"  3 = functional but generic, could apply to anyone\n"
+                f"  1 = sterile, robotic, ignores the emotional context\n\n"
+                f"Tool purpose: {description or 'an interactive HTML tool'}\n\n"
+                f"{output_for_scoring}\n\n"
+                f"Reply with EXACTLY this format:\n"
+                f"ENGINEERING: X\n"
+                f"WARMTH: X\n"
+                f"REASON: one sentence."
+            )
+        else:
+            quality_prompt = (
+                f"Rate this tool output on TWO dimensions (each 1–5).\n\n"
+                f"DIMENSION 1 — ENGINEERING\n"
+                f"  5 = clearly structured, specific sections, immediately actionable\n"
+                f"  3 = readable but could be more organised or concrete\n"
+                f"  1 = vague, too short, or generic filler\n\n"
+                f"DIMENSION 2 — HUMAN WARMTH\n"
+                f"  5 = feels made for this exact person's situation, warm, not robotic\n"
+                f"  3 = useful but could apply to almost anyone\n"
+                f"  1 = template-like, no emotional intelligence, ignores the human behind the input\n\n"
+                f"Tool purpose: {description or 'a productivity tool'}\n"
+                f"Test input:\n{demo_input[:300]}\n\n"
+                f"Tool output:\n{output[:700]}\n\n"
+                f"Reply with EXACTLY this format:\n"
+                f"ENGINEERING: X\n"
+                f"WARMTH: X\n"
+                f"REASON: one sentence."
+            )
         quality_resp = call_gemini_simple(quality_prompt)
         if quality_resp:
             eng_m   = re.search(r"ENGINEERING:\s*([1-5])", quality_resp)
@@ -1366,7 +1403,6 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                 passed=(combined >= 3.0),
                 format_type=format_type,
                 audience=audience,
-                issue_number=issue_number,
             )
             if combined < 3.0:
                 return False, (
