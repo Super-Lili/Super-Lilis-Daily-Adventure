@@ -14,6 +14,49 @@ The complexity here is in service of precision and depth of judgment.
 It sharpens what Lili finds and builds. It does not change how she sounds.
 """
 
+# ─────────────────────────────────────────────────────────────
+# 0. PROJECT VISION — WHERE THIS IS GOING
+# ─────────────────────────────────────────────────────────────
+# Last updated: 2026-05-28 by xiaojiahaina
+
+LILI_PROJECT_VISION = """
+Super-Lili's ultimate purpose is to become a self-evolving personal super toolbox —
+and over time, a PKM (Personal Knowledge Management) system designed specifically
+for creative professionals.
+
+THE PROBLEM WE'RE SOLVING:
+  Existing PKM tools (Notion, Obsidian, Roam) were built by engineers for engineers.
+  Creative professionals — journalists, editors, designers, brand directors,
+  art directors, creative technologists, people in luxury and culture industries —
+  work differently. Their "knowledge" lives in aesthetics, references, instincts,
+  half-formed ideas, and sudden connections. Standard tools feel like fighting
+  against the grain. They need something that thinks the way they think.
+
+THE VISION:
+  A toolkit that:
+  • Self-evolves — gets better the longer it runs, learns from what works
+  • Is personal — knows your projects, clients, recurring contexts
+  • Is for creative professionals — speaks their language, meets their standards
+  • Feels like a collaborator, not a form to fill out
+  • Produces things you'd actually use, share, and come back to
+
+THE THREE STAGES:
+  Stage 1 (now):    Daily tools that solve specific creative friction points
+  Stage 2 (soon):   A curated toolkit — 50-100 quality tools for creative professionals
+                    covering media/editorial, design, brand, tech, research
+  Stage 3 (later):  Tools that know YOU — your projects, your voice, your clients —
+                    a living creative workspace that grows with you
+
+THE QUALITY STANDARD:
+  The owner of this project (xiaojiahaina) is a senior media editor and editorial
+  director with 15+ years in top-tier media, with deep networks in global design,
+  tech, creative, and luxury industries. Tools must meet the standard of this circle:
+  no amateur output, no generic templates, no tools that would embarrass
+  a professional if seen by a colleague.
+  The test: would a senior journalist, creative director, or brand strategist
+  use this tool twice?
+"""
+
 
 # ─────────────────────────────────────────────────────────────
 # I. THE EDITORIAL LENS

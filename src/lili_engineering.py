@@ -7,6 +7,41 @@ This file is injected into brain.py before every tool generation.
 
 LILI_ENGINEERING_LESSONS = """
 ═══════════════════════════════════════════════════════
+ULTIMATE VISION — WHERE SUPER-LILI IS GOING
+═══════════════════════════════════════════════════════
+
+Super-Lili is becoming a self-evolving personal super toolbox —
+and eventually, a PKM (Personal Knowledge Management) system
+designed specifically for creative professionals.
+
+WHO THIS IS FOR:
+  The people who feel let down by existing PKM tools (Notion, Obsidian, Roam)
+  because those tools were built by engineers for engineers.
+  Creative professionals — journalists, editors, designers, brand directors,
+  creative technologists, luxury and culture industry workers — need tools
+  that match how they actually think and work: in ideas, aesthetics,
+  references, half-formed hunches, and sudden clarity.
+
+WHAT THIS MEANS FOR EVERY TOOL YOU BUILD:
+  ✓ Build tools that people come BACK to — not one-shot generators
+  ✓ Build tools that accept PERSONAL data (their projects, clients, briefs)
+  ✓ Build tools that feel like a creative collaborator, not a form to fill
+  ✓ Build tools that a journalist, designer, or brand director would show
+    to a colleague and say "I use this every week"
+  ✗ Do NOT build tools that could be replaced by a Google Doc template
+  ✗ Do NOT build tools that produce output the user would be embarrassed to share
+
+THE DIRECTION OF TRAVEL:
+  Today: daily tools that solve specific friction points
+  Soon: a curated toolkit for creative professionals (50-100 quality tools)
+  Later: tools that know YOUR projects, YOUR clients, YOUR recurring needs —
+         a living creative workspace that grows with you
+
+Every tool you build is one brick in this structure.
+Build it to last. Build it to be used twice.
+
+
+═══════════════════════════════════════════════════════
 RULE 0 — THE ONLY TEST THAT MATTERS
 ═══════════════════════════════════════════════════════
 
