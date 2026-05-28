@@ -975,7 +975,13 @@ TEST_INPUT: [Write 3-6 sentences of REALISTIC sample input a real user of this t
 # GEMINI CALL
 # ─────────────────────────────────────────────────────────────
 
-def call_gemini(prompt: str) -> str | None:
+def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
+    """Call Gemini with Google Search grounding.
+
+    Returns (response_text, grounding_urls) where grounding_urls is the list
+    of URLs Gemini actually retrieved during search — these are the verified
+    sources, not model-reported ones.
+    """
     search_tool = types.Tool(google_search=types.GoogleSearch())
     models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
 
@@ -991,7 +997,25 @@ def call_gemini(prompt: str) -> str | None:
                 )
                 if response.text:
                     print(f"  ✓ {model_name} succeeded.")
-                    return response.text
+                    # Extract grounding URLs from metadata — these are real, verified sources
+                    grounding_urls: list[str] = []
+                    try:
+                        if response.candidates:
+                            meta = response.candidates[0].grounding_metadata
+                            if meta and meta.grounding_chunks:
+                                for chunk in meta.grounding_chunks:
+                                    if chunk.web and chunk.web.uri:
+                                        url = chunk.web.uri
+                                        # Skip Gemini redirect wrappers — use bare URLs only
+                                        if not url.startswith("https://vertexaisearch.cloud.google.com"):
+                                            grounding_urls.append(url)
+                        if grounding_urls:
+                            print(f"  ✓ Grounding: {len(grounding_urls)} real source URL(s) retrieved")
+                        else:
+                            print(f"  ⚠ Grounding: no source URLs in metadata (model may have used training knowledge)")
+                    except Exception as meta_err:
+                        print(f"  ⚠ Could not extract grounding metadata: {meta_err}")
+                    return response.text, grounding_urls
                 break  # empty response — no point retrying this model
             except Exception as e:
                 wait = 15 * (2 ** attempt)  # 15s, 30s, 60s
@@ -1000,7 +1024,7 @@ def call_gemini(prompt: str) -> str | None:
                     print(f"  ⏳ Waiting {wait}s before retry...")
                     time.sleep(wait)
 
-    return None
+    return None, []
 
 
 def call_gemini_simple(prompt: str) -> str | None:
@@ -1560,7 +1584,7 @@ def evolve():
     prompt = build_prompt(today)
 
     print("🔍 Scouting the world...")
-    content = call_gemini(prompt)
+    content, grounding_urls = call_gemini(prompt)
 
     if not content:
         print("❌ All models failed. Lili rests today.")
@@ -1575,21 +1599,68 @@ def evolve():
         save_rest_day(today, reason="Incomplete response from model — missing title, diary, or code.")
         return
 
-    # Validate source URL
-    print(f"🔗 Validating source: {parsed['source'][:80]}...")
-    is_valid, status = validate_url(parsed["source"])
+    # ── Source verification ─────────────────────────────────────────────────
+    # Strategy: prefer grounding_urls (URLs Gemini actually retrieved) over the
+    # model-reported source string (which can be fabricated or misremembered).
+    #
+    # Priority order:
+    #   1. First grounding URL that passes validate_url  → ✅ verified real source
+    #   2. Model-reported source that passes validate_url → ✅ live but ungrounded
+    #   3. Fallback: grounding URL even if unverifiable   → ⚠️ real but possibly behind paywall
+    #   4. Last resort: model-reported source as search hint → ⚠️ may be fabricated
+    # ───────────────────────────────────────────────────────────────────────
 
-    if is_valid:
-        source_badge = "✅"
-        parsed["_source_display"] = f"[{parsed['source']}]({parsed['source']})"
-        print(f"  ✓ Source is live ({status})")
+    source_badge = "⚠️"
+    verified_source_url: str | None = None
+
+    # Step 1 — try grounding URLs first (these are what Gemini actually fetched)
+    if grounding_urls:
+        print(f"🔗 Checking {len(grounding_urls)} grounding URL(s) from search metadata...")
+        for gurl in grounding_urls[:3]:  # check up to 3, stop at first live one
+            ok, status = validate_url(gurl)
+            if ok:
+                verified_source_url = gurl
+                source_badge = "✅"
+                print(f"  ✓ Grounding source verified: {gurl[:80]} ({status})")
+                break
+            else:
+                print(f"  · {gurl[:70]} — {status}")
+        if not verified_source_url:
+            # Grounding URLs exist but none passed (paywalled, etc.) — use first one anyway
+            verified_source_url = grounding_urls[0]
+            source_badge = "⚠️"
+            print(f"  ⚠ Grounding URLs unverifiable (paywall?), using first: {grounding_urls[0][:80]}")
+
+    # Step 2 — fall back to model-reported source if no grounding hit
+    if not verified_source_url:
+        model_source = parsed["source"]
+        print(f"🔗 No grounding URLs — checking model-reported source: {model_source[:80]}...")
+        ok, status = validate_url(model_source)
+        if ok:
+            verified_source_url = model_source
+            source_badge = "✅"
+            print(f"  ✓ Model source verified: {model_source[:80]} ({status})")
+        else:
+            source_badge = "⚠️"
+            print(f"  ⚠ Model source also failed ({status}) — source may be fabricated")
+
+    # Build _source_display for diary/README rendering
+    if verified_source_url and source_badge == "✅":
+        parsed["_source_display"] = f"[{verified_source_url}]({verified_source_url})"
+        parsed["source"] = verified_source_url  # overwrite with verified URL
+    elif verified_source_url:
+        # Unverifiable but real — show as code + search link
+        search_q = requests.utils.quote(verified_source_url.split("//")[-1][:80])
+        parsed["_source_display"] = (
+            f"`{verified_source_url}`  \n"
+            f"  *(could not be verified — "
+            f"[🔍 search for this story](https://www.google.com/search?q={search_q}))*"
+        )
+        parsed["source"] = verified_source_url
     else:
-        source_badge = "⚠️"
-        print(f"  ⚠ Source check failed ({status}) — will not render as clickable link")
+        # Total fallback — model-reported string, no URL
         raw = parsed["source"]
-        # If it looks like a URL, convert to search fallback rather than broken link
         if raw.startswith("http"):
-            # Extract domain + path hint for a Google search
             search_q = requests.utils.quote(raw.split("//")[-1][:80])
             parsed["_source_display"] = (
                 f"`{raw}`  \n"
@@ -1597,7 +1668,6 @@ def evolve():
                 f"[🔍 search for this story](https://www.google.com/search?q={search_q}))*"
             )
         else:
-            # Already descriptive text — display as-is, no broken link
             parsed["_source_display"] = raw
 
     # Extract domain-specific test input and format from spec
