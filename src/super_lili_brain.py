@@ -55,8 +55,9 @@ except ImportError:
     LILI_BLINDSPOT_ANTIDOTE = ""
 
 try:
-    from lili_engineering import LILI_ENGINEERING_LESSONS
+    from lili_engineering import LILI_ENGINEERING_BASE, LILI_ENGINEERING_LESSONS
 except ImportError:
+    LILI_ENGINEERING_BASE = ""
     LILI_ENGINEERING_LESSONS = ""
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
@@ -457,14 +458,24 @@ def build_prompt(today: str) -> str:
         f"  Read this before choosing today's topic. Then choose."
     ) if LILI_BLINDSPOT_ANTIDOTE.strip() else ""
 
-    # Engineering lessons from last Sunday's code quality review
+    # Engineering rules — base (permanent) + weekly lessons (evolved every Sunday)
+    # LILI_ENGINEERING_BASE is always injected; LILI_ENGINEERING_LESSONS appended if present.
     engineering_nudge = (
         f"\n═══════════════════════════════════════════════════════\n"
-        f"ENGINEERING RULES FROM LAST WEEK'S CODE REVIEW\n"
-        f"(These rules came from real failures in your own tools — follow them.)\n"
+        f"ENGINEERING RULES — PERMANENT STANDARDS\n"
+        f"(Written by the project owner. These never change.)\n"
         f"═══════════════════════════════════════════════════════\n"
-        f"{LILI_ENGINEERING_LESSONS}\n"
-    ) if LILI_ENGINEERING_LESSONS.strip() else ""
+        f"{LILI_ENGINEERING_BASE}\n"
+    ) if LILI_ENGINEERING_BASE.strip() else ""
+
+    if LILI_ENGINEERING_LESSONS.strip():
+        engineering_nudge += (
+            f"\n═══════════════════════════════════════════════════════\n"
+            f"ENGINEERING RULES — THIS WEEK'S ADDITIONS\n"
+            f"(From last Sunday's self-review of real tool failures. Follow these too.)\n"
+            f"═══════════════════════════════════════════════════════\n"
+            f"{LILI_ENGINEERING_LESSONS}\n"
+        )
 
     # ② Similarity check: inject all existing tools into prompt
     existing_tools_block = _get_existing_tools()

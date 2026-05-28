@@ -550,21 +550,42 @@ def save_blindspot(parsed: dict, today_str: str):
 
 
 def save_engineering_lessons(parsed: dict, today_str: str):
-    """Write engineering lessons to lili_engineering.py for injection into daily tool prompt."""
+    """Update ONLY the LILI_ENGINEERING_LESSONS variable in lili_engineering.py.
+
+    LILI_ENGINEERING_BASE (permanent rules written by project owner) is never touched.
+    Only the LILI_ENGINEERING_LESSONS section at the bottom of the file is replaced.
+    """
     lessons = parsed.get("engineering_lessons", "").strip()
     if not lessons:
         print("  ⚠ No engineering lessons found — skipping lili_engineering.py update.")
         return
 
     eng_path = Path(__file__).parent / "lili_engineering.py"
-    eng_path.write_text(
-        f"# lili_engineering.py — Auto-updated every Sunday by Weekly Evolution.\n"
-        f"# Do NOT edit manually. Last updated: {today_str}\n"
-        f"# These rules are injected into every daily tool generation prompt.\n\n"
-        f'LILI_ENGINEERING_LESSONS = """\n{lessons}\n"""\n',
-        encoding="utf-8"
+    if not eng_path.exists():
+        print("  ⚠ lili_engineering.py not found — skipping.")
+        return
+
+    current = eng_path.read_text(encoding="utf-8")
+
+    # Find the weekly-evolution section marker and replace everything from it onward.
+    # This preserves LILI_ENGINEERING_BASE and all permanent rules above.
+    marker = "# ─────────────────────────────────────────────────────────────\n# WEEKLY EVOLUTION RULES"
+    if marker not in current:
+        print("  ⚠ Weekly evolution marker not found in lili_engineering.py — skipping to avoid data loss.")
+        return
+
+    base_section = current[:current.index(marker)]
+    new_tail = (
+        f"# ─────────────────────────────────────────────────────────────\n"
+        f"# WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review\n"
+        f"# Do NOT edit manually. Overwritten each Sunday.\n"
+        f"# Last updated: {today_str}\n"
+        f"# ─────────────────────────────────────────────────────────────\n\n"
+        f'LILI_ENGINEERING_LESSONS = """\n{lessons}\n"""\n'
     )
-    print(f"  ✓ lili_engineering.py updated with {lessons.count('RULE:')} rules.")
+
+    eng_path.write_text(base_section + new_tail, encoding="utf-8")
+    print(f"  ✓ lili_engineering.py updated with {lessons.count('RULE:')} new rules (base rules preserved).")
 
 
 def save_evolution_log(parsed: dict, today_str: str, week_start: str):
