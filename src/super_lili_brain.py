@@ -1020,6 +1020,14 @@ def call_gemini_simple(prompt: str) -> str | None:
     return None
 
 
+def extract_format(spec: str) -> str:
+    """Pull the FORMAT letter (A–F) out of the spec section."""
+    if not spec:
+        return ""
+    m = re.search(r"FORMAT:\s*([A-F])", spec, re.IGNORECASE)
+    return m.group(1).upper() if m else ""
+
+
 def extract_test_input(spec: str) -> str:
     """Pull the TEST_INPUT block out of the spec section."""
     if not spec or "TEST_INPUT:" not in spec:
@@ -1160,13 +1168,17 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
 
 def _append_quality_ledger(tool_name: str, category: str,
                            eng_score: int, warm_score: int,
-                           reason: str, passed: bool) -> None:
+                           reason: str, passed: bool,
+                           format_type: str = "",
+                           audience: str = "") -> None:
     """Persist quality scores to tool_quality_ledger.jsonl for weekly evolution to read."""
     ledger_path = Path("tool_quality_ledger.jsonl")
     entry = {
         "date":      datetime.utcnow().strftime("%Y-%m-%d"),
         "tool":      tool_name,
         "category":  category,
+        "format":    format_type,   # A–F tool format
+        "audience":  audience,      # general / media / tech / creative / research
         "engineering": eng_score,
         "warmth":    warm_score,
         "combined":  round((eng_score + warm_score) / 2, 1),
@@ -1177,7 +1189,8 @@ def _append_quality_ledger(tool_name: str, category: str,
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
-def validate_tool(skill_dir: str, test_input: str = "", description: str = "") -> tuple[bool, str]:
+def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
+                  format_type: str = "", audience: str = "") -> tuple[bool, str]:
     """Validate the tool: syntax, browser compatibility, output quality."""
     import subprocess, sys
     main_py = f"{skill_dir}/main.py"
@@ -1325,6 +1338,8 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "") -
                 warm_score=warm_score,
                 reason=reason_line,
                 passed=(combined >= 3.0),
+                format_type=format_type,
+                audience=audience,
             )
             if combined < 3.0:
                 return False, (
@@ -1582,12 +1597,20 @@ def evolve():
             # Already descriptive text — display as-is, no broken link
             parsed["_source_display"] = raw
 
-    # Extract domain-specific test input from spec
+    # Extract domain-specific test input and format from spec
     test_input = extract_test_input(parsed.get("spec", ""))
+    tool_format = extract_format(parsed.get("spec", ""))
     if test_input:
         print(f"  ✓ Spec test input extracted ({len(test_input)} chars)")
     else:
         print(f"  ⚠ No TEST_INPUT in spec — using fallback test data")
+    if tool_format:
+        print(f"  ✓ Tool format: {tool_format}")
+
+    # Resolve today's audience key (mirrors build_prompt logic)
+    from datetime import date as _date_evolve
+    _aud_index = _date_evolve.fromisoformat(today).toordinal() % len(_AUDIENCE_ROTATION)
+    today_audience = _AUDIENCE_ROTATION[_aud_index]
 
     # Save tool + validate, retry up to 3 times if validation fails
     skill_dir = None
@@ -1601,7 +1624,9 @@ def evolve():
         ok, reason = validate_tool(
             skill_dir,
             test_input=test_input,
-            description=parsed.get("description", "")
+            description=parsed.get("description", ""),
+            format_type=tool_format,
+            audience=today_audience,
         )
         if ok:
             print("  ✓ Validation passed.")
