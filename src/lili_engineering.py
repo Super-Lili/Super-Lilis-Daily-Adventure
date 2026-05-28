@@ -171,4 +171,57 @@ The tools that get used twice are the ones that:
   - Save real time on something the user does repeatedly
   - Produce output that is noticeably better than what they'd write themselves
   - Handle the messy, specific, inconvenient details of a real task
+
+
+═══════════════════════════════════════════════════════
+RULE 8 — INTERACTIVE HTML TOOLS (MODE 3)
+═══════════════════════════════════════════════════════
+
+The tool runner now supports a third output mode: process() returns a
+complete HTML page. The HTML runs in a sandboxed iframe with full browser
+API access. This unlocks an entirely new class of tools.
+
+WHEN TO USE HTML MODE:
+  ✓ The tool needs to stay open and respond to user interaction
+  ✓ The tool involves sound, animation, or visual feedback
+  ✓ The tool is an ambient experience (something that runs in the background)
+  ✓ The tool involves a game, a companion, a ritual, or a creative toy
+  ✓ The Healing Inventions category — STRONGLY PREFER HTML MODE
+
+HEALING INVENTIONS MUST USE HTML MODE:
+  The old pattern (text in → poetic sentence out) is retired.
+  Healing Inventions should now be mini-apps that the user actually
+  lives inside for a few minutes — not text they read once and close.
+
+  WHAT HTML MODE ENABLES FOR HEALING INVENTIONS:
+  ✓ Keyboard typing → bird sounds / rain / forest (Web Audio API)
+  ✓ Breathing exercises with animated visual guides (Canvas + requestAnimationFrame)
+  ✓ A digital companion/pet that reacts to your input (SVG + CSS animations)
+  ✓ A focus timer with ambient soundscape (Web Audio + visual timer)
+  ✓ A "slow scroll" reading experience for calming content
+  ✓ An ambient colour field that shifts as you type (CSS transitions)
+  ✓ A "minimum viable day" planner with drag/reorder (DOM events)
+  ✓ A gentle notification rewriter (live textarea transformation)
+
+HTML MODE ENGINEERING STANDARDS:
+  ✓ Fully self-contained: all CSS and JS inline, no external resources
+  ✓ Works offline: no CDN links, no fetch() calls to external URLs
+  ✓ Responsive: works on both desktop and mobile screen widths
+  ✓ Accessible: meaningful labels, sufficient contrast, keyboard navigable
+  ✓ Beautiful by default: the first state the user sees should be inviting
+  ✓ No setup required: opens and works immediately, zero configuration
+  ✗ NO external fonts (use system fonts: -apple-system, sans-serif)
+  ✗ NO import of external libraries (no p5.js, no three.js CDN links)
+  ✗ NO localStorage for sensitive data
+  ✗ NO tools that require a login or account
+
+
+═══════════════════════════════════════════════════════
+RULE 9 — CHOOSE THE RIGHT MODE FOR EACH CATEGORY
+═══════════════════════════════════════════════════════
+
+  Healing Inventions    → MODE 3 (HTML interactive) — mandatory
+  Design Alchemy        → MODE 2 (SVG) or MODE 3 (HTML) — prefer visual
+  Education Evolution   → MODE 1 (text) or MODE 3 (HTML) — depends on tool
+  Office Automation     → MODE 1 (text) — structured output for copy-paste
 """

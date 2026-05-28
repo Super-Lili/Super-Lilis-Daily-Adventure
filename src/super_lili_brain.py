@@ -617,31 +617,76 @@ TRULY USABLE (non-negotiable):
 BROWSER COMPATIBILITY (mandatory — all new tools must support this):
   Every tool MUST support both local CLI use AND browser execution via Pyodide.
 
-  PYODIDE-SAFE LIBRARIES ONLY — the browser runner cannot install arbitrary packages.
-  ✓ ALLOWED (built into Pyodide): numpy, pandas, matplotlib, scipy, Pillow, regex, dateutil
-  ✓ ALWAYS ALLOWED: Python standard library (json, csv, re, datetime, pathlib, textwrap, etc.)
-  ✗ FORBIDDEN in browser tools: svgwrite, rich, click, requests, openpyxl, ics, pytz,
-    and ANY library not listed above. If you need SVG — generate it with plain strings.
-    If you need charts — use matplotlib (available in Pyodide).
-    When in doubt, use only the standard library.
-  Use this exact dual-mode pattern at the bottom of every tool:
+  ══════════════════════════════════════════════════════
+  TOOL OUTPUT MODES — choose the right one for this tool
+  ══════════════════════════════════════════════════════
 
+  MODE 1 — PLAIN TEXT  (text-processing tools)
+    process(text) returns a plain string.
+    Best for: summarizers, rewriters, extractors, converters.
+
+  MODE 2 — SVG IMAGE
+    process(text) returns a string starting with <svg.
+    Best for: charts, diagrams, visual outputs.
+
+  MODE 3 — INTERACTIVE HTML APP  ← USE THIS for Healing Inventions & interactive tools
+    process(text) returns a complete HTML page string starting with <!DOCTYPE html>.
+    The returned HTML runs inside a sandboxed iframe in the browser.
+    It can use ANY browser API: Web Audio, Canvas, CSS animations, keyboard events,
+    localStorage, requestAnimationFrame — full JavaScript freedom.
+    Best for: ambient tools, mini-games, interactive experiences, virtual companions,
+    sound tools, animated visualizations, anything that stays open and responds to user.
+
+    HTML tool pattern:
+    ```python
+    def process(text: str) -> str:
+        theme = text.strip() or "forest"
+        html = f\"\"\"<!DOCTYPE html>
+    <html lang="en"><head><meta charset="UTF-8">
+    <style>
+      /* all CSS inline */
+    </style></head>
+    <body>
+      <!-- interactive content here -->
+      <script>
+        // all JavaScript inline — Web Audio, Canvas, events, etc.
+        const theme = {repr(theme)};
+        // ... full interactive app ...
+      </script>
+    </body></html>\"\"\"
+        return html
+
+    _browser_input = globals().get('USER_INPUT', None)
+    if _browser_input is not None:
+        print(process(_browser_input))
+    elif __name__ == "__main__":
+        import sys
+        print(process(sys.argv[1] if len(sys.argv) > 1 else ""))
+    ```
+    For HTML tools: empty input is fine — just return the default app.
+    No argparse needed. No "Output" label needed — the app IS the output.
+
+  ══════════════════════════════════════════════════════
+
+  For MODE 1 & 2 only — Pyodide library rules:
+  ✓ ALLOWED: numpy, pandas, matplotlib, scipy, Pillow, regex, dateutil, standard library
+  ✗ FORBIDDEN: svgwrite, rich, click, requests, openpyxl, ics, pytz
+  For MODE 3: no Pyodide restrictions — all JS runs natively in the iframe.
+
+  For MODE 1 & 2 — dual-mode pattern:
   ```python
   def process(text: str) -> str:
       \"\"\"Core logic — takes plain text input, returns plain text result.\"\"\"
-      # ... all the real work happens here ...
       return result_string
 
   def _cli_main():
       import argparse
-      p = argparse.ArgumentParser(description="Tool description")
-      p.add_argument("--input", required=True, help="Paste text or provide file path")
-      # ... other args ...
+      p = argparse.ArgumentParser()
+      p.add_argument("--input", required=True)
       args = p.parse_args()
       text = open(args.input).read() if os.path.exists(args.input) else args.input
       print(process(text))
 
-  # Dual-mode: browser (Pyodide sets USER_INPUT) OR local CLI
   _browser_input = globals().get('USER_INPUT', None)
   if _browser_input is not None:
       print(process(_browser_input))
@@ -650,20 +695,17 @@ BROWSER COMPATIBILITY (mandatory — all new tools must support this):
   ```
 
   Rules:
-  ✓ The `process()` function MUST accept plain text (string) and return a string result
   ✓ `globals().get('USER_INPUT', None)` is the ONLY way to detect browser mode
   ✓ argparse goes inside `_cli_main()`, NOT at module level
-  ✗ NEVER use `if __name__ == "__main__": import argparse` at module level — breaks browser
-  ✗ NEVER use sys.argv directly — always use argparse inside _cli_main()
+  ✗ NEVER use sys.argv directly at module level — breaks browser
 
 CODE QUALITY:
   - Minimum 4 well-named functions with type hints, each doing ONE thing
-  - At least 3 libraries beyond standard lib
-  - Minimum 150 lines of functional code
   - Requirements comment block at top
-  - process() MUST handle empty/very-short input with a clear, friendly error message
-  - Output MUST have labeled sections (## headers or --- dividers) — never a raw text blob
-  - Include at least one concrete example input in the module docstring or process() docstring
+  - process() MUST handle empty/very-short input gracefully
+  - MODE 1/2: Output MUST have labeled sections — never a raw text blob
+  - MODE 3: HTML must be self-contained, beautiful, and immediately usable
+  - Include at least one concrete example in the docstring
 {engineering_nudge}
 QUALITY BAR: Would a non-technical person be able to run this and feel like their problem
 is actually solved? If no — go deeper. The sophistication should be invisible to the user

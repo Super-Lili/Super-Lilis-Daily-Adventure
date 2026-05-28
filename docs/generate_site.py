@@ -1193,8 +1193,24 @@ async function runTool() {{
     pyodide.runPython(TOOL_CODE);
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
-    if (output.startsWith('<svg') || output.startsWith('<?xml')) {{
-      // SVG output — render as real image
+    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {{
+      // ── Interactive HTML app — launch inside a sandboxed iframe ──
+      outEl.textContent = '';
+      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
+      const iframe = document.createElement('iframe');
+      iframe.sandbox = 'allow-scripts allow-same-origin';
+      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
+      iframe.srcdoc = output;
+      outEl.appendChild(iframe);
+      // Auto-resize iframe to its content height
+      iframe.addEventListener('load', () => {{
+        try {{
+          const h = iframe.contentDocument.body.scrollHeight;
+          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
+        }} catch(e) {{}}
+      }});
+    }} else if (output.startsWith('<svg') || output.startsWith('<?xml')) {{
+      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -1209,6 +1225,7 @@ async function runTool() {{
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     }} else {{
+      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
     }}
   }} catch(e) {{
