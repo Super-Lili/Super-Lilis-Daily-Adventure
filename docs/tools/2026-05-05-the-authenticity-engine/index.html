@@ -630,6 +630,22 @@ a { color: inherit; text-decoration: none; }
     .hero-bar { flex-wrap: wrap; }
 }
 
+/* ── Emoji Reactions ────────────────────────────── */
+.reactions-section { border-top: 1px solid #f0f0f0; padding-top: 28px; }
+.reactions-label { font-size: 0.78rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: #aaa; margin-bottom: 16px; }
+.reaction-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.reaction-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: #f9f9f9; border: 1.5px solid #ebebeb; border-radius: 12px;
+  padding: 10px 16px; cursor: pointer; transition: all .15s ease;
+  font-family: inherit; min-width: 72px;
+}
+.reaction-btn:hover { background: #f0f0f0; border-color: #ddd; transform: translateY(-1px); }
+.reaction-btn.selected { background: #fff8f0; border-color: #f59e0b; }
+.reaction-emoji { font-size: 1.4rem; line-height: 1; }
+.reaction-label { font-size: 0.7rem; color: #888; font-weight: 500; white-space: nowrap; }
+
 
   </style>
 </head>
@@ -721,8 +737,24 @@ async function runTool() {
     pyodide.runPython(TOOL_CODE);
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
-    if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      // SVG output — render as real image
+    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
+      // ── Interactive HTML app — launch inside a sandboxed iframe ──
+      outEl.textContent = '';
+      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
+      const iframe = document.createElement('iframe');
+      iframe.sandbox = 'allow-scripts allow-same-origin';
+      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
+      iframe.srcdoc = output;
+      outEl.appendChild(iframe);
+      // Auto-resize iframe to its content height
+      iframe.addEventListener('load', () => {
+        try {
+          const h = iframe.contentDocument.body.scrollHeight;
+          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
+        } catch(e) {}
+      });
+    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -737,6 +769,7 @@ async function runTool() {
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     } else {
+      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
     }
   } catch(e) {
@@ -751,6 +784,32 @@ loadPyodide_();
 </script>
       </div>
     </section>
+
+    
+<section class="detail-section reactions-section">
+  <div class="reactions-label">Was this useful?</div>
+  <div class="reaction-bar" id="reaction-bar-2026-05-05-the-authenticity-engine">
+    <button class="reaction-btn" data-key="fire" title="Used it!"><span class="reaction-emoji">🔥</span><span class="reaction-label">Used it!</span></button><button class="reaction-btn" data-key="useful" title="Useful"><span class="reaction-emoji">👍</span><span class="reaction-label">Useful</span></button><button class="reaction-btn" data-key="rocket" title="Inspiring"><span class="reaction-emoji">🚀</span><span class="reaction-label">Inspiring</span></button><button class="reaction-btn" data-key="heart" title="Love it"><span class="reaction-emoji">❤️</span><span class="reaction-label">Love it</span></button><button class="reaction-btn" data-key="confused" title="Not quite"><span class="reaction-emoji">😕</span><span class="reaction-label">Not quite</span></button>
+  </div>
+</section>
+<script>
+(function() {
+  var bar = document.getElementById('reaction-bar-2026-05-05-the-authenticity-engine');
+  if (!bar) return;
+  var storageKey = 'lili-rx-2026-05-05-the-authenticity-engine';
+  var selected = {};
+  try { selected = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch(e) {}
+  bar.querySelectorAll('.reaction-btn').forEach(function(btn) {
+    if (selected[btn.dataset.key]) btn.classList.add('selected');
+    btn.addEventListener('click', function() {
+      var k = btn.dataset.key;
+      selected[k] = !selected[k];
+      btn.classList.toggle('selected', !!selected[k]);
+      try { localStorage.setItem(storageKey, JSON.stringify(selected)); } catch(e) {}
+    });
+  });
+})();
+</script>
 
   </div>
 </div>

@@ -630,6 +630,22 @@ a { color: inherit; text-decoration: none; }
     .hero-bar { flex-wrap: wrap; }
 }
 
+/* ── Emoji Reactions ────────────────────────────── */
+.reactions-section { border-top: 1px solid #f0f0f0; padding-top: 28px; }
+.reactions-label { font-size: 0.78rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: #aaa; margin-bottom: 16px; }
+.reaction-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.reaction-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: #f9f9f9; border: 1.5px solid #ebebeb; border-radius: 12px;
+  padding: 10px 16px; cursor: pointer; transition: all .15s ease;
+  font-family: inherit; min-width: 72px;
+}
+.reaction-btn:hover { background: #f0f0f0; border-color: #ddd; transform: translateY(-1px); }
+.reaction-btn.selected { background: #fff8f0; border-color: #f59e0b; }
+.reaction-emoji { font-size: 1.4rem; line-height: 1; }
+.reaction-label { font-size: 0.7rem; color: #888; font-weight: 500; white-space: nowrap; }
+
 
   </style>
 </head>
