@@ -1166,75 +1166,12 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
     return skill_dir
 
 
-TOOL_ISSUES_PATH = Path("docs/tool_issues.json")
-
-
-def create_tool_issue(tool_dir: str, tool_name: str, description: str,
-                      category: str, date: str) -> int | None:
-    """Create a GitHub Issue for the tool (for emoji reactions). Returns issue number or None."""
-    import urllib.request as _urllib
-    token = os.environ.get("GITHUB_TOKEN")
-    if not token:
-        print("  ⚠ No GITHUB_TOKEN — skipping issue creation.")
-        return None
-    repo = "Super-Lili/Super-Lilis-Daily-Adventure"
-    site_url = f"https://super-lili.github.io/Super-Lilis-Daily-Adventure/tools/{tool_dir.replace(' ', '-').lower()}/"
-    body = (
-        f"**{description}**\n\n"
-        f"[→ Try the tool]({site_url})\n\n"
-        f"---\n"
-        f"*React to this issue to rate the tool:*\n\n"
-        f"| 🎉 Used it! | 👍 Useful | 🚀 Inspiring | ❤️ Love it | 😕 Not quite |\n"
-        f"|---|---|---|---|---|\n\n"
-        f"*Forged by Super-Lili on {date}*"
-    )
-    data = json.dumps({
-        "title": f"🛠️ {tool_name}",
-        "body": body,
-        "labels": [],
-    }).encode()
-    req = _urllib.Request(
-        f"https://api.github.com/repos/{repo}/issues",
-        data=data,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/vnd.github+json",
-            "Content-Type": "application/json",
-            "User-Agent": "Super-Lili-Bot",
-        }
-    )
-    try:
-        with _urllib.urlopen(req, timeout=10) as resp:
-            result = json.loads(resp.read())
-            number = result.get("number")
-            print(f"  ✓ GitHub Issue #{number} created for '{tool_name}'.")
-            return number
-    except Exception as e:
-        print(f"  ⚠ Could not create GitHub Issue: {e}")
-        return None
-
-
-def save_tool_issue_mapping(tool_slug: str, issue_number: int) -> None:
-    """Persist tool_slug → issue_number mapping to docs/tool_issues.json."""
-    TOOL_ISSUES_PATH.parent.mkdir(exist_ok=True)
-    mapping: dict = {}
-    if TOOL_ISSUES_PATH.exists():
-        try:
-            mapping = json.loads(TOOL_ISSUES_PATH.read_text(encoding="utf-8"))
-        except Exception:
-            pass
-    mapping[tool_slug] = issue_number
-    TOOL_ISSUES_PATH.write_text(
-        json.dumps(mapping, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
-
-
 def _append_quality_ledger(tool_name: str, category: str,
                            eng_score: int, warm_score: int,
                            reason: str, passed: bool,
                            format_type: str = "",
                            audience: str = "",
-                           issue_number: int | None = None) -> None:
+) -> None:
     """Persist quality scores to tool_quality_ledger.jsonl for weekly evolution to read."""
     ledger_path = Path("tool_quality_ledger.jsonl")
     entry = {
@@ -1243,7 +1180,6 @@ def _append_quality_ledger(tool_name: str, category: str,
         "category":  category,
         "format":    format_type,
         "audience":  audience,
-        "issue":     issue_number,
         "engineering": eng_score,
         "warmth":    warm_score,
         "combined":  round((eng_score + warm_score) / 2, 1),
@@ -1256,7 +1192,7 @@ def _append_quality_ledger(tool_name: str, category: str,
 
 def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                   format_type: str = "", audience: str = "",
-                  issue_number: int | None = None) -> tuple[bool, str]:
+) -> tuple[bool, str]:
     """Validate the tool: syntax, browser compatibility, output quality."""
     import subprocess, sys
     main_py = f"{skill_dir}/main.py"
@@ -1681,25 +1617,11 @@ def evolve():
 
     # Save tool + validate, retry up to 3 times if validation fails
     skill_dir = None
-    tool_issue_number: int | None = None
     for attempt in range(1, 4):
         print(f"💾 Saving tool (attempt {attempt}/3)...")
         skill_dir = save_tool(today, parsed, source_badge)
         parsed["_skill_dir"] = skill_dir
         print(f"  ✓ Tool saved: {skill_dir}/main.py")
-
-        # Create GitHub Issue on first save attempt (for reactions)
-        if attempt == 1:
-            tool_slug = skill_dir.split("/")[-1] if skill_dir else ""
-            tool_issue_number = create_tool_issue(
-                tool_dir=tool_slug,
-                tool_name=parsed.get("solution", parsed.get("title", "Tool")),
-                description=parsed.get("description", ""),
-                category=parsed.get("category", ""),
-                date=today,
-            )
-            if tool_issue_number:
-                save_tool_issue_mapping(tool_slug, tool_issue_number)
 
         print("🔬 Validating tool...")
         ok, reason = validate_tool(
@@ -1708,7 +1630,6 @@ def evolve():
             description=parsed.get("description", ""),
             format_type=tool_format,
             audience=today_audience,
-            issue_number=tool_issue_number,
         )
         if ok:
             print("  ✓ Validation passed.")

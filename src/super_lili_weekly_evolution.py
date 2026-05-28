@@ -157,40 +157,6 @@ def read_current_soul() -> str:
     return soul_path.read_text(encoding="utf-8") if soul_path.exists() else "(No soul config found)"
 
 
-def fetch_tool_reactions() -> dict[str, dict]:
-    """
-    Read tool_issues.json and fetch GitHub emoji reactions for each tool.
-    Returns { tool_slug: { "hooray": N, "+1": N, "rocket": N, "heart": N, "confused": N } }
-    Skips gracefully on network failure or missing file.
-    """
-    import urllib.request as _urllib
-    issues_path = Path("docs/tool_issues.json")
-    if not issues_path.exists():
-        return {}
-    try:
-        mapping: dict[str, int] = json.loads(issues_path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-
-    results: dict[str, dict] = {}
-    repo = "Super-Lili/Super-Lilis-Daily-Adventure"
-    for slug, issue_number in mapping.items():
-        url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/reactions?per_page=100"
-        try:
-            req = _urllib.Request(url, headers={
-                "Accept": "application/vnd.github+json",
-                "User-Agent": "Super-Lili-Evolution-Bot",
-            })
-            with _urllib.urlopen(req, timeout=8) as resp:
-                data = json.loads(resp.read())
-            counts: dict[str, int] = {}
-            for r in data:
-                c = r.get("content", "")
-                counts[c] = counts.get(c, 0) + 1
-            results[slug] = counts
-        except Exception:
-            pass
-    return results
 
 
 # ─────────────────────────────────────────────────────────────
@@ -201,8 +167,7 @@ def build_evolution_prompt(today_str: str, week_start: str,
                             diaries: list, tools: list, soul: str,
                             issues: list | None = None,
                             tool_codes: list | None = None,
-                            quality_ledger: list | None = None,
-                            tool_reactions: dict | None = None) -> str:
+                            quality_ledger: list | None = None) -> str:
     diary_block = "\n\n".join(
         f"=== {stem} ===\n{content}" for stem, content in diaries
     ) or "(No diaries this week)"
@@ -258,20 +223,6 @@ def build_evolution_prompt(today_str: str, week_start: str,
     else:
         issues_block = "  (No issues submitted this week.)"
 
-    # Emoji reactions block — real external signal from users
-    if tool_reactions:
-        EMOJI_MAP = {"hooray": "🎉 Used it!", "+1": "👍 Useful", "rocket": "🚀 Inspiring",
-                     "heart": "❤️ Love it", "confused": "😕 Not quite"}
-        reaction_rows = []
-        for slug, counts in tool_reactions.items():
-            if not counts:
-                continue
-            parts = [f"{EMOJI_MAP.get(k, k)}: {v}" for k, v in sorted(counts.items(), key=lambda x: -x[1])]
-            reaction_rows.append(f"  {slug[:40]}: {' | '.join(parts)}")
-        reactions_block = "\n".join(reaction_rows) if reaction_rows else "  (No emoji reactions yet — tools may not have been visited.)"
-    else:
-        reactions_block = "  (No emoji reaction data available.)"
-
     return f"""You are Super-Lili conducting your weekly self-evolution session.
 Today: {today_str} | Reviewing: {week_start} → {today_str}
 
@@ -307,17 +258,6 @@ TOOL QUALITY SCORES — LAST 14 DAYS (Two-Dimension Evaluation):
 Engineering score (1-5): structured, substantive, actionable code
 Warmth score (1-5): specific to real person's situation, warm, not robotic
 Tools with combined average < 3.0 were regenerated. Use these scores to identify patterns.
-
-═══════════════════════════════════════════════════════
-REAL USER SIGNAL — EMOJI REACTIONS ON TOOL PAGES:
-═══════════════════════════════════════════════════════
-{reactions_block}
-
-This is EXTERNAL signal — real people clicking real buttons on real tools.
-🎉 "Used it!" and 👍 "Useful" are the strongest positive signals.
-😕 "Not quite" is the most valuable negative signal — it tells you direction was wrong.
-Weight this data more heavily than the self-scored quality ledger above.
-Tools with 0 reactions were either not visited or genuinely not useful.
 
 ═══════════════════════════════════════════════════════
 USER FEEDBACK — GITHUB ISSUES THIS WEEK:
@@ -772,11 +712,7 @@ def weekly_evolution():
     print("📬 Fetching GitHub Issues...")
     issues = fetch_github_issues(30)
 
-    print("💬 Fetching emoji reactions from tool pages...")
-    tool_reactions = fetch_tool_reactions()
-    print(f"  ✓ Reactions fetched for {len(tool_reactions)} tools.")
-
-    prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul, issues, tool_codes, quality_ledger, tool_reactions)
+    prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul, issues, tool_codes, quality_ledger)
 
     print("🧠 Running self-evolution with Gemini...")
     content = call_gemini(prompt)
