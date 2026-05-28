@@ -846,11 +846,6 @@ a { color: inherit; text-decoration: none; }
 .reaction-btn.selected { background: #fff8f0; border-color: #f59e0b; }
 .reaction-emoji { font-size: 1.4rem; line-height: 1; }
 .reaction-label { font-size: 0.7rem; color: #888; font-weight: 500; white-space: nowrap; }
-.reaction-count { font-size: 0.75rem; font-weight: 700; color: #555; min-width: 16px; text-align: center; }
-.reaction-btn.selected .reaction-count { color: #f59e0b; }
-.reaction-cta { font-size: 0.8rem; color: #aaa; margin-top: 6px; }
-.reaction-cta a { color: #888; text-decoration: underline; text-underline-offset: 2px; }
-.reaction-cta a:hover { color: #555; }
 """
 
 
