@@ -28,6 +28,17 @@ EVOL_LOG  = REPO_ROOT / "03_Evolution_Log"
 
 REPO_URL  = "https://github.com/Super-Lili/Super-Lilis-Daily-Adventure"
 SITE_URL  = "https://super-lili.github.io/Super-Lilis-Daily-Adventure/"
+GH_REPO   = "Super-Lili/Super-Lilis-Daily-Adventure"
+
+# Tool → GitHub Issue mapping (for emoji reactions)
+_TOOL_ISSUES: dict[str, int] = {}
+_tool_issues_path = DOCS_DIR / "tool_issues.json"
+if _tool_issues_path.exists():
+    try:
+        import json as _json
+        _TOOL_ISSUES = _json.loads(_tool_issues_path.read_text(encoding="utf-8"))
+    except Exception:
+        pass
 
 CATEGORY_LABELS = {
     "Education Evolution": "Education",
@@ -830,6 +841,27 @@ a { color: inherit; text-decoration: none; }
     .hero-title { font-size: 1.8rem; }
     .hero-bar { flex-wrap: wrap; }
 }
+
+/* ── Emoji Reactions ────────────────────────────── */
+.reactions-section { border-top: 1px solid #f0f0f0; padding-top: 28px; }
+.reactions-label { font-size: 0.78rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: #aaa; margin-bottom: 16px; }
+.reaction-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.reaction-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: #f9f9f9; border: 1.5px solid #ebebeb; border-radius: 12px;
+  padding: 10px 16px; cursor: pointer; transition: all .15s ease;
+  font-family: inherit; min-width: 72px;
+}
+.reaction-btn:hover { background: #f0f0f0; border-color: #ddd; transform: translateY(-1px); }
+.reaction-btn.selected { background: #fff8f0; border-color: #f59e0b; }
+.reaction-emoji { font-size: 1.4rem; line-height: 1; }
+.reaction-label { font-size: 0.7rem; color: #888; font-weight: 500; white-space: nowrap; }
+.reaction-count { font-size: 0.75rem; font-weight: 700; color: #555; min-width: 16px; text-align: center; }
+.reaction-btn.selected .reaction-count { color: #f59e0b; }
+.reaction-cta { font-size: 0.8rem; color: #aaa; margin-top: 6px; }
+.reaction-cta a { color: #888; text-decoration: underline; text-underline-offset: 2px; }
+.reaction-cta a:hover { color: #555; }
 """
 
 
@@ -1240,9 +1272,92 @@ loadPyodide_();
 </script>"""
 
 
+def build_reaction_section(tool_slug: str) -> str:
+    """Discord-style emoji reaction bar. Counts fetched from GitHub Issues API."""
+    issue_number = _TOOL_ISSUES.get(tool_slug)
+    issue_url = f"https://github.com/{GH_REPO}/issues/{issue_number}" if issue_number else f"https://github.com/{GH_REPO}/issues"
+    data_issue = str(issue_number) if issue_number else ""
+
+    reactions = [
+        ("🎉", "hooray",   "Used it!"),
+        ("👍", "+1",       "Useful"),
+        ("🚀", "rocket",   "Inspiring"),
+        ("❤️", "heart",    "Love it"),
+        ("😕", "confused", "Not quite"),
+    ]
+    buttons = "".join(
+        f'<button class="reaction-btn" data-gh="{gh}" title="{label}">'
+        f'<span class="reaction-emoji">{emoji}</span>'
+        f'<span class="reaction-label">{label}</span>'
+        f'<span class="reaction-count" data-type="{gh}">·</span>'
+        f'</button>'
+        for emoji, gh, label in reactions
+    )
+
+    return f"""
+<section class="detail-section reactions-section">
+  <div class="reactions-label">Was this useful?</div>
+  <div class="reaction-bar" data-issue="{data_issue}" data-repo="{GH_REPO}">
+    {buttons}
+  </div>
+  <p class="reaction-cta">
+    Clicking opens <a href="{h(issue_url)}" target="_blank" rel="noopener">the GitHub issue</a>
+    where your reaction is saved &amp; counted.
+  </p>
+</section>
+<script>
+(function() {{
+  var bar = document.querySelector('.reaction-bar');
+  if (!bar) return;
+  var issue = bar.dataset.issue;
+  var repo  = bar.dataset.repo;
+
+  // Load counts from GitHub public API
+  if (issue) {{
+    fetch('https://api.github.com/repos/' + repo + '/issues/' + issue + '/reactions', {{
+      headers: {{ 'Accept': 'application/vnd.github+json' }}
+    }})
+    .then(function(r) {{ return r.json(); }})
+    .then(function(data) {{
+      if (!Array.isArray(data)) return;
+      var counts = {{}};
+      data.forEach(function(r) {{ counts[r.content] = (counts[r.content] || 0) + 1; }});
+      document.querySelectorAll('.reaction-count').forEach(function(el) {{
+        el.textContent = counts[el.dataset.type] || '0';
+      }});
+    }})
+    .catch(function() {{}});
+  }} else {{
+    document.querySelectorAll('.reaction-count').forEach(function(el) {{
+      el.textContent = '0';
+    }});
+  }}
+
+  // localStorage: remember which emoji this browser selected
+  var storageKey = 'lili-reaction-' + (issue || '{h(tool_slug)}');
+  var selected = {{}};
+  try {{ selected = JSON.parse(localStorage.getItem(storageKey) || '{{}}'); }} catch(e) {{}}
+  document.querySelectorAll('.reaction-btn').forEach(function(btn) {{
+    if (selected[btn.dataset.gh]) btn.classList.add('selected');
+    btn.addEventListener('click', function() {{
+      selected[btn.dataset.gh] = !selected[btn.dataset.gh];
+      btn.classList.toggle('selected', !!selected[btn.dataset.gh]);
+      try {{ localStorage.setItem(storageKey, JSON.stringify(selected)); }} catch(e) {{}}
+      // Open GitHub issue to officially record the reaction
+      var url = issue
+        ? 'https://github.com/' + repo + '/issues/' + issue
+        : 'https://github.com/{GH_REPO}/issues';
+      window.open(url, '_blank');
+    }});
+  }});
+}})();
+</script>"""
+
+
 def build_tool_page(t: dict) -> str:
     description = read_readme_description(t["readme_path"]) or t["description"] or "A tool forged by Super-Lili."
     cat_label   = CATEGORY_LABELS.get(t["category"], t["category"])
+    reaction_html = build_reaction_section(t.get("slug", ""))
 
     req_items = "".join(f"<li>{h(r)}</li>" for r in t["requirements"]) if t["requirements"] else "<li style='color:#aaa;font-style:italic;list-style:none;'>None — runs entirely in browser</li>"
 
@@ -1302,6 +1417,8 @@ def build_tool_page(t: dict) -> str:
         {pyodide_section}
       </div>
     </section>
+
+    {reaction_html}
 
   </div>
 </div>
