@@ -841,7 +841,7 @@ BROWSER COMPATIBILITY (mandatory — all new tools must support this):
       <!-- interactive content here -->
       <script>
         // all JavaScript inline — Web Audio, Canvas, events, etc.
-        const theme = {repr(theme)};
+        const theme = {{repr(theme)}};
         // ... full interactive app ...
       </script>
     </body></html>\"\"\"
