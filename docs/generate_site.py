@@ -1157,7 +1157,9 @@ def build_pyodide_section(t: dict) -> str:
     full_code = preamble + "\n" + tool_code
 
     # JSON-encode the code so backticks, ${...}, and any special chars are safe in JS
-    code_json = _json.dumps(full_code)
+    # Also escape </script> → <\/script> to prevent HTML parser from closing the
+    # enclosing <script> block prematurely (Mode 3 tools embed JS/HTML with </script> tags)
+    code_json = _json.dumps(full_code).replace("</script>", "<\\/script>")
 
     # Placeholder hint derived from category
     cat = t.get("category", "")
