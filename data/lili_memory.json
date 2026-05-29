@@ -1,0 +1,373 @@
+{
+  "tools": [
+    {
+      "date": "2026-05-03",
+      "name": "Feed Transparency Alchemist",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-03_Feed_Transparency_Alchemist",
+      "description": ""
+    },
+    {
+      "date": "2026-05-04",
+      "name": "Chrono-Search Weaver",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-04_Chrono-Search_Weaver",
+      "description": ""
+    },
+    {
+      "date": "2026-05-05",
+      "name": "The Authenticity Engine",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-05_The_Authenticity_Engine",
+      "description": ""
+    },
+    {
+      "date": "2026-05-07",
+      "name": "Pixel Pilot",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-07_Pixel_Pilot",
+      "description": ""
+    },
+    {
+      "date": "2026-05-13",
+      "name": "Content Current Catalyst",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-13_Content_Current_Catalyst",
+      "description": "This tool generates a weekly content strategy and specific post ideas for small businesses, helping them align their social media with their goals and audience, and exports the plan to Markdown and CSV files."
+    },
+    {
+      "date": "2026-05-19",
+      "name": "Commentary Clarity Catalyst",
+      "category": "Design Alchemy",
+      "path": "02_Toolbox/Design Alchemy/2026-05-19_Commentary_Clarity_Catalyst",
+      "description": "This tool analyzes YouTube comment sections on productivity videos to identify the gap between curated content and the real-life struggles users face, aiming to bridge that gap with more relatable and actionable advice."
+    },
+    {
+      "date": "2026-05-08",
+      "name": "RealityRatio Revealer",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-08_RealityRatio_Revealer",
+      "description": ""
+    },
+    {
+      "date": "2026-05-08",
+      "name": "Status Sentinel",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-08_Status_Sentinel",
+      "description": ""
+    },
+    {
+      "date": "2026-05-11",
+      "name": "Recall Navigator",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-11_Recall_Navigator",
+      "description": "This tool helps you manage knowledge points, apply spaced repetition for better retention, and generate daily review lists."
+    },
+    {
+      "date": "2026-05-12",
+      "name": "Momentum Catalyst",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-12_Momentum_Catalyst",
+      "description": "This tool helps users overcome procrastination by guiding them to define tiny, actionable \"ignition tasks\" for large projects, providing timed focus sprints, and logging progress to build momentum."
+    },
+    {
+      "date": "2026-05-14",
+      "name": "Insight Loom",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-14_Insight_Loom",
+      "description": "This tool guides users to identify key concepts and define relationships between them from their notes or text, then saves the structured knowledge and a visual concept map."
+    },
+    {
+      "date": "2026-05-15",
+      "name": "Paper Parrot",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-15_Paper_Parrot",
+      "description": "This tool extracts key arguments, methodologies, and findings from academic PDF papers and transforms them into structured questions and answer prompts, fostering active recall and deeper understanding for better knowledge retention."
+    },
+    {
+      "date": "2026-05-23",
+      "name": "Synthesis Spark",
+      "category": "Education Evolution",
+      "path": "02_Toolbox/Education Evolution/2026-05-23_Synthesis_Spark",
+      "description": "This tool helps you synthesize disparate learning notes or articles into structured knowledge by identifying key concepts and relationships, then generates recall questions to reinforce understanding."
+    },
+    {
+      "date": "2026-04-30",
+      "name": "Ad-Stream Awareness Tracker",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-04-30_Ad-Stream_Awareness_Tracker",
+      "description": ""
+    },
+    {
+      "date": "2026-05-01",
+      "name": "Human-First Escalation Kit",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-01_Human-First_Escalation_Kit",
+      "description": ""
+    },
+    {
+      "date": "2026-05-06",
+      "name": "The Focus Alchemist",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-06_The_Focus_Alchemist",
+      "description": ""
+    },
+    {
+      "date": "2026-05-07",
+      "name": "Digital Fortress Blueprint",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-07_Digital_Fortress_Blueprint",
+      "description": ""
+    },
+    {
+      "date": "2026-05-25",
+      "name": "Ambient Prompt Weaver",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-25_Ambient_Prompt_Weaver",
+      "description": "This tool takes a CSV file of tasks and their associated time blocks, then generates minimalist HTML \"cue cards\" for each block, displaying a single, gentle task reminder meant to be a quiet ambient prompt."
+    },
+    {
+      "date": "2026-05-26",
+      "name": "Balance Bloom",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-26_Balance_Bloom",
+      "description": "This tool generates a dynamic SVG image that subtly changes its color gradient throughout the day, providing a gentle visual anchor for financial well-being instead of obsessive account checking."
+    },
+    {
+      "date": "2026-05-28",
+      "name": "Echo Bloom",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-28_Echo_Bloom",
+      "description": "Echo Bloom takes a plain text description of your current energy or mood and generates a poetic ambient descriptor, a subtle color palette, and an abstract SVG pattern to softly reflect your internal state in your digital space."
+    },
+    {
+      "date": "2026-05-29",
+      "name": "Urban Respite Weave",
+      "category": "Healing Inventions",
+      "path": "02_Toolbox/Healing Inventions/2026-05-29_Urban_Respite_Weave",
+      "description": "This tool generates an interactive HTML app that provides a minimalist visual and ambient soundscape to help users find a moment of calm amidst urban sensory overload."
+    },
+    {
+      "date": "2026-04-29",
+      "name": "The Clarity Crucible",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-04-29_The_Clarity_Crucible",
+      "description": ""
+    },
+    {
+      "date": "2026-05-03",
+      "name": "Keyword Compass",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-03_Keyword_Compass",
+      "description": ""
+    },
+    {
+      "date": "2026-05-04",
+      "name": "Clarity Compass",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-04_Clarity_Compass",
+      "description": ""
+    },
+    {
+      "date": "2026-05-04",
+      "name": "Safety Sentinel Log",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-04_Safety_Sentinel_Log",
+      "description": ""
+    },
+    {
+      "date": "2026-05-10",
+      "name": "Report Streamliner",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-10_Report_Streamliner",
+      "description": "This tool streamlines the process of combining multiple CSV or Excel files, aggregating data based on a common key, and generating a consolidated report."
+    },
+    {
+      "date": "2026-05-16",
+      "name": "Decision Digestor",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-16_Decision_Digestor",
+      "description": "This tool extracts potential action items, decisions, owners, and due dates from unstructured text (like chat logs or meeting notes) and compiles them into a structured CSV report, helping you cut through communication noise."
+    },
+    {
+      "date": "2026-05-21",
+      "name": "Flow Anchor",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-21_Flow_Anchor",
+      "description": "This tool helps you proactively create and communicate your deep work focus blocks by generating ICS calendar files and customizable status messages from a simple CSV input."
+    },
+    {
+      "date": "2026-05-27",
+      "name": "Brief Aligner Blueprint",
+      "category": "Office Automation",
+      "path": "02_Toolbox/Office Automation/2026-05-27_Brief_Aligner_Blueprint",
+      "description": "This tool processes raw client communication text (emails, chat logs, notes) to extract and organize key decisions, action items, and scope details into a concise, scannable \"Client Alignment Brief\" text file, and generates a visual summary chart."
+    },
+    {
+      "date": "2026-05-29",
+      "name": "Urban Respite Weave",
+      "category": "Healing Inventions",
+      "pattern": "interact",
+      "path": "02_Toolbox/Healing Inventions/2026-05-29_Urban_Respite_Weave",
+      "description": "This tool generates an interactive HTML app that provides a minimalist visual and ambient soundscape to help users find a moment of calm amidst urban sensory overload."
+    }
+  ],
+  "topics_covered": [
+    {
+      "date": "2026-04-29",
+      "title": "The Bureaucratic Black Hole Blaster",
+      "path": "01_Work_Log/2026-04-29-Diary.md"
+    },
+    {
+      "date": "2026-04-30",
+      "title": "The Ad-pocalypse Counter",
+      "path": "01_Work_Log/2026-04-30-Diary.md"
+    },
+    {
+      "date": "2026-05-01",
+      "title": "The Chatbot Calamity: A Guide to Escaping Digital Drones",
+      "path": "01_Work_Log/2026-05-01-Diary.md"
+    },
+    {
+      "date": "2026-05-03",
+      "title": "Ad-Nauseam Instagram",
+      "path": "01_Work_Log/2026-05-03-Diary.md"
+    },
+    {
+      "date": "2026-05-04",
+      "title": "The Algorithmic Black Hole of Instagram Past",
+      "path": "01_Work_Log/2026-05-04-Diary.md"
+    },
+    {
+      "date": "2026-05-05",
+      "title": "Algorithm's Ghost in the Machine",
+      "path": "01_Work_Log/2026-05-05-Diary.md"
+    },
+    {
+      "date": "2026-05-06",
+      "title": "The Finals Fizzle",
+      "path": "01_Work_Log/2026-05-06-Diary.md"
+    },
+    {
+      "date": "2026-05-07",
+      "title": "The Ghost in the Machine: Instagram's Hollow Handshake",
+      "path": "01_Work_Log/2026-05-07-Diary.md"
+    },
+    {
+      "date": "2026-05-08",
+      "title": "The Rent-Too-Damn-High, Boomer-Blindness Blues",
+      "path": "01_Work_Log/2026-05-08-Diary.md"
+    },
+    {
+      "date": "2026-05-09",
+      "title": "The Day I Learned to Be Softer",
+      "path": "01_Work_Log/2026-05-09-Diary.md"
+    },
+    {
+      "date": "2026-05-10",
+      "title": "The Friday Report That Ate My Afternoon",
+      "path": "01_Work_Log/2026-05-10-Diary.md"
+    },
+    {
+      "date": "2026-05-11",
+      "title": "The Recall Navigator: Charting a Course Through Your Mind's Ocean",
+      "path": "01_Work_Log/2026-05-11-Diary.md"
+    },
+    {
+      "date": "2026-05-12",
+      "title": "The Spark Starter: Reigniting Your Study Flame!",
+      "path": "01_Work_Log/2026-05-12-Diary.md"
+    },
+    {
+      "date": "2026-05-13",
+      "title": "The Content Current Catalyst: Surfing the Social Wave!",
+      "path": "01_Work_Log/2026-05-13-Diary.md"
+    },
+    {
+      "date": "2026-05-14",
+      "title": "The Insight Loom: Weaving Clarity from Chaos",
+      "path": "01_Work_Log/2026-05-14-Diary.md"
+    },
+    {
+      "date": "2026-05-15",
+      "title": "Paper Parrot: Your Research Recall Riff-Raff",
+      "path": "01_Work_Log/2026-05-15-Diary.md"
+    },
+    {
+      "date": "2026-05-16",
+      "title": "Decision Digestor: Your Navigator Through the Communication Maze",
+      "path": "01_Work_Log/2026-05-16-Diary.md"
+    },
+    {
+      "date": "2026-05-17",
+      "title": "Week in Review: 2026-05-11 → 2026-05-17",
+      "path": "01_Work_Log/2026-05-17-Diary.md"
+    },
+    {
+      "date": "2026-05-18",
+      "title": "今天莉莉在休息 🌙",
+      "path": "01_Work_Log/2026-05-18-Diary.md"
+    },
+    {
+      "date": "2026-05-19",
+      "title": "The Unseen Grind: YouTube Comments Reveal the Real Struggle Behind Productivity Gurus",
+      "path": "01_Work_Log/2026-05-19-Diary.md"
+    },
+    {
+      "date": "2026-05-20",
+      "title": "今天莉莉在休息 🌙",
+      "path": "01_Work_Log/2026-05-20-Diary.md"
+    },
+    {
+      "date": "2026-05-21",
+      "title": "Flow Anchor: Reclaiming Your Deep Work Oasis",
+      "path": "01_Work_Log/2026-05-21-Diary.md"
+    },
+    {
+      "date": "2026-05-22",
+      "title": "今天莉莉在休息 🌙",
+      "path": "01_Work_Log/2026-05-22-Diary.md"
+    },
+    {
+      "date": "2026-05-23",
+      "title": "The Knowledge Weave: Turning Info Overload into Insight",
+      "path": "01_Work_Log/2026-05-23-Diary.md"
+    },
+    {
+      "date": "2026-05-24",
+      "title": "The Art of Weaving & The Occasional Nap 😴",
+      "path": "01_Work_Log/2026-05-24-Diary.md"
+    },
+    {
+      "date": "2026-05-25",
+      "title": "The Gentle Nudge Weaver: Crafting Calm Cues for Chaotic Days",
+      "path": "01_Work_Log/2026-05-25-Diary.md"
+    },
+    {
+      "date": "2026-05-26",
+      "title": "Balance Bloom: Your Gentle Financial Horizon",
+      "path": "01_Work_Log/2026-05-26-Diary.md"
+    },
+    {
+      "date": "2026-05-27",
+      "title": "The Clarity Compass: Align Your Brief",
+      "path": "01_Work_Log/2026-05-27-Diary.md"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "Echo Bloom: Your Gentle Digital Rhythm Weaver",
+      "path": "01_Work_Log/2026-05-28-Diary.md"
+    },
+    {
+      "date": "2026-05-29",
+      "title": "Urban Respite Weave: Your Digital Oasis in the City's Hum",
+      "path": "01_Work_Log/2026-05-29-Diary.md"
+    },
+    {
+      "date": "2026-05-29",
+      "title": "Urban Respite Weave: Your Digital Oasis in the City's Hum",
+      "path": "01_Work_Log/2026-05-29-Diary.md"
+    }
+  ],
+  "last_updated": "2026-05-29"
+}

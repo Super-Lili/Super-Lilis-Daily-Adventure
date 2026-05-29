@@ -1,0 +1,3 @@
+- Python 3.8+
+- Standard library only for core logic.
+- The output is a self-contained HTML file (MODE 3).
