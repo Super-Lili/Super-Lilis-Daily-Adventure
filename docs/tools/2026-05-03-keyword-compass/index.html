@@ -698,7 +698,7 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="Paste your meeting notes, task list, or work text here…"></textarea>
@@ -711,20 +711,25 @@ a { color: inherit; text-decoration: none; }
 <script>
 let pyodide = null;
 const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport re\n\n\ndef keyword_compass(job_description):\n    \"\"\"\n    Extracts potential keywords from a job description to help tailor a resume.\n    Focuses on common technical terms, skills, and action verbs.\n    \"\"\"\n    if not isinstance(job_description, str) or not job_description.strip():\n        return \"Please provide a valid job description (string).\"\n\n    stop_words = set([\n        \"a\", \"an\", \"the\", \"and\", \"or\", \"to\", \"in\", \"on\", \"with\", \"for\", \"of\",\n        \"is\", \"are\", \"be\", \"has\", \"have\", \"you\", \"we\", \"our\", \"your\", \"this\",\n        \"that\", \"as\", \"by\", \"from\", \"at\", \"about\", \"also\", \"will\", \"must\",\n        \"can\", \"should\", \"etc\", \"e.g.\", \"i.e.\", \"ability\", \"experience\", \"strong\",\n        \"demonstrated\", \"proven\", \"excellent\", \"work\", \"develop\", \"manage\",\n        \"create\", \"build\", \"implement\", \"design\", \"ensure\", \"perform\", \"responsibilities\",\n        \"required\", \"skills\", \"knowledge\", \"understanding\", \"role\", \"key\", \"successful\",\n        \"candidate\", \"team\", \"project\", \"systems\", \"solutions\", \"environment\"\n    ])\n\n    words = re.findall(r'\\\\b\\\\w+\\\\b', job_description.lower())\n    filtered_words = {word for word in words if word not in stop_words and len(word) > 1}\n    sorted_keywords = sorted(list(filtered_words))\n\n    if not sorted_keywords:\n        return \"No significant keywords found.\"\n\n    return \"Suggested keywords: \" + \", \".join(sorted_keywords)\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Extract resume-relevant keywords from a job description.\"\"\"\n    if not text.strip():\n        return \"Paste a job description to extract relevant keywords for your resume.\"\n    return keyword_compass(text)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == '__main__':\n    sample_jd = \"\"\"\n    We are seeking a highly motivated Software Engineer with proven experience in Python,\n    cloud platforms (AWS, Azure), and database management (SQL, NoSQL).\n    The ideal candidate will develop and deploy scalable web applications,\n    contribute to architectural design, and collaborate with cross-functional teams.\n    Strong problem-solving skills and a solid understanding of agile methodologies are required.\n    Experience with Docker and Kubernetes is a plus.\n    \"\"\"\n\n    keywords = keyword_compass(sample_jd)\n    print(keywords)";
+const DEMO_INPUT = "Meeting notes 14:00 Mon: Q3 review. Revenue down 8% vs plan. Sarah: push launch to Oct. Tom: disagree, delay costs more. Action items: Sarah sends revised forecast by Wed, Tom prepares risk analysis, sync again Friday 10am.";
 
 async function loadPyodide_() {
   try {
     pyodide = await loadPyodide();
-    // Pre-load any packages the tool imports (pandas, numpy, etc.)
     try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
     document.getElementById('pyodide-status').style.display = 'none';
     document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      await runTool(true);
+    }
   } catch(e) {
     document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
   }
 }
 
-async function runTool() {
+async function runTool(isDemo) {
   if (!pyodide) return;
   const userInput = document.getElementById('user-input').value.trim();
   const btn = document.getElementById('run-btn');
@@ -738,7 +743,6 @@ async function runTool() {
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
     if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      // ── Interactive HTML app — launch inside a sandboxed iframe ──
       outEl.textContent = '';
       outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
       const iframe = document.createElement('iframe');
@@ -746,7 +750,6 @@ async function runTool() {
       iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
       iframe.srcdoc = output;
       outEl.appendChild(iframe);
-      // Auto-resize iframe to its content height
       iframe.addEventListener('load', () => {
         try {
           const h = iframe.contentDocument.body.scrollHeight;
@@ -754,7 +757,6 @@ async function runTool() {
         } catch(e) {}
       });
     } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -769,8 +771,14 @@ async function runTool() {
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     } else {
-      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
     }
   } catch(e) {
     document.getElementById('output').textContent = '❌ Error:\n' + e.message;

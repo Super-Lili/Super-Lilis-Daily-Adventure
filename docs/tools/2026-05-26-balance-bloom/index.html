@@ -698,7 +698,7 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="Paste a few sentences about how you're feeling or what's on your mind…"></textarea>
@@ -711,20 +711,25 @@ a { color: inherit; text-decoration: none; }
 <script>
 let pyodide = null;
 const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n# No external dependencies \u2014 pure Python standard library + string SVG generation\n\nimport datetime\nimport json\n\n\ndef hex_to_rgb(hex_color: str) -> tuple:\n    hex_color = hex_color.lstrip('#')\n    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))\n\n\ndef rgb_to_hex(r: int, g: int, b: int) -> str:\n    r, g, b = max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b))\n    return f'#{r:02x}{g:02x}{b:02x}'\n\n\ndef interpolate_color(c1: tuple, c2: tuple, factor: float) -> tuple:\n    return tuple(max(0, min(255, int(c1[i] + (c2[i] - c1[i]) * factor))) for i in range(3))\n\n\ndef generate_bloom_svg(start_hex: str, end_hex: str, cycle_hours: int, now: datetime.datetime) -> str:\n    seconds_today = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()\n    factor = (seconds_today % (cycle_hours * 3600)) / (cycle_hours * 3600)\n\n    c1 = hex_to_rgb(start_hex)\n    c2 = hex_to_rgb(end_hex)\n    top = interpolate_color(c1, c2, factor * 0.5)\n    bot = interpolate_color(c2, c1, factor * 0.5)\n    top_hex = rgb_to_hex(*top)\n    bot_hex = rgb_to_hex(*bot)\n\n    hour_str = now.strftime(\"%H:%M\")\n    progress_pct = int(factor * 100)\n\n    return f\"\"\"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 400\" width=\"400\" height=\"400\">\n  <defs>\n    <linearGradient id=\"bloom\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n      <stop offset=\"0%\" stop-color=\"{top_hex}\"/>\n      <stop offset=\"100%\" stop-color=\"{bot_hex}\"/>\n    </linearGradient>\n  </defs>\n  <rect width=\"400\" height=\"400\" fill=\"url(#bloom)\" rx=\"16\"/>\n  <circle cx=\"200\" cy=\"200\" r=\"80\" fill=\"rgba(255,255,255,0.12)\"/>\n  <circle cx=\"200\" cy=\"200\" r=\"55\" fill=\"rgba(255,255,255,0.10)\"/>\n  <text x=\"200\" y=\"195\" text-anchor=\"middle\" font-family=\"Georgia, serif\"\n        font-size=\"28\" fill=\"rgba(255,255,255,0.85)\">{hour_str}</text>\n  <text x=\"200\" y=\"225\" text-anchor=\"middle\" font-family=\"Georgia, serif\"\n        font-size=\"13\" fill=\"rgba(255,255,255,0.60)\">day {progress_pct}% complete</text>\n  <text x=\"200\" y=\"360\" text-anchor=\"middle\" font-family=\"Georgia, serif\"\n        font-size=\"12\" fill=\"rgba(255,255,255,0.45)\">breathe \u00b7 things are moving</text>\n</svg>\"\"\"\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Generate a calming SVG that shifts color slowly through the day.\n    Optionally accepts JSON: {\"start_color\": \"#hex\", \"end_color\": \"#hex\", \"cycle_hours\": 24}\n    \"\"\"\n    start_hex = \"#AEC6CF\"\n    end_hex   = \"#C7B8E8\"\n    cycle_hours = 24\n\n    if text.strip():\n        try:\n            p = json.loads(text)\n            start_hex   = p.get(\"start_color\", start_hex)\n            end_hex     = p.get(\"end_color\", end_hex)\n            cycle_hours = int(p.get(\"cycle_hours\", cycle_hours))\n        except (json.JSONDecodeError, ValueError):\n            pass\n\n    return generate_bloom_svg(start_hex, end_hex, cycle_hours, datetime.datetime.now())\n\n\ndef _cli_main():\n    import argparse, os\n    p = argparse.ArgumentParser(description=\"Balance Bloom \u2014 a visual anchor for financial anxiety.\")\n    p.add_argument(\"--start-color\", default=\"#AEC6CF\", help=\"Start hex color (default: pastel blue)\")\n    p.add_argument(\"--end-color\",   default=\"#C7B8E8\", help=\"End hex color (default: pastel purple)\")\n    p.add_argument(\"--cycle-hours\", type=int, default=24, help=\"Cycle length in hours (default: 24)\")\n    p.add_argument(\"--output\",      default=\"balance_bloom.svg\", help=\"Output SVG path\")\n    args = p.parse_args()\n\n    svg = process(json.dumps({\n        \"start_color\": args.start_color,\n        \"end_color\": args.end_color,\n        \"cycle_hours\": args.cycle_hours,\n    }))\n    with open(args.output, \"w\") as f:\n        f.write(svg)\n    print(f\"\u2713 Saved to {args.output}  ({args.cycle_hours}h cycle, {datetime.datetime.now().strftime('%H:%M')})\")\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    _cli_main()\n";
+const DEMO_INPUT = "\") # Pass empty string for default params\n    assert isinstance(svg_output, str)\n    assert svg_output.startswith('<svg";
 
 async function loadPyodide_() {
   try {
     pyodide = await loadPyodide();
-    // Pre-load any packages the tool imports (pandas, numpy, etc.)
     try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
     document.getElementById('pyodide-status').style.display = 'none';
     document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      await runTool(true);
+    }
   } catch(e) {
     document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
   }
 }
 
-async function runTool() {
+async function runTool(isDemo) {
   if (!pyodide) return;
   const userInput = document.getElementById('user-input').value.trim();
   const btn = document.getElementById('run-btn');
@@ -738,7 +743,6 @@ async function runTool() {
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
     if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      // ── Interactive HTML app — launch inside a sandboxed iframe ──
       outEl.textContent = '';
       outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
       const iframe = document.createElement('iframe');
@@ -746,7 +750,6 @@ async function runTool() {
       iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
       iframe.srcdoc = output;
       outEl.appendChild(iframe);
-      // Auto-resize iframe to its content height
       iframe.addEventListener('load', () => {
         try {
           const h = iframe.contentDocument.body.scrollHeight;
@@ -754,7 +757,6 @@ async function runTool() {
         } catch(e) {}
       });
     } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -769,8 +771,14 @@ async function runTool() {
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     } else {
-      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
     }
   } catch(e) {
     document.getElementById('output').textContent = '❌ Error:\n' + e.message;

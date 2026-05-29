@@ -698,7 +698,7 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="Paste your brief, content, or design description here…"></textarea>
@@ -711,20 +711,25 @@ a { color: inherit; text-decoration: none; }
 <script>
 let pyodide = null;
 const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport re\n\n\ndef analyze_image_info_text(text: str) -> str:\n    \"\"\"Parse image metadata from text description and give upload advice.\"\"\"\n    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]\n    size_mb = None\n    fmt = None\n    width = height = None\n    allowed_formats = ['jpeg', 'jpg', 'png', 'gif', 'webp']\n\n    for line in lines:\n        m = re.search(r'(\\\\d+(?:\\\\.\\\\d+)?)\\\\s*(?:mb|megabyte)', line, re.IGNORECASE)\n        if m:\n            size_mb = float(m.group(1))\n        m = re.search(r'\\\\b(jpe?g|png|gif|webp|bmp|tiff?|svg)\\\\b', line, re.IGNORECASE)\n        if m:\n            fmt = m.group(1).lower()\n        m = re.search(r'(\\\\d+)\\\\s*[x\u00d7]\\\\s*(\\\\d+)', line, re.IGNORECASE)\n        if m:\n            width, height = int(m.group(1)), int(m.group(2))\n\n    out = [\"## Pixel Pilot Diagnostic Report\", \"\"]\n    if size_mb is not None:\n        if size_mb <= 10:\n            out.append(f\"- File size: {size_mb:.2f} MB \u2014 within the 10 MB limit.\")\n        else:\n            out.append(f\"- File size: {size_mb:.2f} MB \u2014 EXCEEDS 10 MB limit. Consider compressing or resizing.\")\n    else:\n        out.append(\"- File size: not detected in input.\")\n    if fmt:\n        if fmt in allowed_formats:\n            out.append(f\"- Format: {fmt} \u2014 allowed for web upload.\")\n        else:\n            out.append(f\"- Format: {fmt} \u2014 not in recommended list ({', '.join(allowed_formats)}). Consider converting.\")\n    else:\n        out.append(\"- Format: not detected in input.\")\n    if width and height:\n        mp = (width * height) / 1_000_000\n        out.append(f\"- Dimensions: {width}x{height} px ({mp:.1f} megapixels).\")\n        if width > 4000 or height > 4000:\n            out.append(\"  Warning: very large dimensions \u2014 resize for faster uploads.\")\n    else:\n        out.append(\"- Dimensions: not detected in input.\")\n    out += [\"\", \"Tip: For web use, JPEG/PNG under 2 MB at 1920px wide is ideal.\"]\n    return \"\\\\n\".join(out)\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Analyze image metadata from text description for web upload readiness.\"\"\"\n    if not text.strip():\n        return (\n            \"Paste image info (filename, size in MB, format, dimensions) to get upload advice.\\\\n\\\\n\"\n            \"Example:\\\\n  photo.jpg, 3.2 MB, JPEG, 4000x3000\"\n        )\n    return analyze_image_info_text(text)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    print(process(\"portrait.png, 12.5 MB, PNG, 6000x4000\"))";
+const DEMO_INPUT = "Brand: Momi, a slow-living Japanese skincare line. Audience: women 28-45 who value ritual and simplicity. Tone: quiet luxury, minimal, honest. Deliverable: Instagram caption series for a new serum launch.";
 
 async function loadPyodide_() {
   try {
     pyodide = await loadPyodide();
-    // Pre-load any packages the tool imports (pandas, numpy, etc.)
     try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
     document.getElementById('pyodide-status').style.display = 'none';
     document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      await runTool(true);
+    }
   } catch(e) {
     document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
   }
 }
 
-async function runTool() {
+async function runTool(isDemo) {
   if (!pyodide) return;
   const userInput = document.getElementById('user-input').value.trim();
   const btn = document.getElementById('run-btn');
@@ -738,7 +743,6 @@ async function runTool() {
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
     if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      // ── Interactive HTML app — launch inside a sandboxed iframe ──
       outEl.textContent = '';
       outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
       const iframe = document.createElement('iframe');
@@ -746,7 +750,6 @@ async function runTool() {
       iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
       iframe.srcdoc = output;
       outEl.appendChild(iframe);
-      // Auto-resize iframe to its content height
       iframe.addEventListener('load', () => {
         try {
           const h = iframe.contentDocument.body.scrollHeight;
@@ -754,7 +757,6 @@ async function runTool() {
         } catch(e) {}
       });
     } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -769,8 +771,14 @@ async function runTool() {
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     } else {
-      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
     }
   } catch(e) {
     document.getElementById('output').textContent = '❌ Error:\n' + e.message;

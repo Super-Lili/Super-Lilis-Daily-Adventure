@@ -1139,8 +1139,72 @@ def build_local_run_section(t: dict) -> str:
 <a class="btn btn-dark" href="{h(t['github'])}" target="_blank" rel="noopener" style="margin-top:20px;display:inline-block;">查看源码 View Source</a>"""
 
 
+def _prerender_mode3(main_py: Path) -> str | None:
+    """Run the tool at site-build time and return its HTML output, or None if it's not Mode 3."""
+    import subprocess as _sp, sys as _sys
+    try:
+        abs_path = str(main_py.resolve())
+        result = _sp.run(
+            [_sys.executable, "-c",
+             f"import sys; sys.argv=['tool']\nUSER_INPUT=''\nexec(open({repr(abs_path)}).read())"],
+            capture_output=True, text=True, timeout=30,
+            cwd=str(main_py.parent),
+        )
+        out = result.stdout.strip()
+        if out.lstrip().startswith(("<!DOCTYPE", "<html", "<!doctype")):
+            return out
+    except Exception:
+        pass
+    return None
+
+
+def _extract_demo_input(t: dict) -> str:
+    """Extract a meaningful demo input from the tool's test file, or return a category default."""
+    # Try to find a real sample string from test_main.py
+    test_py = TOOLBOX / t["category"] / t["dir_name"] / "test_main.py"
+    if test_py.exists():
+        try:
+            src = test_py.read_text(encoding="utf-8")
+            # Look for process("...substantial string...") calls
+            for m in re.finditer(r'process\(["\'](.{40,}?)["\']\)', src, re.DOTALL):
+                candidate = m.group(1).strip()
+                if len(candidate) > 40 and "\n" not in candidate[:20]:
+                    return candidate
+        except Exception:
+            pass
+    # Category defaults — real enough to show genuine output
+    cat = t.get("category", "")
+    defaults = {
+        "Education Evolution": (
+            "I've been studying machine learning for 3 weeks. "
+            "I understand basic concepts but struggle with backpropagation and "
+            "keep forgetting the math behind gradient descent. "
+            "I have an exam in 5 days and need a structured review plan."
+        ),
+        "Design Alchemy": (
+            "Brand: Momi, a slow-living Japanese skincare line. "
+            "Audience: women 28-45 who value ritual and simplicity. "
+            "Tone: quiet luxury, minimal, honest. "
+            "Deliverable: Instagram caption series for a new serum launch."
+        ),
+        "Office Automation": (
+            "Meeting notes 14:00 Mon: Q3 review. Revenue down 8% vs plan. "
+            "Sarah: push launch to Oct. Tom: disagree, delay costs more. "
+            "Action items: Sarah sends revised forecast by Wed, "
+            "Tom prepares risk analysis, sync again Friday 10am."
+        ),
+        "Healing Inventions": "",  # Mode 3 tools — use pre-render instead
+    }
+    return defaults.get(cat, (
+        "I have a list of tasks I need to prioritize: "
+        "finish the quarterly report, reply to 12 emails, "
+        "prepare slides for tomorrow's presentation, "
+        "and review two contracts. I only have 3 hours."
+    ))
+
+
 def build_pyodide_section(t: dict) -> str:
-    """Return Pyodide runner HTML+JS, or local-run fallback for tools without USER_INPUT."""
+    """Return the tool runner HTML — instant iframe for Mode 3, Pyodide+auto-run for Mode 1/2."""
     import json as _json
 
     tool_code = read_tool_code(t)
@@ -1150,18 +1214,46 @@ def build_pyodide_section(t: dict) -> str:
     if "USER_INPUT" not in tool_code:
         return build_local_run_section(t)
 
+    # ── Mode 3: pre-render HTML at build time — zero Pyodide wait ──────────────
+    main_py = TOOLBOX / t["category"] / t["dir_name"] / "main.py"
+    if main_py.exists():
+        prerendered = _prerender_mode3(main_py)
+        if prerendered:
+            html_json = _json.dumps(prerendered).replace("</script>", "<\\/script>")
+            return f"""
+<div class="prerendered-app" style="margin-top:8px">
+  <iframe id="app-frame"
+          sandbox="allow-scripts allow-same-origin"
+          style="width:100%;min-height:540px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block"
+          title="Interactive tool"></iframe>
+  <p style="margin-top:10px;font-size:0.8rem;color:#aaa;text-align:center">
+    ✨ Interactive app — runs entirely in your browser
+  </p>
+</div>
+<script>
+  (function() {{
+    const frame = document.getElementById('app-frame');
+    frame.srcdoc = {html_json};
+    frame.addEventListener('load', function() {{
+      try {{
+        const h = frame.contentDocument.body.scrollHeight;
+        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
+      }} catch(e) {{}}
+    }});
+  }})();
+</script>"""
+
+    # ── Mode 1/2: Pyodide runner with auto-run on demo input ───────────────────
     preamble = (
         "import sys\n"
         "sys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n"
     )
     full_code = preamble + "\n" + tool_code
-
-    # JSON-encode the code so backticks, ${...}, and any special chars are safe in JS
-    # Also escape </script> → <\/script> to prevent HTML parser from closing the
-    # enclosing <script> block prematurely (Mode 3 tools embed JS/HTML with </script> tags)
     code_json = _json.dumps(full_code).replace("</script>", "<\\/script>")
 
-    # Placeholder hint derived from category
+    demo_input = _extract_demo_input(t)
+    demo_json  = _json.dumps(demo_input)
+
     cat = t.get("category", "")
     placeholder_hints = {
         "Education Evolution": "Paste your study notes, article, or learning material here…",
@@ -1172,7 +1264,7 @@ def build_pyodide_section(t: dict) -> str:
     placeholder = placeholder_hints.get(cat, "Paste your text here…")
 
     return f"""
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="{placeholder}"></textarea>
@@ -1185,20 +1277,25 @@ def build_pyodide_section(t: dict) -> str:
 <script>
 let pyodide = null;
 const TOOL_CODE = {code_json};
+const DEMO_INPUT = {demo_json};
 
 async function loadPyodide_() {{
   try {{
     pyodide = await loadPyodide();
-    // Pre-load any packages the tool imports (pandas, numpy, etc.)
     try {{ await pyodide.loadPackagesFromImports(TOOL_CODE); }} catch(e) {{}}
     document.getElementById('pyodide-status').style.display = 'none';
     document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {{
+      document.getElementById('user-input').value = DEMO_INPUT;
+      await runTool(true);
+    }}
   }} catch(e) {{
     document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
   }}
 }}
 
-async function runTool() {{
+async function runTool(isDemo) {{
   if (!pyodide) return;
   const userInput = document.getElementById('user-input').value.trim();
   const btn = document.getElementById('run-btn');
@@ -1212,7 +1309,6 @@ async function runTool() {{
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
     if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {{
-      // ── Interactive HTML app — launch inside a sandboxed iframe ──
       outEl.textContent = '';
       outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
       const iframe = document.createElement('iframe');
@@ -1220,7 +1316,6 @@ async function runTool() {{
       iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
       iframe.srcdoc = output;
       outEl.appendChild(iframe);
-      // Auto-resize iframe to its content height
       iframe.addEventListener('load', () => {{
         try {{
           const h = iframe.contentDocument.body.scrollHeight;
@@ -1228,7 +1323,6 @@ async function runTool() {{
         }} catch(e) {{}}
       }});
     }} else if (output.startsWith('<svg') || output.startsWith('<?xml')) {{
-      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -1243,8 +1337,14 @@ async function runTool() {{
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     }} else {{
-      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }}
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {{
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
     }}
   }} catch(e) {{
     document.getElementById('output').textContent = '❌ Error:\\n' + e.message;

@@ -698,7 +698,7 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="Paste your meeting notes, task list, or work text here…"></textarea>
@@ -711,20 +711,25 @@ a { color: inherit; text-decoration: none; }
 <script>
 let pyodide = null;
 const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n\\`\\`\\`python\nimport datetime\n\ndef generate_status_report(project_name, known_progress, pending_info, next_steps_awaiting_clarity):\n    \"\"\"\n    Generates a structured, honest status report to communicate project uncertainty.\n\n    Args:\n        project_name (str): The name of the project.\n        known_progress (list): A list of strings detailing confirmed progress/deliverables.\n        pending_info (list): A list of strings detailing specific information currently unavailable.\n        next_steps_awaiting_clarity (list): A list of strings for next steps dependent on pending_info.\n\n    Returns:\n        str: A formatted status report.\n    \"\"\"\n    report_date = datetime.date.today().strftime(\"%Y-%m-%d\")\n    report = f\"--- Project Status Report: {project_name} ---\\\\n\"\n    report += f\"Date: {report_date}\\\\n\\\\n\"\n    report += \"## Executive Summary:\\\\n\"\n    report += \"Current status reflects ongoing progress in defined areas, with key planning elements awaiting further input from relevant stakeholders.\\\\n\\\\n\"\n\n    report += \"## Confirmed Progress/Deliverables:\\\\n\"\n    if known_progress:\n        for item in known_progress:\n            report += f\"- {item}\\\\n\"\n    else:\n        report += \"- No specific confirmed progress to report at this moment, focusing on foundational elements.\\\\n\"\n    report += \"\\\\n\"\n\n    report += \"## Critical Information Pending:\\\\n\"\n    if pending_info:\n        for item in pending_info:\n            report += f\"- Awaiting {item}\\\\n\"\n    else:\n        report += \"- All necessary information for immediate next steps is available.\\\\n\"\n    report += \"\\\\n\"\n\n    report += \"## Next Steps (Dependent on Clarity):\\\\n\"\n    if next_steps_awaiting_clarity:\n        for item in next_steps_awaiting_clarity:\n            report += f\"- {item}\\\\n\"\n    else:\n        report += \"- Next steps are clearly defined and in progress.\\\\n\"\n    report += \"\\\\n\"\n\n    report += \"## Outlook:\\\\n\"\n    report += \"We are poised to accelerate once critical information becomes available. Will provide an updated outlook upon receiving necessary inputs.\"\n    return report\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Parse project status notes and generate a structured status report.\"\"\"\n    if not text.strip():\n        return generate_status_report(\n            \"Your Project\",\n            [\"Initial team alignment completed.\"],\n            [\"Product roadmap specifics.\", \"Leadership directives on strategic priorities.\"],\n            [\"Finalize budget proposal.\", \"Assign detailed sprint tasks.\"]\n        )\n    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]\n    project_name = lines[0] if lines else \"Your Project\"\n    known, pending, next_steps = [], [], []\n    current = None\n    for line in lines[1:]:\n        lower = line.lower()\n        if lower.startswith(\"known:\") or lower.startswith(\"progress:\"):\n            current = \"known\"\n        elif lower.startswith(\"pending:\") or lower.startswith(\"awaiting:\"):\n            current = \"pending\"\n        elif lower.startswith(\"next:\") or lower.startswith(\"steps:\"):\n            current = \"next\"\n        elif line.startswith(\"-\"):\n            item = line.lstrip(\"- \").strip()\n            if current == \"known\":\n                known.append(item)\n            elif current == \"pending\":\n                pending.append(item)\n            elif current == \"next\":\n                next_steps.append(item)\n    return generate_status_report(project_name, known, pending, next_steps)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == '__main__':\n    # Example usage based on the Reddit friction point\n    project = \"Q3 Initiative Planning\"\n    known = [\"Initial team alignment completed.\", \"Resource allocation models drafted (pending scope).\"]\n    pending = [\"Product roadmap specifics for Q3 from Product Management.\",\n               \"Confirmed leadership directives on strategic priorities for the next quarter.\"]\n    next_steps = [\"Finalize budget proposal (contingent on roadmap and directives).\",\n                  \"Assign detailed tasks for Q3 sprints (contingent on roadmap).\"]\n\n    report_output = generate_status_report(project, known, pending, next_steps)\n    print(report_output)\n\\`\\`\\`";
+const DEMO_INPUT = "Meeting notes 14:00 Mon: Q3 review. Revenue down 8% vs plan. Sarah: push launch to Oct. Tom: disagree, delay costs more. Action items: Sarah sends revised forecast by Wed, Tom prepares risk analysis, sync again Friday 10am.";
 
 async function loadPyodide_() {
   try {
     pyodide = await loadPyodide();
-    // Pre-load any packages the tool imports (pandas, numpy, etc.)
     try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
     document.getElementById('pyodide-status').style.display = 'none';
     document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      await runTool(true);
+    }
   } catch(e) {
     document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
   }
 }
 
-async function runTool() {
+async function runTool(isDemo) {
   if (!pyodide) return;
   const userInput = document.getElementById('user-input').value.trim();
   const btn = document.getElementById('run-btn');
@@ -738,7 +743,6 @@ async function runTool() {
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
     if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      // ── Interactive HTML app — launch inside a sandboxed iframe ──
       outEl.textContent = '';
       outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
       const iframe = document.createElement('iframe');
@@ -746,7 +750,6 @@ async function runTool() {
       iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
       iframe.srcdoc = output;
       outEl.appendChild(iframe);
-      // Auto-resize iframe to its content height
       iframe.addEventListener('load', () => {
         try {
           const h = iframe.contentDocument.body.scrollHeight;
@@ -754,7 +757,6 @@ async function runTool() {
         } catch(e) {}
       });
     } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -769,8 +771,14 @@ async function runTool() {
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     } else {
-      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
     }
   } catch(e) {
     document.getElementById('output').textContent = '❌ Error:\n' + e.message;

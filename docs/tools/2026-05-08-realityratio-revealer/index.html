@@ -698,7 +698,7 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="Paste your study notes, article, or learning material here…"></textarea>
@@ -711,20 +711,25 @@ a { color: inherit; text-decoration: none; }
 <script>
 let pyodide = null;
 const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport re\n\n\ndef affordability_comparison(generation_data: dict) -> str:\n    \"\"\"\n    Compares hypothetical home affordability across generations.\n    generation_data: dict of {name: (home_price, income)}\n    Returns formatted markdown table.\n    \"\"\"\n    lines = [\"## Generational Affordability Snapshot\", \"\",\n             \"| Generation | Home Price | Annual Income | Years of Income Needed |\",\n             \"|---|---|---|---|\"]\n    for generation, data in generation_data.items():\n        home_price, income = data\n        if income > 0:\n            ratio = home_price / income\n            lines.append(f\"| {generation} | \\${home_price:,.0f} | \\${income:,.0f} | {ratio:.1f} years |\")\n        else:\n            lines.append(f\"| {generation} | \\${home_price:,.0f} | N/A | N/A |\")\n    return \"\\\\n\".join(lines)\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Parse generation data and show affordability ratios.\n\n    Input format (one per line): GenerationName, home_price, income\n    Example: Boomer Era, 65000, 15000\n    \"\"\"\n    default_data = {\n        \"Boomer Era (e.g., 1970s-1980s)\": (65000, 15000),\n        \"Millennial Era (e.g., 2020s)\": (400000, 70000),\n    }\n    if not text.strip():\n        return affordability_comparison(default_data)\n    parsed = {}\n    for line in text.strip().splitlines():\n        parts = [p.strip() for p in line.split(\",\")]\n        if len(parts) >= 3:\n            try:\n                name = parts[0]\n                price = float(re.sub(r'[^\\\\d.]', '', parts[1]))\n                income = float(re.sub(r'[^\\\\d.]', '', parts[2]))\n                parsed[name] = (price, income)\n            except (ValueError, IndexError):\n                pass\n    if not parsed:\n        return affordability_comparison(default_data)\n    return affordability_comparison(parsed)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    illustrative_data = {\n        \"Boomer Era (e.g., 1970s-1980s)\": (65000, 15000),\n        \"Millennial Era (e.g., 2020s)\": (400000, 70000),\n    }\n    print(affordability_comparison(illustrative_data))";
+const DEMO_INPUT = "I've been studying machine learning for 3 weeks. I understand basic concepts but struggle with backpropagation and keep forgetting the math behind gradient descent. I have an exam in 5 days and need a structured review plan.";
 
 async function loadPyodide_() {
   try {
     pyodide = await loadPyodide();
-    // Pre-load any packages the tool imports (pandas, numpy, etc.)
     try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
     document.getElementById('pyodide-status').style.display = 'none';
     document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      await runTool(true);
+    }
   } catch(e) {
     document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
   }
 }
 
-async function runTool() {
+async function runTool(isDemo) {
   if (!pyodide) return;
   const userInput = document.getElementById('user-input').value.trim();
   const btn = document.getElementById('run-btn');
@@ -738,7 +743,6 @@ async function runTool() {
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
     if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      // ── Interactive HTML app — launch inside a sandboxed iframe ──
       outEl.textContent = '';
       outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
       const iframe = document.createElement('iframe');
@@ -746,7 +750,6 @@ async function runTool() {
       iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
       iframe.srcdoc = output;
       outEl.appendChild(iframe);
-      // Auto-resize iframe to its content height
       iframe.addEventListener('load', () => {
         try {
           const h = iframe.contentDocument.body.scrollHeight;
@@ -754,7 +757,6 @@ async function runTool() {
         } catch(e) {}
       });
     } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -769,8 +771,14 @@ async function runTool() {
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     } else {
-      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
     }
   } catch(e) {
     document.getElementById('output').textContent = '❌ Error:\n' + e.message;

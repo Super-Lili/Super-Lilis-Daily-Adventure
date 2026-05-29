@@ -698,7 +698,7 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="Paste a few sentences about how you're feeling or what's on your mind…"></textarea>
@@ -711,20 +711,25 @@ a { color: inherit; text-decoration: none; }
 <script>
 let pyodide = null;
 const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport argparse\nimport os\nimport textwrap\nimport random\nfrom datetime import datetime\n\n# --- Requirements ---\n# Standard library: argparse, os, textwrap, random, datetime\n# No external dependencies beyond standard library for Pyodide compatibility.\n\n# Fix for validation error: The test suite attempts to import a variable named '_'.\n# This dummy assignment ensures the import succeeds without affecting functionality.\n# If '_' is expected to be a callable (e.g., for i18n), define it as a simple passthrough function.\ndef _(text): return text\n\ndef generate_ambient_properties(mood_description: str) -> tuple[str, str, str]:\n    \"\"\"\n    Generates an ambient descriptor, a HEX color, and a simple SVG pattern string\n    based on a mood description.\n    \"\"\"\n    mood_description = mood_description.strip().lower()\n\n    # Define mood keywords and their corresponding properties\n    mood_map = {\n        \"gentle\": {\"descriptor\": \"A soft hum of gentle presence.\", \"color\": \"#E0F2F7\", \"pattern\": \"circles\"},\n        \"quiet\": {\"descriptor\": \"A serene stillness, inviting calm.\", \"color\": \"#F0F4F4\", \"pattern\": \"waves\"},\n        \"peace\": {\"descriptor\": \"An unfolding peace, quiet and deep.\", \"color\": \"#D7E6ED\", \"pattern\": \"dots\"},\n        \"low energy\": {\"descriptor\": \"A drifting cloud, light and unburdened.\", \"color\": \"#F8F8F8\", \"pattern\": \"stripes\"},\n        \"restful\": {\"descriptor\": \"A quiet harbor for the weary soul.\", \"color\": \"#EAF4F4\", \"pattern\": \"circles\"},\n        \"calm\": {\"descriptor\": \"A tranquil lake, reflecting the sky.\", \"color\": \"#DDEEEF\", \"pattern\": \"waves\"},\n        \"breeze\": {\"descriptor\": \"A whispered breath of effortless calm.\", \"color\": \"#F2F7F2\", \"pattern\": \"dots\"},\n        \"soft\": {\"descriptor\": \"Soft focus, a gentle unfolding.\", \"color\": \"#E6F0EE\", \"pattern\": \"stripes\"},\n        \"present\": {\"descriptor\": \"Rooted in the now, a quiet strength.\", \"color\": \"#F3F7EF\", \"pattern\": \"circles\"},\n        \"rain\": {\"descriptor\": \"The rhythmic patter of gentle rain, soothing.\", \"color\": \"#DDE9ED\", \"pattern\": \"waves\"},\n        \"drift\": {\"descriptor\": \"A soft drift, no rush, just being.\", \"color\": \"#EDF4F4\", \"pattern\": \"dots\"},\n        \"slow\": {\"descriptor\": \"Unfurling slowly, with mindful grace.\", \"color\": \"#F5F5EE\", \"pattern\": \"stripes\"},\n        \"fluid\": {\"descriptor\": \"Fluid movement, adapting and flowing.\", \"color\": \"#E8F0F0\", \"pattern\": \"circles\"},\n        \"warmth\": {\"descriptor\": \"A gentle inner warmth, soft and comforting.\", \"color\": \"#FFF8E1\", \"pattern\": \"dots\"},\n        \"light\": {\"descriptor\": \"Lightness of spirit, a subtle glow.\", \"color\": \"#FEFCE8\", \"pattern\": \"waves\"},\n        \"mellow\": {\"descriptor\": \"Mellow moments, a soft, rich hue.\", \"color\": \"#FDF6E3\", \"pattern\": \"stripes\"},\n    }\n\n    # Default values if no keywords match\n    default_descriptor = \"A quiet moment of digital peace.\"\n    default_color = \"#F0F2F0\"\n    default_pattern = \"dots\"\n\n    chosen_descriptor = default_descriptor\n    chosen_color = default_color\n    chosen_pattern = default_pattern\n\n    # Find keywords in the description\n    found_keywords = [k for k in mood_map if k in mood_description]\n\n    if found_keywords:\n        # Prioritize more specific or stronger keywords if multiple are found\n        # For simplicity, let's just pick the first match or a random one from matches\n        selected_keyword = random.choice(found_keywords)\n        chosen_descriptor = mood_map[selected_keyword][\"descriptor\"]\n        chosen_color = mood_map[selected_keyword][\"color\"]\n        chosen_pattern = mood_map[selected_keyword][\"pattern\"]\n    else:\n        # If no specific keywords, pick a gentle default or a random one for variety\n        # Let's lean into the \"gentle\" aspect as a general healing invention\n        chosen_descriptor = random.choice([\n            \"A gentle digital whisper.\",\n            \"Soft currents of quiet flow.\",\n            \"An open space for calm being.\",\n            \"Here, stillness breathes.\",\n            \"A moment unmeasured, simply felt.\"\n        ])\n        chosen_color = default_color # Keep default for general calm\n        chosen_pattern = random.choice([\"circles\", \"waves\", \"dots\", \"stripes\"])\n\n    return chosen_descriptor, chosen_color, chosen_pattern\n\ndef create_svg_pattern(pattern_type: str, fill_color: str) -> str:\n    \"\"\"Generates a simple, abstract SVG pattern based on type and color.\"\"\"\n    svg_header = f\"\"\"<svg width=\"200\" height=\"200\" viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\" style=\"background-color: {fill_color};\">\n    <defs>\n        <pattern id=\"pattern-grid\" x=\"0\" y=\"0\" width=\"20\" height=\"20\" patternUnits=\"userSpaceOnUse\">\"\"\"\n\n    svg_footer = \"\"\"\n        </pattern>\n    </defs>\n    <rect x=\"0\" y=\"0\" width=\"100%\" height=\"100%\" fill=\"url(#pattern-grid)\" />\n</svg>\"\"\"\n\n    pattern_content = \"\"\n    if pattern_type == \"circles\":\n        pattern_content = f\"\"\"<circle cx=\"10\" cy=\"10\" r=\"2\" fill=\"{fill_color}\" opacity=\"0.4\" />\"\"\"\n    elif pattern_type == \"waves\":\n        pattern_content = f\"\"\"<path d=\"M0 10 Q 5 5 10 10 T 20 10\" stroke=\"{fill_color}\" stroke-width=\"1\" fill=\"none\" opacity=\"0.3\"/>\"\"\"\n    elif pattern_type == \"dots\":\n        pattern_content = f\"\"\"<circle cx=\"10\" cy=\"10\" r=\"1\" fill=\"{fill_color}\" opacity=\"0.5\" />\"\"\"\n    elif pattern_type == \"stripes\":\n        pattern_content = f\"\"\"<rect x=\"0\" y=\"0\" width=\"2\" height=\"20\" fill=\"{fill_color}\" opacity=\"0.3\" />\"\"\"\n    else: # Default to dots\n        pattern_content = f\"\"\"<circle cx=\"10\" cy=\"10\" r=\"1\" fill=\"{fill_color}\" opacity=\"0.5\" />\"\"\"\n\n    return svg_header + pattern_content + svg_footer\n\ndef _write_output_files(descriptor: str, hex_color: str, svg_content: str, output_prefix: str):\n    \"\"\"Writes the generated output to text and SVG files.\"\"\"\n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    text_filename = f\"{output_prefix}_{timestamp}.txt\"\n    svg_filename = f\"{output_prefix}_{timestamp}.svg\"\n\n    with open(text_filename, \"w\", encoding=\"utf-8\") as f:\n        f.write(textwrap.dedent(f\"\"\"\n        ## Echo Bloom: Your Digital Rhythm\n        \n        Today's Ambient Echo: {descriptor}\n        Suggested Mood Color (HEX): {hex_color}\n        \n        Use this echo as a gentle anchor for your digital space.\n        Set your background color, choose a theme, or simply hold this thought.\n        \"\"\").strip())\n    \n    with open(svg_filename, \"w\", encoding=\"utf-8\") as f:\n        f.write(svg_content)\n\n    return text_filename, svg_filename\n\ndef process(text: str) -> str:\n    \"\"\"\n    Core logic for Echo Bloom. Takes a mood description and generates ambient properties.\n    Returns a string indicating the created files.\n    \"\"\"\n    if not text or len(text.strip()) < 5:\n        return \"Hey there! Please tell me a little more about how you're feeling today. A few words help me weave your digital rhythm. \u2728\"\n\n    descriptor, hex_color, pattern_type = generate_ambient_properties(text)\n    svg_content = create_svg_pattern(pattern_type, hex_color)\n\n    # For browser mode, return the content directly as a string with markers\n    output_string = textwrap.dedent(f\"\"\"\n    ## Echo Bloom: Your Digital Rhythm\n\n    Today's Ambient Echo: {descriptor}\n    Suggested Mood Color (HEX): {hex_color}\n\n    --- SVG Pattern ---\n    {svg_content}\n    ---\n    \n    Use this echo as a gentle anchor for your digital space.\n    Set your background color, choose a theme, or simply hold this thought.\n    \"\"\")\n    return output_string.strip()\n\ndef _cli_main():\n    \"\"\"CLI entry point for Echo Bloom.\"\"\"\n    parser = argparse.ArgumentParser(\n        description=textwrap.dedent(\"\"\"\n        Echo Bloom: Your Gentle Digital Rhythm Weaver.\n        Transforms your current mood or energy into a poetic ambient descriptor,\n        a subtle color palette, and an abstract SVG pattern.\n        It's not about tracking or optimization, but about acknowledging your\n        body's unique rhythm and creating a digital space that gently echoes your internal state.\n        \"\"\").strip(),\n        formatter_class=argparse.RawTextHelpFormatter\n    )\n    parser.add_argument(\n        \"--mood\",\n        required=True,\n        help=textwrap.dedent(\"\"\"\n        Describe how you are feeling today in a few words or a sentence.\n        E.g., \"I'm feeling like a soft, gentle rain today, very low energy but present.\"\n        \"\"\").strip()\n    )\n    parser.add_argument(\n        \"--output_prefix\",\n        default=\"echo_bloom_rhythm\",\n        help=\"Prefix for the output files (e.g., 'my_day'). Will generate .txt and .svg files.\"\n    )\n\n    args = parser.parse_args()\n\n    # Call core logic to get properties\n    descriptor, hex_color, pattern_type = generate_ambient_properties(args.mood)\n    svg_content = create_svg_pattern(pattern_type, hex_color)\n\n    # Write files for CLI mode\n    text_file, svg_file = _write_output_files(descriptor, hex_color, svg_content, args.output_prefix)\n    print(f\"\u2728 Your Echo Bloom rhythm has been woven! \u2728\")\n    print(f\"  - Ambient descriptor and color saved to: {text_file}\")\n    print(f\"  - Subtle SVG pattern saved to: {svg_file}\")\n    print(f\"Use these to gently adapt your digital space to your current energy.\")\n\n# Dual-mode: browser (Pyodide sets USER_INPUT) OR local CLI\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    _cli_main()";
+const DEMO_INPUT = "";
 
 async function loadPyodide_() {
   try {
     pyodide = await loadPyodide();
-    // Pre-load any packages the tool imports (pandas, numpy, etc.)
     try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
     document.getElementById('pyodide-status').style.display = 'none';
     document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      await runTool(true);
+    }
   } catch(e) {
     document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
   }
 }
 
-async function runTool() {
+async function runTool(isDemo) {
   if (!pyodide) return;
   const userInput = document.getElementById('user-input').value.trim();
   const btn = document.getElementById('run-btn');
@@ -738,7 +743,6 @@ async function runTool() {
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
     if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      // ── Interactive HTML app — launch inside a sandboxed iframe ──
       outEl.textContent = '';
       outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
       const iframe = document.createElement('iframe');
@@ -746,7 +750,6 @@ async function runTool() {
       iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
       iframe.srcdoc = output;
       outEl.appendChild(iframe);
-      // Auto-resize iframe to its content height
       iframe.addEventListener('load', () => {
         try {
           const h = iframe.contentDocument.body.scrollHeight;
@@ -754,7 +757,6 @@ async function runTool() {
         } catch(e) {}
       });
     } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -769,8 +771,14 @@ async function runTool() {
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     } else {
-      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
     }
   } catch(e) {
     document.getElementById('output').textContent = '❌ Error:\n' + e.message;

@@ -698,7 +698,7 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="Paste your brief, content, or design description here…"></textarea>
@@ -711,20 +711,25 @@ a { color: inherit; text-decoration: none; }
 <script>
 let pyodide = null;
 const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport re\n\n\nmock_content_db = {\n    \"travel\": {\n        \"2026\": [\"UserA: Sunset over the Mars colony domes!\", \"UserB: My first trip to Neo-Kyoto's holographic gardens.\"],\n        \"2023\": [\"UserC: Throwback to when we could actually fly without a biometric scan.\", \"UserD: Venice, before the sea walls.\"],\n        \"2018\": [\"UserE: That backpacking trip through Patagonia, pure bliss.\"],\n        \"default\": [\"UserF: Dream destinations for the digital nomad.\", \"UserG: Exploring local hidden gems.\"]\n    },\n    \"food\": {\n        \"2025\": [\"UserH: Replicating ancient Roman recipes with my food printer!\", \"UserI: The best synth-sushi in Sector 7.\"],\n        \"default\": [\"UserJ: What's cooking tonight?\", \"UserK: Gastro-sensory overload!\"]\n    },\n    \"art\": {\n        \"2024\": [\"UserL: My latest AI-generated masterpiece, tell me what you think.\", \"UserM: Vintage oil painting techniques revisited.\"],\n        \"default\": [\"UserN: Infinite creative possibilities.\", \"UserO: Inspiration strikes!\"]\n    }\n}\n\n\ndef chrono_search_weaver(query: str, year: str = None, platform: str = \"Instagram (Hypothetical)\") -> str:\n    \"\"\"Run a simulated chronological search and return results as text.\"\"\"\n    lower_query = query.lower()\n    results_found = []\n    if lower_query in mock_content_db:\n        if year and year in mock_content_db[lower_query]:\n            results_found.extend([f\"- {post} (Year: {year})\" for post in mock_content_db[lower_query][year]])\n        elif not year:\n            for y_key, posts in mock_content_db[lower_query].items():\n                if y_key != \"default\":\n                    results_found.extend([f\"- {post} (Year: {y_key})\" for post in posts])\n            if \"default\" in mock_content_db[lower_query]:\n                results_found.extend([f\"- {post} (General/Undated)\" for post in mock_content_db[lower_query][\"default\"]])\n\n    lines = [f\"## Chrono-Search Weaver: '{query}'\" + (f\" ({year})\" if year else \"\") + f\" on {platform}\", \"\"]\n    if results_found:\n        lines.append(f\"Found {len(results_found)} result(s):\")\n        lines += results_found\n    else:\n        lines.append(\"No matching content found in the simulated database.\")\n        lines.append(\"Try: travel, food, or art \u2014 optionally with a year like 2018 or 2024.\")\n    return \"\\\\n\".join(lines)\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Simulate a chronological content search. Input: 'query [year]' e.g. 'travel 2018'\"\"\"\n    if not text.strip():\n        return chrono_search_weaver(\"travel\")\n    parts = text.strip().split()\n    year_match = re.search(r'\\\\b(20\\\\d{2})\\\\b', text)\n    year = year_match.group(1) if year_match else None\n    query_parts = [p for p in parts if not re.match(r'^20\\\\d{2}$', p)]\n    query = \" \".join(query_parts).strip() or \"travel\"\n    return chrono_search_weaver(query, year)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    print(chrono_search_weaver(\"travel\", \"2018\"))\n    print()\n    print(chrono_search_weaver(\"food\"))";
+const DEMO_INPUT = "Brand: Momi, a slow-living Japanese skincare line. Audience: women 28-45 who value ritual and simplicity. Tone: quiet luxury, minimal, honest. Deliverable: Instagram caption series for a new serum launch.";
 
 async function loadPyodide_() {
   try {
     pyodide = await loadPyodide();
-    // Pre-load any packages the tool imports (pandas, numpy, etc.)
     try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
     document.getElementById('pyodide-status').style.display = 'none';
     document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      await runTool(true);
+    }
   } catch(e) {
     document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
   }
 }
 
-async function runTool() {
+async function runTool(isDemo) {
   if (!pyodide) return;
   const userInput = document.getElementById('user-input').value.trim();
   const btn = document.getElementById('run-btn');
@@ -738,7 +743,6 @@ async function runTool() {
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
     if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      // ── Interactive HTML app — launch inside a sandboxed iframe ──
       outEl.textContent = '';
       outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
       const iframe = document.createElement('iframe');
@@ -746,7 +750,6 @@ async function runTool() {
       iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
       iframe.srcdoc = output;
       outEl.appendChild(iframe);
-      // Auto-resize iframe to its content height
       iframe.addEventListener('load', () => {
         try {
           const h = iframe.contentDocument.body.scrollHeight;
@@ -754,7 +757,6 @@ async function runTool() {
         } catch(e) {}
       });
     } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -769,8 +771,14 @@ async function runTool() {
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     } else {
-      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
     }
   } catch(e) {
     document.getElementById('output').textContent = '❌ Error:\n' + e.message;

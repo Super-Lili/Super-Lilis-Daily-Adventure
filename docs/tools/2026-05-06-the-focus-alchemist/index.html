@@ -698,7 +698,7 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading Python engine&hellip; (first load ~5s)</div>
+<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="Paste a few sentences about how you're feeling or what's on your mind…"></textarea>
@@ -711,20 +711,25 @@ a { color: inherit; text-decoration: none; }
 <script>
 let pyodide = null;
 const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\ndef get_pomodoro_plan(work_minutes: int = 25, break_minutes: int = 5, cycles: int = 4) -> str:\n    \"\"\"Returns a Pomodoro session plan as text.\"\"\"\n    total_work = work_minutes * cycles\n    total_break = break_minutes * (cycles - 1)\n    total_time = total_work + total_break\n    lines = [\n        f\"## The Focus Alchemist: Pomodoro Plan\",\n        f\"\",\n        f\"- **Work block:** {work_minutes} min\",\n        f\"- **Break block:** {break_minutes} min\",\n        f\"- **Cycles:** {cycles}\",\n        f\"- **Total session time:** {total_time} min\",\n        f\"\",\n        f\"### Schedule:\",\n    ]\n    elapsed = 0\n    for i in range(1, cycles + 1):\n        lines.append(f\"  Cycle {i}: Work {elapsed:02d}m \u2192 {elapsed + work_minutes:02d}m\")\n        elapsed += work_minutes\n        if i < cycles:\n            lines.append(f\"  Break:   {elapsed:02d}m \u2192 {elapsed + break_minutes:02d}m\")\n            elapsed += break_minutes\n    lines += [\"\", \"Start your timer and focus \u2014 you've got this!\"]\n    return \"\\\\n\".join(lines)\n\n\ndef process(text: str = \"\") -> str:\n    \"\"\"Return a Pomodoro session plan. Optionally parse 'work=25 break=5 cycles=4' from text.\"\"\"\n    import re\n    work, brk, cycles = 25, 5, 4\n    if text.strip():\n        m = re.search(r'work\\\\s*[=:]\\\\s*(\\\\d+)', text, re.IGNORECASE)\n        if m:\n            work = int(m.group(1))\n        m = re.search(r'break\\\\s*[=:]\\\\s*(\\\\d+)', text, re.IGNORECASE)\n        if m:\n            brk = int(m.group(1))\n        m = re.search(r'cycles?\\\\s*[=:]\\\\s*(\\\\d+)', text, re.IGNORECASE)\n        if m:\n            cycles = int(m.group(1))\n    return get_pomodoro_plan(work, brk, cycles)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    # Example usage: 25 minutes work, 5 minutes break, 4 cycles\n    print(get_pomodoro_plan(work_minutes=25, break_minutes=5, cycles=4))";
+const DEMO_INPUT = "";
 
 async function loadPyodide_() {
   try {
     pyodide = await loadPyodide();
-    // Pre-load any packages the tool imports (pandas, numpy, etc.)
     try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
     document.getElementById('pyodide-status').style.display = 'none';
     document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      await runTool(true);
+    }
   } catch(e) {
     document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
   }
 }
 
-async function runTool() {
+async function runTool(isDemo) {
   if (!pyodide) return;
   const userInput = document.getElementById('user-input').value.trim();
   const btn = document.getElementById('run-btn');
@@ -738,7 +743,6 @@ async function runTool() {
     const output = pyodide.runPython('sys.stdout.getvalue()').trim();
     const outEl = document.getElementById('output');
     if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      // ── Interactive HTML app — launch inside a sandboxed iframe ──
       outEl.textContent = '';
       outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
       const iframe = document.createElement('iframe');
@@ -746,7 +750,6 @@ async function runTool() {
       iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
       iframe.srcdoc = output;
       outEl.appendChild(iframe);
-      // Auto-resize iframe to its content height
       iframe.addEventListener('load', () => {
         try {
           const h = iframe.contentDocument.body.scrollHeight;
@@ -754,7 +757,6 @@ async function runTool() {
         } catch(e) {}
       });
     } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      // ── SVG output — render as image ──
       outEl.textContent = '';
       outEl.style.background = '#f8f8f8';
       const wrapper = document.createElement('div');
@@ -769,8 +771,14 @@ async function runTool() {
       wrapper.appendChild(hint);
       outEl.appendChild(wrapper);
     } else {
-      // ── Plain text output ──
       outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
     }
   } catch(e) {
     document.getElementById('output').textContent = '❌ Error:\n' + e.message;
