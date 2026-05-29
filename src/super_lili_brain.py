@@ -1817,5 +1817,14 @@ def evolve():
     subprocess.run([_sys.executable, "docs/generate_site.py"], check=False)
 
 
+# Smoke test — catches unescaped f-string expressions in build_prompt at startup,
+# before any API call is made. Fails fast with a clear error rather than crashing mid-run.
+try:
+    build_prompt("1970-01-01")
+except Exception as _smoke_err:
+    raise RuntimeError(
+        f"build_prompt() smoke test failed — fix before running: {_smoke_err}"
+    ) from _smoke_err
+
 if __name__ == "__main__":
     evolve()
