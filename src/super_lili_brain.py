@@ -976,7 +976,10 @@ TEST_INPUT: [Write 3-6 sentences of REALISTIC sample input a real user of this t
 ---TEST---
 [A test_main.py file that imports and calls the main pipeline functions with sample data,
  asserts that output files are created, and can be run with: python test_main.py
- Must be self-contained — no external test frameworks needed, just assert statements.]
+ Must be self-contained — no external test frameworks needed, just assert statements.
+ CRITICAL: always import from `main`, never from the tool's concept name.
+   ✓ CORRECT:  from main import process, MyClass
+   ✗ WRONG:    from urban_respite_weave import process   ← file is always main.py]
 ---END---
 """
 
@@ -1294,12 +1297,54 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             print(f"  ⚠ Dependency install warning: {e}")
 
     # 5. Test file check
+    # Tests always run from within the tool's directory so that `import main` works.
+    # Gemini sometimes generates `from tool_concept_name import ...` instead of
+    # `from main import ...` — we create a thin alias file to handle both cases.
     if os.path.exists(test_py):
         try:
+            # Create a temporary alias: Gemini sometimes imports from the tool's concept
+            # name (e.g. `from urban_respite_weave import ...`) instead of `from main import`.
+            # Detect this pattern and create a thin alias stub so the test can run.
+            test_src = open(test_py, encoding="utf-8").read()
+            import re as _re
+            import sys as _sys
+            _stdlib = set(_sys.stdlib_module_names) if hasattr(_sys, "stdlib_module_names") else {
+                "os", "sys", "re", "json", "math", "time", "datetime", "pathlib",
+                "collections", "itertools", "functools", "io", "abc", "typing",
+                "random", "string", "copy", "hashlib", "base64", "struct",
+                "subprocess", "threading", "logging", "unittest", "ast",
+            }
+            alias_files_created = []
+            # Only alias `from X import` where X looks like a tool name (snake_case, not stdlib)
+            for m in _re.finditer(r"^from ([a-z][a-z0-9_]+) import", test_src, _re.MULTILINE):
+                mod = m.group(1)
+                if mod and mod != "main" and mod not in _stdlib:
+                    alias_path = f"{skill_dir}/{mod}.py"
+                    if not os.path.exists(alias_path):
+                        with open(alias_path, "w") as af:
+                            # Export ALL names including private (_prefixed) from main.py
+                            af.write(
+                                "import importlib.util, os as _os\n"
+                                "_spec = importlib.util.spec_from_file_location(\n"
+                                "    '_tool_main',\n"
+                                "    _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'main.py')\n"
+                                ")\n"
+                                "_mod = importlib.util.module_from_spec(_spec)\n"
+                                "_spec.loader.exec_module(_mod)\n"
+                                "globals().update({k: v for k, v in vars(_mod).items() if not k.startswith('__')})\n"
+                            )
+                        alias_files_created.append(alias_path)
             result = subprocess.run(
                 [sys.executable, test_py],
-                capture_output=True, text=True, timeout=60
+                capture_output=True, text=True, timeout=60,
+                cwd=skill_dir,
             )
+            # Clean up alias stubs
+            for af in alias_files_created:
+                try:
+                    os.remove(af)
+                except Exception:
+                    pass
             if result.returncode != 0:
                 return False, f"Tests failed: {result.stderr[:300]}"
             print(f"  ✓ Tests passed.")
