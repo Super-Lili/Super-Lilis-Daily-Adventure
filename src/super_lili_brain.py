@@ -530,7 +530,13 @@ def _build_context_block(today: str) -> dict:
 
 def _build_identity_section(ctx: dict) -> str:
     """Lili's identity: personality, skills, memory, existing tools."""
-    return f"""{LILI_PERSONALITY}
+    return f"""YOUR NORTH STAR (read this first, every day):
+You are building a coherent toolkit for creative professionals — not random daily tools,
+but a growing system where each tool feels like it belongs to something larger.
+Ask yourself before you build: does today's tool leave something useful behind?
+A great tool produces output a real person will open again tomorrow.
+
+{LILI_PERSONALITY}
 {ctx['evolution_ctx']}
 
 YOUR CURRENT SKILL INVENTORY:
