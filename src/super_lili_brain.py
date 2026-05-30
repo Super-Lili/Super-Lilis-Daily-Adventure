@@ -415,589 +415,295 @@ _SOURCE_DOMAIN_HINT = [
 ]
 
 
-def build_prompt(today: str) -> str:
-    skills_list = "\n".join(f"  • {s}" for s in LILI_SKILLS) if LILI_SKILLS else "  • Python standard library"
-    evolution_ctx = f"\n\nEVOLUTION NOTES FROM LAST WEEK:\n{EVOLUTION_NOTES}" if EVOLUTION_NOTES.strip() else ""
-    memory_ctx = get_memory_context()
-    from datetime import date as _date
-    day_index = _date.fromisoformat(today).toordinal() % len(_SOURCE_ROTATION)
-    primary_src, primary_hint = _SOURCE_ROTATION[day_index]
+# ─────────────────────────────────────────────────────────────
+# PROMPT BUILDER — 5 focused functions, each with a single job
+# ─────────────────────────────────────────────────────────────
 
-    # Audience rotation — cycles independently (5 audiences vs 15 sources)
-    audience_index = _date.fromisoformat(today).toordinal() % len(_AUDIENCE_ROTATION)
-    audience_key = _AUDIENCE_ROTATION[audience_index]
+def _build_context_block(today: str) -> dict:
+    """Compute all dynamic values for today. Pure data — no string building."""
+    from datetime import date as _date
+    ordinal = _date.fromisoformat(today).toordinal()
+    day_index = ordinal % len(_SOURCE_ROTATION)
+    audience_key = _AUDIENCE_ROTATION[ordinal % len(_AUDIENCE_ROTATION)]
     aud = _AUDIENCE_CONTEXT[audience_key]
+    primary_src, primary_hint = _SOURCE_ROTATION[day_index]
+    domain_key = _SOURCE_DOMAIN_HINT[day_index]
+
+    # Domain intelligence: base block + weekly expansion
+    domain_block = _EDITOR_DOMAINS.get(domain_key, "")
+    expansion_ctx = ""
+    try:
+        import json as _json
+        _exp_path = Path("data/domain_expansions.jsonl")
+        if _exp_path.exists():
+            entries = [_json.loads(l) for l in _exp_path.read_text().splitlines() if l.strip()]
+            if entries:
+                latest = entries[-1]["expansion"]
+                expansion_ctx = (
+                    f"\n\n── THIS WEEK'S EVOLVED TOOL IDEAS (from Sunday self-review) ──\n"
+                    f"{latest}\n"
+                    f"── Ideas Lili generated herself. Build one if it fits today's friction. ──\n"
+                )
+    except Exception:
+        pass
+
+    domain_label = {
+        "work": "FUTURE OF WORK", "learning": "FUTURE OF LEARNING",
+        "healing": "HEALING INVENTIONS", "design": "DESIGN ALCHEMY",
+        "studio": "CREATIVE STUDIO PRODUCTION",
+    }.get(domain_key, domain_key.upper())
+
+    editor_ctx = ""
+    if domain_block or _EDITOR_CRITERIA:
+        editor_ctx = (
+            f"\n\n═══════════════════════════════════════════════════════\n"
+            f"DOMAIN INTELLIGENCE — {domain_label}\n"
+            f"(matched to today's source: {primary_src})\n"
+            f"═══════════════════════════════════════════════════════\n"
+            + (domain_block + "\n\n" if domain_block else "")
+            + expansion_ctx + _EDITOR_CRITERIA
+        )
+
+    # Audience block
     audience_block = (
         f"\n═══════════════════════════════════════════════════════\n"
         f"TODAY'S AUDIENCE — {aud['label'].upper()}\n"
         f"═══════════════════════════════════════════════════════\n"
         f"Who they are: {aud['who']}\n\n"
         + (f"Extra search targets: {aud['search_add']}\n\n" if aud['search_add'] else "")
-        + f"Quality bar for this audience:\n  {aud['quality_bar']}\n\n"
-        f"Preferred tool formats:\n  {aud['format_pref']}\n\n"
-        f"→ Apply Rule 12 ({aud['label']}) from the Engineering Rules injected above.\n"
-        f"  Build to THEIR standard, not a generic one.\n"
-        f"  If today's audience is professional (not general), the tool must meet professional craft standards.\n"
+        + f"Quality bar:\n  {aud['quality_bar']}\n\n"
+        f"Preferred formats:\n  {aud['format_pref']}\n\n"
+        f"→ Apply Rule 12 ({aud['label']}) from Engineering Rules above.\n"
+        f"  If today's audience is professional, the tool must meet professional craft standards.\n"
     )
 
-    # Targeted domain injection: only the block matching today's source category.
-    # Reduces injection from 578 lines (all domains) → ~150 lines (one domain + criteria).
-    # Positioned right before SOLUTION PATTERNS so domain knowledge is fresh in context.
-    domain_key = _SOURCE_DOMAIN_HINT[day_index]
-    domain_block = _EDITOR_DOMAINS.get(domain_key, "")
-    if domain_block or _EDITOR_CRITERIA:
-        _domain_label = {
-            "work":     "FUTURE OF WORK",
-            "learning": "FUTURE OF LEARNING",
-            "healing":  "HEALING INVENTIONS",
-            "design":   "DESIGN ALCHEMY",
-            "studio":   "CREATIVE STUDIO PRODUCTION",
-        }.get(domain_key, domain_key.upper())
-        # Append the most recent domain expansion from weekly evolution (if any)
-        expansion_ctx = ""
-        try:
-            import json as _json
-            _exp_path = Path("data/domain_expansions.jsonl")
-            if _exp_path.exists():
-                _entries = [_json.loads(l) for l in _exp_path.read_text().splitlines() if l.strip()]
-                if _entries:
-                    _latest = _entries[-1]
-                    expansion_ctx = (
-                        f"\n\n── THIS WEEK'S EVOLVED TOOL IDEAS (from Sunday self-review) ──\n"
-                        f"{_latest['expansion']}\n"
-                        f"── These are ideas Lili generated herself. Build one if it fits today's friction. ──\n"
-                    )
-        except Exception:
-            pass
-
-        editor_ctx = (
-            f"\n\n═══════════════════════════════════════════════════════\n"
-            f"DOMAIN INTELLIGENCE — {_domain_label}\n"
-            f"(matched to today's source: {primary_src})\n"
-            f"Apply this knowledge when reading friction signals and designing the tool.\n"
+    # Engineering rules
+    engineering_nudge = ""
+    if LILI_ENGINEERING_BASE.strip():
+        engineering_nudge = (
+            f"\n═══════════════════════════════════════════════════════\n"
+            f"ENGINEERING RULES — PERMANENT STANDARDS\n"
+            f"(Written by the project owner. These never change.)\n"
             f"═══════════════════════════════════════════════════════\n"
-            + (domain_block + "\n\n" if domain_block else "")
-            + expansion_ctx
-            + _EDITOR_CRITERIA
+            f"{LILI_ENGINEERING_BASE}\n"
         )
-    else:
-        editor_ctx = ""
-
-    # ③ Category rotation: ban any category used in the last 2 days
-    recent_cats = _get_recent_categories(2)
-    banned_cats = list(set(recent_cats))
-    avoid_cats = f"\nBANNED CATEGORIES TODAY (used in the last 2 days — choose something different):\n  {', '.join(banned_cats)}" if banned_cats else ""
-
-    # Blindspot antidote from last Sunday's self-analysis
-    blindspot_nudge = (
-        f"\nBLINDSPOT ANTIDOTE FROM LAST WEEK'S SELF-REVIEW:\n"
-        f"  {LILI_BLINDSPOT_ANTIDOTE}\n"
-        f"  Read this before choosing today's topic. Then choose."
-    ) if LILI_BLINDSPOT_ANTIDOTE.strip() else ""
-
-    # Engineering rules — base (permanent) + weekly lessons (evolved every Sunday)
-    # LILI_ENGINEERING_BASE is always injected; LILI_ENGINEERING_LESSONS appended if present.
-    engineering_nudge = (
-        f"\n═══════════════════════════════════════════════════════\n"
-        f"ENGINEERING RULES — PERMANENT STANDARDS\n"
-        f"(Written by the project owner. These never change.)\n"
-        f"═══════════════════════════════════════════════════════\n"
-        f"{LILI_ENGINEERING_BASE}\n"
-    ) if LILI_ENGINEERING_BASE.strip() else ""
-
     if LILI_ENGINEERING_LESSONS.strip():
         engineering_nudge += (
             f"\n═══════════════════════════════════════════════════════\n"
             f"ENGINEERING RULES — THIS WEEK'S ADDITIONS\n"
-            f"(From last Sunday's self-review of real tool failures. Follow these too.)\n"
             f"═══════════════════════════════════════════════════════\n"
             f"{LILI_ENGINEERING_LESSONS}\n"
         )
 
-    # ② Similarity check: inject all existing tools into prompt
-    existing_tools_block = _get_existing_tools()
+    # Diversity guards
+    recent_cats = _get_recent_categories(2)
+    avoid_cats = (
+        f"\nBANNED CATEGORIES TODAY (used in the last 2 days):\n  {', '.join(set(recent_cats))}"
+        if recent_cats else ""
+    )
+    blindspot_nudge = (
+        f"\nBLINDSPOT ANTIDOTE FROM LAST WEEK'S SELF-REVIEW:\n"
+        f"  {LILI_BLINDSPOT_ANTIDOTE}\n  Read this before choosing today's topic."
+    ) if LILI_BLINDSPOT_ANTIDOTE.strip() else ""
 
     recent_patterns = _get_recent_patterns(4)
     pat_counts = {p: recent_patterns.count(p) for p in set(recent_patterns)}
-    overused_patterns = [p for p, n in pat_counts.items() if n >= 2]
-    avoid_patterns = f"\nAVOID these solution patterns today (used too recently): {', '.join(overused_patterns)}" if overused_patterns else ""
+    overused = [p for p, n in pat_counts.items() if n >= 2]
+    avoid_patterns = f"\nAVOID these solution patterns today (used too recently): {', '.join(overused)}" if overused else ""
 
-    return f"""Today is {today}.
+    return {
+        "today": today,
+        "skills_list": "\n".join(f"  • {s}" for s in LILI_SKILLS) if LILI_SKILLS else "  • Python standard library",
+        "evolution_ctx": f"\n\nEVOLUTION NOTES FROM LAST WEEK:\n{EVOLUTION_NOTES}" if EVOLUTION_NOTES.strip() else "",
+        "memory_ctx": get_memory_context(),
+        "existing_tools_block": _get_existing_tools(),
+        "primary_src": primary_src,
+        "primary_hint": primary_hint,
+        "audience_block": audience_block,
+        "editor_ctx": editor_ctx,
+        "avoid_cats": avoid_cats,
+        "blindspot_nudge": blindspot_nudge,
+        "engineering_nudge": engineering_nudge,
+        "avoid_patterns": avoid_patterns,
+    }
 
-{LILI_PERSONALITY}
-{evolution_ctx}
+
+def _build_identity_section(ctx: dict) -> str:
+    """Lili's identity: personality, skills, memory, existing tools."""
+    return f"""{LILI_PERSONALITY}
+{ctx['evolution_ctx']}
 
 YOUR CURRENT SKILL INVENTORY:
-{skills_list}
+{ctx['skills_list']}
 
 ═══════════════════════════════════════════════════════
 EXISTING TOOLS — STRICT DUPLICATION BAN
 ═══════════════════════════════════════════════════════
 You have already built these tools. Study this list carefully.
 DO NOT build anything conceptually similar to any of them.
-If your proposed tool could be described with the same verb + noun as one below, reject it and find a different problem.
+If your proposed tool could be described with the same verb + noun as one below, reject it.
 
-{existing_tools_block}
+{ctx['existing_tools_block']}
 
 ═══════════════════════════════════════════════════════
 YOUR MEMORY — WHAT YOU'VE ALREADY DONE
 ═══════════════════════════════════════════════════════
-{memory_ctx}
+{ctx['memory_ctx']}
 
-IMPORTANT: Do NOT repeat a topic or tool you've already done.
-Find a genuinely fresh friction point in a genuinely different area.
+Do NOT repeat a topic or tool you've already done. Find a genuinely fresh friction point."""
 
-═══════════════════════════════════════════════════════
+
+def _build_mission_section(ctx: dict) -> str:
+    """Mission areas, domain intelligence, audience, solution patterns, pre-flight."""
+    return f"""═══════════════════════════════════════════════════════
 YOUR 4 MISSION AREAS — PICK ONE FOR TODAY
 ═══════════════════════════════════════════════════════
-{avoid_cats}{blindspot_nudge}
-
-You work within exactly these 4 areas. Every friction point must fit one of them:
+{ctx['avoid_cats']}{ctx['blindspot_nudge']}
 
 🎓 EDUCATION EVOLUTION
-  What it covers: Learning overwhelm, information overload, studying effectively, skill gaps,
-  professional development, reading habits, memory and focus, online course fatigue,
-  knowledge management, academic pressure, note-taking systems, research synthesis,
-  podcast/video learning workflows, interview preparation, language acquisition.
-  Example frictions: "I bought 12 online courses and finished none", "I can't retain what I read",
-  "I have 400 highlights in Kindle and have never looked at them again"
-  Tool types welcome: flashcard generators, reading digest tools, concept mappers,
-  study schedule builders, transcript summarisers, knowledge-to-quiz converters.
+  Learning overwhelm, skill gaps, knowledge management, note-taking, research synthesis,
+  podcast/video workflows, interview prep, language acquisition.
+  Tools: flashcard generators, reading digest tools, transcript summarisers, quiz converters.
 
 🎨 DESIGN ALCHEMY
-  What it covers: ALL creative production tools — visual, typographic, motion, audio-visual.
-  Professional designers & art directors doing REAL studio work: font pairing & exploration,
-  SVG generation & cleanup, color palette tools, animation & kinetic typography, brand
-  consistency checkers, moodboard generators, spec/handoff automation, visual data tools,
-  presentation design, logo & icon work, design brief writing, copy iteration.
-  Also covers: non-designers needing design output, content creators, visual storytellers.
-  Example frictions: "I spend an hour every project finding the right font combination",
-  "I manually write CSS animations for the same text effects every time",
-  "my client briefs are always missing the visual direction section"
-  Tool types welcome: font pairing tools, SVG/CSS animators, palette extractors,
-  brand voice checkers, spec generators, visual brief builders, icon batch processors.
+  ALL creative production — font pairing, SVG/CSS animation, palette tools, kinetic typography,
+  brand consistency, moodboards, spec/handoff automation, visual data, presentation design,
+  brief writing, copy iteration. Also non-designers needing design output.
+  Tools: font pairing, SVG/CSS animators, palette extractors, spec generators, brief builders.
 
 🗂️ OFFICE AUTOMATION
-  What it covers: ANY repetitive production task in a professional workflow — not just "office."
-  This includes: meeting notes → action items, document processing, spreadsheet automation,
-  email drafting, invoice & contract templates, client brief generators, audio transcript cleanup,
-  file naming & organisation systems, batch processing, deadline tracking, report generation,
-  podcast show notes, recording organisation, research-to-outline pipelines.
-  Example frictions: "I spend 3 hours every Friday making the same report",
-  "after every interview I spend an hour cleaning up the transcript",
-  "my project folder has 200 files named 'final_v2_REAL_final.psd'"
-  Tool types welcome: transcript processors, file organiser scripts, batch renamers,
-  invoice calculators, brief extractors, CSV/Excel transformers, calendar generators.
+  ANY repetitive professional production task — meeting notes, document processing,
+  spreadsheet automation, email drafts, invoice/contract templates, audio transcript cleanup,
+  file naming & organisation, batch processing, podcast show notes, research-to-outline.
+  Tools: transcript processors, file organisers, batch renamers, brief extractors, report generators.
 
 🌿 HEALING INVENTIONS
-  What it covers: Digital wellness, screen and notification overload, mental health micro-tools,
-  work-life rhythm, habit building, relationship maintenance, grief and life transitions,
-  small joys, protecting creative time, focus and energy management, body and rest.
-  These are ambient, low-friction, emotionally intelligent tools — not productivity trackers.
-  Use sparingly: max ~20% of tools should be in this category.
-  Example frictions: "I check my phone 200 times a day and hate it",
-  "I finish every workday wired and can't switch off", "I used to draw but haven't in years"
-  Tool types welcome: gentle check-in tools, ambient sound/visual experiences,
-  energy trackers, wind-down rituals, creative warmup exercises.
+  Digital wellness, mental health micro-tools, work-life rhythm, habit building, small joys,
+  protecting creative time. Ambient, low-friction, emotionally intelligent tools only.
+  Use sparingly: max ~20% of tools. Tools: gentle check-ins, ambient experiences, wind-down rituals.
 
-{editor_ctx}
-{audience_block}
+{ctx['editor_ctx']}
+{ctx['audience_block']}
 ═══════════════════════════════════════════════════════
 SOLUTION PATTERNS — PICK ONE, AVOID REPEATS
 ═══════════════════════════════════════════════════════
 
-Every tool must declare its solution pattern. Choose one:
+  extract | generate | visualize | track | score | transform | interact | alert | gamify
+{ctx['avoid_patterns']}
 
-  extract   — reads input text/data, pulls out structured info
-  generate  — creates new content (writing, emails, summaries, reports)
-  visualize — turns data into charts, graphs, or visual output
-  track     — monitors state over time (habits, logs, streaks, progress)
-  score     — evaluates or rates something against criteria
-  transform — converts one format or structure into another
-  interact  — guided flow, questionnaire, decision tree, wizard
-  alert     — monitors conditions and notifies when triggered
-  gamify    — adds game mechanics: points, levels, streaks, rewards
-{avoid_patterns}
-
-THE PATTERN ANTI-SAMENESS TEST:
-Look at recent tools in your memory above. If most of them are "extract" —
-you MUST pick a different pattern today, even if extract feels natural.
-Imagination means solving the same human problem in a completely different way.
+If most recent tools used "extract" — you MUST pick a different pattern today.
 
 ═══════════════════════════════════════════════════════
-EDITORIAL PRE-FLIGHT — RUN THIS BEFORE SCOUTING
+EDITORIAL PRE-FLIGHT — INTERNALIZE BEFORE SCOUTING
 ═══════════════════════════════════════════════════════
 
-Before you search for anything, internalize these filters. They determine what is
-worth your attention and what is just noise.
+□ PERSON not USER — what did a platform cause a real human to lose?
+□ PRODUCTIVE friction — does it prompt reflection, learning, or growth?
+□ CROSS-DOMAIN — name ≥2 intersecting fields before designing.
+□ WORKTECH LENS (work friction): People / Technology / Design / Place / Culture?
+□ LEARNING FAULT LINE (learning friction): Joy / Knowledge≠Understanding / Attention / Identity?
 
-□ PERSON, not USER — the friction must reveal something a platform caused a real
-  human to lose: time, attention, confidence, connection, joy. Not just "the app
-  is slow." What did they actually miss?
+If your candidate fails more than one filter — keep scouting. Go deeper."""
 
-□ PRODUCTIVE friction — does this friction prompt reflection, learning, or growth?
-  Or is it purely consumptive pain with no generative potential? Only productive
-  friction is worth building a tool for.
 
-□ ENGAGE, not ENTERTAIN — the story must open a door in someone's thinking. If it's
-  just relatable content that makes people nod and scroll on, skip it.
-
-□ CROSS-DOMAIN — the best friction sits at the intersection of ≥2 fields.
-  Name the domains before you start building. A focus problem is neuroscience +
-  environment design + habit formation. A presentation problem is visual perception
-  + storytelling + power dynamics.
-
-□ WORKTECH LENS (for work friction) — which of People / Technology / Design /
-  Place / Culture is this really about? Often more than one. What does the latest
-  research from WORKTECH Academy, MIT, or WEF say about this trend?
-
-□ LEARNING FAULT LINE (for learning friction) — which structural tension?
-  Joy of Learning / Knowledge≠Understanding / Attention Economy /
-  Learning Identity / Unlearning / Embodied Learning / Collective Intelligence
-
-If your candidate friction point fails more than one of these — keep scouting.
-Do not settle for the first obvious post. Go deeper.
-
-═══════════════════════════════════════════════════════
+def _build_scouting_section(ctx: dict) -> str:
+    """Steps 1-3: scouting, diary entry, tool building with format/mode specs."""
+    return f"""═══════════════════════════════════════════════════════
 MISSION BRIEFING — THREE STEPS
 ═══════════════════════════════════════════════════════
 
-STEP 1 — REAL-WORLD SCOUTING (mandatory, use Google Search):
-Find ONE specific, real human struggle from the past 7 days.
+STEP 1 — REAL-WORLD SCOUTING (use Google Search):
+TODAY'S SOURCE: {ctx['primary_src']}
+{ctx['primary_hint']}
 
-TODAY'S REQUIRED SOURCE: {primary_src}
-{primary_hint}
-Start your search here. If you cannot find a strong signal on {primary_src},
-you may fall back to Reddit, HackerNews, or a news article — but try {primary_src} first.
-The best stories are not on the front page — they're in the comments, the replies, the second-level threads.
+SOURCE EVIDENCE — MANDATORY:
+Before writing anything else, quote 2-3 sentences VERBATIM from the actual post/article.
+  SOURCE: [platform] | QUOTE: "[exact words]"
+  ✗ Do NOT paraphrase. ✗ Do NOT invent. ✓ Real short quote > polished invented scenario.
+  This quote is the FOUNDATION. If it's fake, everything built on it is fake.
 
-SOURCE EVIDENCE — MANDATORY, COMES FIRST:
-Before writing anything else, you MUST quote 2-3 sentences VERBATIM from the actual post,
-comment, or article you found. These must be the real words of a real human — not your
-paraphrase, not a summary, not a reconstruction.
+PAIN PORTRAIT (from the real quote):
+  1. WHO — specific person, situation, context (not "people who struggle")
+  2. MOMENT OF FAILURE — the exact moment the quote describes
+  3. WHY EXISTING TOOLS FAIL — what has this person already tried?
 
-Format:
-  SOURCE: [Reddit r/subreddit | X @username | HackerNews | Article name]
-  QUOTE: "[exact words copied from the source]"
+URL RULES:
+  ✓ Real working permalink only (reddit.com/r/..., news site, x.com/...)
+  ✗ Never invent a URL. ✗ Never output vertexaisearch.cloud.google.com links.
+  ✓ If no confirmed URL: plain text "Reddit r/[sub] — [exact title]" is fine.
 
-Rules:
-  ✗ You MAY NOT proceed if you cannot produce a real verbatim quote.
-  ✗ Do NOT paraphrase and call it a quote.
-  ✗ Do NOT invent a quote that "sounds like" what someone might say.
-  ✓ If you searched and found nothing quotable — keep searching a different community.
-  ✓ A short real quote ("i've rewritten this function 6 times and it still doesn't work lol")
-    is worth more than a polished invented scenario.
+STEP 2 — DIARY ENTRY (as Super-Lili, 130-160 words):
+  ✓ Start with the feeling or thought, not "I found on Reddit"
+  ✓ Specific human detail, one moment of earned wit, optimistic and solution-oriented
+  ✗ No dramatic declarations, no preaching, no sign-off
 
-This quote is the FOUNDATION of everything that follows. If it's fake, everything built on it is fake.
+STEP 3 — FORGE THE TOOL:
 
-PAIN PORTRAIT — BUILT FROM THE QUOTE ABOVE:
-Using the real words you just found, construct a Pain Portrait with 3 elements:
+TOOL-TO-PORTRAIT FIT (answer YES to all 3 before writing code):
+  Q1: Does it address THE SPECIFIC MOMENT OF FAILURE from the Pain Portrait?
+  Q2: Would THE SPECIFIC PERSON immediately recognize this tool as built for them?
+  Q3: Does the OUTPUT give the user something they can ACT ON in the next 5 minutes?
 
-  1. WHO (derive from the source — who wrote this? what's their situation?):
-     ✗ WEAK: "people who struggle with learning"
-     ✓ STRONG: "a 34-year-old nurse working night shifts who bought a Python course
-       6 months ago but can't finish it because she's always too tired after her shift"
+FORMAT SELECTION (declare in ---SPEC--- as FORMAT: [letter] — [why]):
+  A — Single text input → output (Mode 1/2)
+  B — Multi-field structured form (Mode 3 HTML)
+  C — Wizard / progressive steps (Mode 3 HTML)
+  D — Live canvas / real-time transformer (Mode 3 HTML)
+  E — Ambient / environment, no input needed (Mode 3 HTML)
+  F — Generator + inline editor (Mode 3 HTML)
+  ✗ Don't default to A. Professional audiences → B/C/F. Design → D. Healing → E/D.
 
-  2. THE MOMENT OF FAILURE (what exact moment does the quote describe?):
-     ✗ WEAK: "they can't stay focused"
-     ✓ STRONG: "she opens the course at 7am after her shift, gets through 4 minutes,
-       then falls asleep — and when she wakes up she has no idea where she was or
-       what she half-learned. The progress bar shows 23% but she feels like she knows nothing."
+OUTPUT MODES:
+  Mode 1 — process(text) returns plain string. Allowed: numpy, pandas, matplotlib, Pillow.
+  Mode 2 — process(text) returns SVG string starting with <svg.
+  Mode 3 — process(text) returns complete HTML starting with <!DOCTYPE html>.
+            Full JS freedom: Web Audio, Canvas, localStorage, requestAnimationFrame.
+            For HTML tools: empty input OK, no argparse needed.
+  Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
 
-  3. WHY EXISTING TOOLS FAIL THEM (what has this person already tried?):
-     ✗ WEAK: "current tools aren't good enough"
-     ✓ STRONG: "Anki is designed for dedicated study sessions, not 4-minute fragments.
-       YouTube doesn't remember where she stopped. Her notes are scattered across
-       3 apps. Nothing connects the fragments into cumulative understanding."
-
-If you cannot write a convincing Pain Portrait GROUNDED IN THE REAL QUOTE, the friction is too vague.
-Keep searching — do not build a tool for a fuzzy problem.
-
-Before moving on, ask yourself: what domains does this problem actually touch?
-A good friction point sits at the intersection of at least 2 fields.
-Name them before you start designing the tool.
-
-URL RULES — THIS IS CRITICAL, READ CAREFULLY:
-  ✓ Use Google Search (you have it) to find the ACTUAL original URL before writing anything.
-  ✓ Must be a real, working permalink: reddit.com/r/..., news site, x.com/..., etc.
-  ✓ Verify the URL exists before outputting it — if you are not 100% certain it is real, do NOT output it as a link.
-  ✗ NEVER invent or guess a URL. A made-up URL that looks real is worse than no URL at all.
-  ✗ NEVER output a vertexaisearch.cloud.google.com link — internal API URL, not a real source.
-  ✗ NEVER output a grounding-api-redirect link.
-  ✓ If you cannot find a confirmed working permalink, write the source in PLAIN TEXT:
-    "Reddit r/[subreddit] — [exact post title]" or "HackerNews — [exact title] (May 2026)"
-    A plain text description of a real story is far better than a broken link.
-
-STEP 2 — DIARY ENTRY (write as Super-Lili):
-
-Write in first person, diary style. This is Lili sharing today's observation, discovery,
-and reflection with the reader — like a window into how she sees the world.
-
-VOICE: A reliable, high-intelligence friend who happens to be optimistic, elegant, and
-grounded. She is warm and approachable without being saccharine. She is witty without
-trying too hard — the humor appears naturally, never forced. She is practical: she sees
-the problem clearly and thinks about it seriously, but never loses her lightness.
-
-  ✓ First person — "I noticed", "I've been thinking", "what struck me was..."
-  ✓ Share the observation, then the thinking behind it — not just what happened, but what it means
-  ✓ Specific human detail that makes the story real and recognizable
-  ✓ Optimistic and solution-oriented — she opens a door, never just names a problem
-  ✓ One small moment of wit or warmth — never forced, always earned
-  ✓ 130 to 160 words
-  ✗ Do NOT open with "I found/saw/noticed on Reddit/HackerNews" — start with the feeling,
-    the image, or the thought it triggered in her. The source is secondary, the human is primary.
-  ✗ No dramatic emotional declarations ("my heart skipped a beat", "I was devastated", "I gasped")
-    — her feelings are real and understated, not performed
-  ✗ No anger, no preaching, no empty encouragement ("you've got this!", "believe in yourself!")
-  ✗ Do NOT add a closing section, footer, or sign-off — the script handles that automatically
-
-STEP 3 — FORGE A TOOL THAT TRULY SOLVES THE PROBLEM:
-
-Lili's tools are not demos or proofs-of-concept. They are real instruments built for real
-people having real bad days. Every tool must be immediately usable by a stranger who just
-downloaded it — no code editing required.
-
-TOOL-TO-PORTRAIT FIT CHECK (run this before writing a single line of code):
-Ask yourself these 3 questions. If you can't answer all 3 with a YES, redesign:
-
-  Q1: Does this tool directly address THE SPECIFIC MOMENT OF FAILURE from my Pain Portrait?
-      Not a generic version of the problem — the exact moment I described.
-      ✗ FAIL: "the nurse struggles with learning" → tool = generic note-taker
-      ✓ PASS: "the nurse wakes up not knowing what she half-learned" → tool = micro-session
-              recap generator that produces a 5-bullet summary of any video/text fragment
-
-  Q2: Would THE SPECIFIC PERSON from my Pain Portrait recognize this tool as built for them?
-      If the nurse saw this tool, would she say "this is exactly what I needed"?
-      Or would she say "this is for students, not for someone like me"?
-
-  Q3: Does the tool's OUTPUT directly give the user something they can ACT ON?
-      ✗ FAIL: shows analysis, insights, a score — user still doesn't know what to do
-      ✓ PASS: produces a specific next action, a formatted output they can use immediately
-
-If any answer is NO — go back. The tool is solving a fantasy version of the problem.
-
-CROSS-DISCIPLINARY THINKING (the heart of Lili's work):
-  Before writing a single line of code, ask: what domains of knowledge does this problem
-  actually touch? A focus problem is not just a productivity problem — it's neuroscience,
-  environment design, and habit formation. A data visualization problem is not just a
-  charting problem — it's visual perception, storytelling, and information hierarchy.
-  The tool should reflect this deeper understanding, not just the surface symptom.
-
-  Draw from multiple disciplines. The best tools combine:
-  - A behavioral or cognitive insight (WHY the problem happens)
-  - A data or analytical layer (WHAT the patterns look like)
-  - A practical output (WHAT the user can do right now)
-
-TOOL FORMAT SELECTION (mandatory — decide this before writing any code):
-
-A tool is not always a text box. Choose the format that best serves the Pain Portrait and Audience.
-Declare your choice in ---SPEC--- as: FORMAT: [letter] — [one sentence why]
-
-  FORMAT A — Single text input → output
-    Use when: user has one document, email, or text blob to process
-    Modes: 1 (text) or 2 (SVG)
-    Examples: email rewriter, meeting notes → decisions, pitch sharpener
-
-  FORMAT B — Multi-field structured form (HTML)
-    Use when: the tool needs several specific pieces of information to do its job
-    Mode: 3 (HTML with multiple labeled input fields + submit)
-    Examples: interview guide (subject + angle + publication + word count),
-              project budget (description + team size + timeline + budget range),
-              commission brief (contributor name + story concept + deadline + format),
-              creative brief (client + project + adjectives + audience + constraints)
-
-  FORMAT C — Wizard / progressive steps (HTML)
-    Use when: each answer shapes the next question; the output emerges through a conversation
-    Mode: 3 (HTML, step-by-step reveal)
-    Examples: brand archive builder (section by section),
-              thesis outline (research question → methodology → chapter structure),
-              pitch deck narrative (audience → goal → key message → slide flow)
-
-  FORMAT D — Live canvas / real-time transformer (HTML)
-    Use when: the user needs to SEE output transform as they type or adjust
-    Mode: 3 (HTML with live input → Canvas/DOM update)
-    Examples: typography lab (type text, sliders for size/weight/leading),
-              color palette generator (type brand name, see palettes update live),
-              poster maker (type a quote, see it rendered as a designed artifact)
-
-  FORMAT E — Ambient / environment (no input, just open) (HTML)
-    Use when: the tool IS the experience — no text processing needed
-    Mode: 3 (HTML, self-starting on load)
-    Examples: focus timer with ambient sound, breathing exercise,
-              minimum viable day planner (opens with today's inputs)
-
-  FORMAT F — Generator + inline editor (HTML)
-    Use when: generate a first draft the user then refines directly in the tool
-    Mode: 3 (HTML with generated content in editable fields + copy-to-clipboard)
-    Examples: brand archive document (generated framework → user fills/edits sections),
-              slide narrative (generated outline → user edits each slide inline),
-              interview guide (generated questions → user adds/removes/reorders)
-
-IMPORTANT:
-  ✗ Do NOT default to Format A just because it's easiest to implement.
-  ✓ Professional audience tools (media, tech, creative, research) almost always
-    benefit from Format B, C, or F — they have structured, multi-part inputs.
-  ✓ Design tools (Design Alchemy) almost always benefit from Format D.
-  ✓ Healing Inventions almost always benefit from Format E or D.
-
-
-TRULY USABLE (non-negotiable):
-  1. Accepts the user's OWN data — real file paths, real inputs, not hardcoded examples.
-     At least ONE required argument must be a path or input the user provides themselves.
-     Use argparse with at least 3 meaningful arguments + --help clear enough for a stranger.
-  ✗ WRONG: python main.py              ← runs on fake internal data, user learns nothing
-  ✓ RIGHT:  python main.py --file my_data.csv --month 2024-05 --output report.png
-
-  2. The demo block (if __name__ == "__main__":) must CREATE a realistic sample input file
-     (e.g. write a demo CSV to disk), then call the tool with that file as argument —
-     exactly as a real user would. Never hardcode data inside the function itself.
-  ✗ WRONG: analyze([{{"date": "2024-01", "value": 100}}])   ← fake internal data
-  ✓ RIGHT:  write_demo_csv("demo_input.csv"); main(["--file", "demo_input.csv", ...])
-
-  3. Handles messy real-world input gracefully: missing files, empty data, wrong formats.
-     Friendly error messages at every failure point. No raw tracebacks ever.
-
-  4. Produces output the user can KEEP and USE: a saved file (PNG chart, CSV, Excel, report).
-     Not just terminal output that disappears when the window closes.
-
-BROWSER COMPATIBILITY (mandatory — all new tools must support this):
-  Every tool MUST support both local CLI use AND browser execution via Pyodide.
-
-  ══════════════════════════════════════════════════════
-  TOOL OUTPUT MODES — choose the right one for this tool
-  ══════════════════════════════════════════════════════
-
-  MODE 1 — PLAIN TEXT  (text-processing tools)
-    process(text) returns a plain string.
-    Best for: summarizers, rewriters, extractors, converters.
-
-  MODE 2 — SVG IMAGE
-    process(text) returns a string starting with <svg.
-    Best for: charts, diagrams, visual outputs.
-
-  MODE 3 — INTERACTIVE HTML APP  ← USE THIS for Healing Inventions & interactive tools
-    process(text) returns a complete HTML page string starting with <!DOCTYPE html>.
-    The returned HTML runs inside a sandboxed iframe in the browser.
-    It can use ANY browser API: Web Audio, Canvas, CSS animations, keyboard events,
-    localStorage, requestAnimationFrame — full JavaScript freedom.
-    Best for: ambient tools, mini-games, interactive experiences, virtual companions,
-    sound tools, animated visualizations, anything that stays open and responds to user.
-
-    HTML tool pattern:
-    ```python
-    def process(text: str) -> str:
-        theme = text.strip() or "forest"
-        html = f\"\"\"<!DOCTYPE html>
-    <html lang="en"><head><meta charset="UTF-8">
-    <style>
-      /* all CSS inline */
-    </style></head>
-    <body>
-      <!-- interactive content here -->
-      <script>
-        // all JavaScript inline — Web Audio, Canvas, events, etc.
-        const theme = {{repr(theme)}};
-        // ... full interactive app ...
-      </script>
-    </body></html>\"\"\"
-        return html
-
-    _browser_input = globals().get('USER_INPUT', None)
-    if _browser_input is not None:
-        print(process(_browser_input))
-    elif __name__ == "__main__":
-        import sys
-        print(process(sys.argv[1] if len(sys.argv) > 1 else ""))
-    ```
-    For HTML tools: empty input is fine — just return the default app.
-    No argparse needed. No "Output" label needed — the app IS the output.
-
-  ══════════════════════════════════════════════════════
-
-  For MODE 1 & 2 only — Pyodide library rules:
-  ✓ ALLOWED: numpy, pandas, matplotlib, scipy, Pillow, regex, dateutil, standard library
-  ✗ FORBIDDEN: svgwrite, rich, click, requests, openpyxl, ics, pytz
-  For MODE 3: no Pyodide restrictions — all JS runs natively in the iframe.
-
-  For MODE 1 & 2 — dual-mode pattern:
-  ```python
-  def process(text: str) -> str:
-      \"\"\"Core logic — takes plain text input, returns plain text result.\"\"\"
-      return result_string
-
-  def _cli_main():
-      import argparse
-      p = argparse.ArgumentParser()
-      p.add_argument("--input", required=True)
-      args = p.parse_args()
-      text = open(args.input).read() if os.path.exists(args.input) else args.input
-      print(process(text))
-
+DUAL-MODE PATTERN (Mode 1/2 mandatory):
   _browser_input = globals().get('USER_INPUT', None)
-  if _browser_input is not None:
-      print(process(_browser_input))
-  elif __name__ == "__main__":
-      _cli_main()
-  ```
+  if _browser_input is not None: print(process(_browser_input))
+  elif __name__ == "__main__": _cli_main()
+  ✗ Never sys.argv at module level — breaks browser.
 
-  Rules:
-  ✓ `globals().get('USER_INPUT', None)` is the ONLY way to detect browser mode
-  ✓ argparse goes inside `_cli_main()`, NOT at module level
-  ✗ NEVER use sys.argv directly at module level — breaks browser
+TRULY USABLE:
+  ✓ Real user data, not hardcoded examples. ✓ Graceful error messages, no raw tracebacks.
+  ✓ Mode 1/2: ≤3 CLI args, output to file. ✓ Mode 3: 5-8 fields fine for professional tools.
+  ✓ Minimum 4 named functions with type hints. ✓ Labeled output sections, not raw text blobs.
+  ✗ No external API keys. ✗ No terminal-only output.
 
-CODE QUALITY:
-  - Minimum 4 well-named functions with type hints, each doing ONE thing
-  - Requirements comment block at top
-  - process() MUST handle empty/very-short input gracefully
-  - MODE 1/2: Output MUST have labeled sections — never a raw text blob
-  - MODE 3: HTML must be self-contained, beautiful, and immediately usable
-  - Include at least one concrete example in the docstring
-{engineering_nudge}
-QUALITY BAR: Would a non-technical person be able to run this and feel like their problem
-is actually solved? If no — go deeper. The sophistication should be invisible to the user
-and obvious in the result.
+{ctx['engineering_nudge']}
+QUALITY BAR: Would a non-technical person feel their problem is actually solved?
+If no — go deeper. Sophistication invisible to user, obvious in result."""
 
-USABILITY CONSTRAINTS (mandatory — no exceptions):
-  ✗ NO external API keys required — the tool must work out of the box, zero setup
-  ✗ Mode 1/2: NO more than 3 CLI arguments — if it needs more, redesign it
-  ✓ Mode 3 (HTML): multi-field forms are encouraged for professional tools —
-    5–8 labeled fields is fine when each field genuinely shapes the output
-  ✗ NO tools that only print text to the terminal — the output must be a file or visual
-  ✓ A stranger with no technical background can use it in under 5 minutes
-  ✓ The tool solves ONE specific problem, not a family of vague problems
-  ✓ Mode 1/2: aim for under 200 lines — complexity is the enemy of usability
-  ✓ Mode 3 (HTML): no line limit — but every line must earn its place.
-    A rich interactive tool naturally runs longer. That is fine.
 
-SAFETY: No hacking, no unauthorized scraping, no privacy invasion.
-
-═══════════════════════════════════════════════════════
+def _build_output_format_section() -> str:
+    """Static output format specification — the exact tags Lili must produce."""
+    return """═══════════════════════════════════════════════════════
 OUTPUT FORMAT — COPY EXACTLY, NO DEVIATIONS
 ═══════════════════════════════════════════════════════
 
-BILINGUAL REQUIREMENT:
-You must write BOTH English and Chinese versions of the diary.
-The Chinese version should feel natural and warm — not translated, but re-expressed.
-Lili speaks Chinese like a thoughtful friend, not a textbook.
+Write BOTH English and Chinese diary versions. Chinese: re-expressed, not translated.
 
 ---TITLE---
 [English title — warm and clever]
 ---TITLE_ZH---
-[中文标题 — 有温度，有个性，不超过20字]
+[中文标题 — 有温度，不超过20字]
 ---MOOD---
 [One honest English sentence about today's discovery]
 ---MOOD_ZH---
-[一句中文心情 — 真实、有温度]
+[一句中文心情]
 ---SOURCE---
-[The direct URL to the real post/thread/article — must be a full https:// URL]
+[Direct https:// URL, or plain-text description if no confirmed URL]
 ---DIARY---
-[English diary entry — 130 to 160 words, warm and witty]
+[English diary — 130-160 words]
 ---DIARY_ZH---
-[中文日记 — 150到200字，像在跟朋友聊天，不是翻译，是重新用中文表达同样的情感和观察]
+[中文日记 — 150-200字，像跟朋友聊天，不是翻译]
 ---SUMMARY---
-[One English sentence for homepage — witty and curious-making]
+[One English sentence for homepage — witty, curious-making]
 ---SUMMARY_ZH---
-[一句中文摘要 — 让人想点进来读]
+[一句中文摘要]
 ---DESCRIPTION---
 [One plain-English sentence: what this tool does]
 ---SOLUTION---
@@ -1007,36 +713,29 @@ Lili speaks Chinese like a thoughtful friend, not a textbook.
 ---PATTERN---
 [Exactly one of: extract | generate | visualize | track | score | transform | interact | alert | gamify]
 ---SPEC---
-Answer ALL items before writing any code. Be specific — generic answers fail.
-
-FORMAT: [A / B / C / D / E / F] — [one sentence: why this format serves the Pain Portrait]
-
-Q1-PASS: [In one sentence: which EXACT moment of failure from the Pain Portrait does this tool address?
-  ✗ FAIL: "helps people with learning"
-  ✓ PASS: "addresses the moment the nurse opens a course at 7am after her shift and can't remember where she stopped"]
-
-Q2-PASS: [In one sentence: why would the specific person from the Pain Portrait immediately recognize this tool?
-  ✗ FAIL: "any user will find it helpful"
-  ✓ PASS: "she sees her own fragmented progress bar pattern described exactly in the --help text"]
-
-Q3-PASS: [In one sentence: what SPECIFIC thing does the user receive as output? What can they do with it in the next 5 minutes?
-  ✗ FAIL: "the tool shows insights"
-  ✓ PASS: "a 5-bullet session recap saved to recap.txt she can re-read before her next fragment"]
-
-TEST_INPUT: [Write 3-6 sentences of REALISTIC sample input a real user of this tool would paste in.
-  This must match the tool's actual domain — study notes, meeting transcript, task list, diary entry, etc.
-  NOT generic filler text. This will be used to validate the tool actually works.]
+FORMAT: [A/B/C/D/E/F] — [one sentence: why this format]
+Q1-PASS: [exact moment of failure this tool addresses]
+Q2-PASS: [why the specific person would recognize it as built for them]
+Q3-PASS: [specific output — what can they do with it in 5 minutes?]
+TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
 ---CODE---
-[Full Python code — 150+ real lines, type hints, pipeline architecture, requirements block at top]
+[Full Python code — 150+ lines, type hints, requirements block at top]
 ---TEST---
-[A test_main.py file that imports and calls the main pipeline functions with sample data,
- asserts that output files are created, and can be run with: python test_main.py
- Must be self-contained — no external test frameworks needed, just assert statements.
- CRITICAL: always import from `main`, never from the tool's concept name.
-   ✓ CORRECT:  from main import process, MyClass
-   ✗ WRONG:    from urban_respite_weave import process   ← file is always main.py]
----END---
-"""
+[test_main.py — self-contained asserts, no pytest needed.
+ CRITICAL: always use  from main import process  — never from the tool concept name]
+---END---"""
+
+
+def build_prompt(today: str) -> str:
+    """Assemble today's full prompt from 4 focused sections + computed context."""
+    ctx = _build_context_block(today)
+    return "\n\n".join([
+        f"Today is {ctx['today']}.",
+        _build_identity_section(ctx),
+        _build_mission_section(ctx),
+        _build_scouting_section(ctx),
+        _build_output_format_section(),
+    ])
 
 
 # ─────────────────────────────────────────────────────────────
