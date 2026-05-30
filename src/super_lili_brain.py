@@ -378,21 +378,23 @@ _AUDIENCE_CONTEXT = {
 # Maps each source rotation index to the most relevant domain knowledge block.
 # This drives targeted injection: today only gets the knowledge that matters today.
 # Matches the order of _SOURCE_ROTATION above (15 entries).
+# Distribution target: work×5, learning×4, design×3, healing×3
+# (healing was 8/15 = 53%, causing weeks of consecutive Healing Inventions tools)
 _SOURCE_DOMAIN_HINT = [
     "work",      # 0  — knowledge workers & productivity
-    "healing",   # 1  — parents & family life
+    "learning",  # 1  — parents & family life (learning to parent, identity)
     "learning",  # 2  — students & learning
-    "healing",   # 3  — older adults & caregivers
+    "work",      # 3  — older adults & caregivers (work of caregiving)
     "learning",  # 4  — teachers & educators
     "design",    # 5  — creative professionals (Design Alchemy)
     "healing",   # 6  — ADHD & mental health
-    "healing",   # 7  — financial stress
+    "work",      # 7  — financial stress (financial tools, planning)
     "work",      # 8  — freelancers & small business
     "healing",   # 9  — chronic illness & body
-    "healing",   # 10 — commuters & urban life
+    "design",    # 10 — commuters & urban life (design of daily experience)
     "healing",   # 11 — introverts & social exhaustion
-    "healing",   # 12 — life transitions
-    "work",      # 13 — shift workers & irregular hours
+    "design",    # 12 — life transitions (redesigning identity & space)
+    "learning",  # 13 — shift workers & irregular hours (learning new rhythms)
     "work",      # 14 — news & research (default to work)
 ]
 
