@@ -453,6 +453,23 @@ def build_prompt(today: str) -> str:
             "design":   "DESIGN ALCHEMY",
             "studio":   "CREATIVE STUDIO PRODUCTION",
         }.get(domain_key, domain_key.upper())
+        # Append the most recent domain expansion from weekly evolution (if any)
+        expansion_ctx = ""
+        try:
+            import json as _json
+            _exp_path = Path("data/domain_expansions.jsonl")
+            if _exp_path.exists():
+                _entries = [_json.loads(l) for l in _exp_path.read_text().splitlines() if l.strip()]
+                if _entries:
+                    _latest = _entries[-1]
+                    expansion_ctx = (
+                        f"\n\n── THIS WEEK'S EVOLVED TOOL IDEAS (from Sunday self-review) ──\n"
+                        f"{_latest['expansion']}\n"
+                        f"── These are ideas Lili generated herself. Build one if it fits today's friction. ──\n"
+                    )
+        except Exception:
+            pass
+
         editor_ctx = (
             f"\n\n═══════════════════════════════════════════════════════\n"
             f"DOMAIN INTELLIGENCE — {_domain_label}\n"
@@ -460,6 +477,7 @@ def build_prompt(today: str) -> str:
             f"Apply this knowledge when reading friction signals and designing the tool.\n"
             f"═══════════════════════════════════════════════════════\n"
             + (domain_block + "\n\n" if domain_block else "")
+            + expansion_ctx
             + _EDITOR_CRITERIA
         )
     else:
