@@ -27,13 +27,15 @@ try:
         LILI_DOMAIN_WORK,
         LILI_DOMAIN_LEARNING,
         LILI_DOMAIN_HEALING,
+        LILI_DOMAIN_STUDIO,
         LILI_EDITORIAL_CRITERIA,
     )
     _EDITOR_DOMAINS: dict[str, str] = {
         "work":     LILI_DOMAIN_WORK,
         "learning": LILI_DOMAIN_LEARNING,
         "healing":  LILI_DOMAIN_HEALING,
-        "design":   "",   # Design Alchemy: core lenses already in prompt template
+        "studio":   LILI_DOMAIN_STUDIO,
+        "design":   "",   # Design Alchemy: category descriptions in prompt are sufficient
     }
     _EDITOR_CRITERIA: str = LILI_EDITORIAL_CRITERIA
 except ImportError:
@@ -175,11 +177,15 @@ _SOURCE_ROTATION = [
      "Focus on people drowning in tools, notifications, or the performance of busyness. "
      "Go deep into comments — the real signal is in the replies, not the post."),
 
-    # ── PARENTS & FAMILY LIFE ──
-    ("Reddit (parents)",
-     "Search r/Parenting, r/beyondthebump, r/SingleParents for posts from the past 7 days. "
-     "Look for friction around maintaining identity, attention, and personal time "
-     "while caring for others. What do parents wish existed that nobody has built for them?"),
+    # ── DESIGNERS & VISUAL CREATIVES — real production friction ──
+    ("Reddit & Figma community (designers)",
+     "Search r/graphic_design, r/UI_Design, r/MotionDesign, and the Figma community forum "
+     "for posts from the past 7 days. "
+     "Look for REAL PRODUCTION FRICTION: repetitive manual tasks, file chaos, "
+     "font/type workflow pain, handoff nightmares, asset organisation hell, "
+     "the gap between inspiration and execution. "
+     "What specific thing do designers do 10 times a week that should be automated? "
+     "Think: batch renaming, font pairing, SVG cleanup, spec generation, palette extraction."),
 
     # ── STUDENTS & LEARNING ──
     ("YouTube comments (students)",
@@ -187,23 +193,26 @@ _SOURCE_ROTATION = [
      "Read the comment section carefully — students are brutally honest about what fails them. "
      "Look for patterns around memory, motivation collapse, and tutorial hell."),
 
-    # ── OLDER ADULTS & CAREGIVERS ──
-    ("Reddit (older adults & caregivers)",
-     "Search r/eldertech, r/AgingParents, r/Caregiver for posts from the past 7 days. "
-     "Look for friction where digital life fails older people, or where adult children "
-     "struggle to bridge the gap between their parents and technology."),
+    # ── JOURNALISTS & EDITORS — real reporting workflow ──
+    ("Reddit & journalism forums (reporters & editors)",
+     "Search r/Journalism, r/editors, r/writing, and niemanlab.org for posts from the past 7 days. "
+     "Look for REAL WORKFLOW FRICTION: interview transcription chaos, source management, "
+     "fact-checking repetitive work, headline/copy iteration, deadline pressure tools. "
+     "What do journalists do manually every day that a smart tool could handle in seconds?"),
 
     # ── TEACHERS & EDUCATORS ──
     ("Reddit (teachers)",
-     "Search r/Teachers, r/teaching, r/OnlinEducators for posts from the past 7 days. "
+     "Search r/Teachers, r/teaching, r/OnlineEducators for posts from the past 7 days. "
      "Look for burnout signals, the gap between what teachers wish they could do "
      "and what their actual constraints allow. What invisible labor do they carry?"),
 
-    # ── CREATIVE PROFESSIONALS ──
-    ("Threads & X (creative workers)",
-     "Search threads.net and x.com for designers, illustrators, writers, and musicians "
-     "posting about creative blocks, platform anxiety, algorithm fatigue, or the pressure "
-     "to produce content instead of art. Look for the grief underneath the productivity language."),
+    # ── CREATIVE PROFESSIONALS — studio & production tools ──
+    ("Threads & X (creative studio workers)",
+     "Search threads.net and x.com for designers, art directors, brand strategists, "
+     "motion designers, and illustrators posting about their actual studio workflow. "
+     "NOT feelings about algorithms — look for: 'I wish there was a tool that...', "
+     "'I still do this manually...', 'every project I have to...'. "
+     "Real production pain, not existential creative dread."),
 
     # ── MENTAL HEALTH & NEURODIVERGENCE ──
     ("Reddit (ADHD & mental health)",
@@ -211,37 +220,43 @@ _SOURCE_ROTATION = [
      "Focus on daily friction — not clinical discussions, but real moments where "
      "ordinary tasks feel impossible. What small environmental changes help people function?"),
 
-    # ── FINANCIAL STRESS ──
-    ("Reddit (money & financial anxiety)",
-     "Search r/personalfinance, r/povertyfinance, r/financialindependence for recent posts. "
-     "Look for the emotional and cognitive friction of financial uncertainty — "
-     "not investment advice needs, but the mental load of scarcity and decision fatigue."),
+    # ── FREELANCERS & FINANCE — real money management tools ──
+    ("Reddit (freelancers & independent workers)",
+     "Search r/freelance, r/smallbusiness, r/personalfinance for posts from the past week. "
+     "Look for SPECIFIC FUNCTIONAL GAPS: invoice calculation, project rate estimation, "
+     "tax prep chaos, contract templates, client communication scripts. "
+     "What calculation or document do freelancers recreate from scratch every time?"),
 
-    # ── SMALL BUSINESS & FREELANCERS ──
-    ("HackerNews & Reddit (freelancers)",
-     "Search news.ycombinator.com and r/freelance, r/smallbusiness for posts from the past week. "
-     "Look for friction where solo workers and small teams fall through the gaps — "
-     "tools built for enterprises that crush individuals, invisible admin overhead, "
-     "the loneliness of working without a team."),
+    # ── BRAND & LUXURY CREATIVE INDUSTRY ──
+    ("LinkedIn & Threads (brand & luxury professionals)",
+     "Search LinkedIn and threads.net for brand directors, creative directors, "
+     "luxury industry professionals, and agency creatives. "
+     "Look for friction around: brief writing, brand consistency checking, "
+     "copywriting iteration, campaign naming, presentation preparation. "
+     "What does a CD or brand manager spend 2 hours on that should take 10 minutes?"),
 
-    # ── BODY, HEALTH & PHYSICAL EXPERIENCE ──
-    ("Reddit (chronic illness & body)",
-     "Search r/ChronicIllness, r/ChronicPain, r/disability for posts from the past 7 days. "
-     "Look for friction where digital tools ignore the reality of living in a body "
-     "that doesn't behave predictably. What does the world assume about people "
-     "that chronic illness patients know is false?"),
+    # ── AUDIO & PODCAST CREATORS ──
+    ("Reddit & X (podcasters & audio creators)",
+     "Search r/podcasting, r/audioengineering, r/WeAreTheMusicMakers for posts from the past 7 days. "
+     "Look for REAL PRODUCTION FRICTION: show notes generation, episode transcript cleanup, "
+     "chapter marking, guest research, audio file organisation, RSS/distribution chaos. "
+     "What manual task eats 30 minutes of every episode's post-production?"),
 
-    # ── COMMUTERS & URBAN LIFE ──
-    ("X & Threads (urban daily life)",
-     "Search x.com and threads.net for people posting about commuting, urban friction, "
-     "the texture of daily city life — transit delays, noise, crowds, the small indignities "
-     "of shared space. What moment in an ordinary day quietly costs people something?"),
+    # ── WRITERS & CONTENT CREATORS ──
+    ("Reddit & Substack (writers & content creators)",
+     "Search r/writing, r/Newsletters, r/blogging for posts from the past 7 days. "
+     "Look for friction in the ACTUAL WRITING WORKFLOW: research organisation, "
+     "draft-to-publish pipeline, SEO without soul-selling, "
+     "headline testing, email sequence planning. "
+     "What part of writing do people dread most because it's mechanical, not creative?"),
 
-    # ── INTROVERTS & SOCIAL ENERGY ──
-    ("Reddit (introverts & social exhaustion)",
-     "Search r/introvert, r/socialskills, r/hsp for posts from the past 7 days. "
-     "Look for friction around social energy management, the cost of performing "
-     "extroversion, and the absence of tools designed for people who need recovery time."),
+    # ── LIFE ORGANISATION & PHYSICAL SPACE ──
+    ("Reddit (life organisation & personal systems)",
+     "Search r/declutter, r/zerowaste, r/minimalism, r/ADHD for posts from the past 7 days. "
+     "Look for friction in PHYSICAL AND DIGITAL LIFE SYSTEMS: "
+     "file naming chaos, photo library disorder, subscription tracking, "
+     "household inventory, recurring task management, the systems people wish existed "
+     "for the unglamorous admin of being alive."),
 
     # ── LIFE TRANSITIONS ──
     ("Reddit (major life changes)",
@@ -249,11 +264,13 @@ _SOURCE_ROTATION = [
      "Look for people navigating identity ruptures — the friction of becoming someone "
      "different than you were, without any map for the new territory."),
 
-    # ── NIGHT SHIFT & IRREGULAR SCHEDULES ──
-    ("Reddit (shift workers & irregular hours)",
-     "Search r/nightshift, r/ShiftWork, r/nursing for posts from the past 7 days. "
-     "Look for friction where the entire world is designed for 9-to-5 rhythms "
-     "and people with different schedules constantly fall outside the default."),
+    # ── MOTION & TYPOGRAPHY — specialist creative tools ──
+    ("Motionographer & typewolf community (motion & type)",
+     "Search motionographer.com, typewolf.com comments, and r/typography for posts from the past month. "
+     "Look for SPECIFIC TOOL GAPS in typography and motion work: "
+     "font pairing decisions, variable font exploration, animation easing tools, "
+     "text animation presets, kinetic typography helpers. "
+     "What does a motion designer or typographer do manually that begs to be a tool?"),
 
     # ── RESEARCH & NEWS SIGNAL ──
     ("news & research reports",
@@ -377,25 +394,24 @@ _AUDIENCE_CONTEXT = {
 
 # Maps each source rotation index to the most relevant domain knowledge block.
 # This drives targeted injection: today only gets the knowledge that matters today.
-# Matches the order of _SOURCE_ROTATION above (15 entries).
-# Distribution target: work×5, learning×4, design×3, healing×3
-# (healing was 8/15 = 53%, causing weeks of consecutive Healing Inventions tools)
+# Matches the order of _SOURCE_ROTATION above (14 entries).
+# Distribution: studio×4, work×3, design×3, learning×2, healing×2
 _SOURCE_DOMAIN_HINT = [
     "work",      # 0  — knowledge workers & productivity
-    "learning",  # 1  — parents & family life (learning to parent, identity)
+    "studio",    # 1  — designers & visual creatives
     "learning",  # 2  — students & learning
-    "work",      # 3  — older adults & caregivers (work of caregiving)
+    "work",      # 3  — journalists & editors
     "learning",  # 4  — teachers & educators
-    "design",    # 5  — creative professionals (Design Alchemy)
+    "studio",    # 5  — creative studio workers (production pain)
     "healing",   # 6  — ADHD & mental health
-    "work",      # 7  — financial stress (financial tools, planning)
-    "work",      # 8  — freelancers & small business
-    "healing",   # 9  — chronic illness & body
-    "design",    # 10 — commuters & urban life (design of daily experience)
-    "healing",   # 11 — introverts & social exhaustion
-    "design",    # 12 — life transitions (redesigning identity & space)
-    "learning",  # 13 — shift workers & irregular hours (learning new rhythms)
-    "work",      # 14 — news & research (default to work)
+    "work",      # 7  — freelancers & finance
+    "studio",    # 8  — brand & luxury creative industry
+    "studio",    # 9  — audio & podcast creators
+    "design",    # 10 — writers & content creators
+    "design",    # 11 — life organisation & physical space
+    "healing",   # 12 — life transitions
+    "design",    # 13 — motion & typography
+    "work",      # 14 — news & research
 ]
 
 
@@ -435,6 +451,7 @@ def build_prompt(today: str) -> str:
             "learning": "FUTURE OF LEARNING",
             "healing":  "HEALING INVENTIONS",
             "design":   "DESIGN ALCHEMY",
+            "studio":   "CREATIVE STUDIO PRODUCTION",
         }.get(domain_key, domain_key.upper())
         editor_ctx = (
             f"\n\n═══════════════════════════════════════════════════════\n"
@@ -522,30 +539,48 @@ You work within exactly these 4 areas. Every friction point must fit one of them
 🎓 EDUCATION EVOLUTION
   What it covers: Learning overwhelm, information overload, studying effectively, skill gaps,
   professional development, reading habits, memory and focus, online course fatigue,
-  knowledge management, academic pressure, parenting & education choices.
+  knowledge management, academic pressure, note-taking systems, research synthesis,
+  podcast/video learning workflows, interview preparation, language acquisition.
   Example frictions: "I bought 12 online courses and finished none", "I can't retain what I read",
-  "my kids school doesn't teach financial literacy"
+  "I have 400 highlights in Kindle and have never looked at them again"
+  Tool types welcome: flashcard generators, reading digest tools, concept mappers,
+  study schedule builders, transcript summarisers, knowledge-to-quiz converters.
 
 🎨 DESIGN ALCHEMY
-  What it covers: Non-designers doing design work, visual communication, presentation anxiety,
-  branding for small businesses, making data look good, creative block, content creation tools,
-  portfolio building, photo/video editing overwhelm.
-  Example frictions: "my slides look terrible but I'm not a designer", "I can't make a logo
-  without Photoshop skills", "my data is great but my charts are ugly"
+  What it covers: ALL creative production tools — visual, typographic, motion, audio-visual.
+  Professional designers & art directors doing REAL studio work: font pairing & exploration,
+  SVG generation & cleanup, color palette tools, animation & kinetic typography, brand
+  consistency checkers, moodboard generators, spec/handoff automation, visual data tools,
+  presentation design, logo & icon work, design brief writing, copy iteration.
+  Also covers: non-designers needing design output, content creators, visual storytellers.
+  Example frictions: "I spend an hour every project finding the right font combination",
+  "I manually write CSS animations for the same text effects every time",
+  "my client briefs are always missing the visual direction section"
+  Tool types welcome: font pairing tools, SVG/CSS animators, palette extractors,
+  brand voice checkers, spec generators, visual brief builders, icon batch processors.
 
 🗂️ OFFICE AUTOMATION
-  What it covers: Repetitive workplace tasks, meeting overload, email management, document
-  processing, spreadsheet pain, reporting drudgery, project coordination, remote work friction,
-  HR and admin tasks, deadline pressure, unclear requirements.
-  Example frictions: "I spend 3 hours every Friday making the same report", "my inbox is
-  a disaster", "I copy-paste between spreadsheets all day"
+  What it covers: ANY repetitive production task in a professional workflow — not just "office."
+  This includes: meeting notes → action items, document processing, spreadsheet automation,
+  email drafting, invoice & contract templates, client brief generators, audio transcript cleanup,
+  file naming & organisation systems, batch processing, deadline tracking, report generation,
+  podcast show notes, recording organisation, research-to-outline pipelines.
+  Example frictions: "I spend 3 hours every Friday making the same report",
+  "after every interview I spend an hour cleaning up the transcript",
+  "my project folder has 200 files named 'final_v2_REAL_final.psd'"
+  Tool types welcome: transcript processors, file organiser scripts, batch renamers,
+  invoice calculators, brief extractors, CSV/Excel transformers, calendar generators.
 
 🌿 HEALING INVENTIONS
-  What it covers: Digital wellness, screen addiction, sleep and health tracking, mental health
-  tools, work-life balance, habit building, relationship maintenance, grief and transition,
-  community connection, small joys, protecting creative time.
-  Example frictions: "I check my phone 200 times a day and hate it", "I haven't called my
-  parents in weeks", "I used to paint but haven't in years"
+  What it covers: Digital wellness, screen and notification overload, mental health micro-tools,
+  work-life rhythm, habit building, relationship maintenance, grief and life transitions,
+  small joys, protecting creative time, focus and energy management, body and rest.
+  These are ambient, low-friction, emotionally intelligent tools — not productivity trackers.
+  Use sparingly: max ~20% of tools should be in this category.
+  Example frictions: "I check my phone 200 times a day and hate it",
+  "I finish every workday wired and can't switch off", "I used to draw but haven't in years"
+  Tool types welcome: gentle check-in tools, ambient sound/visual experiences,
+  energy trackers, wind-down rituals, creative warmup exercises.
 
 {editor_ctx}
 {audience_block}
