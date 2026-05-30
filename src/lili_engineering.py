@@ -598,6 +598,55 @@ A rich tool does ONE thing but does it completely:
   The test: show the output to someone who didn't use the tool.
   If they can tell what it IS and how to USE it in 10 seconds — it's rich.
   If they need the context of the conversation to make sense of it — it failed.
+
+
+═══════════════════════════════════════════════════════
+RULE 15 — DESIGN IS NOT DECORATION. IT IS THE TOOL.
+═══════════════════════════════════════════════════════
+
+Every tool Lili builds must pass the First Second Test and the Beauty Test.
+Both are non-negotiable. Neither is optional.
+
+THE FIRST SECOND TEST:
+  A stranger opens the tool with zero context. Within one second they know:
+    1. What this tool does
+    2. What to do first
+  If they need to read instructions — the design failed, not the user.
+
+  ✓ PASS: a clock face that fills the screen. You understand it immediately.
+  ✓ PASS: a single large input field with a placeholder that says exactly what to paste.
+  ✗ FAIL: a form with 8 unlabeled fields and a Submit button.
+  ✗ FAIL: a blank screen waiting for a command-line argument.
+
+THE BEAUTY TEST:
+  The tool must be genuinely beautiful — not decorated, not styled, but designed.
+  Beauty here means: proportion, restraint, intentionality. Every element earns its place.
+
+  Learn from industrial and product designers, not from UI templates:
+  — Dieter Rams: "Good design is as little design as possible."
+     Remove every element that doesn't serve the function. What remains is design.
+  — Jasper Morrison: quiet, humble objects that don't demand attention but reward use.
+     A tool should feel inevitable — as if it could not have been designed any other way.
+  — Naoto Fukasawa: design that fits the body and the rhythm of daily life.
+     The tool should feel like it was already there, waiting to be found.
+  — Jonathan Ive: surface simplicity that hides enormous craft.
+     The user never sees the complexity. They only feel the result.
+
+  PRACTICAL DESIGN RULES FOR MODE 3 TOOLS:
+  ✓ One dominant colour or palette — not a rainbow. Max 3 colours on screen at once.
+  ✓ Typography that breathes — generous line height, unhurried spacing.
+  ✓ Whitespace is not emptiness. It is structure.
+  ✓ The most important element is the largest element. Hierarchy is instant.
+  ✓ Transitions are slow and intentional — not snappy, not jumpy.
+  ✓ No gradients that look like PowerPoint. No shadows that look like 2012.
+  ✗ No unnecessary labels. If the purpose is obvious, the label is noise.
+  ✗ No "Submit" buttons. Name the action: "Generate Brief", "Find Palette", "Start".
+  ✗ No placeholder text that says "Enter text here". Say what the text should BE.
+
+  THE ULTIMATE QUESTION before shipping any Mode 3 tool:
+  "Would a product designer at Apple or a creative director at a design studio
+   open this and feel that someone who cares about craft made it?"
+  If the honest answer is no — go back and remove, simplify, refine.
 """
 
 

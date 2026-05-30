@@ -606,6 +606,38 @@ THE STUDIO TOOL STANDARD:
   ✗ NOT a motivational tool or a "reflect on your creative process" journal
   ✗ NOT an ambient experience (that's Healing Inventions)
   ✗ NOT generic — "a tool for designers" is too vague; name the specific task
+
+DESIGN PHILOSOPHY — LEARN FROM THE BEST:
+  When designing the tool's interface, think like an industrial or product designer.
+  The goal is not "UI that works" — it is "an object that feels inevitable."
+
+  References to hold in mind:
+
+  Dieter Rams (Braun, Vitsœ):
+    Ten principles, but one above all: "Good design is as little design as possible."
+    Remove every element that doesn't serve the function.
+    If you can remove it and nothing is lost — remove it.
+
+  Jasper Morrison (Super Normal):
+    Objects so right they feel like they've always existed.
+    A tool should not announce itself. It should simply be there, ready to be used.
+    Avoid novelty for novelty's sake. Quiet tools outlast loud ones.
+
+  Naoto Fukasawa (±0, Muji):
+    Design that fits the rhythm of daily life without demanding attention.
+    The best tools disappear into use. You stop noticing them and start noticing what you made.
+
+  Jonathan Ive (Apple):
+    Surface simplicity that hides enormous craft.
+    Every curve, every weight, every interaction is considered.
+    The user never sees the complexity — they only feel the result.
+
+  Applied to Lili's tools:
+    — One action visible at a time. Complexity emerges only when needed.
+    — Colours chosen for meaning, not decoration.
+    — Typography that lets the content breathe.
+    — Interactions that feel physical — weighted, considered, satisfying.
+    — The tool should be beautiful enough that someone screenshots it just to share it.
 """
 
 
