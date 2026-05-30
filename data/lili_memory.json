@@ -210,6 +210,14 @@
       "pattern": "interact",
       "path": "02_Toolbox/Healing Inventions/2026-05-29_Urban_Respite_Weave",
       "description": "This tool generates an interactive HTML app that provides a minimalist visual and ambient soundscape to help users find a moment of calm amidst urban sensory overload."
+    },
+    {
+      "date": "2026-05-30",
+      "name": "Social Echo Dampener",
+      "category": "Healing Inventions",
+      "pattern": "interact",
+      "path": "02_Toolbox/Healing Inventions/2026-05-30_Social_Echo_Dampener",
+      "description": "This tool provides a minimalist, interactive HTML app that guides users through a series of gentle prompts and subtle sensory shifts to help process and release residual mental \"social static\" after demanding interactions."
     }
   ],
   "topics_covered": [
@@ -367,7 +375,12 @@
       "date": "2026-05-29",
       "title": "Urban Respite Weave: Your Digital Oasis in the City's Hum",
       "path": "01_Work_Log/2026-05-29-Diary.md"
+    },
+    {
+      "date": "2026-05-30",
+      "title": "The Quiet Afterglow: Softening Social Static",
+      "path": "01_Work_Log/2026-05-30-Diary.md"
     }
   ],
-  "last_updated": "2026-05-29"
+  "last_updated": "2026-05-30"
 }

@@ -1,0 +1,1 @@
+Uses Web Audio API for subtle sound cues.
