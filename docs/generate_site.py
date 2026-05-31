@@ -891,6 +891,9 @@ def render_hero(diaries: list[dict], tools: list[dict]) -> str:
         if t["date"] == d["date"]:
             tool_btn = f'<a class="btn btn-teal" href="tools/{h(t["slug"])}/index.html">Today\'s Tool &rarr;</a>'
             break
+    if not tool_btn and tools:
+        t = tools[0]
+        tool_btn = f'<a class="btn btn-teal" href="tools/{h(t["slug"])}/index.html">Latest Tool &rarr;</a>'
 
     excerpt = f'<p class="hero-excerpt">{h(d["excerpt"])}</p>' if d.get("excerpt") else ""
 
