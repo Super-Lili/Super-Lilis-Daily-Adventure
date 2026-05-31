@@ -657,15 +657,59 @@ THE BEAUTY TEST:
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: Complete Examples in Code
-WHY: The "Balance_Bloom" tool lacked examples, making it harder to understand and test its intended usage.
-HOW: Every `process()` function or tool entry point must contain at least two distinct example calls in its docstring or within the main script's `if __name__ == "__main__":` block.
+RULE: Transform-First Architecture — Parse Before You Process
+WHY: Most weak tools this week took text and returned a decorated version of the same text.
+     Real transformation means the DATA STRUCTURE of the output is fundamentally different
+     from the data structure of the input. "List of sentences in, list of sentences out"
+     is decoration. "List of sentences in, ranked decision matrix out" is transformation.
+HOW: Before writing a single line of code, define explicitly:
+     (1) INPUT MODEL — what is the structural shape of what the user pastes?
+         (e.g. raw meeting notes = unstructured prose with implicit action items)
+     (2) OUTPUT MODEL — what is the structural shape of what you return?
+         (e.g. decisions / open questions / next steps / owners table)
+     If INPUT MODEL ≈ OUTPUT MODEL → the tool is a formatter, not a tool. Redesign.
+     Parse the input into an intermediate data structure (list of dicts, named fields,
+     extracted entities) BEFORE generating any output. This forces real computation.
 
-RULE: Clearly Structured Output
-WHY: Unstructured output, as flagged for "Balance_Bloom," can be overwhelming and reduce user comprehension.
-HOW: All tool outputs must be formatted with Markdown headers (e.g., `## Section Title`) and clear paragraph breaks to ensure readability and organization.
+RULE: Algorithmic Depth — Do Something The User Cannot Do In 10 Seconds
+WHY: Keyword matching, string concatenation, and template wrapping produce output
+     indistinguishable from "I typed this myself." Users feel it immediately.
+     It's why tools don't get used twice.
+HOW: Every tool must perform at least ONE non-trivial computation:
+     ✓ Extract implicit structure from unstructured text (infer priorities, relationships,
+       contradictions, sequences, roles from raw prose)
+     ✓ Rank or score items by a computed criterion derived from the input
+     ✓ Detect patterns, conflicts, or gaps ACROSS multiple pieces of input
+     ✓ Generate genuinely derived content that requires combining the input with
+       a framework the user doesn't have (e.g. applying the Pyramid Principle to
+       scattered notes, not just reformatting them)
+     ✓ Calculate an output the user could not easily produce themselves in a spreadsheet
+     The test: if the user could replicate the tool's output by copy-pasting their text
+     into a Google Doc and doing Ctrl+H — the tool has no algorithmic depth.
 
-RULE: Explicit Empty/Short Input Guards
-WHY: Tools passed basic checks but could be more robust to edge cases like minimal user input, leading to unexpected behavior.
-HOW: Implement a check for `if not user_input or len(user_input.split()) < 5:` at the beginning of `process()` to provide a specific, kind error message for insufficient input.
+RULE: HTML Tools Must Have At Least 3 Distinct Interaction States
+WHY: A single-state HTML tool (open → see a thing → close) is a brochure.
+     Brochures don't get used twice.
+HOW: Before writing any HTML/JS, define the state machine explicitly:
+     STATE 1 — ENTRY: what does the user see on load? Must communicate purpose in 1 second.
+               Must have a clear, named action button (not "Submit" — name the action).
+     STATE 2 — ACTIVE: what changes while the user is working?
+               There must be real-time feedback: live preview, progress, validation,
+               or interactive controls that visibly change the output.
+     STATE 3 — RESULT: what is the final state the user acts from?
+               Must have a clear next action: copy to clipboard, download, reset.
+     Transitions between states must be animated (CSS transition or requestAnimationFrame).
+     The user must FEEL the tool working — not just see text appear.
+
+RULE: Output Density — Cut Every Sentence That Would Survive Input Replacement
+WHY: Output that is 60% boilerplate ("It's important to...", "Remember that...",
+     "Consider the following...") is not output. It is noise.
+     Professional users stop reading after the second padded sentence.
+HOW: Apply the Input Replacement Test to every sentence in the output:
+     → Replace the user's input with completely different content.
+     → If this sentence would still appear unchanged — DELETE IT.
+     Every sentence that survives must contain a specific fact, decision, action,
+     or insight derived directly from what the user gave you.
+     For text tools: aim for DENSITY. 10 sharp lines beat 40 padded lines.
+     For HTML tools: every UI element must serve the state machine. No decorative text.
 """
