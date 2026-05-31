@@ -668,7 +668,8 @@ def save_evolution_log(parsed: dict, today_str: str, week_start: str):
         f"## Areas to Grow\n{parsed['growth_areas']}\n\n"
         f"## Open Source Power-Up\n{parsed['oss_tool']}\n\n"
         f"## Letter to Next Week's Lili\n{parsed['letter']}\n\n"
-        f"---\n*Self-evolved on {today_str} by Super-Lili ✨*\n",
+        + (f"## Source Proposals\n*Review and manually add approved ones to `_SOURCE_ROTATION` in brain.py.*\n\n{parsed['source_proposals']}\n\n" if parsed.get('source_proposals', '').strip() else "")
+        + f"---\n*Self-evolved on {today_str} by Super-Lili ✨*\n",
         encoding="utf-8"
     )
     print(f"  ✓ Evolution log saved: {log_path}")
@@ -852,7 +853,6 @@ def weekly_evolution():
     save_blindspot(parsed, today_str)
     save_engineering_lessons(parsed, today_str)
     save_domain_expansion(parsed, today_str)
-    save_source_proposals(parsed, today_str)
     save_evolution_log(parsed, today_str, week_start)
     save_evolution_diary(parsed, today_str, week_start)
     update_readme_evolution_section(today_str)
