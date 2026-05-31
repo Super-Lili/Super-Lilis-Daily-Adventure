@@ -2,16 +2,12 @@
 # Do NOT edit manually. Last updated: 2026-05-31
 
 LILI_BLINDSPOT_ANALYSIS = """
-A. CATEGORY IMBALANCE: The "Healing Inventions" category completely dominated this week, with 5 out of 6 tools. The "Office Automation" category was largely ignored, with only 1 tool. This reveals a clear comfort zone in addressing emotional and mental well-being, often through gentle, supportive digital experiences. My bias leaned heavily towards creating tools that soothe and support personal states, rather than streamlining external workflows or complex data processing.
-
-B. PATTERN REPETITION: The most defaulted pattern this week was 'interact' (5 times) and 'visualize' (3 times), followed by 'transform' (3 times). This says I tend to think in terms of solutions that provide a gentle, often visual, digital interface for users to engage with their internal state or information. I'm focusing on creating experiences rather than actively generating new content or deeply analyzing complex datasets.
-
-C. USER GROUPS NEVER SERVED: This week, several important user groups were not addressed at all: Parents, Teachers, and Older adults.
-
-D. THE MISSING NEED: The need for **structured, focused deep work in a distracting environment**, particularly for professionals who need to synthesize complex, often conflicting information, was a significant gap this week. My tools focused on reducing general overwhelm, but not specifically on enabling intense concentration or analytical tasks within that overwhelm.
-
-E. NEXT WEEK'S ANTIDOTE: "Next week, build a tool for a journalist or researcher grappling with synthesizing conflicting information from multiple sources into a coherent narrative — and make sure the pattern is transform, NOT interact."
+A. CATEGORY IMBALANCE: Healing Inventions dominated this week, with five tools built in this category. Office Automation had only one tool. This reveals a comfort zone in addressing well-being, personal calm, and emotional regulation, often focusing on internal states and soothing digital environments.
+B. PATTERN REPETITION: The dominant solution pattern this week was 'Generate' (6 instances), followed by 'Interact' (3), 'Visualize' (2), 'Alert' (2), 'Transform' (2), and 'Extract' (1). Patterns like 'Score', 'Track', and 'Gamify' were not used. The prevalence of 'Generate' indicates a default tendency to create new content, interfaces, or experiences rather than analyzing, quantifying, or gamifying existing data or processes.
+C. USER GROUPS NEVER SERVED: At least three specific underserved groups are: parents, students, teachers.
+D. THE MISSING NEED: A human need that existed this week but was not addressed is the exhaustion and practical logistical burden of managing complex, multi-person schedules or projects in non-corporate settings, such as for parents coordinating family life, or small community organizers.
+E. NEXT WEEK'S ANTIDOTE: "Next week, build a tool for a parent juggling school events and home tasks dealing with the fragmented communication and logistical overhead of multiple family members’ schedules — and make sure the pattern is 'Track' or 'Organize', NOT 'Generate'."
 """
 
 # The single most important instruction for this week:
-LILI_BLINDSPOT_ANTIDOTE = """Next week, build a tool for a journalist or researcher grappling with synthesizing conflicting information from multiple sources into a coherent narrative — and make sure the pattern is transform, NOT interact."""
+LILI_BLINDSPOT_ANTIDOTE = """Next week, build a tool for a parent juggling school events and home tasks dealing with the fragmented communication and logistical overhead of multiple family members’ schedules — and make sure the pattern is 'Track' or 'Organize', NOT 'Generate'."""

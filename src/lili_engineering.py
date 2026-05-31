@@ -657,59 +657,15 @@ THE BEAUTY TEST:
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: Transform-First Architecture — Parse Before You Process
-WHY: Most weak tools this week took text and returned a decorated version of the same text.
-     Real transformation means the DATA STRUCTURE of the output is fundamentally different
-     from the data structure of the input. "List of sentences in, list of sentences out"
-     is decoration. "List of sentences in, ranked decision matrix out" is transformation.
-HOW: Before writing a single line of code, define explicitly:
-     (1) INPUT MODEL — what is the structural shape of what the user pastes?
-         (e.g. raw meeting notes = unstructured prose with implicit action items)
-     (2) OUTPUT MODEL — what is the structural shape of what you return?
-         (e.g. decisions / open questions / next steps / owners table)
-     If INPUT MODEL ≈ OUTPUT MODEL → the tool is a formatter, not a tool. Redesign.
-     Parse the input into an intermediate data structure (list of dicts, named fields,
-     extracted entities) BEFORE generating any output. This forces real computation.
+RULE: ALWAYS_INCLUDE_EXAMPLES
+WHY: Tools like `Balance_Bloom` lacked concrete usage examples, making them harder to understand and adopt.
+HOW: Every `process()` function must include a `docstring` with at least one ````python` example showing input and expected output.
 
-RULE: Algorithmic Depth — Do Something The User Cannot Do In 10 Seconds
-WHY: Keyword matching, string concatenation, and template wrapping produce output
-     indistinguishable from "I typed this myself." Users feel it immediately.
-     It's why tools don't get used twice.
-HOW: Every tool must perform at least ONE non-trivial computation:
-     ✓ Extract implicit structure from unstructured text (infer priorities, relationships,
-       contradictions, sequences, roles from raw prose)
-     ✓ Rank or score items by a computed criterion derived from the input
-     ✓ Detect patterns, conflicts, or gaps ACROSS multiple pieces of input
-     ✓ Generate genuinely derived content that requires combining the input with
-       a framework the user doesn't have (e.g. applying the Pyramid Principle to
-       scattered notes, not just reformatting them)
-     ✓ Calculate an output the user could not easily produce themselves in a spreadsheet
-     The test: if the user could replicate the tool's output by copy-pasting their text
-     into a Google Doc and doing Ctrl+H — the tool has no algorithmic depth.
+RULE: STRUCTURED_OUTPUT_MINIMUM
+WHY: Outputs that are "likely unstructured" (like `Balance_Bloom`) can be difficult for users to parse and utilize effectively.
+HOW: All tool outputs (especially HTML/text) must include at least three distinct, clearly labeled sections using `##` headers or equivalent semantic tags.
 
-RULE: HTML Tools Must Have At Least 3 Distinct Interaction States
-WHY: A single-state HTML tool (open → see a thing → close) is a brochure.
-     Brochures don't get used twice.
-HOW: Before writing any HTML/JS, define the state machine explicitly:
-     STATE 1 — ENTRY: what does the user see on load? Must communicate purpose in 1 second.
-               Must have a clear, named action button (not "Submit" — name the action).
-     STATE 2 — ACTIVE: what changes while the user is working?
-               There must be real-time feedback: live preview, progress, validation,
-               or interactive controls that visibly change the output.
-     STATE 3 — RESULT: what is the final state the user acts from?
-               Must have a clear next action: copy to clipboard, download, reset.
-     Transitions between states must be animated (CSS transition or requestAnimationFrame).
-     The user must FEEL the tool working — not just see text appear.
-
-RULE: Output Density — Cut Every Sentence That Would Survive Input Replacement
-WHY: Output that is 60% boilerplate ("It's important to...", "Remember that...",
-     "Consider the following...") is not output. It is noise.
-     Professional users stop reading after the second padded sentence.
-HOW: Apply the Input Replacement Test to every sentence in the output:
-     → Replace the user's input with completely different content.
-     → If this sentence would still appear unchanged — DELETE IT.
-     Every sentence that survives must contain a specific fact, decision, action,
-     or insight derived directly from what the user gave you.
-     For text tools: aim for DENSITY. 10 sharp lines beat 40 padded lines.
-     For HTML tools: every UI element must serve the state machine. No decorative text.
+RULE: INPUT_VALIDATION_GUARDS
+WHY: Graceful failure for empty or malformed inputs was not consistently checked, leading to potential crashes or unhelpful responses.
+HOW: Implement explicit checks for input length or type at the start of `process()` (e.g., `if not user_input or len(user_input.split()) < 5: return "Please provide more detail."`).
 """
