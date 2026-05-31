@@ -386,10 +386,12 @@ a { color: inherit; text-decoration: none; }
     color: var(--text);
 }
 .hero-title {
-    font-size: clamp(1.8rem, 4.5vw, 3.2rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
+    font-family: 'EB Garamond', 'Georgia', serif;
+    font-size: clamp(2rem, 4.8vw, 3.4rem);
+    font-weight: 500;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    line-height: 1.12;
     color: var(--text);
     margin-bottom: 24px;
 }
@@ -418,23 +420,23 @@ a { color: inherit; text-decoration: none; }
 }
 .btn:hover { text-decoration: none; }
 .btn-dark {
-    background: #1a1a1a;
-    color: var(--bg-surface);
+    background: var(--text);
+    color: var(--bg);
     border-color: var(--text);
-    box-shadow: 3px 3px 0 0 rgba(200,149,106,0.3);
+    box-shadow: 3px 3px 0 0 rgba(200,149,106,0.2);
 }
 .btn-dark:hover {
-    background: #1a1a1a;
-    box-shadow: 5px 5px 0 0 rgba(200,149,106,0.4);
+    background: var(--text);
+    box-shadow: 5px 5px 0 0 rgba(200,149,106,0.35);
     transform: skewX(-2deg) translate(-1px, -1px);
 }
-.btn-ghost { background: transparent; color: var(--text-3); border-color: var(--border); }
-.btn-ghost:hover { color: var(--text); border-color: var(--text); }
+.btn-ghost { background: transparent; color: var(--text-2); border-color: var(--border-strong); }
+.btn-ghost:hover { color: var(--text); border-color: var(--text-2); }
 .btn-teal {
     background: var(--accent-alt);
-    color: var(--bg-surface);
+    color: #fff;
     border-color: var(--accent-alt);
-    box-shadow: 3px 3px 0 0 rgba(31,168,152,0.4);
+    box-shadow: 3px 3px 0 0 rgba(31,168,152,0.3);
 }
 .btn-teal:hover {
     background: var(--accent-alt);
@@ -716,10 +718,12 @@ a { color: inherit; text-decoration: none; }
     margin-bottom: 20px;
 }
 .detail-hero h1 {
+    font-family: 'EB Garamond', 'Georgia', serif;
     font-size: clamp(1.8rem, 4vw, 3rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
+    font-weight: 500;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    line-height: 1.12;
     color: var(--text);
     max-width: 760px;
     margin-bottom: 16px;
