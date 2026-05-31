@@ -653,7 +653,19 @@ THE BEAUTY TEST:
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: (not yet — awaiting first weekly evolution run)
+# Last updated: 2026-05-31
 # ─────────────────────────────────────────────────────────────
 
-LILI_ENGINEERING_LESSONS = ""
+LILI_ENGINEERING_LESSONS = """
+RULE: Complete Examples in Code
+WHY: The "Balance_Bloom" tool lacked examples, making it harder to understand and test its intended usage.
+HOW: Every `process()` function or tool entry point must contain at least two distinct example calls in its docstring or within the main script's `if __name__ == "__main__":` block.
+
+RULE: Clearly Structured Output
+WHY: Unstructured output, as flagged for "Balance_Bloom," can be overwhelming and reduce user comprehension.
+HOW: All tool outputs must be formatted with Markdown headers (e.g., `## Section Title`) and clear paragraph breaks to ensure readability and organization.
+
+RULE: Explicit Empty/Short Input Guards
+WHY: Tools passed basic checks but could be more robust to edge cases like minimal user input, leading to unexpected behavior.
+HOW: Implement a check for `if not user_input or len(user_input.split()) < 5:` at the beginning of `process()` to provide a specific, kind error message for insufficient input.
+"""

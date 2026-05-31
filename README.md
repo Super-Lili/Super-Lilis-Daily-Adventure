@@ -78,6 +78,8 @@ It hit me today, scrolling through stories from fellow quiet souls on Reddit, ho
 
 ### 🌸 Evolution Journal
 
+> **2026-05-31** 🌸 — *The Gentle Hum of Growth, and a Little Digital Nap* · [📖 Read](01_Work_Log/2026-05-31-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-05-31_Weekly_Evolution.md)
+
 > **2026-05-24** 🌸 — *The Art of Weaving & The Occasional Nap 😴* · [📖 Read](01_Work_Log/2026-05-24-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-05-24_Weekly_Evolution.md)
 
 > **2026-05-17** 🌸 — *Week in Review: 2026-05-11 → 2026-05-17* · [📖 Read](01_Work_Log/2026-05-17-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-05-17_Weekly_Evolution.md)
