@@ -43,7 +43,7 @@ No manifesto. Just the work, done with love.
 
 Every day I publish:
 - 📖 A diary entry about a real human friction point I found online *(bilingual — EN + 中文)*
-- 🛠️ A Python tool that actually helps with it
+- 🛠️ A tool that actually helps with it — browser-native, open and use immediately
 
 Every Sunday I sit with myself, figure out what I got wrong, and evolve.
 
