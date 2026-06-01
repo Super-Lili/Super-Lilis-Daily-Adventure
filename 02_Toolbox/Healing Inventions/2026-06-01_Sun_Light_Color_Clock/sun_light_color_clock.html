@@ -16,115 +16,169 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: background-color 4s ease, color 4s ease;
     min-height: 100vh;
+    transition: background-color 8s ease;
   }
-  #time {
-    font-size: clamp(4rem, 18vw, 13rem);
-    font-weight: 200;
-    letter-spacing: -0.04em;
-    line-height: 1;
-    transition: color 4s ease;
-    font-variant-numeric: tabular-nums;
+  #clock-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
   }
-  #period {
-    margin-top: 2rem;
-    font-size: clamp(0.65rem, 2vw, 0.85rem);
+  canvas {
+    display: block;
+    border-radius: 50%;
+  }
+  #label {
+    font-size: 0.72rem;
     font-weight: 500;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    opacity: 0.45;
-    transition: color 4s ease, opacity 0.5s ease;
-  }
-  #date {
-    margin-top: 0.6rem;
-    font-size: clamp(0.6rem, 1.5vw, 0.75rem);
-    font-weight: 400;
-    letter-spacing: 0.18em;
-    opacity: 0.28;
-    transition: color 4s ease;
+    opacity: 0.4;
+    transition: color 8s ease;
   }
 </style>
 </head>
 <body>
-<div id="time">00:00</div>
-<div id="period">—</div>
-<div id="date">—</div>
+<div id="clock-wrap">
+  <canvas id="c"></canvas>
+  <div id="label">—</div>
+</div>
 
 <script>
-const ANCHORS = [{"h": 0.0, "bg": "#0b0c1e", "fg": "#4a4a6a", "label": "deep night"}, {"h": 4.5, "bg": "#1a1040", "fg": "#7070a0", "label": "before dawn"}, {"h": 5.5, "bg": "#6b3a5a", "fg": "#f0c0b0", "label": "first light"}, {"h": 6.5, "bg": "#e07b3a", "fg": "#fff8f0", "label": "sunrise"}, {"h": 8.0, "bg": "#f4c36a", "fg": "#5a3a10", "label": "morning gold"}, {"h": 10.0, "bg": "#fef9e7", "fg": "#4a3a20", "label": "late morning"}, {"h": 12.5, "bg": "#e8f4fd", "fg": "#1a3a5a", "label": "noon"}, {"h": 15.0, "bg": "#fde8c0", "fg": "#5a3a10", "label": "afternoon"}, {"h": 17.0, "bg": "#f0934a", "fg": "#fff0e8", "label": "golden hour"}, {"h": 18.5, "bg": "#c0463a", "fg": "#ffe8e0", "label": "sunset"}, {"h": 20.0, "bg": "#6a3070", "fg": "#f0d0f8", "label": "dusk"}, {"h": 21.5, "bg": "#1e1030", "fg": "#8070a8", "label": "evening"}, {"h": 23.0, "bg": "#0b0c1e", "fg": "#4a4a6a", "label": "night"}, {"h": 24.0, "bg": "#0b0c1e", "fg": "#4a4a6a", "label": "deep night"}];
+const ANCHORS = [{"h": 0.0, "bg": "#08091a", "face": "#12153a", "hand": "#6060a0", "label": "deep night"}, {"h": 4.5, "bg": "#0f0a2e", "face": "#1e1650", "hand": "#8878b8", "label": "before dawn"}, {"h": 5.5, "bg": "#5a2a48", "face": "#8a4a6a", "hand": "#f8d0c0", "label": "first light"}, {"h": 6.5, "bg": "#c05a20", "face": "#e08040", "hand": "#fff4e8", "label": "sunrise"}, {"h": 8.0, "bg": "#d4943a", "face": "#e8b860", "hand": "#3a2008", "label": "morning gold"}, {"h": 10.5, "bg": "#f0e8d0", "face": "#faf4e8", "hand": "#3a3020", "label": "late morning"}, {"h": 12.5, "bg": "#d8eef8", "face": "#eef6fc", "hand": "#1a3050", "label": "noon"}, {"h": 15.0, "bg": "#e8d8a8", "face": "#f4e8c0", "hand": "#4a3010", "label": "afternoon"}, {"h": 17.0, "bg": "#d06828", "face": "#e88840", "hand": "#fff0e0", "label": "golden hour"}, {"h": 18.5, "bg": "#a03028", "face": "#c05040", "hand": "#ffe8e0", "label": "sunset"}, {"h": 20.0, "bg": "#502858", "face": "#704878", "hand": "#f0d0f8", "label": "dusk"}, {"h": 21.5, "bg": "#180e2e", "face": "#281840", "hand": "#9080c0", "label": "evening"}, {"h": 23.0, "bg": "#08091a", "face": "#12153a", "hand": "#6060a0", "label": "night"}, {"h": 24.0, "bg": "#08091a", "face": "#12153a", "hand": "#6060a0", "label": "deep night"}];
 
 function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1,3),16);
-  const g = parseInt(hex.slice(3,5),16);
-  const b = parseInt(hex.slice(5,7),16);
-  return [r,g,b];
+  return [
+    parseInt(hex.slice(1,3),16),
+    parseInt(hex.slice(3,5),16),
+    parseInt(hex.slice(5,7),16)
+  ];
 }
 
-function lerp(a, b, t) {
-  return Math.round(a + (b - a) * t);
+function lerp(a,b,t) { return a + (b-a)*t; }
+
+function blendHex(h1,h2,t) {
+  const [r1,g1,b1]=hexToRgb(h1), [r2,g2,b2]=hexToRgb(h2);
+  const r=Math.round(lerp(r1,r2,t)), g=Math.round(lerp(g1,g2,t)), b=Math.round(lerp(b1,b2,t));
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
 }
 
-function blendHex(hex1, hex2, t) {
-  const [r1,g1,b1] = hexToRgb(hex1);
-  const [r2,g2,b2] = hexToRgb(hex2);
-  const r = lerp(r1,r2,t).toString(16).padStart(2,'0');
-  const g = lerp(g1,g2,t).toString(16).padStart(2,'0');
-  const b = lerp(b1,b2,t).toString(16).padStart(2,'0');
-  return '#' + r + g + b;
-}
+function ease(t) { return t<0.5?2*t*t:-1+(4-2*t)*t; }
 
-function getColors(hourFloat) {
-  for (let i = 0; i < ANCHORS.length - 1; i++) {
-    const a = ANCHORS[i], b = ANCHORS[i+1];
-    if (hourFloat >= a.h && hourFloat < b.h) {
-      const t = (hourFloat - a.h) / (b.h - a.h);
-      const eased = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+function getColors(hf) {
+  for (let i=0;i<ANCHORS.length-1;i++) {
+    const a=ANCHORS[i], b=ANCHORS[i+1];
+    if (hf>=a.h && hf<b.h) {
+      const t=ease((hf-a.h)/(b.h-a.h));
       return {
-        bg: blendHex(a.bg, b.bg, eased),
-        fg: blendHex(a.fg, b.fg, eased),
-        label: t < 0.5 ? a.label : b.label,
+        bg:   blendHex(a.bg,   b.bg,   t),
+        face: blendHex(a.face, b.face, t),
+        hand: blendHex(a.hand, b.hand, t),
+        label: t<0.5 ? a.label : b.label,
       };
     }
   }
-  return { bg: ANCHORS[0].bg, fg: ANCHORS[0].fg, label: ANCHORS[0].label };
+  return {bg:ANCHORS[0].bg, face:ANCHORS[0].face, hand:ANCHORS[0].hand, label:ANCHORS[0].label};
 }
 
-const timeEl   = document.getElementById('time');
-const periodEl = document.getElementById('period');
-const dateEl   = document.getElementById('date');
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const label  = document.getElementById('label');
 
-const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function resize() {
+  const s = Math.min(window.innerWidth, window.innerHeight) * 0.62;
+  canvas.width  = s;
+  canvas.height = s;
+}
 
-function tick() {
-  const now = new Date();
-  const h = now.getHours();
-  const m = now.getMinutes();
-  const s = now.getSeconds();
-  const hourFloat = h + m/60 + s/3600;
+function drawHand(cx, cy, angle, length, width, color, lineCap) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.lineWidth   = width;
+  ctx.strokeStyle = color;
+  ctx.lineCap     = lineCap || 'round';
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  ctx.moveTo(0, -length * 0.12);
+  ctx.lineTo(0, -length);
+  ctx.stroke();
+  ctx.restore();
+}
 
-  const hh = String(h).padStart(2,'0');
-  const mm = String(m).padStart(2,'0');
-  timeEl.textContent = hh + ':' + mm;
+function draw() {
+  const now  = new Date();
+  const h    = now.getHours();
+  const m    = now.getMinutes();
+  const s    = now.getSeconds();
+  const ms   = now.getMilliseconds();
+  const hf   = h + m/60 + s/3600;
+  const colors = getColors(hf);
 
-  const colors = getColors(hourFloat);
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+  const R  = W/2;
+  const r  = R * 0.88;   // face radius
+
+  // background fill
   document.body.style.backgroundColor = colors.bg;
-  document.body.style.color = colors.fg;
-  timeEl.style.color = colors.fg;
-  periodEl.style.color = colors.fg;
-  dateEl.style.color = colors.fg;
-  periodEl.textContent = colors.label;
+  label.style.color = colors.hand;
+  label.textContent = colors.label;
 
-  const day = DAYS[now.getDay()];
-  const date = now.getDate();
-  const mon = MONTHS[now.getMonth()];
-  dateEl.textContent = day + ' · ' + mon + ' ' + date;
+  ctx.clearRect(0,0,W,H);
+
+  // ── Clock face ───────────────────────────────────────────────
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = colors.face;
+  ctx.fill();
+
+  // Subtle ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = colors.hand + '30';
+  ctx.lineWidth = R * 0.012;
+  ctx.stroke();
+
+  // ── Hour markers ─────────────────────────────────────────────
+  for (let i=0; i<12; i++) {
+    const a  = (i / 12) * Math.PI * 2 - Math.PI/2;
+    const isDot4 = (i % 3 === 0);
+    const dot  = isDot4 ? r * 0.07 : r * 0.03;
+    const dist = r * (isDot4 ? 0.80 : 0.83);
+    ctx.beginPath();
+    ctx.arc(cx + Math.cos(a)*dist, cy + Math.sin(a)*dist, dot, 0, Math.PI*2);
+    ctx.fillStyle = colors.hand + (isDot4 ? 'cc' : '55');
+    ctx.fill();
+  }
+
+  // ── Smooth second angle ──────────────────────────────────────
+  const secAngle = ((s + ms/1000) / 60) * Math.PI*2 - Math.PI/2;
+  const minAngle = ((m + s/60)    / 60) * Math.PI*2 - Math.PI/2;
+  const hrAngle  = ((h % 12 + m/60) / 12) * Math.PI*2 - Math.PI/2;
+
+  // Hour hand — thick, short
+  drawHand(cx, cy, hrAngle,  r*0.48, R*0.045, colors.hand);
+
+  // Minute hand — medium
+  drawHand(cx, cy, minAngle, r*0.68, R*0.028, colors.hand);
+
+  // Second hand — thin, long, slight contrast
+  const secColor = colors.hand + 'cc';
+  drawHand(cx, cy, secAngle, r*0.78, R*0.014, secColor);
+
+  // Centre dot
+  ctx.beginPath();
+  ctx.arc(cx, cy, R*0.025, 0, Math.PI*2);
+  ctx.fillStyle = colors.hand;
+  ctx.fill();
+
+  requestAnimationFrame(draw);
 }
 
-tick();
-setInterval(tick, 10000);
-setTimeout(tick, 1000 - new Date().getMilliseconds());
+window.addEventListener('resize', () => { resize(); });
+resize();
+draw();
 </script>
 </body>
 </html>
