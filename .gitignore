@@ -9,3 +9,7 @@ demo_*/
 *.csv
 *.txt
 !requirements.txt
+
+# Claude Code internals — never commit these
+.claude/
+.clone/
