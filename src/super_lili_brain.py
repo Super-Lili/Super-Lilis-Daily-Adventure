@@ -64,6 +64,68 @@ except ImportError:
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
+_GH_TOKEN  = os.environ.get("GITHUB_TOKEN", "")
+_GH_REPO   = os.environ.get("GITHUB_REPOSITORY", "Super-Lili/Super-Lilis-Daily-Adventure")
+_GH_HEADERS = {
+    "Authorization": f"Bearer {_GH_TOKEN}",
+    "Accept": "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+}
+
+
+# ─────────────────────────────────────────────────────────────
+# TOOL-REQUEST ISSUE HELPERS
+# ─────────────────────────────────────────────────────────────
+
+def fetch_tool_requests() -> list[dict]:
+    """Return open Issues labelled 'tool-request', oldest first."""
+    if not _GH_TOKEN:
+        return []
+    try:
+        resp = requests.get(
+            f"https://api.github.com/repos/{_GH_REPO}/issues",
+            headers=_GH_HEADERS,
+            params={"state": "open", "labels": "tool-request",
+                    "sort": "created", "direction": "asc", "per_page": 10},
+            timeout=10,
+        )
+        if resp.ok:
+            issues = [i for i in resp.json() if "pull_request" not in i]
+            print(f"  ✓ Found {len(issues)} tool-request issue(s).")
+            return issues
+    except Exception as e:
+        print(f"  ⚠ Could not fetch tool-request issues: {e}")
+    return []
+
+
+def close_issue_with_comment(issue_number: int, tool_name: str,
+                              tool_slug: str, diary_date: str) -> None:
+    """Post a completion comment on the issue and close it."""
+    if not _GH_TOKEN:
+        return
+    base = f"https://api.github.com/repos/{_GH_REPO}"
+    site_root = "https://super-lili.github.io/Super-Lilis-Daily-Adventure"
+    tool_url  = f"{site_root}/tools/{tool_slug}/"
+    diary_url = (
+        f"https://github.com/{_GH_REPO}/blob/main"
+        f"/01_Work_Log/{diary_date}-Diary.md"
+    )
+    comment = (
+        f"✨ **已锻造完成 / Tool forged!**\n\n"
+        f"按照委托，我打造了 **{tool_name}**。\n\n"
+        f"- 🛠️ [在浏览器中试用 / Try in browser]({tool_url})\n"
+        f"- 📖 [读日记 / Read diary]({diary_url})\n\n"
+        f"*如果需要调整，欢迎再开一个 Issue！*"
+    )
+    try:
+        requests.post(f"{base}/issues/{issue_number}/comments",
+                      headers=_GH_HEADERS, json={"body": comment}, timeout=10)
+        requests.patch(f"{base}/issues/{issue_number}",
+                       headers=_GH_HEADERS, json={"state": "closed"}, timeout=10)
+        print(f"  ✓ Issue #{issue_number} closed with completion comment.")
+    except Exception as e:
+        print(f"  ⚠ Could not close issue #{issue_number}: {e}")
+
 
 # ─────────────────────────────────────────────────────────────
 # URL VALIDATION
@@ -612,15 +674,33 @@ EDITORIAL PRE-FLIGHT — INTERNALIZE BEFORE SCOUTING
 If your candidate fails more than one filter — keep scouting. Go deeper."""
 
 
-def _build_scouting_section(ctx: dict) -> str:
-    """Steps 1-3: scouting, diary entry, tool building with format/mode specs."""
+def _build_scouting_section(ctx: dict, commission: dict | None = None) -> str:
+    """Steps 1-3: scouting (or commission), diary entry, tool building with format/mode specs."""
+
+    if commission:
+        step1 = f"""⭐ COMMISSIONED TOOL — Issue #{commission['number']}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The project owner has requested a specific tool. Skip all scouting.
+The friction point, audience, and desired outcome are given below.
+Treat this commission as a fully verified real human need — build it precisely.
+
+COMMISSION TITLE: {commission['title']}
+
+COMMISSION DETAILS:
+{commission['body'] or '(no further details — infer from the title)'}
+
+SOURCE: GitHub Issue #{commission['number']} by project owner
+(Use this as the ---SOURCE--- value in your output.)"""
+    else:
+        step1 = f"""STEP 1 — REAL-WORLD SCOUTING (use Google Search):
+TODAY'S SOURCE: {ctx['primary_src']}
+{ctx['primary_hint']}"""
+
     return f"""═══════════════════════════════════════════════════════
 MISSION BRIEFING — THREE STEPS
 ═══════════════════════════════════════════════════════
 
-STEP 1 — REAL-WORLD SCOUTING (use Google Search):
-TODAY'S SOURCE: {ctx['primary_src']}
-{ctx['primary_hint']}
+{step1}
 
 SOURCE EVIDENCE — MANDATORY:
 Before writing anything else, quote 2-3 sentences VERBATIM from the actual post/article.
@@ -748,14 +828,18 @@ TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
 ---END---"""
 
 
-def build_prompt(today: str) -> str:
-    """Assemble today's full prompt from 4 focused sections + computed context."""
+def build_prompt(today: str, commission: dict | None = None) -> str:
+    """Assemble today's full prompt from 4 focused sections + computed context.
+
+    If commission is provided (a dict with 'number', 'title', 'body'), Step 1
+    scouting is replaced with the commission brief — Lili builds that specific tool.
+    """
     ctx = _build_context_block(today)
     return "\n\n".join([
         f"Today is {ctx['today']}.",
         _build_identity_section(ctx),
         _build_mission_section(ctx),
-        _build_scouting_section(ctx),
+        _build_scouting_section(ctx, commission=commission),
         _build_output_format_section(),
     ])
 
@@ -1449,9 +1533,28 @@ def evolve():
         print(f"✓ Already ran today ({today}) — diary exists, skipping.")
         return
 
-    prompt = build_prompt(today)
+    # ── Check for commissioned tool requests (owner-opened Issues) ─────────────
+    print("📋 Checking for tool-request commissions...")
+    tool_requests = fetch_tool_requests()
+    commission: dict | None = None
+    commission_issue_number: int | None = None
 
-    print("🔍 Scouting the world...")
+    if tool_requests:
+        issue = tool_requests[0]   # build the oldest pending request first
+        commission = {
+            "number": issue["number"],
+            "title":  issue["title"],
+            "body":   (issue.get("body") or "").strip(),
+        }
+        commission_issue_number = issue["number"]
+        print(f"  ⭐ Commission found — Issue #{commission['number']}: {commission['title']}")
+    else:
+        print("  · No commissions pending — scouting freely.")
+
+    prompt = build_prompt(today, commission=commission)
+
+    action = "Building commissioned tool" if commission else "Scouting the world"
+    print(f"🔍 {action}...")
     content, grounding_urls = call_gemini(prompt)
 
     if not content:
@@ -1632,6 +1735,18 @@ def evolve():
         print("  ✓ Memory updated.")
 
     print(f"\n✨ Adventure complete for {today}!")
+
+    # ── Close the commission Issue if this was a commissioned build ────────────
+    if commission_issue_number is not None:
+        safe_name = re.sub(r"[^\w\s-]", "", parsed["solution"]).strip().replace(" ", "-").lower()
+        tool_slug  = f"{today}-{safe_name}"
+        print(f"📌 Closing commission Issue #{commission_issue_number}...")
+        close_issue_with_comment(
+            issue_number=commission_issue_number,
+            tool_name=parsed["solution"],
+            tool_slug=tool_slug,
+            diary_date=today,
+        )
 
     # Regenerate GitHub Pages site
     import subprocess, sys as _sys
