@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "icons-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "7788", "--directory", "/tmp/lili_preview"],
+      "port": 7788
+    },
+    {
+      "name": "docs-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "7789", "--directory", "/Users/lvhaina/Projects/Super-Lilis-Daily-Adventure/docs"],
+      "port": 7789
+    }
+  ]
+}
