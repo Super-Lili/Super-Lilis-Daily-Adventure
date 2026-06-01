@@ -698,7 +698,7 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
+<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="Paste your meeting notes, task list, or work text here…"></textarea>
@@ -722,6 +722,10 @@ async function loadPyodide_() {
     // Auto-run with demo input so user sees real output immediately
     if (DEMO_INPUT) {
       document.getElementById('user-input').value = DEMO_INPUT;
+      const demoNote = document.createElement('p');
+      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
+      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
+      document.getElementById('output').before(demoNote);
       await runTool(true);
     }
   } catch(e) {

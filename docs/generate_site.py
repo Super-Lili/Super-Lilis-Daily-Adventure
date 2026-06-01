@@ -1217,6 +1217,13 @@ def build_pyodide_section(t: dict) -> str:
     if "USER_INPUT" not in tool_code:
         return build_local_run_section(t)
 
+    # ── Libraries that cannot run in Pyodide (terminal/network-only) ───────────
+    _PYODIDE_BLOCKLIST = {'rich', 'click', 'flask', 'fastapi', 'httpx', 'aiohttp', 'requests'}
+    import re as _re
+    imported = set(_re.findall(r'^(?:import|from)\s+([\w]+)', tool_code, _re.MULTILINE))
+    if imported & _PYODIDE_BLOCKLIST:
+        return build_local_run_section(t)
+
     # ── Mode 3: pre-render HTML at build time — zero Pyodide wait ──────────────
     main_py = TOOLBOX / t["category"] / t["dir_name"] / "main.py"
     if main_py.exists():
@@ -1267,7 +1274,7 @@ def build_pyodide_section(t: dict) -> str:
     placeholder = placeholder_hints.get(cat, "Paste your text here…")
 
     return f"""
-<div id="pyodide-status">&#x23F3; Loading&hellip;</div>
+<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
 <div id="pyodide-ui" style="display:none">
   <span class="runner-label">Input</span>
   <textarea id="user-input" rows="6" placeholder="{placeholder}"></textarea>
@@ -1291,6 +1298,10 @@ async function loadPyodide_() {{
     // Auto-run with demo input so user sees real output immediately
     if (DEMO_INPUT) {{
       document.getElementById('user-input').value = DEMO_INPUT;
+      const demoNote = document.createElement('p');
+      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
+      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
+      document.getElementById('output').before(demoNote);
       await runTool(true);
     }}
   }} catch(e) {{
