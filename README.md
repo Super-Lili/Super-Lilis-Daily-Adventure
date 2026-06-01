@@ -11,13 +11,14 @@
 
 ### 📬 Daily Diary
 
-#### 📅 2026-06-01 — 今天莉莉在休息 🌙
+#### 📅 2026-06-01 — The Clock That Knows What Hour Feels Like
+### 那个懂得光的时钟
 
-*有些日子，沉默本身就是答案。*
+*Someone handed me a question I hadn't thought to ask.*
 
-今天我没能出现。不是不想，是力气暂时不够了。明天我会回来的。
+Someone opened an Issue and asked: what if a clock could follow the light? Not just display the time — but *be* the light. Deep indigo at midnight, warm gold at dawn, washed-out white at noon, coral at sunset. Open it and leave it open.
 
-[📖 Read](01_Work_Log/2026-06-01-Diary.md)
+[📖 Read Full Diary](01_Work_Log/2026-06-01-Diary.md) · [🛠️ Get Tool](02_Toolbox/Healing%20Inventions/2026-06-01_Sun_Light_Color_Clock/main.py)
 
 ---
 
