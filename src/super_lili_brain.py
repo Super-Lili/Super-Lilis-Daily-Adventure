@@ -77,30 +77,42 @@ _GH_HEADERS = {
 # TOOL-REQUEST ISSUE HELPERS
 # ─────────────────────────────────────────────────────────────
 
+_BUILT_LABEL = "lili-built"
+
+
 def fetch_tool_requests() -> list[dict]:
-    """Return open Issues labelled 'tool-request', oldest first."""
+    """Return Issues that Lili has responded to but hasn't built yet, oldest first.
+
+    Trigger: has label 'lili-responded', does NOT have label 'lili-built'.
+    Any issue a user opens → Lili responds (lili_responds.py) → next day Lili builds.
+    """
     if not _GH_TOKEN:
         return []
     try:
         resp = requests.get(
             f"https://api.github.com/repos/{_GH_REPO}/issues",
             headers=_GH_HEADERS,
-            params={"state": "open", "labels": "tool-request",
+            params={"state": "open", "labels": "lili-responded",
                     "sort": "created", "direction": "asc", "per_page": 10},
             timeout=10,
         )
-        if resp.ok:
-            issues = [i for i in resp.json() if "pull_request" not in i]
-            print(f"  ✓ Found {len(issues)} tool-request issue(s).")
-            return issues
+        if not resp.ok:
+            return []
+        issues = [
+            i for i in resp.json()
+            if "pull_request" not in i
+            and _BUILT_LABEL not in [l["name"] for l in i.get("labels", [])]
+        ]
+        print(f"  ✓ Found {len(issues)} pending issue(s) to build from.")
+        return issues
     except Exception as e:
-        print(f"  ⚠ Could not fetch tool-request issues: {e}")
+        print(f"  ⚠ Could not fetch issues: {e}")
     return []
 
 
-def close_issue_with_comment(issue_number: int, tool_name: str,
-                              tool_slug: str, diary_date: str) -> None:
-    """Post a completion comment on the issue and close it."""
+def mark_issue_built(issue_number: int, tool_name: str,
+                     tool_slug: str, diary_date: str) -> None:
+    """Add 'lili-built' label and post a completion comment on the issue."""
     if not _GH_TOKEN:
         return
     base = f"https://api.github.com/repos/{_GH_REPO}"
@@ -111,20 +123,33 @@ def close_issue_with_comment(issue_number: int, tool_name: str,
         f"/01_Work_Log/{diary_date}-Diary.md"
     )
     comment = (
-        f"✨ **已锻造完成 / Tool forged!**\n\n"
-        f"按照委托，我打造了 **{tool_name}**。\n\n"
-        f"- 🛠️ [在浏览器中试用 / Try in browser]({tool_url})\n"
-        f"- 📖 [读日记 / Read diary]({diary_url})\n\n"
-        f"*如果需要调整，欢迎再开一个 Issue！*"
+        f"✨ **已为你锻造完成！**\n\n"
+        f"看到你的 Issue，我今天打造了 **{tool_name}**。\n\n"
+        f"- 🛠️ [在浏览器中直接试用]({tool_url})\n"
+        f"- 📖 [读今天的日记]({diary_url})\n\n"
+        f"*用完告诉我感受，或者继续开 Issue 告诉我下一个需求！*"
     )
     try:
+        # Ensure lili-built label exists
+        labels_url = f"{base}/labels"
+        existing = requests.get(labels_url, headers=_GH_HEADERS, timeout=10)
+        if existing.ok:
+            names = [l["name"] for l in existing.json()]
+            if _BUILT_LABEL not in names:
+                requests.post(labels_url, headers=_GH_HEADERS, json={
+                    "name": _BUILT_LABEL,
+                    "color": "2ABBA8",
+                    "description": "Super-Lili built a tool from this issue 🛠️",
+                }, timeout=10)
+        # Post comment
         requests.post(f"{base}/issues/{issue_number}/comments",
                       headers=_GH_HEADERS, json={"body": comment}, timeout=10)
-        requests.patch(f"{base}/issues/{issue_number}",
-                       headers=_GH_HEADERS, json={"state": "closed"}, timeout=10)
-        print(f"  ✓ Issue #{issue_number} closed with completion comment.")
+        # Add label
+        requests.post(f"{base}/issues/{issue_number}/labels",
+                      headers=_GH_HEADERS, json={"labels": [_BUILT_LABEL]}, timeout=10)
+        print(f"  ✓ Issue #{issue_number} marked as built.")
     except Exception as e:
-        print(f"  ⚠ Could not close issue #{issue_number}: {e}")
+        print(f"  ⚠ Could not update issue #{issue_number}: {e}")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -1736,12 +1761,12 @@ def evolve():
 
     print(f"\n✨ Adventure complete for {today}!")
 
-    # ── Close the commission Issue if this was a commissioned build ────────────
+    # ── Mark commission Issue as built ────────────────────────────────────────
     if commission_issue_number is not None:
         safe_name = re.sub(r"[^\w\s-]", "", parsed["solution"]).strip().replace(" ", "-").lower()
         tool_slug  = f"{today}-{safe_name}"
-        print(f"📌 Closing commission Issue #{commission_issue_number}...")
-        close_issue_with_comment(
+        print(f"📌 Marking Issue #{commission_issue_number} as built...")
+        mark_issue_built(
             issue_number=commission_issue_number,
             tool_name=parsed["solution"],
             tool_slug=tool_slug,
