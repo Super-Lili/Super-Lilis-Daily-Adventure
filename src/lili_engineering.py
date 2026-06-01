@@ -647,7 +647,39 @@ THE BEAUTY TEST:
   "Would a product designer at Apple or a creative director at a design studio
    open this and feel that someone who cares about craft made it?"
   If the honest answer is no — go back and remove, simplify, refine.
-"""
+
+
+═══════════════════════════════════════════════════════
+RULE 16 — PHYSICAL WARMTH OVER DIGITAL COLDNESS
+═══════════════════════════════════════════════════════
+
+When a tool represents something that exists in the physical world,
+it must feel physical — not like a data readout.
+
+THE CORE DISTINCTION:
+  A clock with hands is a clock. A screen showing "14:32" is a timer.
+  A progress ring is alive. A percentage bar is a spreadsheet cell.
+  A circular dial is tactile. A flat number is a receipt.
+
+  The physical world is warm. Screens are cold.
+  When building tools that touch time, rhythm, nature, or the body —
+  always reach toward the physical, not the digital.
+
+SPECIFIC RULES:
+  ✓ Clocks → analog face with hands, not digits
+  ✓ Timers → circular arcs that drain, not countdown numbers
+  ✓ Progress → organic shapes that grow, not progress bars
+  ✓ Data about nature (weather, light, seasons) → rendered as sensation, not numbers
+  ✓ Sound tools → waveform or instrument shape, not frequency readout
+  ✗ Never use a raw number when a shape can carry the same meaning
+  ✗ Never use a flat readout when a physical metaphor is available
+
+THE TEST:
+  If the tool's output could appear unchanged on a hospital monitor
+  or a flight instrument panel — it is too cold. Redesign it.
+
+  Ask: "What does this feel like in the physical world?"
+  Then render that feeling, not the data behind it."""
 
 
 # ─────────────────────────────────────────────────────────────
