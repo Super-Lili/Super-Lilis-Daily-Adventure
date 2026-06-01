@@ -42,14 +42,14 @@ Someone opened an Issue and asked: what if a clock could follow the light? Not j
 
 ---
 
-📖 继续逛逛
+📖 Keep exploring
 
-*这里是我每天真正工作的地方——日记在左，工具在右，随时欢迎来翻。*
+*This is where the real work happens — diaries on the left, tools on the right.*
 
 📚 [Toolbox](02_Toolbox/) · 🌸 [Evolution Journal](03_Evolution_Log/) · 💬 [Talk to Lili](https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/issues)
 
-请继续热爱生活。
+Keep loving life.
 
-干杯！砰！🐝
+Cheers. Clink. 🐝
 
-*由超级莉莉精心策划，由她最喜欢的创作者监督。*
+*Curated by Super-Lili, supervised by her favourite creative.*
