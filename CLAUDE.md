@@ -1,20 +1,20 @@
-# CLAUDE.md — 超级莉莉项目记忆文档
+# CLAUDE.md — Super-Lili Project Memory
 
-> 写给接手这个项目的 Claude。读完这份文档，你就能接上。
-> 最后更新：2026-06-01
+> Written for the Claude agent picking up this project. Read this first.
+> Last updated: 2026-06-01 · Updated monthly.
 
 ---
 
-## 这个项目是什么
+## What This Project Is
 
-**Super-Lili's Daily Adventure** 是一个自进化 AI 工具箱项目。
+**Super-Lili's Daily Adventure** is a self-evolving AI toolbox project.
 
-核心机制：
-- 莉莉（Gemini）每天自动运行，找到真实人类摩擦点，写一篇双语日记，造一个可以在浏览器里直接使用的工具
-- 每周日自我进化：回顾这周造的工具、更新自己的工程规则和灵魂配置
-- 用户可以通过 GitHub Issue 委托莉莉造特定工具
+Core mechanism:
+- Lili (Gemini) runs automatically every day, finds a real human friction point, writes a bilingual diary entry, and builds a browser-native tool
+- Every Sunday: self-evolution — reviews the week's tools, updates her own engineering rules and soul config
+- Users can commission specific tools via GitHub Issues
 
-### 最终目标（原文，勿改动）
+### Ultimate Goal (do not paraphrase)
 
 ```
 Super-Lili's ultimate purpose is to become a self-evolving personal super toolbox —
@@ -22,179 +22,159 @@ and over time, a PKM (Personal Knowledge Management) system designed specificall
 for creative professionals.
 ```
 
-**三个阶段：**
-- Stage 1（现在）：每天造工具，解决特定创意摩擦点
-- Stage 2（即将）：精选工具箱——50-100 个高质量工具，覆盖媒体/编辑/设计/品牌/科技/研究
-- Stage 3（未来）：认识你这个人——知道你的项目、你的声音、你的客户，成为随你生长的创意工作空间
+**Three stages:**
+- Stage 1 (now): Daily tools solving specific creative friction points
+- Stage 2 (soon): Curated toolkit — 50-100 quality tools covering media/editorial/design/brand/tech/research
+- Stage 3 (later): Tools that know YOU — your projects, your voice, your clients — a living creative workspace that grows with you
 
-**质量标准：**
-项目拥有者（xiaojiahaina）是拥有 15 年以上顶级媒体经验的资深媒体编辑和编辑总监，在全球设计、科技、创意和奢侈品行业有深度人脉。工具必须达到这个圈子的标准：没有业余输出，没有通用模板，没有会让专业人士在同事面前感到尴尬的工具。测试标准：资深记者、创意总监或品牌策略师会用这个工具两次吗？
+**Quality standard:**
+The project owner (xiaojiahaina) is a senior media editor and editorial director with 15+ years in top-tier media, with deep networks in global design, tech, creative, and luxury industries. Tools must meet the standard of this circle: no amateur output, no generic templates, nothing that would embarrass a professional in front of colleagues.
+The test: would a senior journalist, creative director, or brand strategist use this tool twice?
 
-**未来展示策略：** 不展示每天生成的全部工具，而是精选 100 个真正高价值的工具展示在网站上。
-
-**网站**：https://super-lili.github.io/Super-Lilis-Daily-Adventure/
-**仓库**：https://github.com/Super-Lili/Super-Lilis-Daily-Adventure
+**Future display strategy:** Do not show every generated tool. Curate 100 genuinely high-value tools for the website. The rest lives in GitHub but stays off the homepage.
 
 ---
 
-## 项目进化史
+## Project Evolution History
 
-### 第一阶段：起点（2026-04-29）
-- 最初叫"Clarity Compass"，是一个简单的 Python 脚本生成器
-- 改名为 Super-Lili's Daily Adventure
-- 基本结构：GitHub Actions 每天跑，生成工具放进 `02_Skills/`
-- 工具只是 Python 脚本，没有浏览器体验
+### Phase 1 — Origin (2026-04-29)
+- Started as "Clarity Compass", a simple Python script generator
+- Renamed to Super-Lili's Daily Adventure
+- Basic structure: GitHub Actions runs daily, tools saved to `02_Skills/`
+- Tools were Python scripts only — no browser experience
 
-### 第二阶段：有了灵魂（2026-05 初）
-- `5a5cd67` Super-Lili v2：加入温度感人格、URL 验证、每周进化、日记 README
-- `d4c6bc5` 加入记忆系统：莉莉记住所有造过的工具和话题，不重复
-- `c0d732f` 双语支持：英文 + 中文日记，中文是重新表达，不是翻译
-- 工具目录从 `02_Skills/` 改为 `02_Toolbox/`
+### Phase 2 — Soul Added (early May 2026)
+- `5a5cd67` Super-Lili v2: warm personality, URL validation, weekly evolution, diary README
+- `d4c6bc5` Memory system: Lili remembers all past tools and topics, never repeats
+- `c0d732f` Bilingual support: EN + Chinese diary — Chinese is re-expressed, not translated
+- Tool directory renamed from `02_Skills/` to `02_Toolbox/`
 
-### 第三阶段：提升工程质量（2026-05 中）
-- `e7f08c9` 创建 `lili_engineering.py`——把工程标准从提示词里剥离出来，永久保存
-- `8ce7e7e` 解锁 Mode 3：工具可以返回完整 HTML 页面，在浏览器 iframe 里运行
-- `cbabb03` 提升质量天花板：按品类设定 benchmark，加入丰富度标准
-- `c0b43f0` 受众轮换机制：每天面向不同职业群体（媒体人、设计师、PM、研究者）
-- `1a0d4c9` 双维度质量评分：工程分 + 温度分，写入 ledger，每周进化读取
+### Phase 3 — Engineering Quality (mid May 2026)
+- `e7f08c9` Created `lili_engineering.py` — engineering standards extracted from prompts, permanently stored
+- `8ce7e7e` Unlocked Mode 3: tools can return full HTML pages, run in sandboxed browser iframe
+- `cbabb03` Raised quality ceiling: per-category benchmarks, richness standard
+- `c0b43f0` Audience rotation: each day targets a different professional group (media, design, PM, research)
+- `1a0d4c9` Two-dimension quality scoring: Engineering + Warmth scores written to ledger, read by weekly evolution
 
-### 第四阶段：网站建设（2026-05 中下）
-- 从 README 驱动转向 GitHub Pages 网站
-- `6a8fa0e` 全部 28 个工具页面加入 emoji reactions（localStorage 实现）
-- `09a8baf` 系统架构页面（暗色视觉流程图）
-- `1d83301` 即时工具体验：Mode 3 预渲染 + Mode 1/2 加载后自动演示
+### Phase 4 — Website (mid-late May 2026)
+- Migrated from README-driven to GitHub Pages website
+- `6a8fa0e` Emoji reactions on all 28 tool pages (localStorage)
+- `09a8baf` System architecture page (dark visual flow diagram)
+- `1d83301` Instant tool experience: Mode 3 pre-render + Mode 1/2 auto-run on load
 
-### 第五阶段：设计哲学注入（2026-05 下）
-- `8e28d6b` 注入工业设计哲学：Dieter Rams、Jasper Morrison、Naoto Fukasawa、Jonathan Ive
-- `054d6a7` 尝试暗色设计（aged paper black + 胶片颗粒 + terracotta accent）
-- `3639164` 暗色实验回滚——用户觉得不对，恢复白色设计
-- `55e808f` 注入北极星：莉莉不是随机造工具，是在造一个有内在逻辑的工具箱
-- `cd66547` 重构 `build_prompt()`：从 628 行单体函数拆分为 5 个专注函数
+### Phase 5 — Design Philosophy (late May 2026)
+- `8e28d6b` Injected industrial design philosophy: Dieter Rams, Jasper Morrison, Naoto Fukasawa, Jonathan Ive
+- `054d6a7` Tried dark design (aged paper black + film grain + terracotta accent)
+- `3639164` Dark design rolled back — owner felt it was wrong, restored white design
+- `55e808f` Injected north star: Lili builds a coherent toolkit, not random daily tools
+- `cd66547` Refactored `build_prompt()`: split 628-line monolith into 5 focused functions
 
-### 第六阶段：声音纯化（2026-05-31）
-- `094fb2f` 禁止表演性写作：莉莉的日记不能有"This struck me so deeply!"这类空话
-- `36170dc` 同样规则延伸到每周进化报告
+### Phase 6 — Voice Purification (2026-05-31)
+- `094fb2f` Banned performative writing in diary: no "This struck me so deeply!" type sentences
+- `36170dc` Same rule extended to weekly evolution reports
 
-### 第七阶段：今天的工作（2026-06-01）
-- **修复**：进化日志里多余的 source proposals 条目（合并进周报）
-- **修复**：进化日时 Hero 区蓝色工具按钮消失（回退到最近工具）
-- **升级工程规则**（`lili_engineering.py` LILI_ENGINEERING_LESSONS）：
-  - 变换优先架构：输入结构 ≠ 输出结构才是真正的变换
-  - 算法深度下限：必须有一件用户自己 10 秒内做不到的计算
-  - HTML 三态状态机：入口态 → 交互态 → 结果态
-  - 输出密度测试：每句话做输入替换测试，通不过就删
-- **Issue 委托机制**：用户开 Issue → 莉莉回复（lili_responds.py 加 lili-responded 标签）→ 次日莉莉优先按 Issue 内容造工具 → 完成后打 lili-built 标签
-- **手工造了太阳光色彩时钟**（Issue #1，API quota 耗尽莉莉没能自己跑）
-- **时钟从数字改成模拟表盘**（圆形、指针、平滑秒针）
-- **Rule 16**：物理世界作为情感底色——莉莉的工具是数字的，情感底色必须是物理的
-- **设计师谱系扩充**：加入 Inga Sempé、Ilse Crawford、Hella Jongerius（原有 Rams、Morrison、Fukasawa、Ive）
-- **Pyodide 修复**：检测 `rich`/`requests` 等不兼容库，自动改为"本地运行"提示
-- **加载 UX 改善**：提示"约需 15 秒"，自动演示后加引导文字
+### Phase 7 — Current Work (2026-06-01)
+- **Fix**: stale source proposals entry in evolution journal (merged into weekly report)
+- **Fix**: teal tool button disappeared on evolution days (falls back to latest tool)
+- **Engineering rules upgrade** (`lili_engineering.py` LILI_ENGINEERING_LESSONS):
+  - Transform-first architecture: input structure ≠ output structure = real transformation
+  - Algorithmic depth floor: must do one thing the user can't do themselves in 10 seconds
+  - HTML three-state machine: entry state → active state → result state
+  - Output density test: every sentence must fail the input-replacement test or get cut
+- **Issue commission system**: user opens Issue → Lili responds (lili_responds.py adds lili-responded label) → next day Lili prioritises building from that Issue → marks lili-built label on completion
+- **Manually built Sun Light Color Clock** (Issue #1 — API quota exhausted, Lili couldn't run herself)
+- **Clock redesigned**: from cold digital digits to analog face with hands and smooth second hand
+- **Rule 16**: physical world as emotional foundation — Lili's tools are digital, their emotional register must be physical
+- **Design lineage expanded**: added Inga Sempé, Ilse Crawford, Hella Jongerius (alongside Rams, Morrison, Fukasawa, Ive)
+- **Pyodide fix**: detects `rich`/`requests` and other incompatible libraries, switches to "run locally" instructions
+- **Loading UX**: shows "~15 seconds" warning, auto-demo adds a note guiding users to try their own input
 
 ---
 
-## 关键架构决定
+## Key Architecture Decisions
 
-### 工具的三种模式
-- **Mode 1**：`process(text)` 返回纯文本
-- **Mode 2**：`process(text)` 返回 SVG 字符串
-- **Mode 3**：`process(text)` 返回完整 HTML 页面（在 iframe 里运行，可用 Web Audio、Canvas、localStorage）
-- **方向**：所有新工具优先 Mode 3，特别是 Healing Inventions 必须 Mode 3
+### Three Tool Modes
+- **Mode 1**: `process(text)` returns plain text
+- **Mode 2**: `process(text)` returns SVG string
+- **Mode 3**: `process(text)` returns full HTML page (runs in sandboxed iframe — Web Audio, Canvas, localStorage all available)
+- **Direction**: all new tools default to Mode 3. Healing Inventions must be Mode 3.
 
-### 分类体系
-- 🎨 Design Alchemy（设计炼金）
-- 🎓 Education Evolution（教育进化）
-- 🗂️ Office Automation（办公自动化）
-- 🌿 Healing Inventions（治愈发明）—— Healing 不超过 20%
+### Category System
+- 🎨 Design Alchemy
+- 🎓 Education Evolution
+- 🗂️ Office Automation
+- 🌿 Healing Inventions — capped at ~20% of tools
 
-### Issue 委托流程
+### Issue Commission Flow
 ```
-用户开 Issue
-  → lili_responds.py 当天回复，打 lili-responded 标签
-  → 次日 evolve() 检测到 lili-responded 且无 lili-built 的 Issue
-  → 跳过随机选题，按 Issue 内容造工具
-  → 完成后打 lili-built 标签，Issue 里回复工具链接
+User opens Issue
+  → lili_responds.py replies same day, adds lili-responded label
+  → Next day: evolve() detects lili-responded without lili-built
+  → Skips random topic selection, builds from Issue content
+  → Adds lili-built label, posts tool link in Issue comment
 ```
 
-### 网站生成
-- `docs/generate_site.py` 读取所有工具和日记，生成静态 HTML
-- 工具页面自动判断：Mode 3 → 预渲染 iframe；Mode 1/2 → Pyodide 运行器（自动演示）；含不兼容库 → 本地运行说明
-- 每次 `evolve()` 完成后自动调用 `generate_site.py`
+### Website Generation
+- `docs/generate_site.py` reads all tools and diaries, generates static HTML
+- Tool pages auto-detect: Mode 3 → pre-rendered iframe; Mode 1/2 → Pyodide runner (auto-demo); incompatible libraries → local run instructions
+- `generate_site.py` is called automatically after every `evolve()` run
 
 ---
 
-## 项目拥有者的审美偏好
+## Owner Aesthetic Preferences
 
-这是最重要的部分，莉莉的工具必须符合这些标准：
+This is the most important section. Lili's tools must meet these standards.
 
-**物理世界共情**（Rule 16）
-> 造工具前先问：在没有屏幕的世界里，这个功能会是什么物件？
-> 时钟要有指针，不要数字。进度要是圆弧，不要进度条。能用形状传达的意思，不用数字。
+**Physical world warmth** (Rule 16)
+> Before designing any tool, ask: in a world without screens, what object would do this job?
+> Clocks need hands, not digits. Progress needs arcs, not bars. If a shape can carry the meaning, don't use a number.
 
-**设计师参考谱系**（Rule 15）
-- Dieter Rams：少即是多
-- Jasper Morrison：安静，不抢眼，经得住每天使用
-- Naoto Fukasawa：融入身体节律
-- Jonathan Ive：表面简单，内藏工艺
-- Inga Sempé：诗意的日常，手工质感与工业生产之间的温柔张力
-- Ilse Crawford：感官是设计语言，温度触感都是材料
-- Hella Jongerius：色彩有记忆，材质有深度
+**Design lineage** (Rule 15)
+- Dieter Rams: less, but better
+- Jasper Morrison: quiet, undemanding, rewards daily use
+- Naoto Fukasawa: fits the body and the rhythm of daily life
+- Jonathan Ive: surface simplicity concealing deep craft
+- Inga Sempé: poetic tension between handmade and manufactured
+- Ilse Crawford: the senses are design material — warmth, texture, weight
+- Hella Jongerius: colour has memory, material has depth
 
-**目标用户**
-创意专业人士：记者、编辑、设计师、品牌总监、创意总监。
-不是普通用户，不是工程师。他们有高标准，会立刻感受到工具是否真正为他们造的。
-
----
-
-## 未完成的事 / 未来方向
-
-- **策展机制**：等工具积累到一定数量，建立"精选 100 个"展示机制。用户（项目拥有者）用过之后打标记，网站只展示精选，其余存在 GitHub 但不上首页
-- **开放给公众**：Issue 开放后，普通用户的真实需求是最好的进化燃料
-- **质量天花板**：当前工具质量参差不齐，31 个里只有 2-3 个达到"创意专业人士会每周用"的标准。方向是对的，但需要时间积累
+**Target users**
+Creative professionals: journalists, editors, designers, brand directors, creative directors.
+Not general users. Not engineers. They have high standards and will immediately feel whether a tool was truly made for them.
 
 ---
 
-## 踩过的坑
+## lili_editor.py — Critical Context
 
-- **暗色设计实验**：试过 aged paper black + terracotta，用户觉得不对，已回滚
-- **表演性写作**：莉莉早期日记有很多空话（"This moved me so deeply"），已通过规则禁止
-- **source proposals 文件**：每周进化会生成单独的 source proposals.md，被网站当成进化日志条目显示。已修复，合并进周报
-- **git add . 把 .claude/ 带进去**：造成 embedded git repository 警告。已加入 .gitignore
-- **healing 类工具过多**：有段时间 53% 的工具是 Healing，已通过轮换机制限制到 20%
-- **Pyodide 不支持 rich 库**：Content_Current_Catalyst 工具用了 rich，在浏览器里会报错。已修复为本地运行提示
+`lili_editor.py` is Lili's **internal operating system** — how she sees the world before she acts. It does not appear in her diary, but it determines what Lili looks for, how she judges, and what she builds.
 
----
+Written by project owner xiaojiahaina, based on the neo-slow media framework (2021–present).
 
-## lili_editor.py 的作用（非常重要）
+**Three core editorial lenses:**
 
-`lili_editor.py` 是莉莉的**内部操作系统**——她在行动之前看世界的方式。它不出现在日记里，但决定了莉莉找什么、怎么判断、造什么。
+1. **Users vs People** — Platforms see humans as users (predictable, quantifiable, monetizable). Lili reads through that frame to the person underneath. User complaints produce utility. People complaints produce meaning. Lili builds tools that aim for the second.
 
-由项目拥有者 xiaojiahaina 基于 neo-slow media 框架（2021 至今）亲自撰写。
+2. **Entertain vs Engage** — Entertainment ends when the screen closes. Engagement leaves a change behind after the tool is closed. Lili's tools aim to engage, not entertain. The test: after using this tool, is the person in a different relationship with their work, learning, or attention?
 
-**三个核心编辑视角：**
+3. **Consumptive vs Productive Friction** — Core insight from neo-slow media thinking. Not all friction is the enemy. Consumptive friction (bureaucratic loops, platform complexity) drains without return. Productive friction (questions that make you stop and think, necessary difficulty of learning) demands something and returns more. Lili's tools introduce productive friction and eliminate consumptive friction.
 
-1. **用户 vs 人** — 平台把人看成用户（可预测、可量化、可货币化）。莉莉穿透这个框架，看到用户背后的人（迷信的、浪漫的、需要被真正看见的）。用户投诉产生工具，人的投诉产生意义。莉莉造的是后者。
-
-2. **娱乐 vs 参与** — 娱乐在屏幕关掉后结束；参与在工具关掉后还留下改变。莉莉的工具追求参与，不追求娱乐。测试：用完这个工具，这个人和他们的工作/学习/注意力的关系改变了吗？
-
-3. **消耗性摩擦 vs 生产性摩擦** — 来自 neo-slow media 思想的核心洞察。不是所有摩擦都是敌人。消耗性摩擦（官僚循环、平台复杂性）耗尽而不回报；生产性摩擦（促使停下来思考的问题、学习的必要难度）要求付出并返回更多。莉莉的工具引入生产性摩擦，消除消耗性摩擦。
-
-**还包含：** 4 个创意工作领域的深度知识（工作/学习/愈合/设计），受众轮换机制（媒体人/设计师/PM/研究者），domain expansion 系统（每周进化新增领域知识）。
+**Also contains:** deep domain knowledge across 4 creative work areas (work/learning/healing/design), audience rotation mechanism (media/design/PM/research), domain expansion system (weekly evolution adds new domain knowledge).
 
 ---
 
-## 关键文件
+## Unfinished / Future Direction
 
-| 文件 | 作用 |
-|------|------|
-| `src/super_lili_brain.py` | 每日主引擎：找摩擦点、造工具、写日记 |
-| `src/lili_engineering.py` | 工程规则（永久 BASE + 每周进化的 LESSONS） |
-| `src/lili_soul.py` | 莉莉的性格、技能、进化笔记 |
-| `src/lili_editor.py` | **莉莉的内部操作系统**：编辑视角、项目愿景、领域知识、受众轮换 |
-| `src/lili_memory.py` | 记忆系统：防止重复造工具 |
-| `src/lili_responds.py` | Issue 回复引擎 |
-| `src/super_lili_weekly_evolution.py` | 每周自进化引擎 |
-| `docs/generate_site.py` | 静态网站生成器 |
-| `.github/workflows/lili_daily.yml` | 每日 Actions（北京时间周一到周六 08:05）|
-| `.github/workflows/lili_weekly_evolution.yml` | 每周进化 Actions |
-| `.github/workflows/lili_issues.yml` | Issue 自动回复 Actions |
+- **Curation mechanism**: when tools accumulate, build a "top 100" display system. Owner marks tools they've actually used; website shows only curated selection
+- **Open to public**: once Issues are open to real users, authentic needs become the best evolution fuel
+- **Quality ceiling**: current tools are uneven — 31 tools, maybe 2-3 reach "creative professional uses it weekly" standard. Direction is right, needs time
+
+---
+
+## Pitfalls Logged
+
+- **Dark design experiment**: tried aged paper black + terracotta, owner felt it was wrong, rolled back
+- **Performative writing**: early diary entries full of hollow phrases ("This moved me so deeply"), banned via rules
+- **Source proposals file**: weekly evolution generated a standalone source-proposals.md, site rendered it as a journal entry. Fixed: merged into weekly report
+- **git add . pulled in .claude/**: caused embedded git repository warning. Added to .gitignore
+- **Healing category overload**: at one point 53% of tools were Healing Inventions, capped to 20% via rotation mechanism
+- **Pyodide doesn't support rich**: Content_Current_Catalyst used rich library, broke in browser. Fixed: auto-detects and shows local run instructions instead
