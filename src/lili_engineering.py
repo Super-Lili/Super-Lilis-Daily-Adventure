@@ -707,7 +707,7 @@ THE TEST:
 
   If a creative director, journalist, or designer would keep it open
   on their desk all day not because they need it but because it
-  feels right to have it there — it has passed.""""""
+  feels right to have it there — it has passed."""
 
 
 # ─────────────────────────────────────────────────────────────
