@@ -707,25 +707,77 @@ THE TEST:
 
   If a creative director, journalist, or designer would keep it open
   on their desk all day not because they need it but because it
-  feels right to have it there — it has passed."""
+  feels right to have it there — it has passed.
+
+
+═══════════════════════════════════════════════════════
+RULE 17 — TRANSFORM-FIRST ARCHITECTURE
+═══════════════════════════════════════════════════════
+
+Before writing a single line of code, define explicitly:
+  INPUT MODEL  — what is the structural shape of what the user pastes?
+  OUTPUT MODEL — what is the structural shape of what you return?
+
+If INPUT MODEL ≈ OUTPUT MODEL → the tool is a formatter, not a tool. Redesign.
+
+Parse the input into an intermediate data structure BEFORE generating output.
+A list of sentences in, a list of sentences out = decoration.
+A list of sentences in, a decision matrix out = transformation.
+
+
+═══════════════════════════════════════════════════════
+RULE 18 — ALGORITHMIC DEPTH FLOOR
+═══════════════════════════════════════════════════════
+
+Every tool must do at least ONE thing the user cannot do themselves in 10 seconds:
+  ✓ Extract implicit structure from unstructured text
+  ✓ Rank or score items by a computed criterion
+  ✓ Detect patterns, conflicts, or gaps across multiple inputs
+  ✓ Apply a professional framework the user doesn't have memorised
+
+The test: if the user could replicate the output by doing Ctrl+H in a Google Doc
+— the tool has no algorithmic depth.
+
+
+═══════════════════════════════════════════════════════
+RULE 19 — HTML THREE-STATE MACHINE
+═══════════════════════════════════════════════════════
+
+Every Mode 3 HTML tool must define three distinct states before writing code:
+  STATE 1 — ENTRY:  what does the user see on load? Purpose clear in 1 second.
+  STATE 2 — ACTIVE: real-time feedback as the user works.
+  STATE 3 — RESULT: final state with a clear next action (copy, download, reset).
+
+Transitions between states must be animated. The user must FEEL the tool working.
+A single-state tool (open → see a thing → close) is a brochure, not a tool.
+
+
+═══════════════════════════════════════════════════════
+RULE 20 — OUTPUT DENSITY
+═══════════════════════════════════════════════════════
+
+Apply the Input Replacement Test to every sentence in the output:
+  → Replace the user's input with completely different content.
+  → If this sentence would still appear unchanged — DELETE IT.
+
+Every sentence that survives must contain a specific fact, decision, action,
+or insight derived directly from what the user gave you.
+10 sharp lines beat 40 padded lines. Density is value."""
 
 
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
+# NOTE: These SUPPLEMENT the base rules above. They cannot override Rules 0-20.
 # Last updated: 2026-05-31
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
 RULE: ALWAYS_INCLUDE_EXAMPLES
-WHY: Tools like `Balance_Bloom` lacked concrete usage examples, making them harder to understand and adopt.
-HOW: Every `process()` function must include a `docstring` with at least one ````python` example showing input and expected output.
-
-RULE: STRUCTURED_OUTPUT_MINIMUM
-WHY: Outputs that are "likely unstructured" (like `Balance_Bloom`) can be difficult for users to parse and utilize effectively.
-HOW: All tool outputs (especially HTML/text) must include at least three distinct, clearly labeled sections using `##` headers or equivalent semantic tags.
+WHY: Tools lacked concrete usage examples, making them harder to understand.
+HOW: Every process() function must include a docstring with at least one example showing input and expected output.
 
 RULE: INPUT_VALIDATION_GUARDS
-WHY: Graceful failure for empty or malformed inputs was not consistently checked, leading to potential crashes or unhelpful responses.
-HOW: Implement explicit checks for input length or type at the start of `process()` (e.g., `if not user_input or len(user_input.split()) < 5: return "Please provide more detail."`).
+WHY: Tools could crash or give unhelpful responses on empty or short input.
+HOW: Check for insufficient input at the start of process() and return a specific, helpful message.
 """

@@ -1334,7 +1334,39 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             warm_score = int(warm_m.group(1)) if warm_m else 3
             combined   = round((eng_score + warm_score) / 2, 1)
             print(f"  ✓ Quality — Engineering: {eng_score}/5  Warmth: {warm_score}/5  ({combined} avg) — {reason_line}")
-            # Persist to ledger regardless of pass/fail
+
+            # 8. Critic check — a demanding creative director finds specific flaws
+            critic_prompt = (
+                f"You are a demanding creative director reviewing an AI-generated tool.\n"
+                f"Your job is to find real problems — not to encourage.\n\n"
+                f"Tool purpose: {description or 'a productivity tool'}\n"
+                f"Tool output (first 600 chars):\n{output[:600]}\n\n"
+                f"Find up to 3 specific flaws from this list:\n"
+                f"- Output is generic (would be the same regardless of input)\n"
+                f"- Output is padded with filler sentences that add no value\n"
+                f"- A professional would be embarrassed to show this to a colleague\n"
+                f"- The tool does nothing the user couldn't do in 10 seconds themselves\n"
+                f"- The output structure is identical to the input structure (no real transformation)\n\n"
+                f"If you find 2 or more serious flaws, reply: REJECT: [specific reasons]\n"
+                f"If the tool is acceptable, reply: PASS\n"
+                f"Be specific. One word answers are not acceptable."
+            )
+            critic_resp = call_gemini_simple(critic_prompt)
+            if critic_resp and critic_resp.strip().upper().startswith("REJECT"):
+                reject_reason = critic_resp.strip()[7:].strip()[:200]
+                print(f"  ✗ Critic rejected: {reject_reason}")
+                _append_quality_ledger(
+                    tool_name=description or str(skill_dir),
+                    category=str(skill_dir).split("/")[-2] if skill_dir else "",
+                    eng_score=eng_score, warm_score=warm_score,
+                    reason=f"Critic: {reject_reason}",
+                    passed=False, format_type=format_type, audience=audience,
+                )
+                return False, f"Critic review failed: {reject_reason}"
+            else:
+                print(f"  ✓ Critic review passed.")
+
+            # Persist to ledger
             _append_quality_ledger(
                 tool_name=description or str(skill_dir),
                 category=str(skill_dir).split("/")[-2] if skill_dir else "",
