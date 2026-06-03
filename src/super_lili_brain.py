@@ -1096,6 +1096,43 @@ def _extract_requirements(code: str) -> str:
     return "\n".join(reqs)
 
 
+def _find_prev_tool_output(category: str, current_skill_dir: str,
+                           test_input: str) -> tuple[str, str] | None:
+    """Find the most recent passing tool in the same category (excluding current),
+    run it with test_input, and return (tool_name, output).
+    Returns None if no previous tool found or it fails to run.
+    """
+    toolbox = Path("02_Toolbox") / category
+    if not toolbox.exists():
+        return None
+
+    dirs = sorted(
+        [d for d in toolbox.iterdir()
+         if d.is_dir() and str(d) != current_skill_dir and (d / "main.py").exists()],
+        reverse=True
+    )
+    if not dirs:
+        return None
+
+    prev_dir = dirs[0]
+    prev_main = prev_dir / "main.py"
+    try:
+        result = subprocess.run(
+            [sys.executable, "-c",
+             f"import sys; sys.argv=['tool']\n"
+             f"USER_INPUT = {repr(test_input)}\n"
+             f"exec(open({repr(str(prev_main))}).read())"],
+            capture_output=True, text=True, timeout=20,
+            env={**os.environ, "USER_INPUT": test_input}
+        )
+        prev_output = result.stdout.strip()
+        if prev_output and len(prev_output) > 50:
+            return (prev_dir.name, prev_output)
+    except Exception:
+        pass
+    return None
+
+
 def _strip_fences(code: str) -> str:
     """Remove ```python / ``` wrapping if Gemini added them."""
     code = code.strip()
@@ -1441,6 +1478,38 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                 return False, f"Critic review failed: {reject_reason}"
             else:
                 print(f"  ✓ Critic review passed.")
+
+            # 9. Win Rate — compare against previous tool in same category
+            category_name = str(skill_dir).split("/")[-2] if skill_dir else ""
+            if not is_html_output and demo_input and category_name:
+                prev = _find_prev_tool_output(category_name, skill_dir, demo_input)
+                if prev:
+                    prev_name, prev_output = prev
+                    winrate_prompt = (
+                        f"You are evaluating two versions of a professional tool.\n"
+                        f"Same purpose: {description or 'a productivity tool'}\n"
+                        f"Same test input was used for both.\n\n"
+                        f"TOOL A (new):\n{output[:500]}\n\n"
+                        f"TOOL B (previous, {prev_name}):\n{prev_output[:500]}\n\n"
+                        f"Which tool gives the user more specific, actionable, "
+                        f"professionally useful output?\n\n"
+                        f"Reply with EXACTLY one of:\n"
+                        f"A_BETTER: [one specific reason]\n"
+                        f"B_BETTER: [one specific reason]\n"
+                        f"SIMILAR: [one sentence]\n"
+                    )
+                    wr_resp = call_gemini_simple(winrate_prompt)
+                    if wr_resp:
+                        if wr_resp.strip().startswith("B_BETTER"):
+                            reason = wr_resp.strip()[8:].strip()[:120]
+                            print(f"  ⚠ Win Rate: previous tool was better — {reason}")
+                            # Informational only — don't reject, but log
+                            reason_line = f"[Lost to prev] {reason_line}"
+                        elif wr_resp.strip().startswith("A_BETTER"):
+                            reason = wr_resp.strip()[8:].strip()[:120]
+                            print(f"  ✓ Win Rate: new tool is better — {reason}")
+                        else:
+                            print(f"  · Win Rate: similar quality to previous tool")
 
             # Persist to ledger
             _append_quality_ledger(
