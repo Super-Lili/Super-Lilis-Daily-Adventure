@@ -930,11 +930,7 @@ TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
 
 
 def build_prompt(today: str, commission: dict | None = None) -> str:
-    """Assemble today's full prompt from 4 focused sections + computed context.
-
-    If commission is provided (a dict with 'number', 'title', 'body'), Step 1
-    scouting is replaced with the commission brief — Lili builds that specific tool.
-    """
+    """Legacy single-pass prompt — kept for smoke test only."""
     ctx = _build_context_block(today)
     return "\n\n".join([
         f"Today is {ctx['today']}.",
@@ -943,6 +939,230 @@ def build_prompt(today: str, commission: dict | None = None) -> str:
         _build_scouting_section(ctx, commission=commission),
         _build_output_format_section(),
     ])
+
+
+# ─────────────────────────────────────────────────────────────
+# ReAct PHASE PROMPTS
+# ─────────────────────────────────────────────────────────────
+
+def build_scout_prompt(today: str, commission: dict | None = None) -> str:
+    """Phase 1 — SCOUT: find friction point and write diary only. No tool design."""
+    ctx = _build_context_block(today)
+
+    if commission:
+        source_block = f"""⭐ COMMISSIONED TOOL — Issue #{commission['number']}
+The project owner has requested a specific tool.
+COMMISSION TITLE: {commission['title']}
+COMMISSION DETAILS:
+{commission['body'] or '(no further details — infer from the title)'}
+SOURCE: GitHub Issue #{commission['number']} by project owner"""
+    else:
+        source_block = f"""REAL-WORLD SCOUTING (use Google Search):
+TODAY'S SOURCE: {ctx['primary_src']}
+{ctx['primary_hint']}
+
+SOURCE EVIDENCE — MANDATORY:
+Quote 2-3 sentences VERBATIM from the actual post/article.
+SOURCE: [platform] | QUOTE: "[exact words]"
+✗ Do NOT paraphrase. ✗ Do NOT invent."""
+
+    return f"""Today is {today}.
+
+{_build_identity_section(ctx)}
+
+{_build_mission_section(ctx)}
+
+═══════════════════════════════════════════════════════
+PHASE 1 — SCOUT: FIND THE FRICTION POINT
+═══════════════════════════════════════════════════════
+
+{source_block}
+
+PAIN PORTRAIT (output after finding the source):
+  WHO — specific person, situation, context
+  MOMENT OF FAILURE — the exact moment the source describes
+  WHY EXISTING TOOLS FAIL — what has this person already tried?
+
+DIARY ENTRY (as Super-Lili, 130-160 words):
+  Voice: reliable, intelligent friend. Warm without sweet. Witty without trying.
+  ✗ NO performative excitement. ✗ NO hollow warmth. ✗ NO TED-talk sentences.
+  Start with the observation — not the source. End with an opening, not a conclusion.
+
+OUTPUT FORMAT — COPY EXACTLY:
+---TITLE---
+[English title — warm and clever]
+---TITLE_ZH---
+[中文标题 — 不超过20字]
+---MOOD---
+[One honest English sentence about today's discovery]
+---MOOD_ZH---
+[一句中文心情]
+---SOURCE---
+[Direct URL or plain-text description]
+---DIARY---
+[English diary — 130-160 words]
+---DIARY_ZH---
+[中文日记 — 150-200字，像跟朋友聊天]
+---SUMMARY---
+[One English sentence for homepage — witty, curious-making]
+---SUMMARY_ZH---
+[一句中文摘要]
+---DESCRIPTION---
+[One plain-English sentence: what tool would help]
+---SOLUTION---
+[Proposed tool name in Title Case, 2-5 words]
+---CATEGORY---
+[Exactly one of: Education Evolution | Design Alchemy | Office Automation | Healing Inventions]
+---PATTERN---
+[Exactly one of: extract | generate | visualize | track | score | transform | interact | alert | gamify]
+---PAIN_PORTRAIT---
+WHO: [specific person and situation]
+MOMENT: [exact moment of failure]
+TRIED: [what existing tools/methods they've already tried]
+---SCOUT_END---"""
+
+
+def build_spec_prompt(today: str, scout: dict, feedback: str = "") -> str:
+    """Phase 2 — SPEC: design the tool spec. No code yet."""
+    ctx = _build_context_block(today)
+
+    feedback_block = f"\n⚠ PREVIOUS SPEC FAILED — fix these issues:\n{feedback}\n" if feedback else ""
+
+    return f"""Today is {today}.
+{feedback_block}
+You have found today's friction point. Now design the tool — DO NOT write code yet.
+
+FRICTION POINT:
+  WHO: {scout.get('pain_who', '')}
+  MOMENT: {scout.get('pain_moment', '')}
+  TRIED: {scout.get('pain_tried', '')}
+
+PROPOSED TOOL: {scout.get('solution', '')}
+DESCRIPTION: {scout.get('description', '')}
+CATEGORY: {scout.get('category', '')}
+PATTERN: {scout.get('pattern', '')}
+
+{ctx['engineering_nudge']}
+
+SPEC DESIGN RULES:
+1. INPUT_MODEL must STRUCTURALLY DIFFER from OUTPUT_MODEL (Rule 17)
+   "Text in → text out" is NOT a transformation. Define the data structures explicitly.
+2. ALGORITHMIC_DEPTH must describe computation the user cannot do in 10 seconds (Rule 18)
+3. For Mode 3 HTML: define all 3 UI states (Rule 19)
+4. Q1/Q2/Q3 must be specific and verifiable — not vague
+
+FORMAT OPTIONS:
+  A — Single text input → output (Mode 1/2)
+  B — Multi-field form (Mode 3 HTML)
+  C — Wizard / progressive steps (Mode 3 HTML)
+  D — Live canvas / real-time transformer (Mode 3 HTML)
+  E — Ambient / environment, no input needed (Mode 3 HTML)
+  F — Generator + inline editor (Mode 3 HTML)
+  ✗ Don't default to A. Professional audiences → B/C/F. Design → D. Healing → E/D.
+
+OUTPUT FORMAT — COPY EXACTLY:
+---SPEC_START---
+FORMAT: [A/B/C/D/E/F] — [one sentence: why this format]
+MODE: [1/2/3] — [why]
+INPUT_MODEL: [exact structural description — what shape is the data the user provides?]
+OUTPUT_MODEL: [exact structural description — what shape is the result? MUST differ from input]
+TRANSFORMATION: [one sentence: what specifically changes from input to output]
+ALGORITHMIC_DEPTH: [what non-trivial computation happens that takes >10 seconds manually?]
+UI_STATE_ENTRY: [what the user sees on load — must communicate purpose in 1 second]
+UI_STATE_ACTIVE: [what changes during interaction — real-time feedback]
+UI_STATE_RESULT: [final state — what next action does the user take?]
+Q1_PASS: [exact moment of failure this tool addresses]
+Q2_PASS: [why the specific person recognizes it as built for them]
+Q3_PASS: [specific output — what do they do with it in 5 minutes?]
+TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
+---SPEC_END---"""
+
+
+def build_code_prompt(today: str, scout: dict, spec: dict, feedback: str = "") -> str:
+    """Phase 3 — BUILD: write code from approved spec only."""
+    ctx = _build_context_block(today)
+
+    feedback_block = f"\n⚠ PREVIOUS BUILD FAILED — fix this specific problem:\n{feedback}\n" if feedback else ""
+
+    return f"""Today is {today}.
+{feedback_block}
+You have an approved tool spec. Write the code now — nothing else.
+
+APPROVED SPEC:
+  Tool: {scout.get('solution', '')}
+  Category: {scout.get('category', '')}
+  Format: {spec.get('format', '')}
+  Mode: {spec.get('mode', '')}
+  Input model: {spec.get('input_model', '')}
+  Output model: {spec.get('output_model', '')}
+  Transformation: {spec.get('transformation', '')}
+  Algorithmic depth: {spec.get('algorithmic_depth', '')}
+  UI Entry: {spec.get('ui_state_entry', '')}
+  UI Active: {spec.get('ui_state_active', '')}
+  UI Result: {spec.get('ui_state_result', '')}
+  Test input: {spec.get('test_input', '')}
+
+{ctx['engineering_nudge']}
+
+CODE REQUIREMENTS:
+✓ 150+ lines, type hints, requirements block at top
+✓ process(text) function as the main entry point
+✓ DUAL-MODE PATTERN (Mode 1/2 mandatory):
+    _browser_input = globals().get('USER_INPUT', None)
+    if _browser_input is not None: print(process(_browser_input))
+    elif __name__ == "__main__": _cli_main()
+✓ Mode 3: process() returns complete <!DOCTYPE html>...
+✗ Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
+✓ Implement EXACTLY the transformation and algorithmic depth in the approved spec
+
+OUTPUT FORMAT — COPY EXACTLY:
+---CODE---
+[Full Python code]
+---TEST---
+[test_main.py — from main import process — self-contained asserts]
+---BUILD_END---"""
+
+
+def validate_spec(spec: dict) -> tuple[bool, str]:
+    """Mechanically check spec quality before allowing BUILD phase."""
+    input_model  = spec.get("input_model",  "").lower().strip()
+    output_model = spec.get("output_model", "").lower().strip()
+    algo_depth   = spec.get("algorithmic_depth", "").strip()
+    q1 = spec.get("q1_pass", "").strip()
+    q2 = spec.get("q2_pass", "").strip()
+    q3 = spec.get("q3_pass", "").strip()
+    test_input = spec.get("test_input", "").strip()
+
+    # Check 1: input and output models must differ structurally
+    if not input_model or not output_model:
+        return False, "INPUT_MODEL or OUTPUT_MODEL is missing."
+    if input_model == output_model:
+        return False, "INPUT_MODEL and OUTPUT_MODEL are identical — no real transformation."
+    trivial_pairs = [
+        ("text", "text"), ("string", "string"), ("paragraph", "paragraph"),
+        ("sentences", "sentences"), ("words", "words"),
+    ]
+    for a, b in trivial_pairs:
+        if a in input_model and b in output_model and input_model[:30] == output_model[:30]:
+            return False, f"INPUT and OUTPUT are structurally the same ({a} → {b}). Define a real transformation."
+
+    # Check 2: algorithmic depth must be non-trivial
+    if len(algo_depth) < 20:
+        return False, "ALGORITHMIC_DEPTH is too vague or missing."
+    trivial_words = ["format", "display", "show", "render", "style", "wrap", "present"]
+    if all(w in algo_depth.lower() for w in trivial_words[:2]) and len(algo_depth) < 60:
+        return False, f"ALGORITHMIC_DEPTH describes only formatting/display: '{algo_depth}'"
+
+    # Check 3: Q1/Q2/Q3 must be specific
+    for label, val in [("Q1_PASS", q1), ("Q2_PASS", q2), ("Q3_PASS", q3)]:
+        if len(val) < 20:
+            return False, f"{label} is too vague: '{val}'"
+
+    # Check 4: test input must exist
+    if len(test_input) < 30:
+        return False, "TEST_INPUT is missing or too short."
+
+    return True, "ok"
 
 
 # ─────────────────────────────────────────────────────────────
@@ -1044,6 +1264,86 @@ def extract_test_input(spec: str) -> str:
 # ─────────────────────────────────────────────────────────────
 # PARSING
 # ─────────────────────────────────────────────────────────────
+
+def parse_scout_response(content: str) -> dict:
+    """Parse Phase 1 SCOUT response."""
+    def ex(start, end):
+        try: return content.split(start)[1].split(end)[0].strip()
+        except: return ""
+
+    portrait_raw = ex("---PAIN_PORTRAIT---", "---SCOUT_END---")
+    def pp(label):
+        for line in portrait_raw.splitlines():
+            if line.strip().upper().startswith(label + ":"):
+                return line.split(":", 1)[1].strip()
+        return ""
+
+    return {
+        "title":        ex("---TITLE---",       "---TITLE_ZH---"),
+        "title_zh":     ex("---TITLE_ZH---",    "---MOOD---"),
+        "mood":         ex("---MOOD---",         "---MOOD_ZH---"),
+        "mood_zh":      ex("---MOOD_ZH---",      "---SOURCE---"),
+        "source":       ex("---SOURCE---",       "---DIARY---"),
+        "diary":        ex("---DIARY---",        "---DIARY_ZH---"),
+        "diary_zh":     ex("---DIARY_ZH---",     "---SUMMARY---"),
+        "summary":      ex("---SUMMARY---",      "---SUMMARY_ZH---"),
+        "summary_zh":   ex("---SUMMARY_ZH---",   "---DESCRIPTION---"),
+        "description":  ex("---DESCRIPTION---",  "---SOLUTION---"),
+        "solution":     ex("---SOLUTION---",     "---CATEGORY---"),
+        "category":     ex("---CATEGORY---",     "---PATTERN---"),
+        "pattern":      ex("---PATTERN---",      "---PAIN_PORTRAIT---"),
+        "pain_who":     pp("WHO"),
+        "pain_moment":  pp("MOMENT"),
+        "pain_tried":   pp("TRIED"),
+        "spec":         "",
+        "code":         "",
+        "test":         "",
+    }
+
+
+def parse_spec_response(content: str) -> dict:
+    """Parse Phase 2 SPEC response."""
+    def ex(start, end):
+        try: return content.split(start)[1].split(end)[0].strip()
+        except: return ""
+
+    raw = ex("---SPEC_START---", "---SPEC_END---")
+
+    def field(label):
+        for line in raw.splitlines():
+            if line.strip().upper().startswith(label.upper() + ":"):
+                return line.split(":", 1)[1].strip()
+        return ""
+
+    return {
+        "format":             field("FORMAT"),
+        "mode":               field("MODE"),
+        "input_model":        field("INPUT_MODEL"),
+        "output_model":       field("OUTPUT_MODEL"),
+        "transformation":     field("TRANSFORMATION"),
+        "algorithmic_depth":  field("ALGORITHMIC_DEPTH"),
+        "ui_state_entry":     field("UI_STATE_ENTRY"),
+        "ui_state_active":    field("UI_STATE_ACTIVE"),
+        "ui_state_result":    field("UI_STATE_RESULT"),
+        "q1_pass":            field("Q1_PASS"),
+        "q2_pass":            field("Q2_PASS"),
+        "q3_pass":            field("Q3_PASS"),
+        "test_input":         field("TEST_INPUT"),
+        "spec_raw":           raw,
+    }
+
+
+def parse_build_response(content: str) -> dict:
+    """Parse Phase 3 BUILD response."""
+    def ex(start, end):
+        try: return content.split(start)[1].split(end)[0].strip()
+        except: return ""
+
+    return {
+        "code": ex("---CODE---", "---TEST---"),
+        "test": ex("---TEST---", "---BUILD_END---"),
+    }
+
 
 def parse_response(content: str) -> dict:
     def extract(start_tag: str, end_tag: str) -> str:
@@ -1726,70 +2026,14 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
 # ENTRY POINT
 # ─────────────────────────────────────────────────────────────
 
-def evolve():
-    today = os.environ.get("LILI_DATE") or datetime.utcnow().strftime("%Y-%m-%d")
-    print(f"\n🌸 Super-Lili awakens — {today}")
-
-    # Guard against double-runs on the same day (GitHub Actions cron can fire twice)
-    if Path(f"01_Work_Log/{today}-Diary.md").exists():
-        print(f"✓ Already ran today ({today}) — diary exists, skipping.")
-        return
-
-    # ── Check for commissioned tool requests (owner-opened Issues) ─────────────
-    print("📋 Checking for tool-request commissions...")
-    tool_requests = fetch_tool_requests()
-    commission: dict | None = None
-    commission_issue_number: int | None = None
-
-    if tool_requests:
-        issue = tool_requests[0]   # build the oldest pending request first
-        commission = {
-            "number": issue["number"],
-            "title":  issue["title"],
-            "body":   (issue.get("body") or "").strip(),
-        }
-        commission_issue_number = issue["number"]
-        print(f"  ⭐ Commission found — Issue #{commission['number']}: {commission['title']}")
-    else:
-        print("  · No commissions pending — scouting freely.")
-
-    prompt = build_prompt(today, commission=commission)
-
-    action = "Building commissioned tool" if commission else "Scouting the world"
-    print(f"🔍 {action}...")
-    content, grounding_urls = call_gemini(prompt)
-
-    if not content:
-        print("❌ All models failed. Lili rests today.")
-        save_rest_day(today, reason="API quota exhausted — all models returned errors.")
-        return
-
-    parsed = parse_response(content)
-
-    if not all([parsed["title"], parsed["diary"], parsed["code"]]):
-        print("❌ Incomplete response — missing title, diary, or code.")
-        print("Raw preview:", content[:300])
-        save_rest_day(today, reason="Incomplete response from model — missing title, diary, or code.")
-        return
-
-    # ── Source verification ─────────────────────────────────────────────────
-    # Strategy: prefer grounding_urls (URLs Gemini actually retrieved) over the
-    # model-reported source string (which can be fabricated or misremembered).
-    #
-    # Priority order:
-    #   1. First grounding URL that passes validate_url  → ✅ verified real source
-    #   2. Model-reported source that passes validate_url → ✅ live but ungrounded
-    #   3. Fallback: grounding URL even if unverifiable   → ⚠️ real but possibly behind paywall
-    #   4. Last resort: model-reported source as search hint → ⚠️ may be fabricated
-    # ───────────────────────────────────────────────────────────────────────
-
+def _verify_source(parsed: dict, grounding_urls: list[str]) -> tuple[str, str]:
+    """Verify source URL. Returns (source_badge, verified_url)."""
     source_badge = "⚠️"
     verified_source_url: str | None = None
 
-    # Step 1 — try grounding URLs first (these are what Gemini actually fetched)
     if grounding_urls:
-        print(f"🔗 Checking {len(grounding_urls)} grounding URL(s) from search metadata...")
-        for gurl in grounding_urls[:3]:  # check up to 3, stop at first live one
+        print(f"🔗 Checking {len(grounding_urls)} grounding URL(s)...")
+        for gurl in grounding_urls[:3]:
             ok, status = validate_url(gurl)
             if ok:
                 verified_source_url = gurl
@@ -1799,30 +2043,20 @@ def evolve():
             else:
                 print(f"  · {gurl[:70]} — {status}")
         if not verified_source_url:
-            # Grounding URLs exist but none passed (paywalled, etc.) — use first one anyway
             verified_source_url = grounding_urls[0]
             source_badge = "⚠️"
-            print(f"  ⚠ Grounding URLs unverifiable (paywall?), using first: {grounding_urls[0][:80]}")
 
-    # Step 2 — fall back to model-reported source if no grounding hit
     if not verified_source_url:
-        model_source = parsed["source"]
-        print(f"🔗 No grounding URLs — checking model-reported source: {model_source[:80]}...")
+        model_source = parsed.get("source", "")
         ok, status = validate_url(model_source)
         if ok:
             verified_source_url = model_source
             source_badge = "✅"
-            print(f"  ✓ Model source verified: {model_source[:80]} ({status})")
-        else:
-            source_badge = "⚠️"
-            print(f"  ⚠ Model source also failed ({status}) — source may be fabricated")
 
-    # Build _source_display for diary/README rendering
     if verified_source_url and source_badge == "✅":
         parsed["_source_display"] = f"[{verified_source_url}]({verified_source_url})"
-        parsed["source"] = verified_source_url  # overwrite with verified URL
+        parsed["source"] = verified_source_url
     elif verified_source_url:
-        # Unverifiable but real — show as code + search link
         search_q = requests.utils.quote(verified_source_url.split("//")[-1][:80])
         parsed["_source_display"] = (
             f"`{verified_source_url}`  \n"
@@ -1831,8 +2065,7 @@ def evolve():
         )
         parsed["source"] = verified_source_url
     else:
-        # Total fallback — model-reported string, no URL
-        raw = parsed["source"]
+        raw = parsed.get("source", "")
         if raw.startswith("http"):
             search_q = requests.utils.quote(raw.split("//")[-1][:80])
             parsed["_source_display"] = (
@@ -1843,109 +2076,210 @@ def evolve():
         else:
             parsed["_source_display"] = raw
 
-    # Extract domain-specific test input and format from spec
-    test_input = extract_test_input(parsed.get("spec", ""))
-    tool_format = extract_format(parsed.get("spec", ""))
-    if test_input:
-        print(f"  ✓ Spec test input extracted ({len(test_input)} chars)")
-    else:
-        print(f"  ⚠ No TEST_INPUT in spec — using fallback test data")
-    if tool_format:
-        print(f"  ✓ Tool format: {tool_format}")
+    return source_badge, verified_source_url or ""
 
-    # Resolve today's audience key (mirrors build_prompt logic)
+
+def evolve():
+    today = os.environ.get("LILI_DATE") or datetime.utcnow().strftime("%Y-%m-%d")
+    print(f"\n🌸 Super-Lili awakens — {today}")
+
+    if Path(f"01_Work_Log/{today}-Diary.md").exists():
+        print(f"✓ Already ran today ({today}) — diary exists, skipping.")
+        return
+
+    # ── Check for commissions ──────────────────────────────────────────────────
+    print("📋 Checking for tool-request commissions...")
+    tool_requests = fetch_tool_requests()
+    commission: dict | None = None
+    commission_issue_number: int | None = None
+    if tool_requests:
+        issue = tool_requests[0]
+        commission = {
+            "number": issue["number"],
+            "title":  issue["title"],
+            "body":   (issue.get("body") or "").strip(),
+        }
+        commission_issue_number = issue["number"]
+        print(f"  ⭐ Commission — Issue #{commission['number']}: {commission['title']}")
+    else:
+        print("  · No commissions — scouting freely.")
+
+    # Resolve audience for today
     from datetime import date as _date_evolve
     _aud_index = _date_evolve.fromisoformat(today).toordinal() % len(_AUDIENCE_ROTATION)
     today_audience = _AUDIENCE_ROTATION[_aud_index]
 
-    # Save tool + validate, retry up to 3 times if validation fails
+    # ══════════════════════════════════════════════════════════════════════════
+    # PHASE 1 — SCOUT: find friction point + write diary
+    # ══════════════════════════════════════════════════════════════════════════
+    action = "Building commissioned tool" if commission else "Scouting the world"
+    print(f"\n🔍 Phase 1 — SCOUT: {action}...")
+    scout_content, grounding_urls = call_gemini(build_scout_prompt(today, commission))
+
+    if not scout_content:
+        print("❌ Phase 1 failed — API quota exhausted.")
+        save_rest_day(today, "API quota exhausted — all models returned errors.")
+        return
+
+    scout = parse_scout_response(scout_content)
+    if not all([scout.get("title"), scout.get("diary"), scout.get("solution")]):
+        print("❌ Phase 1 incomplete — missing title, diary, or solution.")
+        save_rest_day(today, "Phase 1 (Scout) returned incomplete response.")
+        return
+
+    source_badge, _ = _verify_source(scout, grounding_urls)
+    print(f"  ✓ Scout complete: '{scout['solution']}' ({scout['category']})")
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PHASE 2 — SPEC: design the tool, validate before coding
+    # ══════════════════════════════════════════════════════════════════════════
+    print(f"\n📐 Phase 2 — SPEC: designing tool architecture...")
+    spec: dict = {}
+    spec_feedback = ""
+    spec_ok = False
+
+    for attempt in range(1, 3):
+        spec_content = call_gemini_simple(build_spec_prompt(today, scout, spec_feedback))
+        if not spec_content:
+            break
+        spec = parse_spec_response(spec_content)
+        spec_ok, spec_reason = validate_spec(spec)
+        if spec_ok:
+            print(f"  ✓ Spec validated (attempt {attempt}): "
+                  f"{spec.get('format','')} / Mode {spec.get('mode','?')}")
+            break
+        else:
+            print(f"  ✗ Spec failed (attempt {attempt}): {spec_reason}")
+            spec_feedback = spec_reason
+
+    if not spec_ok:
+        print("❌ Phase 2 failed — spec could not be validated.")
+        save_rest_day(today, f"Phase 2 (Spec) failed validation: {spec_feedback}")
+        return
+
+    # Extract test input and format from spec
+    test_input = spec.get("test_input", "")
+    tool_format = spec.get("format", "")[:1]  # just the letter A-F
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PHASE 3 — BUILD: write code from approved spec
+    # ══════════════════════════════════════════════════════════════════════════
+    print(f"\n🔨 Phase 3 — BUILD: writing code from approved spec...")
+    import shutil as _shutil
     skill_dir = None
+    build_ok = False
+    build_feedback = ""
+
     for attempt in range(1, 4):
-        print(f"💾 Saving tool (attempt {attempt}/3)...")
-        skill_dir = save_tool(today, parsed, source_badge)
-        parsed["_skill_dir"] = skill_dir
-        print(f"  ✓ Tool saved: {skill_dir}/main.py")
+        print(f"  Attempt {attempt}/3...")
+        build_content = call_gemini_simple(
+            build_code_prompt(today, scout, spec, build_feedback)
+        )
+        if not build_content:
+            print("  ✗ Gemini returned nothing.")
+            break
+
+        build = parse_build_response(build_content)
+        if not build.get("code"):
+            print("  ✗ No code in response.")
+            build_feedback = "Response contained no ---CODE--- section. Output only code."
+            continue
+
+        # Merge all phases into one parsed dict for save_tool
+        merged = {**scout, **build}
+        merged["spec"] = (
+            f"FORMAT: {spec.get('format','')}\n"
+            f"Q1-PASS: {spec.get('q1_pass','')}\n"
+            f"Q2-PASS: {spec.get('q2_pass','')}\n"
+            f"Q3-PASS: {spec.get('q3_pass','')}\n"
+            f"TEST_INPUT: {spec.get('test_input','')}"
+        )
+
+        # Clean up previous failed attempt
+        if skill_dir and Path(skill_dir).exists():
+            _shutil.rmtree(skill_dir, ignore_errors=True)
+
+        skill_dir = save_tool(today, merged, source_badge)
+        merged["_skill_dir"] = skill_dir
 
         print("🔬 Validating tool...")
-        ok, reason = validate_tool(
+        build_ok, build_reason = validate_tool(
             skill_dir,
             test_input=test_input,
-            description=parsed.get("description", ""),
+            description=scout.get("description", ""),
             format_type=tool_format,
             audience=today_audience,
         )
-        if ok:
-            print("  ✓ Validation passed.")
+        if build_ok:
+            print("  ✓ Build validated.")
             break
         else:
-            print(f"  ✗ Validation failed: {reason}")
-            if attempt < 3:
-                print("  ↻ Asking Gemini to fix the tool...")
-                fix_prompt = (
-                    f"The Python tool you wrote failed validation.\n\n"
-                    f"TOOL PURPOSE: {parsed.get('description', '')}\n\n"
-                    f"TOOL SPEC:\n{parsed.get('spec', 'Not provided')}\n\n"
-                    f"VALIDATION ERROR:\n{reason}\n\n"
-                    f"TEST INPUT USED:\n{test_input or '(fallback generic input)'}\n\n"
-                    f"BROKEN CODE:\n```python\n{parsed['code']}\n```\n\n"
-                    f"Fix requirements:\n"
-                    f"1. Process the TEST INPUT above and produce substantive output (80+ chars, 2+ lines)\n"
-                    f"2. Use USER_INPUT dual-mode: _browser_input = globals().get('USER_INPUT', None)\n"
-                    f"3. Pass --help without crashing\n"
-                    f"4. Output must be specific and actionable, not generic filler\n\n"
-                    f"Return ONLY the fixed Python code, no explanation."
-                )
-                fixed = call_gemini_simple(fix_prompt)
-                if fixed:
-                    fixed = re.sub(r"^```python\n?", "", fixed.strip())
-                    fixed = re.sub(r"\n?```$", "", fixed)
-                    parsed["code"] = fixed
-                else:
-                    print("  ✗ Gemini could not fix the tool.")
-                    break
-            else:
-                print("  ✗ All 3 attempts failed — shipping with validation warning.")
-                parsed["diary"] += (
-                    "\n\n*(Note: This tool's automated tests did not pass — "
-                    "use with caution and check the README.)*"
-                )
+            print(f"  ✗ Build failed: {build_reason}")
+            build_feedback = (
+                f"Validation failed: {build_reason}\n"
+                f"The approved spec says:\n"
+                f"  Transformation: {spec.get('transformation','')}\n"
+                f"  Algorithmic depth: {spec.get('algorithmic_depth','')}\n"
+                f"Fix the code to match the spec exactly."
+            )
+
+    if not build_ok:
+        print("❌ Phase 3 failed — build could not be validated after 3 attempts.")
+        print("  Shipping with validation warning (better to have something than nothing).")
+        if skill_dir:
+            merged["diary"] += (
+                "\n\n*(Note: This tool's automated tests did not pass — "
+                "use with caution and check the README.)*"
+            )
+        else:
+            save_rest_day(today, f"Phase 3 (Build) failed: {build_feedback}")
+            return
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PHASE 4 — EVALUATE: already handled inside validate_tool()
+    # (Critic check + Win Rate comparison are part of validate_tool)
+    # ══════════════════════════════════════════════════════════════════════════
+    print(f"\n📊 Phase 4 — EVALUATE: complete (ran inside build validation)")
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PHASE 5 — REFLECT: save diary, update memory, write to episodic ledger
+    # ══════════════════════════════════════════════════════════════════════════
+    print(f"\n💭 Phase 5 — REFLECT: saving outputs...")
 
     print("📖 Saving diary...")
-    log_path = save_diary(today, parsed, source_badge)
+    log_path = save_diary(today, merged, source_badge)
     print(f"  ✓ Diary saved: {log_path}")
 
     print("🏠 Updating README...")
-    update_readme(today, parsed, log_path, skill_dir)
+    update_readme(today, merged, log_path, skill_dir)
 
     print("🧠 Updating memory...")
     if MEMORY_AVAILABLE:
-        # Initialize memory from repo on first run
         from lili_memory import load_memory
         mem = load_memory()
         if not mem["tools"]:
-            print("  First run — rebuilding memory from repo...")
             rebuild_memory_from_repo()
         add_tool(
-            name=parsed["solution"],
-            category=parsed["category"],
-            description=parsed["description"],
+            name=merged["solution"],
+            category=merged["category"],
+            description=merged["description"],
             path=skill_dir,
             date=today,
-            pattern=parsed.get("pattern", ""),
+            pattern=merged.get("pattern", ""),
         )
-        add_topic(date=today, title=parsed["title"], path=log_path)
+        add_topic(date=today, title=merged["title"], path=log_path)
         print("  ✓ Memory updated.")
 
     print(f"\n✨ Adventure complete for {today}!")
 
     # ── Mark commission Issue as built ────────────────────────────────────────
     if commission_issue_number is not None:
-        safe_name = re.sub(r"[^\w\s-]", "", parsed["solution"]).strip().replace(" ", "-").lower()
-        tool_slug  = f"{today}-{safe_name}"
+        safe_name = re.sub(r"[^\w\s-]", "", merged["solution"]).strip().replace(" ", "-").lower()
+        tool_slug = f"{today}-{safe_name}"
         print(f"📌 Marking Issue #{commission_issue_number} as built...")
         mark_issue_built(
             issue_number=commission_issue_number,
-            tool_name=parsed["solution"],
+            tool_name=merged["solution"],
             tool_slug=tool_slug,
             diary_date=today,
         )
