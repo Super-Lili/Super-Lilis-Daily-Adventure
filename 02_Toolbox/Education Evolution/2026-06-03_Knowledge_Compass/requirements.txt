@@ -1,0 +1,5 @@
+This tool primarily uses standard Python libraries.
+No external libraries are strictly required beyond what's usually available.
+For a real-world implementation, an external API for book data (e.g., Google Books API)
+and a sophisticated search engine integration would be necessary.
+For this exercise, search results are simulated based on the prompt's requirements.

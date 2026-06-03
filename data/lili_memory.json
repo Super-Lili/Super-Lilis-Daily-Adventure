@@ -226,6 +226,14 @@
       "pattern": "visualize",
       "path": "02_Toolbox/Healing Inventions/2026-06-02_Sun_Light_Color_Clock",
       "description": "This tool generates a full-screen HTML clock whose background color dynamically shifts to reflect the natural progression of sunlight throughout the day and night."
+    },
+    {
+      "date": "2026-06-03",
+      "name": "Knowledge Compass",
+      "category": "Education Evolution",
+      "pattern": "generate",
+      "path": "02_Toolbox/Education Evolution/2026-06-03_Knowledge_Compass",
+      "description": "This tool takes a research topic and generates a curated 12-book reading list, organized by six critical perspectives, for experienced researchers, journalists, and creative professionals."
     }
   ],
   "topics_covered": [
@@ -393,7 +401,12 @@
       "date": "2026-06-02",
       "title": "Sun Light Color Clock: Your Ambient Digital Horizon",
       "path": "01_Work_Log/2026-06-02-Diary.md"
+    },
+    {
+      "date": "2026-06-03",
+      "title": "The Knowledge Compass: Your Curated Research Map",
+      "path": "01_Work_Log/2026-06-03-Diary.md"
     }
   ],
-  "last_updated": "2026-06-02"
+  "last_updated": "2026-06-03"
 }
