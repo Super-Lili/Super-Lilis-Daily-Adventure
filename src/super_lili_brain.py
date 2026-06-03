@@ -2169,6 +2169,7 @@ def evolve():
     skill_dir = None
     build_ok = False
     build_feedback = ""
+    merged: dict = {**scout}  # initialise so it's always defined even if BUILD loop exits early
 
     for attempt in range(1, 4):
         print(f"  Attempt {attempt}/3...")
