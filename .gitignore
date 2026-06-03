@@ -10,6 +10,16 @@ demo_*/
 *.txt
 !requirements.txt
 
+# Generated HTML files from local tool runs — not part of the repo
+*_clock.html
+*_weave.html
+*_bloom.html
+*_compass.html
+*_catalyst.html
+
 # Claude Code internals — never commit these
 .claude/
 .clone/
+
+# Environment variables — never commit
+.env
