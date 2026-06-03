@@ -155,6 +155,78 @@ def mark_issue_built(issue_number: int, tool_name: str,
 # ─────────────────────────────────────────────────────────────
 # URL VALIDATION
 # ─────────────────────────────────────────────────────────────
+# EPISODIC MEMORY — learn from recent tool quality history
+# ─────────────────────────────────────────────────────────────
+
+def _build_episodic_memory() -> str:
+    """Read last 14 days of quality ledger. Return a compressed summary of
+    what worked, what failed, and what patterns to avoid today.
+    Returns empty string if no ledger exists yet.
+    """
+    import json as _json
+    from datetime import datetime as _dt, timedelta as _td
+
+    ledger_path = Path("tool_quality_ledger.jsonl")
+    if not ledger_path.exists():
+        return ""
+
+    cutoff = (_dt.utcnow() - _td(days=14)).strftime("%Y-%m-%d")
+    try:
+        rows = [
+            _json.loads(l) for l in ledger_path.read_text(encoding="utf-8").splitlines()
+            if l.strip() and _json.loads(l).get("date", "") >= cutoff
+        ]
+    except Exception:
+        return ""
+
+    if not rows:
+        return ""
+
+    passed  = [r for r in rows if r.get("passed")]
+    failed  = [r for r in rows if not r.get("passed")]
+
+    # Top failure patterns (most common reasons)
+    fail_reasons = [r.get("reason", "") for r in failed if r.get("reason")]
+    # Top success patterns
+    success_reasons = [r.get("reason", "") for r in passed if r.get("reason")]
+
+    # Category performance
+    cat_scores: dict = {}
+    for r in rows:
+        cat = r.get("category", "unknown")
+        if cat not in cat_scores:
+            cat_scores[cat] = []
+        cat_scores[cat].append(r.get("combined", 3.0))
+    cat_summary = ", ".join(
+        f"{cat}: avg {sum(scores)/len(scores):.1f}"
+        for cat, scores in sorted(cat_scores.items())
+        if scores
+    )
+
+    lines = [
+        f"═══════════════════════════════════════════════════════",
+        f"EPISODIC MEMORY — Last 14 days ({len(rows)} tools built)",
+        f"═══════════════════════════════════════════════════════",
+        f"Pass rate: {len(passed)}/{len(rows)} tools passed quality gates",
+    ]
+    if cat_summary:
+        lines.append(f"By category: {cat_summary}")
+    if fail_reasons:
+        lines.append(f"\nRecent FAILURE patterns (avoid these today):")
+        for r in fail_reasons[-4:]:
+            lines.append(f"  ✗ {r[:120]}")
+    if success_reasons:
+        lines.append(f"\nRecent SUCCESS patterns (build on these):")
+        for r in success_reasons[-3:]:
+            lines.append(f"  ✓ {r[:120]}")
+    lines.append(
+        f"\nUse this to avoid repeating mistakes and build on what worked."
+    )
+
+    return "\n".join(lines)
+
+
+# ─────────────────────────────────────────────────────────────
 
 def validate_url(url: str, timeout: int = 8) -> tuple[bool, str]:
     """Check if a URL is real and accessible. Returns (is_valid, status)."""
@@ -598,6 +670,8 @@ def _build_context_block(today: str) -> dict:
     overused = [p for p, n in pat_counts.items() if n >= 2]
     avoid_patterns = f"\nAVOID these solution patterns today (used too recently): {', '.join(overused)}" if overused else ""
 
+    episodic_memory = _build_episodic_memory()
+
     return {
         "today": today,
         "skills_list": "\n".join(f"  • {s}" for s in LILI_SKILLS) if LILI_SKILLS else "  • Python standard library",
@@ -611,6 +685,7 @@ def _build_context_block(today: str) -> dict:
         "avoid_cats": avoid_cats,
         "blindspot_nudge": blindspot_nudge,
         "engineering_nudge": engineering_nudge,
+        "episodic_memory": episodic_memory,
         "avoid_patterns": avoid_patterns,
     }
 
@@ -643,7 +718,8 @@ YOUR MEMORY — WHAT YOU'VE ALREADY DONE
 ═══════════════════════════════════════════════════════
 {ctx['memory_ctx']}
 
-Do NOT repeat a topic or tool you've already done. Find a genuinely fresh friction point."""
+Do NOT repeat a topic or tool you've already done. Find a genuinely fresh friction point.
+{ctx['episodic_memory']}"""
 
 
 def _build_mission_section(ctx: dict) -> str:
