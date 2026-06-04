@@ -1060,7 +1060,7 @@ FORMAT OPTIONS:
   F — Generator + inline editor (Mode 3 HTML)
   ✗ Don't default to A. Professional audiences → B/C/F. Design → D. Healing → E/D.
 
-OUTPUT FORMAT — COPY EXACTLY:
+OUTPUT FORMAT — YOU MUST OUTPUT THESE EXACT TAGS OR THE SPEC WILL BE REJECTED:
 ---SPEC_START---
 FORMAT: [A/B/C/D/E/F] — [one sentence: why this format]
 MODE: [1/2/3] — [why]
@@ -1075,7 +1075,10 @@ Q1_PASS: [exact moment of failure this tool addresses]
 Q2_PASS: [why the specific person recognizes it as built for them]
 Q3_PASS: [specific output — what do they do with it in 5 minutes?]
 TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
----SPEC_END---"""
+---SPEC_END---
+
+CRITICAL: Your response MUST start with ---SPEC_START--- and end with ---SPEC_END---.
+Do not add any text before ---SPEC_START--- or after ---SPEC_END---."""
 
 
 def build_code_prompt(today: str, scout: dict, spec: dict, feedback: str = "") -> str:
@@ -1308,6 +1311,10 @@ def parse_spec_response(content: str) -> dict:
         except: return ""
 
     raw = ex("---SPEC_START---", "---SPEC_END---")
+
+    # Fallback: if tags were missing, search the entire response
+    if not raw.strip():
+        raw = content
 
     def field(label):
         for line in raw.splitlines():
