@@ -1,7 +1,7 @@
 # CLAUDE.md — Super-Lili Project Memory
 
 > Written for the Claude agent picking up this project. Read this first.
-> Last updated: 2026-06-01 · Updated monthly.
+> Last updated: 2026-06-05 · Updated monthly.
 
 ---
 
@@ -73,21 +73,54 @@ The test: would a senior journalist, creative director, or brand strategist use 
 - `094fb2f` Banned performative writing in diary: no "This struck me so deeply!" type sentences
 - `36170dc` Same rule extended to weekly evolution reports
 
-### Phase 7 — Current Work (2026-06-01)
+### Phase 8 — ReAct Architecture & Stability (2026-06-03 to 2026-06-05)
 - **Fix**: stale source proposals entry in evolution journal (merged into weekly report)
 - **Fix**: teal tool button disappeared on evolution days (falls back to latest tool)
 - **Engineering rules upgrade** (`lili_engineering.py` LILI_ENGINEERING_LESSONS):
-  - Transform-first architecture: input structure ≠ output structure = real transformation
+  - Transform-first architecture: input structure != output structure = real transformation
   - Algorithmic depth floor: must do one thing the user can't do themselves in 10 seconds
-  - HTML three-state machine: entry state → active state → result state
+  - HTML three-state machine: entry state -> active state -> result state
   - Output density test: every sentence must fail the input-replacement test or get cut
-- **Issue commission system**: user opens Issue → Lili responds (lili_responds.py adds lili-responded label) → next day Lili prioritises building from that Issue → marks lili-built label on completion
+- **Issue commission system**: user opens Issue -> Lili responds (lili_responds.py adds lili-responded label) -> next day Lili prioritises building from that Issue -> marks lili-built label on completion
 - **Manually built Sun Light Color Clock** (Issue #1 — API quota exhausted, Lili couldn't run herself)
 - **Clock redesigned**: from cold digital digits to analog face with hands and smooth second hand
 - **Rule 16**: physical world as emotional foundation — Lili's tools are digital, their emotional register must be physical
 - **Design lineage expanded**: added Inga Sempé, Ilse Crawford, Hella Jongerius (alongside Rams, Morrison, Fukasawa, Ive)
 - **Pyodide fix**: detects `rich`/`requests` and other incompatible libraries, switches to "run locally" instructions
 - **Loading UX**: shows "~15 seconds" warning, auto-demo adds a note guiding users to try their own input
+
+### Phase 8 details
+
+**ReAct 5-phase architecture** — `super_lili_brain.py` refactored from single-pass prompt to staged pipeline:
+```
+Phase 1 SCOUT  — Gemini searches web, finds friction point, writes diary (call_gemini with search tool)
+Phase 2 SPEC   — Designs tool architecture, validated BEFORE any code is written (call_gemini_simple)
+Phase 3 BUILD  — Writes code from approved spec only (call_gemini_simple, 3 attempts, 15s retry delay)
+Phase 4 EVALUATE — validate_tool() runs inside BUILD loop: syntax, browser-compat, output quality, Critic check, Win Rate
+Phase 5 REFLECT — save_diary(), update_readme(), add_tool() to memory, mark_issue_built() if commission
+```
+
+**validate_spec() mechanical gate** — spec must pass before BUILD phase is allowed:
+- `INPUT_MODEL` and `OUTPUT_MODEL` must differ structurally
+- `ALGORITHMIC_DEPTH` >= 10 chars (non-trivial computation description)
+- `Q1_PASS`, `Q2_PASS`, `Q3_PASS` each >= 10 chars
+- `TEST_INPUT` >= 15 chars
+- On failure: precise error message fed back to Gemini as `spec_feedback` for retry (max 2 attempts)
+
+**parse_spec_response() multi-line fallback**:
+- Primary: extract between `---SPEC_START---` and `---SPEC_END---`
+- Fallback: if tags missing, search entire response
+- Field parser collects continuation lines (up to 4 lines) until next `ALL_CAPS:` key
+
+**BUILD retry with 15s delay**: `continue` (not `break`) on empty response, 15s sleep before each retry
+
+**Python source file Unicode restriction** — CRITICAL:
+- `super_lili_brain.py` must NOT contain em-dash (U+2014), en-dash (U+2013), checkmarks (U+2713 U+2717), or other non-ASCII Unicode in string literals or f-strings
+- GitHub Actions Python 3.11 raises `SyntaxError: invalid character` for these
+- Use ASCII equivalents: `-` for dashes, `[OK]`/`[NO]` for checkmarks, `->` for arrows
+- PostToolUse hook auto-checks syntax after every edit (see `.claude/settings.local.json`)
+
+**PostToolUse syntax check hook**: configured in `.claude/settings.local.json` — runs `ast.parse()` on every Edit/Write to `super_lili_brain.py`, surfaces `SYNTAX ERROR` immediately before push
 
 ---
 
@@ -178,3 +211,8 @@ Written by project owner xiaojiahaina, based on the neo-slow media framework (20
 - **git add . pulled in .claude/**: caused embedded git repository warning. Added to .gitignore
 - **Healing category overload**: at one point 53% of tools were Healing Inventions, capped to 20% via rotation mechanism
 - **Pyodide doesn't support rich**: Content_Current_Catalyst used rich library, broke in browser. Fixed: auto-detects and shows local run instructions instead
+- **Unicode in Python source causes SyntaxError on GitHub Actions**: em-dash, en-dash, checkmarks in f-strings/docstrings break Python 3.11. Fixed: replaced all with ASCII equivalents. Local Python 3.13 is stricter and catches these too.
+- **Missing closing triple-quote after f-string edit**: adding lines inside an f-string without preserving the closing `"""` silently breaks the entire function and the one after it. Always verify `ast.parse()` passes after edits.
+- **validate_spec thresholds were too strict**: fields with multi-line values got truncated to <20 chars by single-line parser, causing false rejections. Fixed: relaxed thresholds + multi-line field parser.
+- **API quota exhausted from repeated manual triggers**: each run consumes 6-8 Gemini calls. Triggering 5+ times in a day depletes the free tier daily quota. Wait for quota reset (midnight UTC) before retrying.
+- **Rest day diary blocks rerun**: if `save_rest_day()` runs and pushes a diary file, subsequent triggers skip because diary exists. Must delete the file from GitHub before retriggering.
