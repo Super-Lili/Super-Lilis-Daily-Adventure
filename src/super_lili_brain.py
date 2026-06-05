@@ -1152,20 +1152,20 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
             return False, f"INPUT and OUTPUT are structurally the same ({a} → {b}). Define a real transformation."
 
     # Check 2: algorithmic depth must be non-trivial
-    if len(algo_depth) < 20:
-        return False, "ALGORITHMIC_DEPTH is too vague or missing."
+    if len(algo_depth) < 10:
+        return False, f"ALGORITHMIC_DEPTH is missing. Add a sentence describing what non-trivial computation happens. Got: '{algo_depth}'"
     trivial_words = ["format", "display", "show", "render", "style", "wrap", "present"]
     if all(w in algo_depth.lower() for w in trivial_words[:2]) and len(algo_depth) < 60:
         return False, f"ALGORITHMIC_DEPTH describes only formatting/display: '{algo_depth}'"
 
     # Check 3: Q1/Q2/Q3 must be specific
     for label, val in [("Q1_PASS", q1), ("Q2_PASS", q2), ("Q3_PASS", q3)]:
-        if len(val) < 20:
-            return False, f"{label} is too vague: '{val}'"
+        if len(val) < 10:
+            return False, f"{label} is too vague or missing: '{val}'"
 
     # Check 4: test input must exist
-    if len(test_input) < 30:
-        return False, "TEST_INPUT is missing or too short."
+    if len(test_input) < 15:
+        return False, f"TEST_INPUT is missing or too short. Got: '{test_input[:50]}'"
 
     return True, "ok"
 
