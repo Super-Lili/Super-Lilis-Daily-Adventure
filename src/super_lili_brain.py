@@ -84,7 +84,7 @@ def fetch_tool_requests() -> list[dict]:
     """Return Issues that Lili has responded to but hasn't built yet, oldest first.
 
     Trigger: has label 'lili-responded', does NOT have label 'lili-built'.
-    Any issue a user opens → Lili responds (lili_responds.py) → next day Lili builds.
+    Any issue a user opens -> Lili responds (lili_responds.py) -> next day Lili builds.
     """
     if not _GH_TOKEN:
         return []
@@ -103,7 +103,7 @@ def fetch_tool_requests() -> list[dict]:
             if "pull_request" not in i
             and _BUILT_LABEL not in [l["name"] for l in i.get("labels", [])]
         ]
-        print(f"  ✓ Found {len(issues)} pending issue(s) to build from.")
+        print(f"  [OK] Found {len(issues)} pending issue(s) to build from.")
         return issues
     except Exception as e:
         print(f"  ⚠ Could not fetch issues: {e}")
@@ -147,7 +147,7 @@ def mark_issue_built(issue_number: int, tool_name: str,
         # Add label
         requests.post(f"{base}/issues/{issue_number}/labels",
                       headers=_GH_HEADERS, json={"labels": [_BUILT_LABEL]}, timeout=10)
-        print(f"  ✓ Issue #{issue_number} marked as built.")
+        print(f"  [OK] Issue #{issue_number} marked as built.")
     except Exception as e:
         print(f"  ⚠ Could not update issue #{issue_number}: {e}")
 
@@ -214,11 +214,11 @@ def _build_episodic_memory() -> str:
     if fail_reasons:
         lines.append(f"\nRecent FAILURE patterns (avoid these today):")
         for r in fail_reasons[-4:]:
-            lines.append(f"  ✗ {r[:120]}")
+            lines.append(f"  [NO] {r[:120]}")
     if success_reasons:
         lines.append(f"\nRecent SUCCESS patterns (build on these):")
         for r in success_reasons[-3:]:
-            lines.append(f"  ✓ {r[:120]}")
+            lines.append(f"  [OK] {r[:120]}")
     lines.append(
         f"\nUse this to avoid repeating mistakes and build on what worked."
     )
@@ -325,7 +325,7 @@ def _get_existing_tools() -> str:
                             break
             except Exception:
                 pass
-            lines.append(f"  • {tool_name}" + (f" - {desc}" if desc else ""))
+            lines.append(f"  * {tool_name}" + (f" - {desc}" if desc else ""))
     return "\n".join(lines) if lines else "  (none yet)"
 
 
@@ -632,7 +632,7 @@ def _build_context_block(today: str) -> dict:
         + (f"Extra search targets: {aud['search_add']}\n\n" if aud['search_add'] else "")
         + f"Quality bar:\n  {aud['quality_bar']}\n\n"
         f"Preferred formats:\n  {aud['format_pref']}\n\n"
-        f"→ Apply Rule 12 ({aud['label']}) from Engineering Rules above.\n"
+        f"-> Apply Rule 12 ({aud['label']}) from Engineering Rules above.\n"
         f"  If today's audience is professional, the tool must meet professional craft standards.\n"
     )
 
@@ -674,7 +674,7 @@ def _build_context_block(today: str) -> dict:
 
     return {
         "today": today,
-        "skills_list": "\n".join(f"  • {s}" for s in LILI_SKILLS) if LILI_SKILLS else "  • Python standard library",
+        "skills_list": "\n".join(f"  * {s}" for s in LILI_SKILLS) if LILI_SKILLS else "  * Python standard library",
         "evolution_ctx": f"\n\nEVOLUTION NOTES FROM LAST WEEK:\n{EVOLUTION_NOTES}" if EVOLUTION_NOTES.strip() else "",
         "memory_ctx": get_memory_context(),
         "existing_tools_block": _get_existing_tools(),
@@ -768,7 +768,7 @@ EDITORIAL PRE-FLIGHT - INTERNALIZE BEFORE SCOUTING
 
 □ PERSON not USER - what did a platform cause a real human to lose?
 □ PRODUCTIVE friction - does it prompt reflection, learning, or growth?
-□ CROSS-DOMAIN - name ≥2 intersecting fields before designing.
+□ CROSS-DOMAIN - name >=2 intersecting fields before designing.
 □ WORKTECH LENS (work friction): People / Technology / Design / Place / Culture?
 □ LEARNING FAULT LINE (learning friction): Joy / Knowledge≠Understanding / Attention / Identity?
 
@@ -806,7 +806,7 @@ MISSION BRIEFING - THREE STEPS
 SOURCE EVIDENCE - MANDATORY:
 Before writing anything else, quote 2-3 sentences VERBATIM from the actual post/article.
   SOURCE: [platform] | QUOTE: "[exact words]"
-  ✗ Do NOT paraphrase. ✗ Do NOT invent. ✓ Real short quote > polished invented scenario.
+  [NO] Do NOT paraphrase. [NO] Do NOT invent. [OK] Real short quote > polished invented scenario.
   This quote is the FOUNDATION. If it's fake, everything built on it is fake.
 
 PAIN PORTRAIT (from the real quote):
@@ -815,9 +815,9 @@ PAIN PORTRAIT (from the real quote):
   3. WHY EXISTING TOOLS FAIL - what has this person already tried?
 
 URL RULES:
-  ✓ Real working permalink only (reddit.com/r/..., news site, x.com/...)
-  ✗ Never invent a URL. ✗ Never output vertexaisearch.cloud.google.com links.
-  ✓ If no confirmed URL: plain text "Reddit r/[sub] - [exact title]" is fine.
+  [OK] Real working permalink only (reddit.com/r/..., news site, x.com/...)
+  [NO] Never invent a URL. [NO] Never output vertexaisearch.cloud.google.com links.
+  [OK] If no confirmed URL: plain text "Reddit r/[sub] - [exact title]" is fine.
 
 STEP 2 - DIARY ENTRY (as Super-Lili, 130-160 words):
 
@@ -825,17 +825,17 @@ STEP 2 - DIARY ENTRY (as Super-Lili, 130-160 words):
   A reliable, intelligent friend who notices things other people miss.
   Warm without being sweet. Witty without trying. Never performing.
 
-  ✓ Start with the observation or feeling - not the source
-  ✓ One specific human detail that makes the story real
-  ✓ Wit that appears naturally from the situation, never forced
-  ✓ End with an opening, not a conclusion
+  [OK] Start with the observation or feeling - not the source
+  [OK] One specific human detail that makes the story real
+  [OK] Wit that appears naturally from the situation, never forced
+  [OK] End with an opening, not a conclusion
 
-  ✗ NO performative excitement ("This struck me so deeply!", "I was moved!")
-  ✗ NO hollow warmth ("We're all in this together", "You've got this")
-  ✗ NO rhetorical questions posed to the reader
-  ✗ NO dramatic emotional declarations
-  ✗ NO motivational sign-offs
-  ✗ NO sentences that could appear on an inspirational poster
+  [NO] NO performative excitement ("This struck me so deeply!", "I was moved!")
+  [NO] NO hollow warmth ("We're all in this together", "You've got this")
+  [NO] NO rhetorical questions posed to the reader
+  [NO] NO dramatic emotional declarations
+  [NO] NO motivational sign-offs
+  [NO] NO sentences that could appear on an inspirational poster
 
   The test: read each sentence and ask "would a real person say this to a friend?"
   If it sounds like a TED talk or a wellness brand - rewrite it.
@@ -848,13 +848,13 @@ TOOL-TO-PORTRAIT FIT (answer YES to all 3 before writing code):
   Q3: Does the OUTPUT give the user something they can ACT ON in the next 5 minutes?
 
 FORMAT SELECTION (declare in ---SPEC--- as FORMAT: [letter] - [why]):
-  A - Single text input → output (Mode 1/2)
+  A - Single text input -> output (Mode 1/2)
   B - Multi-field structured form (Mode 3 HTML)
   C - Wizard / progressive steps (Mode 3 HTML)
   D - Live canvas / real-time transformer (Mode 3 HTML)
   E - Ambient / environment, no input needed (Mode 3 HTML)
   F - Generator + inline editor (Mode 3 HTML)
-  ✗ Don't default to A. Professional audiences → B/C/F. Design → D. Healing → E/D.
+  [NO] Don't default to A. Professional audiences -> B/C/F. Design -> D. Healing -> E/D.
 
 OUTPUT MODES:
   Mode 1 - process(text) returns plain string. Allowed: numpy, pandas, matplotlib, Pillow.
@@ -868,13 +868,13 @@ DUAL-MODE PATTERN (Mode 1/2 mandatory):
   _browser_input = globals().get('USER_INPUT', None)
   if _browser_input is not None: print(process(_browser_input))
   elif __name__ == "__main__": _cli_main()
-  ✗ Never sys.argv at module level - breaks browser.
+  [NO] Never sys.argv at module level - breaks browser.
 
 TRULY USABLE:
-  ✓ Real user data, not hardcoded examples. ✓ Graceful error messages, no raw tracebacks.
-  ✓ Mode 1/2: ≤3 CLI args, output to file. ✓ Mode 3: 5-8 fields fine for professional tools.
-  ✓ Minimum 4 named functions with type hints. ✓ Labeled output sections, not raw text blobs.
-  ✗ No external API keys. ✗ No terminal-only output.
+  [OK] Real user data, not hardcoded examples. [OK] Graceful error messages, no raw tracebacks.
+  [OK] Mode 1/2: <=3 CLI args, output to file. [OK] Mode 3: 5-8 fields fine for professional tools.
+  [OK] Minimum 4 named functions with type hints. [OK] Labeled output sections, not raw text blobs.
+  [NO] No external API keys. [NO] No terminal-only output.
 
 {ctx['engineering_nudge']}
 QUALITY BAR: Would a non-technical person feel their problem is actually solved?
@@ -964,7 +964,7 @@ TODAY'S SOURCE: {ctx['primary_src']}
 SOURCE EVIDENCE - MANDATORY:
 Quote 2-3 sentences VERBATIM from the actual post/article.
 SOURCE: [platform] | QUOTE: "[exact words]"
-✗ Do NOT paraphrase. ✗ Do NOT invent."""
+[NO] Do NOT paraphrase. [NO] Do NOT invent."""
 
     return f"""Today is {today}.
 
@@ -985,7 +985,7 @@ PAIN PORTRAIT (output after finding the source):
 
 DIARY ENTRY (as Super-Lili, 130-160 words):
   Voice: reliable, intelligent friend. Warm without sweet. Witty without trying.
-  ✗ NO performative excitement. ✗ NO hollow warmth. ✗ NO TED-talk sentences.
+  [NO] NO performative excitement. [NO] NO hollow warmth. [NO] NO TED-talk sentences.
   Start with the observation - not the source. End with an opening, not a conclusion.
 
 OUTPUT FORMAT - COPY EXACTLY:
@@ -1046,19 +1046,19 @@ PATTERN: {scout.get('pattern', '')}
 
 SPEC DESIGN RULES:
 1. INPUT_MODEL must STRUCTURALLY DIFFER from OUTPUT_MODEL (Rule 17)
-   "Text in → text out" is NOT a transformation. Define the data structures explicitly.
+   "Text in -> text out" is NOT a transformation. Define the data structures explicitly.
 2. ALGORITHMIC_DEPTH must describe computation the user cannot do in 10 seconds (Rule 18)
 3. For Mode 3 HTML: define all 3 UI states (Rule 19)
 4. Q1/Q2/Q3 must be specific and verifiable - not vague
 
 FORMAT OPTIONS:
-  A - Single text input → output (Mode 1/2)
+  A - Single text input -> output (Mode 1/2)
   B - Multi-field form (Mode 3 HTML)
   C - Wizard / progressive steps (Mode 3 HTML)
   D - Live canvas / real-time transformer (Mode 3 HTML)
   E - Ambient / environment, no input needed (Mode 3 HTML)
   F - Generator + inline editor (Mode 3 HTML)
-  ✗ Don't default to A. Professional audiences → B/C/F. Design → D. Healing → E/D.
+  [NO] Don't default to A. Professional audiences -> B/C/F. Design -> D. Healing -> E/D.
 
 OUTPUT FORMAT - YOU MUST OUTPUT THESE EXACT TAGS OR THE SPEC WILL BE REJECTED:
 ---SPEC_START---
@@ -1080,7 +1080,7 @@ TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
 CRITICAL: Your response MUST start with ---SPEC_START--- and end with ---SPEC_END---.
 Do not add any text before ---SPEC_START--- or after ---SPEC_END---.
 IMPORTANT: Each field (FORMAT, MODE, INPUT_MODEL, etc.) must be on a SINGLE LINE.
-Do not wrap field values across multiple lines. Keep each value concise and on one line.
+Do not wrap field values across multiple lines. Keep each value concise and on one line."""
 
 
 def build_code_prompt(today: str, scout: dict, spec: dict, feedback: str = "") -> str:
@@ -1110,15 +1110,15 @@ APPROVED SPEC:
 {ctx['engineering_nudge']}
 
 CODE REQUIREMENTS:
-✓ 150+ lines, type hints, requirements block at top
-✓ process(text) function as the main entry point
-✓ DUAL-MODE PATTERN (Mode 1/2 mandatory):
+[OK] 150+ lines, type hints, requirements block at top
+[OK] process(text) function as the main entry point
+[OK] DUAL-MODE PATTERN (Mode 1/2 mandatory):
     _browser_input = globals().get('USER_INPUT', None)
     if _browser_input is not None: print(process(_browser_input))
     elif __name__ == "__main__": _cli_main()
-✓ Mode 3: process() returns complete <!DOCTYPE html>...
-✗ Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
-✓ Implement EXACTLY the transformation and algorithmic depth in the approved spec
+[OK] Mode 3: process() returns complete <!DOCTYPE html>...
+[NO] Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
+[OK] Implement EXACTLY the transformation and algorithmic depth in the approved spec
 
 OUTPUT FORMAT - COPY EXACTLY:
 ---CODE---
@@ -1149,7 +1149,7 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
     ]
     for a, b in trivial_pairs:
         if a in input_model and b in output_model and input_model[:30] == output_model[:30]:
-            return False, f"INPUT and OUTPUT are structurally the same ({a} → {b}). Define a real transformation."
+            return False, f"INPUT and OUTPUT are structurally the same ({a} -> {b}). Define a real transformation."
 
     # Check 2: algorithmic depth must be non-trivial
     if len(algo_depth) < 10:
@@ -1195,7 +1195,7 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
                     config=types.GenerateContentConfig(tools=[search_tool])
                 )
                 if response.text:
-                    print(f"  ✓ {model_name} succeeded.")
+                    print(f"  [OK] {model_name} succeeded.")
                     # Extract grounding URLs from metadata - these are real, verified sources
                     grounding_urls: list[str] = []
                     try:
@@ -1209,7 +1209,7 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
                                         if not url.startswith("https://vertexaisearch.cloud.google.com"):
                                             grounding_urls.append(url)
                         if grounding_urls:
-                            print(f"  ✓ Grounding: {len(grounding_urls)} real source URL(s) retrieved")
+                            print(f"  [OK] Grounding: {len(grounding_urls)} real source URL(s) retrieved")
                         else:
                             print(f"  ⚠ Grounding: no source URLs in metadata (model may have used training knowledge)")
                     except Exception as meta_err:
@@ -1218,7 +1218,7 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
                 break  # empty response - no point retrying this model
             except Exception as e:
                 wait = 15 * (2 ** attempt)  # 15s, 30s, 60s
-                print(f"  ✗ {model_name} attempt {attempt + 1} failed: {e}")
+                print(f"  [NO] {model_name} attempt {attempt + 1} failed: {e}")
                 if attempt < 2:
                     print(f"  ⏳ Waiting {wait}s before retry...")
                     time.sleep(wait)
@@ -1244,7 +1244,7 @@ def call_gemini_simple(prompt: str) -> str | None:
 
 
 def extract_format(spec: str) -> str:
-    """Pull the FORMAT letter (A–F) out of the spec section."""
+    """Pull the FORMAT letter (A-F) out of the spec section."""
     if not spec:
         return ""
     m = re.search(r"FORMAT:\s*([A-F])", spec, re.IGNORECASE)
@@ -1486,7 +1486,7 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
         "## Run Tests\n```bash\npython3 test_main.py\n```\n\n"
         if parsed.get("test") else ""
     )
-    # URL-encode the skill_dir path for the curl command (spaces → %20)
+    # URL-encode the skill_dir path for the curl command (spaces -> %20)
     curl_path = skill_dir.replace(" ", "%20")
     pip_install = (
         f"pip3 install -r requirements.txt\n"
@@ -1665,7 +1665,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                     pass
             if result.returncode != 0:
                 return False, f"Tests failed: {result.stderr[:300]}"
-            print(f"  ✓ Tests passed.")
+            print(f"  [OK] Tests passed.")
         except subprocess.TimeoutExpired:
             return False, "Tests timed out (60s)"
         except Exception as e:
@@ -1701,7 +1701,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                     f"HTML output too short: {len(output)} chars. "
                     f"Mode 3 tools must return a complete HTML page (500+ chars)."
                 )
-            print(f"  ✓ Output check passed - Mode 3 HTML ({len(output)} chars).")
+            print(f"  [OK] Output check passed - Mode 3 HTML ({len(output)} chars).")
         else:
             # Mode 1/2: text or SVG output - must be substantive
             if not output or len(output) < 80 or len(output_lines) < 2:
@@ -1710,7 +1710,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                     f"Got: {repr(output[:200])}. "
                     f"Must produce structured, substantive output (80+ chars, 2+ lines)."
                 )
-            print(f"  ✓ Output check passed ({len(output)} chars, {len(output_lines)} lines).")
+            print(f"  [OK] Output check passed ({len(output)} chars, {len(output_lines)} lines).")
 
         # 7. Two-dimension quality score.
         #    Mode 3 HTML tools: score the code structure (not the raw HTML output).
@@ -1723,7 +1723,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                 f"Source preview (first 700 chars):\n{source_for_scoring[:700]}"
             )
             quality_prompt = (
-                f"Rate this interactive HTML tool on TWO dimensions (each 1–5).\n\n"
+                f"Rate this interactive HTML tool on TWO dimensions (each 1-5).\n\n"
                 f"DIMENSION 1 - ENGINEERING\n"
                 f"  5 = well-structured HTML/JS, clear interactive purpose, proper error handling\n"
                 f"  3 = functional but basic, could be richer or more polished\n"
@@ -1741,7 +1741,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             )
         else:
             quality_prompt = (
-                f"Rate this tool output on TWO dimensions (each 1–5).\n\n"
+                f"Rate this tool output on TWO dimensions (each 1-5).\n\n"
                 f"DIMENSION 1 - ENGINEERING\n"
                 f"  5 = clearly structured, specific sections, immediately actionable\n"
                 f"  3 = readable but could be more organised or concrete\n"
@@ -1766,7 +1766,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             eng_score  = int(eng_m.group(1))  if eng_m  else 3
             warm_score = int(warm_m.group(1)) if warm_m else 3
             combined   = round((eng_score + warm_score) / 2, 1)
-            print(f"  ✓ Quality - Engineering: {eng_score}/5  Warmth: {warm_score}/5  ({combined} avg) - {reason_line}")
+            print(f"  [OK] Quality - Engineering: {eng_score}/5  Warmth: {warm_score}/5  ({combined} avg) - {reason_line}")
 
             # 8. Critic check - a demanding creative director finds specific flaws
             critic_prompt = (
@@ -1787,7 +1787,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             critic_resp = call_gemini_simple(critic_prompt)
             if critic_resp and critic_resp.strip().upper().startswith("REJECT"):
                 reject_reason = critic_resp.strip()[7:].strip()[:200]
-                print(f"  ✗ Critic rejected: {reject_reason}")
+                print(f"  [NO] Critic rejected: {reject_reason}")
                 _append_quality_ledger(
                     tool_name=description or str(skill_dir),
                     category=str(skill_dir).split("/")[-2] if skill_dir else "",
@@ -1797,7 +1797,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                 )
                 return False, f"Critic review failed: {reject_reason}"
             else:
-                print(f"  ✓ Critic review passed.")
+                print(f"  [OK] Critic review passed.")
 
             # 9. Win Rate - compare against previous tool in same category
             category_name = str(skill_dir).split("/")[-2] if skill_dir else ""
@@ -1827,7 +1827,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                             reason_line = f"[Lost to prev] {reason_line}"
                         elif wr_resp.strip().startswith("A_BETTER"):
                             reason = wr_resp.strip()[8:].strip()[:120]
-                            print(f"  ✓ Win Rate: new tool is better - {reason}")
+                            print(f"  [OK] Win Rate: new tool is better - {reason}")
                         else:
                             print(f"  · Win Rate: similar quality to previous tool")
 
@@ -1875,7 +1875,7 @@ def save_rest_day(today: str, reason: str):
         f"干杯。砰。🐝",
         encoding="utf-8"
     )
-    print(f"  ✓ Rest-day diary saved: {log_path}")
+    print(f"  [OK] Rest-day diary saved: {log_path}")
 
     # Update README featured entry so the gap shows
     readme_path = Path("README.md")
@@ -1904,7 +1904,7 @@ def save_rest_day(today: str, reason: str):
 
     updated = parts[0] + anchor + "\n\n" + featured + "\n\n" + footer.lstrip()
     readme_path.write_text(updated, encoding="utf-8")
-    print(f"  ✓ README updated with rest-day entry.")
+    print(f"  [OK] README updated with rest-day entry.")
 
 
 def save_diary(today: str, parsed: dict, source_badge: str) -> str:
@@ -2039,7 +2039,7 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
     )
 
     readme_path.write_text(updated, encoding="utf-8")
-    print(f"  ✓ README updated - featured today + {len(archive_entries)} archived entries.")
+    print(f"  [OK] README updated - featured today + {len(archive_entries)} archived entries.")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -2058,7 +2058,7 @@ def _verify_source(parsed: dict, grounding_urls: list[str]) -> tuple[str, str]:
             if ok:
                 verified_source_url = gurl
                 source_badge = "✅"
-                print(f"  ✓ Grounding source verified: {gurl[:80]} ({status})")
+                print(f"  [OK] Grounding source verified: {gurl[:80]} ({status})")
                 break
             else:
                 print(f"  · {gurl[:70]} - {status}")
@@ -2104,7 +2104,7 @@ def evolve():
     print(f"\n🌸 Super-Lili awakens - {today}")
 
     if Path(f"01_Work_Log/{today}-Diary.md").exists():
-        print(f"✓ Already ran today ({today}) - diary exists, skipping.")
+        print(f"[OK] Already ran today ({today}) - diary exists, skipping.")
         return
 
     # ── Check for commissions ──────────────────────────────────────────────────
@@ -2148,7 +2148,7 @@ def evolve():
         return
 
     source_badge, _ = _verify_source(scout, grounding_urls)
-    print(f"  ✓ Scout complete: '{scout['solution']}' ({scout['category']})")
+    print(f"  [OK] Scout complete: '{scout['solution']}' ({scout['category']})")
 
     # ══════════════════════════════════════════════════════════════════════════
     # PHASE 2 - SPEC: design the tool, validate before coding
@@ -2165,11 +2165,11 @@ def evolve():
         spec = parse_spec_response(spec_content)
         spec_ok, spec_reason = validate_spec(spec)
         if spec_ok:
-            print(f"  ✓ Spec validated (attempt {attempt}): "
+            print(f"  [OK] Spec validated (attempt {attempt}): "
                   f"{spec.get('format','')} / Mode {spec.get('mode','?')}")
             break
         else:
-            print(f"  ✗ Spec failed (attempt {attempt}): {spec_reason}")
+            print(f"  [NO] Spec failed (attempt {attempt}): {spec_reason}")
             spec_feedback = spec_reason
 
     if not spec_ok:
@@ -2200,12 +2200,12 @@ def evolve():
             build_code_prompt(today, scout, spec, build_feedback)
         )
         if not build_content:
-            print("  ✗ Gemini returned nothing.")
+            print("  [NO] Gemini returned nothing.")
             continue
 
         build = parse_build_response(build_content)
         if not build.get("code"):
-            print("  ✗ No code in response.")
+            print("  [NO] No code in response.")
             build_feedback = "Response contained no ---CODE--- section. Output only code."
             continue
 
@@ -2235,10 +2235,10 @@ def evolve():
             audience=today_audience,
         )
         if build_ok:
-            print("  ✓ Build validated.")
+            print("  [OK] Build validated.")
             break
         else:
-            print(f"  ✗ Build failed: {build_reason}")
+            print(f"  [NO] Build failed: {build_reason}")
             build_feedback = (
                 f"Validation failed: {build_reason}\n"
                 f"The approved spec says:\n"
@@ -2272,7 +2272,7 @@ def evolve():
 
     print("📖 Saving diary...")
     log_path = save_diary(today, merged, source_badge)
-    print(f"  ✓ Diary saved: {log_path}")
+    print(f"  [OK] Diary saved: {log_path}")
 
     print("🏠 Updating README...")
     update_readme(today, merged, log_path, skill_dir)
@@ -2292,7 +2292,7 @@ def evolve():
             pattern=merged.get("pattern", ""),
         )
         add_topic(date=today, title=merged["title"], path=log_path)
-        print("  ✓ Memory updated.")
+        print("  [OK] Memory updated.")
 
     print(f"\n✨ Adventure complete for {today}!")
 
