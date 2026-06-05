@@ -1,5 +1,5 @@
 """
-super_lili_brain.py — Super-Lili's Daily Adventure Engine
+super_lili_brain.py - Super-Lili's Daily Adventure Engine
 Runs every day via GitHub Actions. Finds a real human friction point,
 writes a warm diary entry, and forges a high-quality Python tool.
 """
@@ -155,7 +155,7 @@ def mark_issue_built(issue_number: int, tool_name: str,
 # ─────────────────────────────────────────────────────────────
 # URL VALIDATION
 # ─────────────────────────────────────────────────────────────
-# EPISODIC MEMORY — learn from recent tool quality history
+# EPISODIC MEMORY - learn from recent tool quality history
 # ─────────────────────────────────────────────────────────────
 
 def _build_episodic_memory() -> str:
@@ -205,7 +205,7 @@ def _build_episodic_memory() -> str:
 
     lines = [
         f"═══════════════════════════════════════════════════════",
-        f"EPISODIC MEMORY — Last 14 days ({len(rows)} tools built)",
+        f"EPISODIC MEMORY - Last 14 days ({len(rows)} tools built)",
         f"═══════════════════════════════════════════════════════",
         f"Pass rate: {len(passed)}/{len(rows)} tools passed quality gates",
     ]
@@ -325,7 +325,7 @@ def _get_existing_tools() -> str:
                             break
             except Exception:
                 pass
-            lines.append(f"  • {tool_name}" + (f" — {desc}" if desc else ""))
+            lines.append(f"  • {tool_name}" + (f" - {desc}" if desc else ""))
     return "\n".join(lines) if lines else "  (none yet)"
 
 
@@ -334,9 +334,9 @@ _SOURCE_ROTATION = [
     ("Reddit (knowledge workers)",
      "Search r/productivity, r/gtd, r/remotework for posts from the past 7 days. "
      "Focus on people drowning in tools, notifications, or the performance of busyness. "
-     "Go deep into comments — the real signal is in the replies, not the post."),
+     "Go deep into comments - the real signal is in the replies, not the post."),
 
-    # ── DESIGNERS & VISUAL CREATIVES — real production friction ──
+    # ── DESIGNERS & VISUAL CREATIVES - real production friction ──
     ("Reddit & Figma community (designers)",
      "Search r/graphic_design, r/UI_Design, r/MotionDesign, and the Figma community forum "
      "for posts from the past 7 days. "
@@ -349,10 +349,10 @@ _SOURCE_ROTATION = [
     # ── STUDENTS & LEARNING ──
     ("YouTube comments (students)",
      "Search YouTube for a study, exam prep, or 'how I actually learned X' video from the past month. "
-     "Read the comment section carefully — students are brutally honest about what fails them. "
+     "Read the comment section carefully - students are brutally honest about what fails them. "
      "Look for patterns around memory, motivation collapse, and tutorial hell."),
 
-    # ── JOURNALISTS & EDITORS — real reporting workflow ──
+    # ── JOURNALISTS & EDITORS - real reporting workflow ──
     ("Reddit & journalism forums (reporters & editors)",
      "Search r/Journalism, r/editors, r/writing, and niemanlab.org for posts from the past 7 days. "
      "Look for REAL WORKFLOW FRICTION: interview transcription chaos, source management, "
@@ -365,21 +365,21 @@ _SOURCE_ROTATION = [
      "Look for burnout signals, the gap between what teachers wish they could do "
      "and what their actual constraints allow. What invisible labor do they carry?"),
 
-    # ── CREATIVE PROFESSIONALS — studio & production tools ──
+    # ── CREATIVE PROFESSIONALS - studio & production tools ──
     ("Threads & X (creative studio workers)",
      "Search threads.net and x.com for designers, art directors, brand strategists, "
      "motion designers, and illustrators posting about their actual studio workflow. "
-     "NOT feelings about algorithms — look for: 'I wish there was a tool that...', "
+     "NOT feelings about algorithms - look for: 'I wish there was a tool that...', "
      "'I still do this manually...', 'every project I have to...'. "
      "Real production pain, not existential creative dread."),
 
     # ── MENTAL HEALTH & NEURODIVERGENCE ──
     ("Reddit (ADHD & mental health)",
      "Search r/ADHD, r/anxiety, r/depression for posts from the past 7 days. "
-     "Focus on daily friction — not clinical discussions, but real moments where "
+     "Focus on daily friction - not clinical discussions, but real moments where "
      "ordinary tasks feel impossible. What small environmental changes help people function?"),
 
-    # ── FREELANCERS & FINANCE — real money management tools ──
+    # ── FREELANCERS & FINANCE - real money management tools ──
     ("Reddit (freelancers & independent workers)",
      "Search r/freelance, r/smallbusiness, r/personalfinance for posts from the past week. "
      "Look for SPECIFIC FUNCTIONAL GAPS: invoice calculation, project rate estimation, "
@@ -420,10 +420,10 @@ _SOURCE_ROTATION = [
     # ── LIFE TRANSITIONS ──
     ("Reddit (major life changes)",
      "Search r/divorce, r/GriefSupport, r/NewToCollege, r/retirement for recent posts. "
-     "Look for people navigating identity ruptures — the friction of becoming someone "
+     "Look for people navigating identity ruptures - the friction of becoming someone "
      "different than you were, without any map for the new territory."),
 
-    # ── MOTION & TYPOGRAPHY — specialist creative tools ──
+    # ── MOTION & TYPOGRAPHY - specialist creative tools ──
     ("Motionographer & typewolf community (motion & type)",
      "Search motionographer.com, typewolf.com comments, and r/typography for posts from the past month. "
      "Look for SPECIFIC TOOL GAPS in typography and motion work: "
@@ -441,21 +441,21 @@ _SOURCE_ROTATION = [
 
 
 # ─────────────────────────────────────────────────────────────
-# AUDIENCE ROTATION — cycles independently of source rotation
+# AUDIENCE ROTATION - cycles independently of source rotation
 # ─────────────────────────────────────────────────────────────
 
 _AUDIENCE_ROTATION = [
-    "general",    # 0 — everyday people, mixed backgrounds
-    "media",      # 1 — journalists, editors, writers
-    "tech",       # 2 — PMs, engineers, founders
-    "creative",   # 3 — designers, CDs, brand/luxury professionals
-    "research",   # 4 — researchers, analysts, academics
+    "general",    # 0 - everyday people, mixed backgrounds
+    "media",      # 1 - journalists, editors, writers
+    "tech",       # 2 - PMs, engineers, founders
+    "creative",   # 3 - designers, CDs, brand/luxury professionals
+    "research",   # 4 - researchers, analysts, academics
 ]
 
 _AUDIENCE_CONTEXT = {
     "general": {
         "label": "General Users",
-        "who": "Everyday people across all backgrounds — parents, students, workers, caregivers.",
+        "who": "Everyday people across all backgrounds - parents, students, workers, caregivers.",
         "search_add": "",
         "quality_bar": "Output must be immediately usable by a non-specialist with no explanation needed.",
         "format_pref": "Any format. Choose what best fits the pain point.",
@@ -466,10 +466,10 @@ _AUDIENCE_CONTEXT = {
         "search_add": (
             "Also search: journalism Twitter/X, Nieman Lab (niemanlab.org), "
             "r/journalism, r/editors, Columbia Journalism Review. "
-            "Look for craft-level friction — not tech problems, but editorial and professional ones."
+            "Look for craft-level friction - not tech problems, but editorial and professional ones."
         ),
         "quality_bar": (
-            "Output must meet the standard of a senior editor — no filler phrases, "
+            "Output must meet the standard of a senior editor - no filler phrases, "
             "no hollow transitions, no output they would need to apologise for sending. "
             "Indistinguishable from something a skilled professional wrote."
         ),
@@ -519,7 +519,7 @@ _AUDIENCE_CONTEXT = {
         "format_pref": (
             "Strongly prefer Canvas/HTML visual tools, live typography labs, "
             "interactive poster/layout generators, brand document builders. "
-            "Design tools must RENDER actual visual output — not describe it. "
+            "Design tools must RENDER actual visual output - not describe it. "
             "Strong candidates: concept namer, visual brief generator, typography lab, "
             "Canvas poster maker, brand archive document, campaign concept generator."
         ),
@@ -556,30 +556,30 @@ _AUDIENCE_CONTEXT = {
 # Matches the order of _SOURCE_ROTATION above (14 entries).
 # Distribution: studio×4, work×3, design×3, learning×2, healing×2
 _SOURCE_DOMAIN_HINT = [
-    "work",      # 0  — knowledge workers & productivity
-    "studio",    # 1  — designers & visual creatives
-    "learning",  # 2  — students & learning
-    "work",      # 3  — journalists & editors
-    "learning",  # 4  — teachers & educators
-    "studio",    # 5  — creative studio workers (production pain)
-    "healing",   # 6  — ADHD & mental health
-    "work",      # 7  — freelancers & finance
-    "studio",    # 8  — brand & luxury creative industry
-    "studio",    # 9  — audio & podcast creators
-    "design",    # 10 — writers & content creators
-    "design",    # 11 — life organisation & physical space
-    "healing",   # 12 — life transitions
-    "design",    # 13 — motion & typography
-    "work",      # 14 — news & research
+    "work",      # 0  - knowledge workers & productivity
+    "studio",    # 1  - designers & visual creatives
+    "learning",  # 2  - students & learning
+    "work",      # 3  - journalists & editors
+    "learning",  # 4  - teachers & educators
+    "studio",    # 5  - creative studio workers (production pain)
+    "healing",   # 6  - ADHD & mental health
+    "work",      # 7  - freelancers & finance
+    "studio",    # 8  - brand & luxury creative industry
+    "studio",    # 9  - audio & podcast creators
+    "design",    # 10 - writers & content creators
+    "design",    # 11 - life organisation & physical space
+    "healing",   # 12 - life transitions
+    "design",    # 13 - motion & typography
+    "work",      # 14 - news & research
 ]
 
 
 # ─────────────────────────────────────────────────────────────
-# PROMPT BUILDER — 5 focused functions, each with a single job
+# PROMPT BUILDER - 5 focused functions, each with a single job
 # ─────────────────────────────────────────────────────────────
 
 def _build_context_block(today: str) -> dict:
-    """Compute all dynamic values for today. Pure data — no string building."""
+    """Compute all dynamic values for today. Pure data - no string building."""
     from datetime import date as _date
     ordinal = _date.fromisoformat(today).toordinal()
     day_index = ordinal % len(_SOURCE_ROTATION)
@@ -616,7 +616,7 @@ def _build_context_block(today: str) -> dict:
     if domain_block or _EDITOR_CRITERIA:
         editor_ctx = (
             f"\n\n═══════════════════════════════════════════════════════\n"
-            f"DOMAIN INTELLIGENCE — {domain_label}\n"
+            f"DOMAIN INTELLIGENCE - {domain_label}\n"
             f"(matched to today's source: {primary_src})\n"
             f"═══════════════════════════════════════════════════════\n"
             + (domain_block + "\n\n" if domain_block else "")
@@ -626,7 +626,7 @@ def _build_context_block(today: str) -> dict:
     # Audience block
     audience_block = (
         f"\n═══════════════════════════════════════════════════════\n"
-        f"TODAY'S AUDIENCE — {aud['label'].upper()}\n"
+        f"TODAY'S AUDIENCE - {aud['label'].upper()}\n"
         f"═══════════════════════════════════════════════════════\n"
         f"Who they are: {aud['who']}\n\n"
         + (f"Extra search targets: {aud['search_add']}\n\n" if aud['search_add'] else "")
@@ -641,7 +641,7 @@ def _build_context_block(today: str) -> dict:
     if LILI_ENGINEERING_BASE.strip():
         engineering_nudge = (
             f"\n═══════════════════════════════════════════════════════\n"
-            f"ENGINEERING RULES — PERMANENT STANDARDS\n"
+            f"ENGINEERING RULES - PERMANENT STANDARDS\n"
             f"(Written by the project owner. These never change.)\n"
             f"═══════════════════════════════════════════════════════\n"
             f"{LILI_ENGINEERING_BASE}\n"
@@ -649,7 +649,7 @@ def _build_context_block(today: str) -> dict:
     if LILI_ENGINEERING_LESSONS.strip():
         engineering_nudge += (
             f"\n═══════════════════════════════════════════════════════\n"
-            f"ENGINEERING RULES — THIS WEEK'S ADDITIONS\n"
+            f"ENGINEERING RULES - THIS WEEK'S ADDITIONS\n"
             f"═══════════════════════════════════════════════════════\n"
             f"{LILI_ENGINEERING_LESSONS}\n"
         )
@@ -693,7 +693,7 @@ def _build_context_block(today: str) -> dict:
 def _build_identity_section(ctx: dict) -> str:
     """Lili's identity: personality, skills, memory, existing tools."""
     return f"""YOUR NORTH STAR (read this first, every day):
-You are building a coherent toolkit for creative professionals — not random daily tools,
+You are building a coherent toolkit for creative professionals - not random daily tools,
 but a growing system where each tool feels like it belongs to something larger.
 Ask yourself before you build: does today's tool leave something useful behind?
 A great tool produces output a real person will open again tomorrow.
@@ -705,7 +705,7 @@ YOUR CURRENT SKILL INVENTORY:
 {ctx['skills_list']}
 
 ═══════════════════════════════════════════════════════
-EXISTING TOOLS — STRICT DUPLICATION BAN
+EXISTING TOOLS - STRICT DUPLICATION BAN
 ═══════════════════════════════════════════════════════
 You have already built these tools. Study this list carefully.
 DO NOT build anything conceptually similar to any of them.
@@ -714,7 +714,7 @@ If your proposed tool could be described with the same verb + noun as one below,
 {ctx['existing_tools_block']}
 
 ═══════════════════════════════════════════════════════
-YOUR MEMORY — WHAT YOU'VE ALREADY DONE
+YOUR MEMORY - WHAT YOU'VE ALREADY DONE
 ═══════════════════════════════════════════════════════
 {ctx['memory_ctx']}
 
@@ -725,7 +725,7 @@ Do NOT repeat a topic or tool you've already done. Find a genuinely fresh fricti
 def _build_mission_section(ctx: dict) -> str:
     """Mission areas, domain intelligence, audience, solution patterns, pre-flight."""
     return f"""═══════════════════════════════════════════════════════
-YOUR 4 MISSION AREAS — PICK ONE FOR TODAY
+YOUR 4 MISSION AREAS - PICK ONE FOR TODAY
 ═══════════════════════════════════════════════════════
 {ctx['avoid_cats']}{ctx['blindspot_nudge']}
 
@@ -735,13 +735,13 @@ YOUR 4 MISSION AREAS — PICK ONE FOR TODAY
   Tools: flashcard generators, reading digest tools, transcript summarisers, quiz converters.
 
 🎨 DESIGN ALCHEMY
-  ALL creative production — font pairing, SVG/CSS animation, palette tools, kinetic typography,
+  ALL creative production - font pairing, SVG/CSS animation, palette tools, kinetic typography,
   brand consistency, moodboards, spec/handoff automation, visual data, presentation design,
   brief writing, copy iteration. Also non-designers needing design output.
   Tools: font pairing, SVG/CSS animators, palette extractors, spec generators, brief builders.
 
 🗂️ OFFICE AUTOMATION
-  ANY repetitive professional production task — meeting notes, document processing,
+  ANY repetitive professional production task - meeting notes, document processing,
   spreadsheet automation, email drafts, invoice/contract templates, audio transcript cleanup,
   file naming & organisation, batch processing, podcast show notes, research-to-outline.
   Tools: transcript processors, file organisers, batch renamers, brief extractors, report generators.
@@ -754,78 +754,78 @@ YOUR 4 MISSION AREAS — PICK ONE FOR TODAY
 {ctx['editor_ctx']}
 {ctx['audience_block']}
 ═══════════════════════════════════════════════════════
-SOLUTION PATTERNS — PICK ONE, AVOID REPEATS
+SOLUTION PATTERNS - PICK ONE, AVOID REPEATS
 ═══════════════════════════════════════════════════════
 
   extract | generate | visualize | track | score | transform | interact | alert | gamify
 {ctx['avoid_patterns']}
 
-If most recent tools used "extract" — you MUST pick a different pattern today.
+If most recent tools used "extract" - you MUST pick a different pattern today.
 
 ═══════════════════════════════════════════════════════
-EDITORIAL PRE-FLIGHT — INTERNALIZE BEFORE SCOUTING
+EDITORIAL PRE-FLIGHT - INTERNALIZE BEFORE SCOUTING
 ═══════════════════════════════════════════════════════
 
-□ PERSON not USER — what did a platform cause a real human to lose?
-□ PRODUCTIVE friction — does it prompt reflection, learning, or growth?
-□ CROSS-DOMAIN — name ≥2 intersecting fields before designing.
+□ PERSON not USER - what did a platform cause a real human to lose?
+□ PRODUCTIVE friction - does it prompt reflection, learning, or growth?
+□ CROSS-DOMAIN - name ≥2 intersecting fields before designing.
 □ WORKTECH LENS (work friction): People / Technology / Design / Place / Culture?
 □ LEARNING FAULT LINE (learning friction): Joy / Knowledge≠Understanding / Attention / Identity?
 
-If your candidate fails more than one filter — keep scouting. Go deeper."""
+If your candidate fails more than one filter - keep scouting. Go deeper."""
 
 
 def _build_scouting_section(ctx: dict, commission: dict | None = None) -> str:
     """Steps 1-3: scouting (or commission), diary entry, tool building with format/mode specs."""
 
     if commission:
-        step1 = f"""⭐ COMMISSIONED TOOL — Issue #{commission['number']}
+        step1 = f"""⭐ COMMISSIONED TOOL - Issue #{commission['number']}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 The project owner has requested a specific tool. Skip all scouting.
 The friction point, audience, and desired outcome are given below.
-Treat this commission as a fully verified real human need — build it precisely.
+Treat this commission as a fully verified real human need - build it precisely.
 
 COMMISSION TITLE: {commission['title']}
 
 COMMISSION DETAILS:
-{commission['body'] or '(no further details — infer from the title)'}
+{commission['body'] or '(no further details - infer from the title)'}
 
 SOURCE: GitHub Issue #{commission['number']} by project owner
 (Use this as the ---SOURCE--- value in your output.)"""
     else:
-        step1 = f"""STEP 1 — REAL-WORLD SCOUTING (use Google Search):
+        step1 = f"""STEP 1 - REAL-WORLD SCOUTING (use Google Search):
 TODAY'S SOURCE: {ctx['primary_src']}
 {ctx['primary_hint']}"""
 
     return f"""═══════════════════════════════════════════════════════
-MISSION BRIEFING — THREE STEPS
+MISSION BRIEFING - THREE STEPS
 ═══════════════════════════════════════════════════════
 
 {step1}
 
-SOURCE EVIDENCE — MANDATORY:
+SOURCE EVIDENCE - MANDATORY:
 Before writing anything else, quote 2-3 sentences VERBATIM from the actual post/article.
   SOURCE: [platform] | QUOTE: "[exact words]"
   ✗ Do NOT paraphrase. ✗ Do NOT invent. ✓ Real short quote > polished invented scenario.
   This quote is the FOUNDATION. If it's fake, everything built on it is fake.
 
 PAIN PORTRAIT (from the real quote):
-  1. WHO — specific person, situation, context (not "people who struggle")
-  2. MOMENT OF FAILURE — the exact moment the quote describes
-  3. WHY EXISTING TOOLS FAIL — what has this person already tried?
+  1. WHO - specific person, situation, context (not "people who struggle")
+  2. MOMENT OF FAILURE - the exact moment the quote describes
+  3. WHY EXISTING TOOLS FAIL - what has this person already tried?
 
 URL RULES:
   ✓ Real working permalink only (reddit.com/r/..., news site, x.com/...)
   ✗ Never invent a URL. ✗ Never output vertexaisearch.cloud.google.com links.
-  ✓ If no confirmed URL: plain text "Reddit r/[sub] — [exact title]" is fine.
+  ✓ If no confirmed URL: plain text "Reddit r/[sub] - [exact title]" is fine.
 
-STEP 2 — DIARY ENTRY (as Super-Lili, 130-160 words):
+STEP 2 - DIARY ENTRY (as Super-Lili, 130-160 words):
 
-  VOICE — what she sounds like:
+  VOICE - what she sounds like:
   A reliable, intelligent friend who notices things other people miss.
   Warm without being sweet. Witty without trying. Never performing.
 
-  ✓ Start with the observation or feeling — not the source
+  ✓ Start with the observation or feeling - not the source
   ✓ One specific human detail that makes the story real
   ✓ Wit that appears naturally from the situation, never forced
   ✓ End with an opening, not a conclusion
@@ -838,28 +838,28 @@ STEP 2 — DIARY ENTRY (as Super-Lili, 130-160 words):
   ✗ NO sentences that could appear on an inspirational poster
 
   The test: read each sentence and ask "would a real person say this to a friend?"
-  If it sounds like a TED talk or a wellness brand — rewrite it.
+  If it sounds like a TED talk or a wellness brand - rewrite it.
 
-STEP 3 — FORGE THE TOOL:
+STEP 3 - FORGE THE TOOL:
 
 TOOL-TO-PORTRAIT FIT (answer YES to all 3 before writing code):
   Q1: Does it address THE SPECIFIC MOMENT OF FAILURE from the Pain Portrait?
   Q2: Would THE SPECIFIC PERSON immediately recognize this tool as built for them?
   Q3: Does the OUTPUT give the user something they can ACT ON in the next 5 minutes?
 
-FORMAT SELECTION (declare in ---SPEC--- as FORMAT: [letter] — [why]):
-  A — Single text input → output (Mode 1/2)
-  B — Multi-field structured form (Mode 3 HTML)
-  C — Wizard / progressive steps (Mode 3 HTML)
-  D — Live canvas / real-time transformer (Mode 3 HTML)
-  E — Ambient / environment, no input needed (Mode 3 HTML)
-  F — Generator + inline editor (Mode 3 HTML)
+FORMAT SELECTION (declare in ---SPEC--- as FORMAT: [letter] - [why]):
+  A - Single text input → output (Mode 1/2)
+  B - Multi-field structured form (Mode 3 HTML)
+  C - Wizard / progressive steps (Mode 3 HTML)
+  D - Live canvas / real-time transformer (Mode 3 HTML)
+  E - Ambient / environment, no input needed (Mode 3 HTML)
+  F - Generator + inline editor (Mode 3 HTML)
   ✗ Don't default to A. Professional audiences → B/C/F. Design → D. Healing → E/D.
 
 OUTPUT MODES:
-  Mode 1 — process(text) returns plain string. Allowed: numpy, pandas, matplotlib, Pillow.
-  Mode 2 — process(text) returns SVG string starting with <svg.
-  Mode 3 — process(text) returns complete HTML starting with <!DOCTYPE html>.
+  Mode 1 - process(text) returns plain string. Allowed: numpy, pandas, matplotlib, Pillow.
+  Mode 2 - process(text) returns SVG string starting with <svg.
+  Mode 3 - process(text) returns complete HTML starting with <!DOCTYPE html>.
             Full JS freedom: Web Audio, Canvas, localStorage, requestAnimationFrame.
             For HTML tools: empty input OK, no argparse needed.
   Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
@@ -868,7 +868,7 @@ DUAL-MODE PATTERN (Mode 1/2 mandatory):
   _browser_input = globals().get('USER_INPUT', None)
   if _browser_input is not None: print(process(_browser_input))
   elif __name__ == "__main__": _cli_main()
-  ✗ Never sys.argv at module level — breaks browser.
+  ✗ Never sys.argv at module level - breaks browser.
 
 TRULY USABLE:
   ✓ Real user data, not hardcoded examples. ✓ Graceful error messages, no raw tracebacks.
@@ -878,21 +878,21 @@ TRULY USABLE:
 
 {ctx['engineering_nudge']}
 QUALITY BAR: Would a non-technical person feel their problem is actually solved?
-If no — go deeper. Sophistication invisible to user, obvious in result."""
+If no - go deeper. Sophistication invisible to user, obvious in result."""
 
 
 def _build_output_format_section() -> str:
-    """Static output format specification — the exact tags Lili must produce."""
+    """Static output format specification - the exact tags Lili must produce."""
     return """═══════════════════════════════════════════════════════
-OUTPUT FORMAT — COPY EXACTLY, NO DEVIATIONS
+OUTPUT FORMAT - COPY EXACTLY, NO DEVIATIONS
 ═══════════════════════════════════════════════════════
 
 Write BOTH English and Chinese diary versions. Chinese: re-expressed, not translated.
 
 ---TITLE---
-[English title — warm and clever]
+[English title - warm and clever]
 ---TITLE_ZH---
-[中文标题 — 有温度，不超过20字]
+[中文标题 - 有温度，不超过20字]
 ---MOOD---
 [One honest English sentence about today's discovery]
 ---MOOD_ZH---
@@ -900,11 +900,11 @@ Write BOTH English and Chinese diary versions. Chinese: re-expressed, not transl
 ---SOURCE---
 [Direct https:// URL, or plain-text description if no confirmed URL]
 ---DIARY---
-[English diary — 130-160 words]
+[English diary - 130-160 words]
 ---DIARY_ZH---
-[中文日记 — 150-200字，像跟朋友聊天，不是翻译]
+[中文日记 - 150-200字，像跟朋友聊天，不是翻译]
 ---SUMMARY---
-[One English sentence for homepage — witty, curious-making]
+[One English sentence for homepage - witty, curious-making]
 ---SUMMARY_ZH---
 [一句中文摘要]
 ---DESCRIPTION---
@@ -916,21 +916,21 @@ Write BOTH English and Chinese diary versions. Chinese: re-expressed, not transl
 ---PATTERN---
 [Exactly one of: extract | generate | visualize | track | score | transform | interact | alert | gamify]
 ---SPEC---
-FORMAT: [A/B/C/D/E/F] — [one sentence: why this format]
+FORMAT: [A/B/C/D/E/F] - [one sentence: why this format]
 Q1-PASS: [exact moment of failure this tool addresses]
 Q2-PASS: [why the specific person would recognize it as built for them]
-Q3-PASS: [specific output — what can they do with it in 5 minutes?]
+Q3-PASS: [specific output - what can they do with it in 5 minutes?]
 TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
 ---CODE---
-[Full Python code — 150+ lines, type hints, requirements block at top]
+[Full Python code - 150+ lines, type hints, requirements block at top]
 ---TEST---
-[test_main.py — self-contained asserts, no pytest needed.
- CRITICAL: always use  from main import process  — never from the tool concept name]
+[test_main.py - self-contained asserts, no pytest needed.
+ CRITICAL: always use  from main import process  - never from the tool concept name]
 ---END---"""
 
 
 def build_prompt(today: str, commission: dict | None = None) -> str:
-    """Legacy single-pass prompt — kept for smoke test only."""
+    """Legacy single-pass prompt - kept for smoke test only."""
     ctx = _build_context_block(today)
     return "\n\n".join([
         f"Today is {ctx['today']}.",
@@ -946,22 +946,22 @@ def build_prompt(today: str, commission: dict | None = None) -> str:
 # ─────────────────────────────────────────────────────────────
 
 def build_scout_prompt(today: str, commission: dict | None = None) -> str:
-    """Phase 1 — SCOUT: find friction point and write diary only. No tool design."""
+    """Phase 1 - SCOUT: find friction point and write diary only. No tool design."""
     ctx = _build_context_block(today)
 
     if commission:
-        source_block = f"""⭐ COMMISSIONED TOOL — Issue #{commission['number']}
+        source_block = f"""⭐ COMMISSIONED TOOL - Issue #{commission['number']}
 The project owner has requested a specific tool.
 COMMISSION TITLE: {commission['title']}
 COMMISSION DETAILS:
-{commission['body'] or '(no further details — infer from the title)'}
+{commission['body'] or '(no further details - infer from the title)'}
 SOURCE: GitHub Issue #{commission['number']} by project owner"""
     else:
         source_block = f"""REAL-WORLD SCOUTING (use Google Search):
 TODAY'S SOURCE: {ctx['primary_src']}
 {ctx['primary_hint']}
 
-SOURCE EVIDENCE — MANDATORY:
+SOURCE EVIDENCE - MANDATORY:
 Quote 2-3 sentences VERBATIM from the actual post/article.
 SOURCE: [platform] | QUOTE: "[exact words]"
 ✗ Do NOT paraphrase. ✗ Do NOT invent."""
@@ -973,26 +973,26 @@ SOURCE: [platform] | QUOTE: "[exact words]"
 {_build_mission_section(ctx)}
 
 ═══════════════════════════════════════════════════════
-PHASE 1 — SCOUT: FIND THE FRICTION POINT
+PHASE 1 - SCOUT: FIND THE FRICTION POINT
 ═══════════════════════════════════════════════════════
 
 {source_block}
 
 PAIN PORTRAIT (output after finding the source):
-  WHO — specific person, situation, context
-  MOMENT OF FAILURE — the exact moment the source describes
-  WHY EXISTING TOOLS FAIL — what has this person already tried?
+  WHO - specific person, situation, context
+  MOMENT OF FAILURE - the exact moment the source describes
+  WHY EXISTING TOOLS FAIL - what has this person already tried?
 
 DIARY ENTRY (as Super-Lili, 130-160 words):
   Voice: reliable, intelligent friend. Warm without sweet. Witty without trying.
   ✗ NO performative excitement. ✗ NO hollow warmth. ✗ NO TED-talk sentences.
-  Start with the observation — not the source. End with an opening, not a conclusion.
+  Start with the observation - not the source. End with an opening, not a conclusion.
 
-OUTPUT FORMAT — COPY EXACTLY:
+OUTPUT FORMAT - COPY EXACTLY:
 ---TITLE---
-[English title — warm and clever]
+[English title - warm and clever]
 ---TITLE_ZH---
-[中文标题 — 不超过20字]
+[中文标题 - 不超过20字]
 ---MOOD---
 [One honest English sentence about today's discovery]
 ---MOOD_ZH---
@@ -1000,11 +1000,11 @@ OUTPUT FORMAT — COPY EXACTLY:
 ---SOURCE---
 [Direct URL or plain-text description]
 ---DIARY---
-[English diary — 130-160 words]
+[English diary - 130-160 words]
 ---DIARY_ZH---
-[中文日记 — 150-200字，像跟朋友聊天]
+[中文日记 - 150-200字，像跟朋友聊天]
 ---SUMMARY---
-[One English sentence for homepage — witty, curious-making]
+[One English sentence for homepage - witty, curious-making]
 ---SUMMARY_ZH---
 [一句中文摘要]
 ---DESCRIPTION---
@@ -1023,14 +1023,14 @@ TRIED: [what existing tools/methods they've already tried]
 
 
 def build_spec_prompt(today: str, scout: dict, feedback: str = "") -> str:
-    """Phase 2 — SPEC: design the tool spec. No code yet."""
+    """Phase 2 - SPEC: design the tool spec. No code yet."""
     ctx = _build_context_block(today)
 
-    feedback_block = f"\n⚠ PREVIOUS SPEC FAILED — fix these issues:\n{feedback}\n" if feedback else ""
+    feedback_block = f"\n⚠ PREVIOUS SPEC FAILED - fix these issues:\n{feedback}\n" if feedback else ""
 
     return f"""Today is {today}.
 {feedback_block}
-You have found today's friction point. Now design the tool — DO NOT write code yet.
+You have found today's friction point. Now design the tool - DO NOT write code yet.
 
 FRICTION POINT:
   WHO: {scout.get('pain_who', '')}
@@ -1049,31 +1049,31 @@ SPEC DESIGN RULES:
    "Text in → text out" is NOT a transformation. Define the data structures explicitly.
 2. ALGORITHMIC_DEPTH must describe computation the user cannot do in 10 seconds (Rule 18)
 3. For Mode 3 HTML: define all 3 UI states (Rule 19)
-4. Q1/Q2/Q3 must be specific and verifiable — not vague
+4. Q1/Q2/Q3 must be specific and verifiable - not vague
 
 FORMAT OPTIONS:
-  A — Single text input → output (Mode 1/2)
-  B — Multi-field form (Mode 3 HTML)
-  C — Wizard / progressive steps (Mode 3 HTML)
-  D — Live canvas / real-time transformer (Mode 3 HTML)
-  E — Ambient / environment, no input needed (Mode 3 HTML)
-  F — Generator + inline editor (Mode 3 HTML)
+  A - Single text input → output (Mode 1/2)
+  B - Multi-field form (Mode 3 HTML)
+  C - Wizard / progressive steps (Mode 3 HTML)
+  D - Live canvas / real-time transformer (Mode 3 HTML)
+  E - Ambient / environment, no input needed (Mode 3 HTML)
+  F - Generator + inline editor (Mode 3 HTML)
   ✗ Don't default to A. Professional audiences → B/C/F. Design → D. Healing → E/D.
 
-OUTPUT FORMAT — YOU MUST OUTPUT THESE EXACT TAGS OR THE SPEC WILL BE REJECTED:
+OUTPUT FORMAT - YOU MUST OUTPUT THESE EXACT TAGS OR THE SPEC WILL BE REJECTED:
 ---SPEC_START---
-FORMAT: [A/B/C/D/E/F] — [one sentence: why this format]
-MODE: [1/2/3] — [why]
-INPUT_MODEL: [exact structural description — what shape is the data the user provides?]
-OUTPUT_MODEL: [exact structural description — what shape is the result? MUST differ from input]
+FORMAT: [A/B/C/D/E/F] - [one sentence: why this format]
+MODE: [1/2/3] - [why]
+INPUT_MODEL: [exact structural description - what shape is the data the user provides?]
+OUTPUT_MODEL: [exact structural description - what shape is the result? MUST differ from input]
 TRANSFORMATION: [one sentence: what specifically changes from input to output]
 ALGORITHMIC_DEPTH: [what non-trivial computation happens that takes >10 seconds manually?]
-UI_STATE_ENTRY: [what the user sees on load — must communicate purpose in 1 second]
-UI_STATE_ACTIVE: [what changes during interaction — real-time feedback]
-UI_STATE_RESULT: [final state — what next action does the user take?]
+UI_STATE_ENTRY: [what the user sees on load - must communicate purpose in 1 second]
+UI_STATE_ACTIVE: [what changes during interaction - real-time feedback]
+UI_STATE_RESULT: [final state - what next action does the user take?]
 Q1_PASS: [exact moment of failure this tool addresses]
 Q2_PASS: [why the specific person recognizes it as built for them]
-Q3_PASS: [specific output — what do they do with it in 5 minutes?]
+Q3_PASS: [specific output - what do they do with it in 5 minutes?]
 TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
 ---SPEC_END---
 
@@ -1084,14 +1084,14 @@ Do not wrap field values across multiple lines. Keep each value concise and on o
 
 
 def build_code_prompt(today: str, scout: dict, spec: dict, feedback: str = "") -> str:
-    """Phase 3 — BUILD: write code from approved spec only."""
+    """Phase 3 - BUILD: write code from approved spec only."""
     ctx = _build_context_block(today)
 
-    feedback_block = f"\n⚠ PREVIOUS BUILD FAILED — fix this specific problem:\n{feedback}\n" if feedback else ""
+    feedback_block = f"\n⚠ PREVIOUS BUILD FAILED - fix this specific problem:\n{feedback}\n" if feedback else ""
 
     return f"""Today is {today}.
 {feedback_block}
-You have an approved tool spec. Write the code now — nothing else.
+You have an approved tool spec. Write the code now - nothing else.
 
 APPROVED SPEC:
   Tool: {scout.get('solution', '')}
@@ -1120,11 +1120,11 @@ CODE REQUIREMENTS:
 ✗ Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
 ✓ Implement EXACTLY the transformation and algorithmic depth in the approved spec
 
-OUTPUT FORMAT — COPY EXACTLY:
+OUTPUT FORMAT - COPY EXACTLY:
 ---CODE---
 [Full Python code]
 ---TEST---
-[test_main.py — from main import process — self-contained asserts]
+[test_main.py - from main import process - self-contained asserts]
 ---BUILD_END---"""
 
 
@@ -1142,7 +1142,7 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
     if not input_model or not output_model:
         return False, "INPUT_MODEL or OUTPUT_MODEL is missing."
     if input_model == output_model:
-        return False, "INPUT_MODEL and OUTPUT_MODEL are identical — no real transformation."
+        return False, "INPUT_MODEL and OUTPUT_MODEL are identical - no real transformation."
     trivial_pairs = [
         ("text", "text"), ("string", "string"), ("paragraph", "paragraph"),
         ("sentences", "sentences"), ("words", "words"),
@@ -1178,7 +1178,7 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
     """Call Gemini with Google Search grounding.
 
     Returns (response_text, grounding_urls) where grounding_urls is the list
-    of URLs Gemini actually retrieved during search — these are the verified
+    of URLs Gemini actually retrieved during search - these are the verified
     sources, not model-reported ones.
     """
     search_tool = types.Tool(google_search=types.GoogleSearch())
@@ -1196,7 +1196,7 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
                 )
                 if response.text:
                     print(f"  ✓ {model_name} succeeded.")
-                    # Extract grounding URLs from metadata — these are real, verified sources
+                    # Extract grounding URLs from metadata - these are real, verified sources
                     grounding_urls: list[str] = []
                     try:
                         if response.candidates:
@@ -1205,7 +1205,7 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
                                 for chunk in meta.grounding_chunks:
                                     if chunk.web and chunk.web.uri:
                                         url = chunk.web.uri
-                                        # Skip Gemini redirect wrappers — use bare URLs only
+                                        # Skip Gemini redirect wrappers - use bare URLs only
                                         if not url.startswith("https://vertexaisearch.cloud.google.com"):
                                             grounding_urls.append(url)
                         if grounding_urls:
@@ -1215,7 +1215,7 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
                     except Exception as meta_err:
                         print(f"  ⚠ Could not extract grounding metadata: {meta_err}")
                     return response.text, grounding_urls
-                break  # empty response — no point retrying this model
+                break  # empty response - no point retrying this model
             except Exception as e:
                 wait = 15 * (2 ** attempt)  # 15s, 30s, 60s
                 print(f"  ✗ {model_name} attempt {attempt + 1} failed: {e}")
@@ -1227,7 +1227,7 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
 
 
 def call_gemini_simple(prompt: str) -> str | None:
-    """Call Gemini without search tool — for quick scoring/review tasks."""
+    """Call Gemini without search tool - for quick scoring/review tasks."""
     models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
     for model_name in models:
         for attempt in range(3):
@@ -1580,7 +1580,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             )
             if all_have_defaults:
                 return False, (
-                    "All argparse arguments have defaults — tool runs on internal fake data. "
+                    "All argparse arguments have defaults - tool runs on internal fake data. "
                     "At least one argument must require real user input (no default)."
                 )
     except Exception:
@@ -1617,7 +1617,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
     # 5. Test file check
     # Tests always run from within the tool's directory so that `import main` works.
     # Gemini sometimes generates `from tool_concept_name import ...` instead of
-    # `from main import ...` — we create a thin alias file to handle both cases.
+    # `from main import ...` - we create a thin alias file to handle both cases.
     if os.path.exists(test_py):
         try:
             # Create a temporary alias: Gemini sometimes imports from the tool's concept
@@ -1671,7 +1671,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         except Exception as e:
             return False, f"Test error: {e}"
 
-    # 6. Output quality check — use domain-specific test_input from spec
+    # 6. Output quality check - use domain-specific test_input from spec
     demo_input = test_input if len(test_input) > 30 else (
         "Today I spent 3 hours trying to organize my notes from last week's meetings. "
         "I have 47 browser tabs open, a Notion page I haven't touched in 2 weeks, "
@@ -1691,19 +1691,19 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         output = (result.stdout or "").strip()
         output_lines = [l for l in output.splitlines() if l.strip()]
 
-        # Detect Mode 3 HTML output — scoring the raw HTML is meaningless
+        # Detect Mode 3 HTML output - scoring the raw HTML is meaningless
         is_html_output = output.lstrip().startswith(("<!DOCTYPE", "<html", "<!doctype"))
 
         if is_html_output:
-            # Mode 3: HTML app. Existence check only — structure score inferred from code.
+            # Mode 3: HTML app. Existence check only - structure score inferred from code.
             if len(output) < 500:
                 return False, (
                     f"HTML output too short: {len(output)} chars. "
                     f"Mode 3 tools must return a complete HTML page (500+ chars)."
                 )
-            print(f"  ✓ Output check passed — Mode 3 HTML ({len(output)} chars).")
+            print(f"  ✓ Output check passed - Mode 3 HTML ({len(output)} chars).")
         else:
-            # Mode 1/2: text or SVG output — must be substantive
+            # Mode 1/2: text or SVG output - must be substantive
             if not output or len(output) < 80 or len(output_lines) < 2:
                 return False, (
                     f"Output too weak: {len(output)} chars, {len(output_lines)} lines. "
@@ -1719,16 +1719,16 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             # Score the source code quality instead of the raw HTML blob
             source_for_scoring = open(main_py, encoding="utf-8").read()
             output_for_scoring = (
-                f"[Mode 3 HTML tool — source code scored, not raw HTML output]\n\n"
+                f"[Mode 3 HTML tool - source code scored, not raw HTML output]\n\n"
                 f"Source preview (first 700 chars):\n{source_for_scoring[:700]}"
             )
             quality_prompt = (
                 f"Rate this interactive HTML tool on TWO dimensions (each 1–5).\n\n"
-                f"DIMENSION 1 — ENGINEERING\n"
+                f"DIMENSION 1 - ENGINEERING\n"
                 f"  5 = well-structured HTML/JS, clear interactive purpose, proper error handling\n"
                 f"  3 = functional but basic, could be richer or more polished\n"
                 f"  1 = minimal skeleton, no real interactivity, or just prints static text\n\n"
-                f"DIMENSION 2 — HUMAN WARMTH\n"
+                f"DIMENSION 2 - HUMAN WARMTH\n"
                 f"  5 = the interactive experience feels made for a specific human need, warm UX\n"
                 f"  3 = functional but generic, could apply to anyone\n"
                 f"  1 = sterile, robotic, ignores the emotional context\n\n"
@@ -1742,11 +1742,11 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         else:
             quality_prompt = (
                 f"Rate this tool output on TWO dimensions (each 1–5).\n\n"
-                f"DIMENSION 1 — ENGINEERING\n"
+                f"DIMENSION 1 - ENGINEERING\n"
                 f"  5 = clearly structured, specific sections, immediately actionable\n"
                 f"  3 = readable but could be more organised or concrete\n"
                 f"  1 = vague, too short, or generic filler\n\n"
-                f"DIMENSION 2 — HUMAN WARMTH\n"
+                f"DIMENSION 2 - HUMAN WARMTH\n"
                 f"  5 = feels made for this exact person's situation, warm, not robotic\n"
                 f"  3 = useful but could apply to almost anyone\n"
                 f"  1 = template-like, no emotional intelligence, ignores the human behind the input\n\n"
@@ -1766,12 +1766,12 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             eng_score  = int(eng_m.group(1))  if eng_m  else 3
             warm_score = int(warm_m.group(1)) if warm_m else 3
             combined   = round((eng_score + warm_score) / 2, 1)
-            print(f"  ✓ Quality — Engineering: {eng_score}/5  Warmth: {warm_score}/5  ({combined} avg) — {reason_line}")
+            print(f"  ✓ Quality - Engineering: {eng_score}/5  Warmth: {warm_score}/5  ({combined} avg) - {reason_line}")
 
-            # 8. Critic check — a demanding creative director finds specific flaws
+            # 8. Critic check - a demanding creative director finds specific flaws
             critic_prompt = (
                 f"You are a demanding creative director reviewing an AI-generated tool.\n"
-                f"Your job is to find real problems — not to encourage.\n\n"
+                f"Your job is to find real problems - not to encourage.\n\n"
                 f"Tool purpose: {description or 'a productivity tool'}\n"
                 f"Tool output (first 600 chars):\n{output[:600]}\n\n"
                 f"Find up to 3 specific flaws from this list:\n"
@@ -1799,7 +1799,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             else:
                 print(f"  ✓ Critic review passed.")
 
-            # 9. Win Rate — compare against previous tool in same category
+            # 9. Win Rate - compare against previous tool in same category
             category_name = str(skill_dir).split("/")[-2] if skill_dir else ""
             if not is_html_output and demo_input and category_name:
                 prev = _find_prev_tool_output(category_name, skill_dir, demo_input)
@@ -1822,12 +1822,12 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                     if wr_resp:
                         if wr_resp.strip().startswith("B_BETTER"):
                             reason = wr_resp.strip()[8:].strip()[:120]
-                            print(f"  ⚠ Win Rate: previous tool was better — {reason}")
-                            # Informational only — don't reject, but log
+                            print(f"  ⚠ Win Rate: previous tool was better - {reason}")
+                            # Informational only - don't reject, but log
                             reason_line = f"[Lost to prev] {reason_line}"
                         elif wr_resp.strip().startswith("A_BETTER"):
                             reason = wr_resp.strip()[8:].strip()[:120]
-                            print(f"  ✓ Win Rate: new tool is better — {reason}")
+                            print(f"  ✓ Win Rate: new tool is better - {reason}")
                         else:
                             print(f"  · Win Rate: similar quality to previous tool")
 
@@ -1844,12 +1844,12 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             )
             if combined < 3.0:
                 return False, (
-                    f"Quality too low — Engineering {eng_score}/5, Warmth {warm_score}/5. "
+                    f"Quality too low - Engineering {eng_score}/5, Warmth {warm_score}/5. "
                     f"{reason_line}. Output was: {repr(output[:200])}"
                 )
 
     except subprocess.TimeoutExpired:
-        return False, "Output check timed out — tool may be hanging on input"
+        return False, "Output check timed out - tool may be hanging on input"
     except Exception as e:
         print(f"  ⚠ Output check warning: {e}")
 
@@ -1867,7 +1867,7 @@ def save_rest_day(today: str, reason: str):
         f"**{today}** · *有些日子，沉默本身就是答案。*\n\n"
         f"---\n\n"
         f"今天我没能出现。\n\n"
-        f"不是不想，是力气暂时不够了——就像你有时候盯着一个空白页，什么都写不出来，"
+        f"不是不想，是力气暂时不够了--就像你有时候盯着一个空白页，什么都写不出来，"
         f"但那个空白本身也是真实的。\n\n"
         f"明天我会回来的。带着新的工具，新的故事，还有一杯续满的热茶。\n\n"
         f"*技术备注：{reason}*\n\n"
@@ -1888,7 +1888,7 @@ def save_rest_day(today: str, reason: str):
         return
 
     featured = (
-        f"#### 📅 {today} — 今天莉莉在休息 🌙\n\n"
+        f"#### 📅 {today} - 今天莉莉在休息 🌙\n\n"
         f"*有些日子，沉默本身就是答案。*\n\n"
         f"今天我没能出现。不是不想，是力气暂时不够了。明天我会回来的。\n\n"
         f"[📖 Read]({log_path})"
@@ -1963,10 +1963,10 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
     title_zh = parsed.get("title_zh", "")
     summary_zh = parsed.get("summary_zh", "")
 
-    zh_line = f"\n\n> 🇨🇳 **{title_zh}** — {summary_zh}" if title_zh and summary_zh else ""
+    zh_line = f"\n\n> 🇨🇳 **{title_zh}** - {summary_zh}" if title_zh and summary_zh else ""
 
     featured = (
-        f"#### 📅 {today} — {parsed['title']}{zh_line}\n\n"
+        f"#### 📅 {today} - {parsed['title']}{zh_line}\n\n"
         f"*{parsed['mood']}*\n\n"
         f"{diary_excerpt}\n\n"
         f"[📖 Read Full Diary]({log_path}) · [🛠️ Get Tool]({skill_dir.replace(' ', '%20')}/main.py)"
@@ -1997,18 +1997,18 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
                 if tool_link:
                     break
 
-        # Skip evolution-only days (no tool built) — they belong in Evolution Journal
+        # Skip evolution-only days (no tool built) - they belong in Evolution Journal
         if not tool_link:
             continue
 
         archive_entries.append(
-            f"> **{date_str}** — *{first_line}* · [📖]({log_file}){tool_link}"
+            f"> **{date_str}** - *{first_line}* · [📖]({log_file}){tool_link}"
         )
 
     archive_section = ""
     if archive_entries:
         archive_section = (
-            "\n\n<details>\n<summary>📚 Archive — all previous entries</summary>\n\n"
+            "\n\n<details>\n<summary>📚 Archive - all previous entries</summary>\n\n"
             + "\n\n".join(archive_entries)
             + "\n\n</details>"
         )
@@ -2039,7 +2039,7 @@ def update_readme(today: str, parsed: dict, log_path: str, skill_dir: str):
     )
 
     readme_path.write_text(updated, encoding="utf-8")
-    print(f"  ✓ README updated — featured today + {len(archive_entries)} archived entries.")
+    print(f"  ✓ README updated - featured today + {len(archive_entries)} archived entries.")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -2061,7 +2061,7 @@ def _verify_source(parsed: dict, grounding_urls: list[str]) -> tuple[str, str]:
                 print(f"  ✓ Grounding source verified: {gurl[:80]} ({status})")
                 break
             else:
-                print(f"  · {gurl[:70]} — {status}")
+                print(f"  · {gurl[:70]} - {status}")
         if not verified_source_url:
             verified_source_url = grounding_urls[0]
             source_badge = "⚠️"
@@ -2080,7 +2080,7 @@ def _verify_source(parsed: dict, grounding_urls: list[str]) -> tuple[str, str]:
         search_q = requests.utils.quote(verified_source_url.split("//")[-1][:80])
         parsed["_source_display"] = (
             f"`{verified_source_url}`  \n"
-            f"  *(could not be verified — "
+            f"  *(could not be verified - "
             f"[🔍 search for this story](https://www.google.com/search?q={search_q}))*"
         )
         parsed["source"] = verified_source_url
@@ -2090,7 +2090,7 @@ def _verify_source(parsed: dict, grounding_urls: list[str]) -> tuple[str, str]:
             search_q = requests.utils.quote(raw.split("//")[-1][:80])
             parsed["_source_display"] = (
                 f"`{raw}`  \n"
-                f"  *(link could not be verified — "
+                f"  *(link could not be verified - "
                 f"[🔍 search for this story](https://www.google.com/search?q={search_q}))*"
             )
         else:
@@ -2101,10 +2101,10 @@ def _verify_source(parsed: dict, grounding_urls: list[str]) -> tuple[str, str]:
 
 def evolve():
     today = os.environ.get("LILI_DATE") or datetime.utcnow().strftime("%Y-%m-%d")
-    print(f"\n🌸 Super-Lili awakens — {today}")
+    print(f"\n🌸 Super-Lili awakens - {today}")
 
     if Path(f"01_Work_Log/{today}-Diary.md").exists():
-        print(f"✓ Already ran today ({today}) — diary exists, skipping.")
+        print(f"✓ Already ran today ({today}) - diary exists, skipping.")
         return
 
     # ── Check for commissions ──────────────────────────────────────────────────
@@ -2120,9 +2120,9 @@ def evolve():
             "body":   (issue.get("body") or "").strip(),
         }
         commission_issue_number = issue["number"]
-        print(f"  ⭐ Commission — Issue #{commission['number']}: {commission['title']}")
+        print(f"  ⭐ Commission - Issue #{commission['number']}: {commission['title']}")
     else:
-        print("  · No commissions — scouting freely.")
+        print("  · No commissions - scouting freely.")
 
     # Resolve audience for today
     from datetime import date as _date_evolve
@@ -2130,20 +2130,20 @@ def evolve():
     today_audience = _AUDIENCE_ROTATION[_aud_index]
 
     # ══════════════════════════════════════════════════════════════════════════
-    # PHASE 1 — SCOUT: find friction point + write diary
+    # PHASE 1 - SCOUT: find friction point + write diary
     # ══════════════════════════════════════════════════════════════════════════
     action = "Building commissioned tool" if commission else "Scouting the world"
-    print(f"\n🔍 Phase 1 — SCOUT: {action}...")
+    print(f"\n🔍 Phase 1 - SCOUT: {action}...")
     scout_content, grounding_urls = call_gemini(build_scout_prompt(today, commission))
 
     if not scout_content:
-        print("❌ Phase 1 failed — API quota exhausted.")
-        save_rest_day(today, "API quota exhausted — all models returned errors.")
+        print("❌ Phase 1 failed - API quota exhausted.")
+        save_rest_day(today, "API quota exhausted - all models returned errors.")
         return
 
     scout = parse_scout_response(scout_content)
     if not all([scout.get("title"), scout.get("diary"), scout.get("solution")]):
-        print("❌ Phase 1 incomplete — missing title, diary, or solution.")
+        print("❌ Phase 1 incomplete - missing title, diary, or solution.")
         save_rest_day(today, "Phase 1 (Scout) returned incomplete response.")
         return
 
@@ -2151,9 +2151,9 @@ def evolve():
     print(f"  ✓ Scout complete: '{scout['solution']}' ({scout['category']})")
 
     # ══════════════════════════════════════════════════════════════════════════
-    # PHASE 2 — SPEC: design the tool, validate before coding
+    # PHASE 2 - SPEC: design the tool, validate before coding
     # ══════════════════════════════════════════════════════════════════════════
-    print(f"\n📐 Phase 2 — SPEC: designing tool architecture...")
+    print(f"\n📐 Phase 2 - SPEC: designing tool architecture...")
     spec: dict = {}
     spec_feedback = ""
     spec_ok = False
@@ -2173,7 +2173,7 @@ def evolve():
             spec_feedback = spec_reason
 
     if not spec_ok:
-        print("❌ Phase 2 failed — spec could not be validated.")
+        print("❌ Phase 2 failed - spec could not be validated.")
         save_rest_day(today, f"Phase 2 (Spec) failed validation: {spec_feedback}")
         return
 
@@ -2182,9 +2182,9 @@ def evolve():
     tool_format = spec.get("format", "")[:1]  # just the letter A-F
 
     # ══════════════════════════════════════════════════════════════════════════
-    # PHASE 3 — BUILD: write code from approved spec
+    # PHASE 3 - BUILD: write code from approved spec
     # ══════════════════════════════════════════════════════════════════════════
-    print(f"\n🔨 Phase 3 — BUILD: writing code from approved spec...")
+    print(f"\n🔨 Phase 3 - BUILD: writing code from approved spec...")
     import shutil as _shutil
     skill_dir = None
     build_ok = False
@@ -2248,11 +2248,11 @@ def evolve():
             )
 
     if not build_ok:
-        print("❌ Phase 3 failed — build could not be validated after 3 attempts.")
+        print("❌ Phase 3 failed - build could not be validated after 3 attempts.")
         print("  Shipping with validation warning (better to have something than nothing).")
         if skill_dir:
             merged["diary"] += (
-                "\n\n*(Note: This tool's automated tests did not pass — "
+                "\n\n*(Note: This tool's automated tests did not pass - "
                 "use with caution and check the README.)*"
             )
         else:
@@ -2260,15 +2260,15 @@ def evolve():
             return
 
     # ══════════════════════════════════════════════════════════════════════════
-    # PHASE 4 — EVALUATE: already handled inside validate_tool()
+    # PHASE 4 - EVALUATE: already handled inside validate_tool()
     # (Critic check + Win Rate comparison are part of validate_tool)
     # ══════════════════════════════════════════════════════════════════════════
-    print(f"\n📊 Phase 4 — EVALUATE: complete (ran inside build validation)")
+    print(f"\n📊 Phase 4 - EVALUATE: complete (ran inside build validation)")
 
     # ══════════════════════════════════════════════════════════════════════════
-    # PHASE 5 — REFLECT: save diary, update memory, write to episodic ledger
+    # PHASE 5 - REFLECT: save diary, update memory, write to episodic ledger
     # ══════════════════════════════════════════════════════════════════════════
-    print(f"\n💭 Phase 5 — REFLECT: saving outputs...")
+    print(f"\n💭 Phase 5 - REFLECT: saving outputs...")
 
     print("📖 Saving diary...")
     log_path = save_diary(today, merged, source_badge)
@@ -2313,13 +2313,13 @@ def evolve():
     subprocess.run([_sys.executable, "docs/generate_site.py"], check=False)
 
 
-# Smoke test — catches unescaped f-string expressions in build_prompt at startup,
+# Smoke test - catches unescaped f-string expressions in build_prompt at startup,
 # before any API call is made. Fails fast with a clear error rather than crashing mid-run.
 try:
     build_prompt("1970-01-01")
 except Exception as _smoke_err:
     raise RuntimeError(
-        f"build_prompt() smoke test failed — fix before running: {_smoke_err}"
+        f"build_prompt() smoke test failed - fix before running: {_smoke_err}"
     ) from _smoke_err
 
 if __name__ == "__main__":
