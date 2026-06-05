@@ -1078,7 +1078,9 @@ TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
 ---SPEC_END---
 
 CRITICAL: Your response MUST start with ---SPEC_START--- and end with ---SPEC_END---.
-Do not add any text before ---SPEC_START--- or after ---SPEC_END---."""
+Do not add any text before ---SPEC_START--- or after ---SPEC_END---.
+IMPORTANT: Each field (FORMAT, MODE, INPUT_MODEL, etc.) must be on a SINGLE LINE.
+Do not wrap field values across multiple lines. Keep each value concise and on one line.
 
 
 def build_code_prompt(today: str, scout: dict, spec: dict, feedback: str = "") -> str:
@@ -1317,9 +1319,20 @@ def parse_spec_response(content: str) -> dict:
         raw = content
 
     def field(label):
-        for line in raw.splitlines():
+        lines = raw.splitlines()
+        for i, line in enumerate(lines):
             if line.strip().upper().startswith(label.upper() + ":"):
-                return line.split(":", 1)[1].strip()
+                value = line.split(":", 1)[1].strip()
+                # Collect continuation lines (indented or not starting a new KEY:)
+                for j in range(i + 1, min(i + 4, len(lines))):
+                    next_line = lines[j].strip()
+                    if not next_line:
+                        break
+                    # Stop if next line looks like a new field (ALL_CAPS_WORD:)
+                    if re.match(r'^[A-Z_]{3,}:', next_line):
+                        break
+                    value += " " + next_line
+                return value.strip()
         return ""
 
     return {
@@ -2180,12 +2193,15 @@ def evolve():
 
     for attempt in range(1, 4):
         print(f"  Attempt {attempt}/3...")
+        if attempt > 1:
+            print(f"  ⏳ Waiting 15s before retry...")
+            time.sleep(15)
         build_content = call_gemini_simple(
             build_code_prompt(today, scout, spec, build_feedback)
         )
         if not build_content:
             print("  ✗ Gemini returned nothing.")
-            break
+            continue
 
         build = parse_build_response(build_content)
         if not build.get("code"):
