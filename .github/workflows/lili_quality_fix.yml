@@ -1,0 +1,49 @@
+name: 🔧 Super-Lili Quality Fixer
+
+on:
+  workflow_run:
+    workflows: ["✨ Super-Lili Daily Adventure"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run quality fixer
+        id: fixer
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PYTHONPATH: src
+        run: python src/lili_quality_fixer.py
+
+      - name: Commit fix if applied
+        run: |
+          if [ -f ".quality_fix_applied" ]; then
+            REASON=$(cat .quality_fix_applied)
+            rm .quality_fix_applied
+            git config user.name "Super-Lili (Quality Fixer)"
+            git config user.email "lili-bot@users.noreply.github.com"
+            git add docs/tools/
+            git diff --cached --quiet || git commit -m "fix: Claude quality patch $(TZ='Asia/Shanghai' date +'%Y-%m-%d') -- $REASON"
+            git pull --rebase origin main
+            git push
+            echo "Quality fix committed and pushed."
+          else
+            echo "No fix needed today."
+          fi
