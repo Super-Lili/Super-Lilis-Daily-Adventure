@@ -710,11 +710,275 @@ a { color: inherit; text-decoration: none; }
 <script>
   (function() {
     const frame = document.getElementById('app-frame');
-    frame.srcdoc = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Feedback Synthesis Canvas</title>\n    <style>\n        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; background-color: #f0f2f5; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #333; }\n        .container { background-color: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); padding: 40px; text-align: center; max-width: 600px; width: 90%; animation: fadeIn 0.8s ease-out; }\n        h1 { color: #2c3e50; margin-bottom: 20px; font-size: 2em; }\n        p { color: #555; line-height: 1.6; margin-bottom: 30px; }\n        textarea { width: 100%; min-height: 180px; padding: 15px; border: 2px solid #dde1e6; border-radius: 8px; font-size: 1em; box-sizing: border-box; resize: vertical; margin-bottom: 20px; transition: border-color 0.3s ease; }\n        textarea:focus { border-color: #007bff; outline: none; }\n        button { background-color: #007bff; color: white; padding: 14px 28px; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease; }\n        button:hover { background-color: #0056b3; transform: translateY(-2px); }\n        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }\n        .animation-icon { position: absolute; opacity: 0; animation: floatAndFade 15s infinite ease-in-out; }\n        .icon1 { top: 10%; left: 5%; width: 50px; height: 50px; background-color: rgba(0, 123, 255, 0.1); border-radius: 50%; animation-delay: 0s; }\n        .icon2 { top: 30%; right: 10%; width: 60px; height: 60px; background-color: rgba(40, 167, 69, 0.1); border-radius: 50%; animation-delay: 3s; }\n        .icon3 { bottom: 20%; left: 15%; width: 40px; height: 40px; background-color: rgba(255, 193, 7, 0.1); border-radius: 50%; animation-delay: 6s; }\n        @keyframes floatAndFade {\n            0% { transform: translateY(0) rotate(0deg); opacity: 0; }\n            25% { transform: translateY(-20px) rotate(15deg); opacity: 0.5; }\n            50% { transform: translateY(0) rotate(0deg); opacity: 0.8; }\n            75% { transform: translateY(20px) rotate(-15deg); opacity: 0.5; }\n            100% { transform: translateY(0) rotate(0deg); opacity: 0; }\n        }\n    </style>\n</head>\n<body>\n    <div class=\"animation-icon icon1\"></div>\n    <div class=\"animation-icon icon2\"></div>\n    <div class=\"animation-icon icon3\"></div>\n    <div class=\"container\">\n        <h1>Feedback Synthesis Canvas</h1>\n        <p>\"Paste ALL your client feedback here: emails, Slack messages, PDF comments, call notes, everything.\"</p>\n        <textarea id=\"feedbackInput\" placeholder=\"e.g., 'Subject: Website V3 - Header needs to be lighter. John from sales wants the button blue.'\"></textarea>\n        <button onclick=\"alert('The 'Synthesize Feedback' action is handled by the tool backend, which then generates this interactive canvas. Please paste your feedback directly into the tool's main input area.');\">Synthesize Feedback</button>\n    </div>\n</body>\n</html>";
+    const appHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback Synthesis Canvas</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f8f6; color: #1a1a1a; min-height: 100vh; }
+
+/* ── Entry state ── */
+#entry-state { padding: 32px 28px; }
+.tool-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 6px; }
+.tool-subtitle { font-size: 0.8rem; color: #888; margin-bottom: 20px; line-height: 1.5; }
+textarea {
+  width: 100%; min-height: 200px; padding: 14px 16px;
+  border: 1.5px solid #ddd; border-radius: 6px;
+  font-family: inherit; font-size: 0.88rem; line-height: 1.7;
+  background: #fff; color: #1a1a1a; resize: vertical; outline: none;
+  transition: border-color 0.15s;
+}
+textarea:focus { border-color: #2ABBA8; }
+.example-hint { font-size: 0.73rem; color: #bbb; margin: 8px 0 16px; line-height: 1.5; }
+.btn-synthesize {
+  display: block; width: 100%; padding: 13px;
+  background: #1a1a1a; color: #fff; border: none; border-radius: 6px;
+  font-family: inherit; font-size: 0.8rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-synthesize:hover { background: #2ABBA8; }
+
+/* ── Result state ── */
+#result-state { display: none; padding: 24px 28px; }
+.result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.result-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #888; }
+.btn-reset { font-size: 0.72rem; font-weight: 600; color: #bbb; background: none; border: 1px solid #e0e0e0; border-radius: 4px; padding: 5px 12px; cursor: pointer; font-family: inherit; transition: color 0.15s, border-color 0.15s; }
+.btn-reset:hover { color: #1a1a1a; border-color: #aaa; }
+
+.stats-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.stat-chip { font-size: 0.72rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
+.stat-total { background: #f0f0f0; color: #555; }
+.stat-high { background: #fff0f0; color: #c0392b; }
+.stat-medium { background: #fff8e1; color: #b07d00; }
+.stat-low { background: #f0faf8; color: #1a8a7a; }
+.stat-done { background: #f5f5f5; color: #aaa; }
+
+.filter-tabs { display: flex; gap: 0; margin-bottom: 16px; border: 1.5px solid #e0e0e0; border-radius: 6px; overflow: hidden; }
+.filter-tab { flex: 1; padding: 7px 4px; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: #fff; border: none; border-right: 1px solid #e0e0e0; cursor: pointer; font-family: inherit; color: #aaa; transition: background 0.12s, color 0.12s; }
+.filter-tab:last-child { border-right: none; }
+.filter-tab.active { background: #1a1a1a; color: #fff; }
+.filter-tab:hover:not(.active) { background: #f7f7f5; color: #555; }
+
+.items-list { display: flex; flex-direction: column; gap: 8px; }
+.feedback-item {
+  background: #fff; border: 1.5px solid #e8e8e8; border-radius: 6px;
+  padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start;
+  transition: border-color 0.12s, opacity 0.2s;
+  cursor: pointer;
+}
+.feedback-item:hover { border-color: #ccc; }
+.feedback-item.done { opacity: 0.45; }
+.feedback-item.done .item-text { text-decoration: line-through; color: #aaa; }
+
+.item-check {
+  width: 18px; height: 18px; border: 1.5px solid #ddd; border-radius: 4px;
+  flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, border-color 0.12s;
+}
+.feedback-item.done .item-check { background: #2ABBA8; border-color: #2ABBA8; }
+.check-mark { display: none; color: #fff; font-size: 11px; font-weight: 700; }
+.feedback-item.done .check-mark { display: block; }
+
+.item-body { flex: 1; min-width: 0; }
+.item-text { font-size: 0.88rem; line-height: 1.55; color: #1a1a1a; margin-bottom: 6px; }
+.item-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
+.tag-priority-high { background: #fff0f0; color: #c0392b; }
+.tag-priority-medium { background: #fff8e1; color: #b07d00; }
+.tag-priority-low { background: #f0faf8; color: #1a8a7a; }
+.tag-type { background: #f4f4f4; color: #666; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: #bbb; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<div id="entry-state">
+  <div class="tool-title">Feedback Synthesis Canvas</div>
+  <div class="tool-subtitle">Paste all your client feedback — emails, Slack messages, PDF comments, call notes. Everything at once.</div>
+  <textarea id="raw-input" placeholder="e.g.
+
+[Slack - Sarah] The header font feels too heavy, can we try something lighter?
+[Email - Client] URGENT: the CTA button color must match brand blue #0057FF
+[PDF comment p.3] Consider adding more whitespace around the logo
+[Call notes] John mentioned the mobile nav is confusing, users can't find contact page
+[Slack - PM] Maybe we could test a different hero image?"></textarea>
+  <div class="example-hint">Each line / paragraph = one feedback item. Works with any format.</div>
+  <button class="btn-synthesize" onclick="synthesize()">Synthesize Feedback</button>
+</div>
+
+<div id="result-state">
+  <div class="result-header">
+    <span class="result-title">Revision Roadmap</span>
+    <button class="btn-reset" onclick="reset()">New Session</button>
+  </div>
+  <div class="stats-bar" id="stats-bar"></div>
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all" onclick="setFilter('all',this)">All</button>
+    <button class="filter-tab" data-filter="high" onclick="setFilter('high',this)">High</button>
+    <button class="filter-tab" data-filter="medium" onclick="setFilter('medium',this)">Medium</button>
+    <button class="filter-tab" data-filter="low" onclick="setFilter('low',this)">Low</button>
+    <button class="filter-tab" data-filter="done" onclick="setFilter('done',this)">Done</button>
+  </div>
+  <div class="items-list" id="items-list"></div>
+</div>
+
+<script>
+var items = [];
+var currentFilter = 'all';
+var STORAGE_KEY = 'fsc-session-v1';
+
+var HIGH_KEYWORDS = ['urgent','asap','must','critical','immediately','required','important','需要','必须','紧急','重要','立刻','马上','priority'];
+var LOW_KEYWORDS  = ['maybe','consider','perhaps','optional','nice to have','could','suggestion','思考','考虑','也许','可以','建议','或许','if possible'];
+var TYPE_MAP = {
+  'visual':   ['color','colour','font','typography','spacing','whitespace','layout','alignment','size','weight','padding','margin','颜色','字体','间距','排版','大小','对齐'],
+  'copy':     ['text','copy','wording','heading','title','label','cta','button text','内容','文案','标题','文字','措辞'],
+  'ux':       ['navigation','nav','menu','flow','click','tap','mobile','responsive','scroll','interactive','找不到','导航','交互','手机','点击'],
+  'visual':   ['image','photo','hero','illustration','icon','graphic','图片','图像','插图'],
+  'content':  ['content','information','data','section','page','text','文字','信息','页面'],
+};
+
+function detectPriority(text) {
+  var t = text.toLowerCase();
+  for (var i = 0; i < HIGH_KEYWORDS.length; i++) { if (t.indexOf(HIGH_KEYWORDS[i]) !== -1) return 'high'; }
+  for (var i = 0; i < LOW_KEYWORDS.length; i++)  { if (t.indexOf(LOW_KEYWORDS[i]) !== -1)  return 'low'; }
+  return 'medium';
+}
+
+function detectType(text) {
+  var t = text.toLowerCase();
+  var types = Object.keys(TYPE_MAP);
+  for (var i = 0; i < types.length; i++) {
+    var keywords = TYPE_MAP[types[i]];
+    for (var j = 0; j < keywords.length; j++) {
+      if (t.indexOf(keywords[j]) !== -1) return types[i];
+    }
+  }
+  return 'general';
+}
+
+function splitFeedback(raw) {
+  var lines = raw.split(/\\n/).map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 8; });
+  if (lines.length <= 1) {
+    lines = raw.split(/[.!?]+/).map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 8; });
+  }
+  return lines;
+}
+
+function synthesize() {
+  var raw = document.getElementById('raw-input').value.trim();
+  if (!raw) return;
+  var lines = splitFeedback(raw);
+  items = lines.map(function(text, i) {
+    return { id: i, text: text, priority: detectPriority(text), type: detectType(text), done: false };
+  });
+  items.sort(function(a,b) {
+    var order = {high:0, medium:1, low:2};
+    return order[a.priority] - order[b.priority];
+  });
+  saveSession();
+  showResults();
+}
+
+function showResults() {
+  document.getElementById('entry-state').style.display = 'none';
+  document.getElementById('result-state').style.display = 'block';
+  renderStats();
+  renderItems();
+}
+
+function renderStats() {
+  var counts = {high:0, medium:0, low:0, done:0};
+  items.forEach(function(it) {
+    if (it.done) counts.done++;
+    else counts[it.priority]++;
+  });
+  document.getElementById('stats-bar').innerHTML =
+    '<span class="stat-chip stat-total">' + items.length + ' items</span>' +
+    (counts.high   ? '<span class="stat-chip stat-high">'   + counts.high   + ' high</span>'   : '') +
+    (counts.medium ? '<span class="stat-chip stat-medium">' + counts.medium + ' medium</span>' : '') +
+    (counts.low    ? '<span class="stat-chip stat-low">'    + counts.low    + ' low</span>'    : '') +
+    (counts.done   ? '<span class="stat-chip stat-done">'   + counts.done   + ' done</span>'   : '');
+}
+
+function renderItems() {
+  var list = document.getElementById('items-list');
+  var visible = items.filter(function(it) {
+    if (currentFilter === 'all')  return true;
+    if (currentFilter === 'done') return it.done;
+    return !it.done && it.priority === currentFilter;
+  });
+  if (visible.length === 0) {
+    list.innerHTML = '<div class="empty-state">No items in this category.</div>';
+    return;
+  }
+  list.innerHTML = visible.map(function(it) {
+    return '<div class="feedback-item' + (it.done ? ' done' : '') + '" onclick="toggleDone(' + it.id + ')">' +
+      '<div class="item-check"><span class="check-mark">&#10003;</span></div>' +
+      '<div class="item-body">' +
+        '<div class="item-text">' + escapeHTML(it.text) + '</div>' +
+        '<div class="item-tags">' +
+          '<span class="tag tag-priority-' + it.priority + '">' + it.priority + '</span>' +
+          (it.type !== 'general' ? '<span class="tag tag-type">' + it.type + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleDone(id) {
+  items[id].done = !items[id].done;
+  saveSession();
+  renderStats();
+  renderItems();
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  renderItems();
+}
+
+function reset() {
+  items = [];
+  currentFilter = 'all';
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('entry-state').style.display = 'block';
+  document.getElementById('result-state').style.display = 'none';
+  document.getElementById('raw-input').value = '';
+}
+
+function escapeHTML(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function saveSession() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch(e){}
+}
+
+function loadSession() {
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) { items = JSON.parse(saved); if (items.length) { showResults(); return; } }
+  } catch(e){}
+}
+
+loadSession();
+<\/script>
+</body>
+</html>`;
+
+    frame.srcdoc = appHTML;
+    frame.style.minHeight = '620px';
     frame.addEventListener('load', function() {
       try {
         const h = frame.contentDocument.body.scrollHeight;
-        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
+        if (h > 300) frame.style.minHeight = (h + 24) + 'px';
       } catch(e) {}
     });
   })();
