@@ -515,12 +515,14 @@ def call_deepseek_review(tools: list, tool_codes: dict) -> str:
         return ""
 
     # Build a compact tool summary for DeepSeek
+    # tools is a list of strings: "Category -> YYYY-MM-DD_Tool_Name"
     tool_summary = ""
     for t in tools:
-        name = t.get("name", "unknown")
-        desc = t.get("description", "")
-        code_snippet = tool_codes.get(name, "")[:800]
-        tool_summary += f"\n--- TOOL: {name} ---\nDescription: {desc}\nCode preview:\n{code_snippet}\n"
+        # Extract tool name from string like "Office Automation -> 2026-06-06_Feedback_Synthesis_Canvas"
+        parts = t.split("→") if "→" in t else t.split("->")
+        tool_name = parts[-1].strip() if parts else t
+        code_snippet = tool_codes.get(tool_name, "")[:800]
+        tool_summary += f"\n--- TOOL: {tool_name} ---\nCode preview:\n{code_snippet}\n"
 
     prompt = f"""You are an independent quality auditor reviewing AI-generated tools for creative professionals (journalists, designers, brand directors).
 
