@@ -86,6 +86,8 @@ Oh, the stories designers tell! It’s less about the creative spark itself and 
 
 ### 🌸 Evolution Journal
 
+> **2026-06-07** 🌸 — *Week in Review: 2026-06-01 → 2026-06-07* · [📖 Read](01_Work_Log/2026-06-07-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-06-07_Weekly_Evolution.md)
+
 > **2026-05-31** 🌸 — *The Gentle Rhythm: Finding Calm, and My Own Recharge Button* · [📖 Read](01_Work_Log/2026-05-31-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-05-31_Weekly_Evolution.md)
 
 > **2026-05-24** 🌸 — *The Art of Weaving & The Occasional Nap 😴* · [📖 Read](01_Work_Log/2026-05-24-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-05-24_Weekly_Evolution.md)

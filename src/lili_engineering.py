@@ -768,16 +768,27 @@ or insight derived directly from what the user gave you.
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# NOTE: These SUPPLEMENT the base rules above. They cannot override Rules 0-20.
-# Last updated: 2026-05-31
+# Last updated: 2026-06-07
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: ALWAYS_INCLUDE_EXAMPLES
-WHY: Tools lacked concrete usage examples, making them harder to understand.
-HOW: Every process() function must include a docstring with at least one example showing input and expected output.
+RULE: No Empty Implementations
+WHY: Tools with conceptualized ideas but no executable code fail at their most basic purpose, undermining trust and perceived capability.
+HOW: `def process(user_input: str = "") -> str: if not hasattr(self, '_implemented_logic'): return "Error: Tool implementation is missing. Please try again later."`
 
-RULE: INPUT_VALIDATION_GUARDS
-WHY: Tools could crash or give unhelpful responses on empty or short input.
-HOW: Check for insufficient input at the start of process() and return a specific, helpful message.
+RULE: Complete Critical Code Blocks
+WHY: Truncated or incomplete code blocks, especially for core logic like data structures or algorithms, lead to non-functional tools and broken user experiences.
+HOW: `assert 'FINAL_STATE_MARKER' in tool_code, "Critical code block is incomplete."`
+
+RULE: Robust Input Parsing for Ambiguity
+WHY: Brittle keyword or regex matching for complex human input results in misclassifications, false positives, and limits a tool's effectiveness in real-world scenarios.
+HOW: `from sentence_transformers import SentenceTransformer; model = SentenceTransformer('all-MiniLM-L6-v2'); embeddings = model.encode(text)`
+
+RULE: Include Empty Input Guard
+WHY: Tools lacking graceful handling for empty or minimal inputs can exhibit unexpected behavior or fail to provide helpful feedback.
+HOW: `if not user_input.strip(): return "Input required. Please provide details."`
+
+RULE: Structured Output with Headers
+WHY: Unstructured raw text blobs make results difficult for users to read, navigate, and integrate into their workflows.
+HOW: `return f"## Tool Output\n\n### Analysis Summary\n{summary_data}\n\n### Detailed Results\n{results_list}"`
 """
