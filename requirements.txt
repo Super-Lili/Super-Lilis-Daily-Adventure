@@ -1,5 +1,5 @@
 google-genai
-anthropic
+openai
 requests
 pandas
 matplotlib

@@ -28,7 +28,7 @@ jobs:
       - name: Run quality fixer
         id: fixer
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           PYTHONPATH: src
         run: python src/lili_quality_fixer.py
 
@@ -40,7 +40,7 @@ jobs:
             git config user.name "Super-Lili (Quality Fixer)"
             git config user.email "lili-bot@users.noreply.github.com"
             git add docs/tools/
-            git diff --cached --quiet || git commit -m "fix: Claude quality patch $(TZ='Asia/Shanghai' date +'%Y-%m-%d') -- $REASON"
+            git diff --cached --quiet || git commit -m "fix: DeepSeek quality patch $(TZ='Asia/Shanghai' date +'%Y-%m-%d') -- $REASON"
             git pull --rebase origin main
             git push
             echo "Quality fix committed and pushed."

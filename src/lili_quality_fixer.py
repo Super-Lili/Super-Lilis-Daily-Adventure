@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import anthropic
+from openai import OpenAI
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
@@ -22,8 +22,8 @@ REPO_ROOT = Path(__file__).parent.parent
 DOCS_TOOLS_DIR = REPO_ROOT / "docs" / "tools"
 TOOLBOX_DIR = REPO_ROOT / "02_Toolbox"
 
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-CLAUDE_MODEL = "claude-sonnet-4-5"
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+DEEPSEEK_MODEL = "deepseek-chat"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -110,9 +110,12 @@ def get_tool_description(date_str: str) -> str:
     return ""
 
 
-def call_claude_fix(srcdoc: str, tool_description: str, reasons: str) -> str | None:
-    """Ask Claude to rewrite the broken tool as a real working HTML app."""
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+def call_deepseek_fix(srcdoc: str, tool_description: str, reasons: str) -> str | None:
+    """Ask DeepSeek to rewrite the broken tool as a real working HTML app."""
+    client = OpenAI(
+        api_key=DEEPSEEK_API_KEY,
+        base_url="https://api.deepseek.com"
+    )
 
     prompt = f"""You are a senior front-end engineer. Your task is to fix a broken browser tool built for creative professionals (journalists, designers, brand directors).
 
@@ -148,21 +151,22 @@ Start directly with <!DOCTYPE html> and end with </html>.
 
     for attempt in range(3):
         try:
-            message = client.messages.create(
-                model=CLAUDE_MODEL,
+            response = client.chat.completions.create(
+                model=DEEPSEEK_MODEL,
+                messages=[{"role": "user", "content": prompt}],
                 max_tokens=8000,
-                messages=[{"role": "user", "content": prompt}]
+                temperature=0.4,
             )
-            result = message.content[0].text.strip()
+            result = response.choices[0].message.content.strip()
             # Strip markdown fences if present
             result = re.sub(r'^```html?\s*', '', result)
             result = re.sub(r'\s*```$', '', result)
             if result.startswith("<!DOCTYPE") and len(result) > 2000:
-                print(f"[claude-fix] Rewrite successful ({len(result)} chars)")
+                print(f"[deepseek-fix] Rewrite successful ({len(result)} chars)")
                 return result
             print(f"[attempt {attempt+1}] Response too short or wrong format ({len(result)} chars), retrying...")
         except Exception as e:
-            print(f"[attempt {attempt+1}] Claude error: {e}")
+            print(f"[attempt {attempt+1}] DeepSeek error: {e}")
         time.sleep(15)
 
     return None
@@ -220,8 +224,8 @@ def main():
     date_str = today_str()
     print(f"[quality-fixer] Checking tool for {date_str}")
 
-    if not ANTHROPIC_API_KEY:
-        print("[quality-fixer] ERROR: ANTHROPIC_API_KEY not set")
+    if not DEEPSEEK_API_KEY:
+        print("[quality-fixer] ERROR: DEEPSEEK_API_KEY not set")
         sys.exit(1)
 
     html_path = find_todays_tool_html(date_str)
@@ -245,10 +249,10 @@ def main():
         sys.exit(0)
 
     print(f"[quality-fixer] Quality issues detected: {reasons}")
-    print("[quality-fixer] Calling Claude to rewrite tool...")
+    print("[quality-fixer] Calling DeepSeek to rewrite tool...")
 
     tool_description = get_tool_description(date_str)
-    new_srcdoc = call_claude_fix(srcdoc, tool_description, reasons)
+    new_srcdoc = call_deepseek_fix(srcdoc, tool_description, reasons)
 
     if not new_srcdoc:
         print("[quality-fixer] Gemini could not produce a fix - giving up")
