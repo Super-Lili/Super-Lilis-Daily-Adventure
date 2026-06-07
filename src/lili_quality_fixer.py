@@ -1,7 +1,7 @@
 """
 lili_quality_fixer.py - Super-Lili Quality Fixer
 Runs after each daily tool is generated.
-Detects empty-shell or broken tools and rewrites them using Gemini.
+Detects empty-shell or broken tools and rewrites them using Claude.
 ASCII-only source: no em-dashes, no Unicode checkmarks.
 """
 
@@ -14,8 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from google import genai
-from google.genai import types
+import anthropic
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
@@ -23,8 +22,8 @@ REPO_ROOT = Path(__file__).parent.parent
 DOCS_TOOLS_DIR = REPO_ROOT / "docs" / "tools"
 TOOLBOX_DIR = REPO_ROOT / "02_Toolbox"
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-MODEL = "gemini-2.0-flash"
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+CLAUDE_MODEL = "claude-sonnet-4-5"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -111,11 +110,11 @@ def get_tool_description(date_str: str) -> str:
     return ""
 
 
-def call_gemini_fix(srcdoc: str, tool_description: str, reasons: str) -> str | None:
-    """Ask Gemini to rewrite the broken tool as a real working HTML app."""
-    client = genai.Client(api_key=GEMINI_API_KEY)
+def call_claude_fix(srcdoc: str, tool_description: str, reasons: str) -> str | None:
+    """Ask Claude to rewrite the broken tool as a real working HTML app."""
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
-    prompt = f"""You are a senior front-end engineer. Your task is to fix a broken browser tool.
+    prompt = f"""You are a senior front-end engineer. Your task is to fix a broken browser tool built for creative professionals (journalists, designers, brand directors).
 
 PROBLEM DETECTED:
 {reasons}
@@ -133,38 +132,37 @@ Rewrite this as a complete, working single-page HTML app that actually does what
 
 REQUIREMENTS:
 - Pure HTML + CSS + JavaScript only. No external libraries. No fetch() calls.
-- The tool must actually process user input and produce real output.
-- Must have 3 states: entry state (input form) -> processing -> result state (real output).
-- At least 3 JavaScript functions with real logic (not just UI helpers).
-- No alert(), confirm(), or placeholder text.
-- Clean, minimal design. White background. Use #2ABBA8 as accent color.
-- Save state to localStorage so results persist on reload.
-- The output must be meaningfully different from the input (transformation, not echo).
+- The tool must actually process user input and produce REAL output with genuine algorithmic logic.
+- Must have 3 clear states: entry state (input form) -> active state (processing) -> result state (real output).
+- At least 4 JavaScript functions with real processing logic (not just UI helpers).
+- No alert(), confirm(), or placeholder text anywhere.
+- Clean, minimal design. White background (#ffffff). Accent color #2ABBA8.
+- Save results to localStorage so work persists on reload.
+- The output must be meaningfully transformed from the input -- not just echoed back.
+- Quality bar: would a senior creative professional use this tool twice?
 
 OUTPUT FORMAT:
-Return ONLY the raw HTML content for srcdoc. No markdown fences. No explanation.
-Start with <!DOCTYPE html> and end with </html>.
+Return ONLY the raw HTML. No markdown fences. No explanation. No preamble.
+Start directly with <!DOCTYPE html> and end with </html>.
 """
 
     for attempt in range(3):
         try:
-            response = client.models.generate_content(
-                model=MODEL,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.4,
-                    max_output_tokens=8000,
-                ),
+            message = client.messages.create(
+                model=CLAUDE_MODEL,
+                max_tokens=8000,
+                messages=[{"role": "user", "content": prompt}]
             )
-            result = response.text.strip()
+            result = message.content[0].text.strip()
             # Strip markdown fences if present
             result = re.sub(r'^```html?\s*', '', result)
             result = re.sub(r'\s*```$', '', result)
             if result.startswith("<!DOCTYPE") and len(result) > 2000:
+                print(f"[claude-fix] Rewrite successful ({len(result)} chars)")
                 return result
             print(f"[attempt {attempt+1}] Response too short or wrong format ({len(result)} chars), retrying...")
         except Exception as e:
-            print(f"[attempt {attempt+1}] Gemini error: {e}")
+            print(f"[attempt {attempt+1}] Claude error: {e}")
         time.sleep(15)
 
     return None
@@ -222,8 +220,8 @@ def main():
     date_str = today_str()
     print(f"[quality-fixer] Checking tool for {date_str}")
 
-    if not GEMINI_API_KEY:
-        print("[quality-fixer] ERROR: GEMINI_API_KEY not set")
+    if not ANTHROPIC_API_KEY:
+        print("[quality-fixer] ERROR: ANTHROPIC_API_KEY not set")
         sys.exit(1)
 
     html_path = find_todays_tool_html(date_str)
@@ -247,10 +245,10 @@ def main():
         sys.exit(0)
 
     print(f"[quality-fixer] Quality issues detected: {reasons}")
-    print("[quality-fixer] Calling Gemini to rewrite tool...")
+    print("[quality-fixer] Calling Claude to rewrite tool...")
 
     tool_description = get_tool_description(date_str)
-    new_srcdoc = call_gemini_fix(srcdoc, tool_description, reasons)
+    new_srcdoc = call_claude_fix(srcdoc, tool_description, reasons)
 
     if not new_srcdoc:
         print("[quality-fixer] Gemini could not produce a fix - giving up")
