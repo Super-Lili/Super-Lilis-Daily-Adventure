@@ -772,23 +772,19 @@ or insight derived directly from what the user gave you.
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: No Empty Implementations
-WHY: Tools with conceptualized ideas but no executable code fail at their most basic purpose, undermining trust and perceived capability.
-HOW: `def process(user_input: str = "") -> str: if not hasattr(self, '_implemented_logic'): return "Error: Tool implementation is missing. Please try again later."`
+RULE: VALIDATION_FIRST
+WHY: A tool should not proceed with invalid or empty input, as this leads to crashes or meaningless output.
+HOW: `if not user_input or len(user_input.strip()) < 5: return "Error: Please provide more specific input."`
 
-RULE: Complete Critical Code Blocks
-WHY: Truncated or incomplete code blocks, especially for core logic like data structures or algorithms, lead to non-functional tools and broken user experiences.
-HOW: `assert 'FINAL_STATE_MARKER' in tool_code, "Critical code block is incomplete."`
+RULE: NO_DEAD_CODE
+WHY: Tools must deliver actual functionality, not just conceptual frameworks or placeholders.
+HOW: `assert 'def process(' in open(__file__).read(), "Tool must contain a process function with logic."`
 
-RULE: Robust Input Parsing for Ambiguity
-WHY: Brittle keyword or regex matching for complex human input results in misclassifications, false positives, and limits a tool's effectiveness in real-world scenarios.
-HOW: `from sentence_transformers import SentenceTransformer; model = SentenceTransformer('all-MiniLM-L6-v2'); embeddings = model.encode(text)`
+RULE: CONFIGURABLE_DATA
+WHY: Hardcoded data limits the tool's flexibility and reusability, requiring manual updates for expansion.
+HOW: `config_data = load_config_from_file('config.json')` or `user_defined_elements = parse_user_config(user_input)`
 
-RULE: Include Empty Input Guard
-WHY: Tools lacking graceful handling for empty or minimal inputs can exhibit unexpected behavior or fail to provide helpful feedback.
-HOW: `if not user_input.strip(): return "Input required. Please provide details."`
-
-RULE: Structured Output with Headers
-WHY: Unstructured raw text blobs make results difficult for users to read, navigate, and integrate into their workflows.
-HOW: `return f"## Tool Output\n\n### Analysis Summary\n{summary_data}\n\n### Detailed Results\n{results_list}"`
+RULE: SAFE_SYS_ARGV_USAGE
+WHY: Direct manipulation of `sys.argv` can cause unexpected behavior when a tool is imported as a module, not run as a script.
+HOW: `if __name__ == "__main__": sys.argv = ['tool']` (Only modify `sys.argv` if the script is run directly)
 """
