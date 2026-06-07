@@ -13,8 +13,13 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from google import genai
 from google.genai import types
+from openai import OpenAI
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+deepseek_client = OpenAI(
+    api_key=os.environ.get("DEEPSEEK_API_KEY", ""),
+    base_url="https://api.deepseek.com"
+)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -167,7 +172,8 @@ def build_evolution_prompt(today_str: str, week_start: str,
                             diaries: list, tools: list, soul: str,
                             issues: list | None = None,
                             tool_codes: list | None = None,
-                            quality_ledger: list | None = None) -> str:
+                            quality_ledger: list | None = None,
+                            deepseek_review: str = "") -> str:
     diary_block = "\n\n".join(
         f"=== {stem} ===\n{content}" for stem, content in diaries
     ) or "(No diaries this week)"
@@ -223,6 +229,12 @@ def build_evolution_prompt(today_str: str, week_start: str,
     else:
         issues_block = "  (No issues submitted this week.)"
 
+    deepseek_block = (
+        f"\n{deepseek_review}\n"
+        if deepseek_review
+        else "  (DeepSeek review not available this week.)"
+    )
+
     return f"""You are Super-Lili conducting your weekly self-evolution session.
 Today: {today_str} | Reviewing: {week_start} → {today_str}
 
@@ -269,6 +281,13 @@ TOOL QUALITY SCORES — LAST 14 DAYS (Two-Dimension Evaluation):
 Engineering score (1-5): structured, substantive, actionable code
 Warmth score (1-5): specific to real person's situation, warm, not robotic
 Tools with combined average < 3.0 were regenerated. Use these scores to identify patterns.
+
+═══════════════════════════════════════════════════════
+INDEPENDENT QUALITY AUDIT — DEEPSEEK EXTERNAL REVIEW:
+═══════════════════════════════════════════════════════
+This review was written by a separate AI model (DeepSeek) with no stake in your work.
+It did not generate these tools. Read it as honest external feedback.
+{deepseek_block}
 
 ═══════════════════════════════════════════════════════
 USER FEEDBACK — GITHUB ISSUES THIS WEEK:
@@ -478,6 +497,62 @@ E. NEXT WEEK'S ANTIDOTE: "Next week, build a tool for [specific person] dealing 
 [2-3 SOURCE blocks in the format specified in task 14]
 ---END---
 """
+
+
+# ─────────────────────────────────────────────────────────────
+# DEEPSEEK INDEPENDENT QUALITY REVIEW
+# ─────────────────────────────────────────────────────────────
+
+def call_deepseek_review(tools: list, tool_codes: dict) -> str:
+    """Ask DeepSeek to independently evaluate this week's tools.
+    Returns a plain-text quality report injected into the Gemini evolution prompt.
+    Falls back gracefully if DEEPSEEK_API_KEY is missing or call fails.
+    """
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        return ""
+
+    if not tools:
+        return ""
+
+    # Build a compact tool summary for DeepSeek
+    tool_summary = ""
+    for t in tools:
+        name = t.get("name", "unknown")
+        desc = t.get("description", "")
+        code_snippet = tool_codes.get(name, "")[:800]
+        tool_summary += f"\n--- TOOL: {name} ---\nDescription: {desc}\nCode preview:\n{code_snippet}\n"
+
+    prompt = f"""You are an independent quality auditor reviewing AI-generated tools for creative professionals (journalists, designers, brand directors).
+
+This week's tools:
+{tool_summary}
+
+Evaluate each tool honestly and directly. For each tool answer:
+1. Is this a REAL working tool or an empty shell? (check: does the code actually process input and produce meaningful output?)
+2. Would a senior creative professional use this tool a second time? Why or why not?
+3. What is the single biggest quality failure in this tool?
+
+Then give:
+- WORST TOOL this week and why
+- BEST TOOL this week and why
+- TOP 3 ENGINEERING FAILURES to fix next week (be specific, not generic)
+
+Be direct. No flattery. No vague observations. If a tool is bad, say exactly why.
+Keep the entire response under 400 words."""
+
+    try:
+        response = deepseek_client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1000,
+            temperature=0.3,
+        )
+        review = response.choices[0].message.content.strip()
+        print("  [OK] DeepSeek independent review complete.")
+        return review
+    except Exception as e:
+        print(f"  [NO] DeepSeek review failed (non-fatal): {e}")
+        return ""
 
 
 # ─────────────────────────────────────────────────────────────
@@ -837,7 +912,16 @@ def weekly_evolution():
     print("📬 Fetching GitHub Issues...")
     issues = fetch_github_issues(30)
 
-    prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul, issues, tool_codes, quality_ledger)
+    print("🔍 Running independent quality audit with DeepSeek...")
+    deepseek_review = call_deepseek_review(tools, {
+        tc["name"]: tc.get("code_snippet", "") for tc in (tool_codes or [])
+    })
+    if deepseek_review:
+        print("  [OK] DeepSeek review injected into evolution prompt.")
+    else:
+        print("  [--] DeepSeek review skipped (no key or no tools).")
+
+    prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul, issues, tool_codes, quality_ledger, deepseek_review)
 
     print("🧠 Running self-evolution with Gemini...")
     content = call_gemini(prompt)
