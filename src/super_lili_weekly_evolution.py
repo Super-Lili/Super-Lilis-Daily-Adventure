@@ -503,26 +503,37 @@ E. NEXT WEEK'S ANTIDOTE: "Next week, build a tool for [specific person] dealing 
 # DEEPSEEK INDEPENDENT QUALITY REVIEW
 # ─────────────────────────────────────────────────────────────
 
-def call_deepseek_review(tools: list, tool_codes: dict) -> str:
+def call_deepseek_review(tool_codes: list) -> str:
     """Ask DeepSeek to independently evaluate this week's tools.
+    tool_codes: list of dicts from collect_week_tool_code(), each has
+                keys: name, category, code_snippet, loc, has_user_input, etc.
     Returns a plain-text quality report injected into the Gemini evolution prompt.
     Falls back gracefully if DEEPSEEK_API_KEY is missing or call fails.
     """
     if not os.environ.get("DEEPSEEK_API_KEY"):
+        print("  [--] DEEPSEEK_API_KEY not set, skipping review.")
         return ""
 
-    if not tools:
+    if not tool_codes:
+        print("  [--] No tool code collected this week, skipping DeepSeek review.")
         return ""
 
-    # Build a compact tool summary for DeepSeek
-    # tools is a list of strings: "Category -> YYYY-MM-DD_Tool_Name"
+    # Build tool summary directly from tool_codes list (already dicts with real data)
     tool_summary = ""
-    for t in tools:
-        # Extract tool name from string like "Office Automation -> 2026-06-06_Feedback_Synthesis_Canvas"
-        parts = t.split("→") if "→" in t else t.split("->")
-        tool_name = parts[-1].strip() if parts else t
-        code_snippet = tool_codes.get(tool_name, "")[:800]
-        tool_summary += f"\n--- TOOL: {tool_name} ---\nCode preview:\n{code_snippet}\n"
+    for tc in tool_codes:
+        name = tc.get("name", "unknown")
+        category = tc.get("category", "unknown")
+        code_snippet = tc.get("code_snippet", "")[:1000]
+        loc = tc.get("loc", 0)
+        flags = []
+        if not tc.get("has_user_input"): flags.append("NO USER_INPUT pattern")
+        if not tc.get("has_empty_check"): flags.append("no empty-input guard")
+        flag_str = " | ".join(flags) if flags else "basic checks pass"
+        tool_summary += (
+            f"\n--- TOOL: {name} ({category}, {loc} lines) ---\n"
+            f"Auto-checks: {flag_str}\n"
+            f"Code preview:\n{code_snippet}\n"
+        )
 
     prompt = f"""You are an independent quality auditor reviewing AI-generated tools for creative professionals (journalists, designers, brand directors).
 
@@ -915,9 +926,7 @@ def weekly_evolution():
     issues = fetch_github_issues(30)
 
     print("🔍 Running independent quality audit with DeepSeek...")
-    deepseek_review = call_deepseek_review(tools, {
-        tc["name"]: tc.get("code_snippet", "") for tc in (tool_codes or [])
-    })
+    deepseek_review = call_deepseek_review(tool_codes or [])
     if deepseek_review:
         print("  [OK] DeepSeek review injected into evolution prompt.")
     else:
