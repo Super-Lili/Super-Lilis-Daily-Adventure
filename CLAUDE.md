@@ -214,6 +214,7 @@ Ideas discussed and consciously deferred. Revisit when conditions are right.
 
 **Architecture**
 - Deep SCOUT: read industry reports and long-form forum discussions, not just Reddit post titles. Owner can inject observations via GitHub Issues in the meantime. Requires more API calls — defer until Gemini quota is stable.
+- Agentic RAG for SCOUT: inspired by Google's Agentic RAG (6-agent framework, 34% accuracy gain). Two specific upgrades worth adding: (1) Query Rewriter — rewrite vague search terms into precise ones before searching; (2) Sufficient Context Agent — after SCOUT, validate "is this friction point real and specific enough?" before proceeding to SPEC. If not sufficient, search again from a different angle. Small change to pipeline, meaningful quality improvement. Defer until 2-week stability check passes.
 - Parallel agent architecture: SCOUT and SPEC running simultaneously. Currently serial pipeline is sufficient; revisit when run time becomes a bottleneck.
 - Lili modifies her own core code (super_lili_brain.py): via PR review flow — Lili proposes, owner approves. Revisit after 2 weeks of stable quality runs (from 2026-06-08).
 
