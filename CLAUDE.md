@@ -203,6 +203,27 @@ Written by project owner xiaojiahaina, based on the neo-slow media framework (20
 
 ---
 
+## Future Backlog — Good Ideas, Wrong Timing
+
+Ideas discussed and consciously deferred. Revisit when conditions are right.
+
+**Visual**
+- Radiooooo-style design: warm retro color palette, colorful icons, map/timeline navigation. Wait until 50+ tools accumulated — the visual language needs content density to work.
+
+**Architecture**
+- Deep SCOUT: read industry reports and long-form forum discussions, not just Reddit post titles. Requires more API calls — defer until Gemini quota is stable.
+- Parallel agent architecture: SCOUT and SPEC running simultaneously. Currently serial pipeline is sufficient; revisit when run time becomes a bottleneck.
+- Lili modifies her own core code (super_lili_brain.py): via PR review flow — Lili proposes, owner approves. Revisit after 2 weeks of stable quality runs (from 2026-06-08).
+
+**Quality & Memory**
+- Error frequency quantification: track how many times each error pattern repeats across weeks. Currently errors are logged as text but not counted. Would make weekly evolution more precise.
+- /schedule daily quality check: Claude checks today's tool at 10:00 Beijing time. Blocked by claude.ai remote connection issue as of 2026-06-08. Retry periodically.
+
+**Inspiration**
+- auto_research system (github.com/zartbot/blog/tree/main/auto_research): generates deep technical research reports automatically. Not directly applicable to Lili's creative-professional focus, but the deep synthesis approach is worth studying.
+
+---
+
 ## Pitfalls Logged
 
 - **Dark design experiment**: tried aged paper black + terracotta, owner felt it was wrong, rolled back
