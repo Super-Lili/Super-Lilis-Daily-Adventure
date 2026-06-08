@@ -242,6 +242,14 @@
       "pattern": "track",
       "path": "02_Toolbox/Office Automation/2026-06-06_Feedback_Synthesis_Canvas",
       "description": "A tool that helps creative professionals consolidate, organize, and prioritize scattered client feedback from various sources into a single, interactive visual canvas for clear revision tracking and communication."
+    },
+    {
+      "date": "2026-06-08",
+      "name": "Brand Voice Aligner",
+      "category": "Design Alchemy",
+      "pattern": "score",
+      "path": "02_Toolbox/Design Alchemy/2026-06-08_Brand_Voice_Aligner",
+      "description": "A tool that analyzes provided text against defined brand style guide elements (keywords, tone descriptors, prohibited terms) and provides a consistency score and specific suggestions for improving brand voice alignment."
     }
   ],
   "topics_covered": [
@@ -419,7 +427,12 @@
       "date": "2026-06-06",
       "title": "The Feedback Compass: Navigating the Client Comment Labyrinth",
       "path": "01_Work_Log/2026-06-06-Diary.md"
+    },
+    {
+      "date": "2026-06-08",
+      "title": "The Tone Whisperer",
+      "path": "01_Work_Log/2026-06-08-Diary.md"
     }
   ],
-  "last_updated": "2026-06-06"
+  "last_updated": "2026-06-08"
 }

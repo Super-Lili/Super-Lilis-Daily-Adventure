@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brand Voice Aligner · Super-Lili</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    background: #ffffff;
+    color: #1a1a1a;
+    line-height: 1.6;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ── Layout ── */
+.container { max-width: 1120px; margin: 0 auto; padding: 0 48px; }
+
+/* ── Nav ── */
+.site-nav {
+    background: #fff;
+    border-bottom: 2px solid #1a1a1a;
+    box-shadow: 0 3px 0 0 #fff, 0 4px 0 0 #e0e0e0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+}
+.nav-logo {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.nav-logo .dot { color: #111; }
+.nav-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #111;
+    object-fit: cover;
+    object-position: center top;
+    filter: grayscale(100%) contrast(1.05);
+    flex-shrink: 0;
+}
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #999;
+    transition: color 0.15s;
+}
+.nav-links a:hover { color: #1a1a1a; }
+
+/* ── Hero ── */
+.site-hero {
+    padding: 0 0 80px;
+    border-bottom: 3px solid #111;
+    position: relative;
+    overflow: hidden;
+}
+/* Manga screen-tone: halftone dot texture over hero */
+.site-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(17,17,17,0.07) 1.3px, transparent 1.3px);
+    background-size: 14px 14px;
+    pointer-events: none;
+    z-index: 0;
+}
+.site-hero .container { position: relative; z-index: 1; }
+.hero-bar {
+    border-top: 3px solid #111;
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 56px;
+}
+.hero-bar-today {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #111;
+}
+.hero-bar-date {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: #999;
+}
+.hero-bar-rule {
+    flex: 1;
+    height: 1px;
+    background: #ddd;
+}
+.hero-bar-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #bbb;
+}
+.hero-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 56px;
+}
+.hero-text { flex: 1; min-width: 0; }
+.hero-avatar-wrap {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding-top: 8px;
+}
+.hero-avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 3px solid #111;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    filter: grayscale(100%) contrast(1.05);
+}
+.hero-avatar-name {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #111;
+}
+.hero-title {
+    font-size: clamp(1.8rem, 4.5vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: #111;
+    margin-bottom: 24px;
+}
+.hero-excerpt {
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.85;
+    max-width: 520px;
+    margin-bottom: 36px;
+}
+.hero-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+/* ── Buttons ── */
+.btn {
+    display: inline-block;
+    padding: 11px 24px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: box-shadow 0.12s, transform 0.12s, background 0.12s, border-color 0.12s;
+    text-decoration: none;
+    transform: skewX(-2deg);
+}
+.btn:hover { text-decoration: none; }
+.btn-dark {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+    box-shadow: 3px 3px 0 0 #555;
+}
+.btn-dark:hover {
+    background: #1a1a1a;
+    box-shadow: 5px 5px 0 0 #555;
+    transform: skewX(-2deg) translate(-1px, -1px);
+}
+.btn-ghost { background: transparent; color: #999; border-color: #d0d0d0; }
+.btn-ghost:hover { color: #1a1a1a; border-color: #1a1a1a; }
+.btn-teal {
+    background: #2ABBA8;
+    color: #fff;
+    border-color: #2ABBA8;
+    box-shadow: 3px 3px 0 0 #1a8a7a;
+}
+.btn-teal:hover {
+    background: #229990;
+    border-color: #229990;
+    box-shadow: 5px 5px 0 0 #1a8a7a;
+    transform: skewX(-2deg) translate(-1px, -1px);
+}
+
+/* ── Category filter tabs ── */
+.cat-filters {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+    border: 2px solid #111;
+    border-bottom: 2px solid #111;
+    overflow: hidden;
+}
+.cat-filter {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 8px 14px;
+    background: #fff;
+    border: none;
+    border-right: 1.5px solid #111;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+    position: relative;
+}
+.cat-filter:last-child { border-right: none; }
+.cat-filter:hover { background: #f7f7f5; }
+.cat-filter.active { background: #111; }
+.cf-icon {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.cf-icon svg { width: 52px; height: 52px; }
+.cat-filter .cf-icon { color: #111; }
+.cat-filter.active .cf-icon { color: #fff; }
+.cf-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #555;
+    transition: color 0.15s;
+}
+.cat-filter.active .cf-label { color: #fff; }
+.cf-count {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #bbb;
+    transition: color 0.15s;
+}
+.cat-filter.active .cf-count { color: rgba(255,255,255,0.55); }
+
+/* "All" button — no icon, larger label */
+.cat-filter[data-filter="all"] {
+    flex: 0 0 auto;
+    min-width: 72px;
+    padding: 0 16px;
+    justify-content: center;
+}
+.cat-filter[data-filter="all"] .cf-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    color: #111;
+}
+.cat-filter[data-filter="all"].active .cf-label { color: #fff; }
+.cat-filter[data-filter="all"] .cf-count { font-size: 0.65rem; color: #999; }
+.cat-filter[data-filter="all"].active .cf-count { color: rgba(255,255,255,0.6); }
+
+/* ── Section header ── */
+.section-block {
+    padding: 72px 0 0;
+}
+.section-block + .section-block { border-top: 1px solid #e0e0e0; }
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 36px;
+    padding-bottom: 16px;
+    border-left: 4px solid #111;
+    padding-left: 14px;
+}
+.section-num {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #111;
+    flex-shrink: 0;
+}
+.section-title {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #1a1a1a;
+}
+.section-rule {
+    flex: 1;
+    height: 1px;
+    background: #e8e8e8;
+}
+.section-count {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #ccc;
+    flex-shrink: 0;
+}
+
+/* ── Tool grid ── */
+.tools-block {
+    padding-bottom: 80px;
+}
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: #111;      /* inner lines + empty cells: black */
+    border: 2.5px solid #111; /* outer manga panel frame */
+    border-top: none;      /* connects flush with cat-filters */
+}
+.tool-card {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 24px 24px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.12s, box-shadow 0.12s, transform 0.12s;
+    position: relative;
+}
+/* Manga panel depth: offset shadow on hover */
+.tool-card:hover {
+    background: #fafafa;
+    box-shadow: 4px 4px 0 0 #111;
+    transform: translate(-2px, -2px);
+    z-index: 2;
+}
+.tc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+.tc-index {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #2ABBA8;
+    font-variant-numeric: tabular-nums;
+}
+.tc-cat {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #ccc;
+    text-transform: uppercase;
+}
+.tc-name {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+    flex: 1;
+}
+.tc-desc {
+    font-size: 0.8rem;
+    color: #888;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+.tc-date {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #ccc;
+    margin-top: auto;
+}
+
+/* ── Evolution list ── */
+.evo-block { padding-bottom: 80px; }
+.evo-list { list-style: none; }
+.evo-item {
+    display: grid;
+    grid-template-columns: 100px 1fr 24px;
+    gap: 24px;
+    padding: 18px 0;
+    border-bottom: 1px solid #ebebeb;
+    align-items: baseline;
+}
+.evo-date {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #2ABBA8;
+    font-variant-numeric: tabular-nums;
+}
+.evo-title { font-size: 0.92rem; color: #444; }
+.evo-title a { color: #444; transition: color 0.15s; }
+.evo-title a:hover { color: #1a1a1a; }
+.evo-arrow { font-size: 0.75rem; color: #ccc; text-align: right; }
+.evo-item:hover .evo-arrow { color: #2ABBA8; }
+
+/* ── Footer ── */
+.site-footer {
+    border-top: 2px solid #1a1a1a;
+    padding: 32px 0;
+    margin-top: 0;
+    position: relative;
+    overflow: hidden;
+}
+.site-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(17,17,17,0.05) 1px, transparent 1px);
+    background-size: 12px 12px;
+    pointer-events: none;
+    z-index: 0;
+}
+.site-footer .container { position: relative; z-index: 1; }
+.footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+.footer-left { display: flex; flex-direction: column; gap: 6px; }
+.footer-tagline {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #1a1a1a;
+}
+.footer-tagline .tagline-dot { color: #2ABBA8; }
+.footer-copy { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #ccc; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb; transition: color 0.15s; }
+.footer-links a:hover { color: #2ABBA8; }
+
+/* ── Tool detail page ── */
+.detail-nav-bar {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 14px 0;
+}
+.back-link {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ccc;
+    transition: color 0.15s;
+}
+.back-link:hover { color: #2ABBA8; }
+.detail-hero {
+    padding: 64px 0 56px;
+    border-bottom: 1px solid #e0e0e0;
+}
+.detail-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #2ABBA8;
+    margin-bottom: 20px;
+}
+.detail-hero h1 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: #1a1a1a;
+    max-width: 760px;
+    margin-bottom: 16px;
+}
+.detail-meta {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #ccc;
+}
+.detail-section {
+    padding: 48px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+.detail-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #bbb;
+    margin-bottom: 16px;
+}
+.description-text {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #333;
+    max-width: 620px;
+    margin-bottom: 28px;
+}
+.req-list { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.req-list li {
+    background: #f5f5f5;
+    padding: 4px 14px;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    color: #555;
+    border: 1px solid #e8e8e8;
+}
+
+/* ── Pyodide runner ── */
+.runner-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #bbb;
+    display: block;
+    margin-top: 24px;
+    margin-bottom: 8px;
+}
+.runner-label:first-child { margin-top: 0; }
+.try-it textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #e0e0e0;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.82rem;
+    background: #fafafa;
+    color: #1a1a1a;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+    line-height: 1.6;
+}
+.try-it textarea:focus { border-color: #2ABBA8; }
+#run-btn {
+    display: inline-block;
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    padding: 11px 28px;
+    cursor: pointer;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 12px;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+#run-btn:hover { background: #2ABBA8; }
+#run-btn:disabled { background: #ccc; cursor: not-allowed; }
+#pyodide-status { font-size: 0.78rem; color: #bbb; padding: 12px 0; font-style: italic; }
+#output {
+    background: #fafafa;
+    color: #1a1a1a;
+    border: 1px solid #e8e8e8;
+    border-left: 3px solid #2ABBA8;
+    padding: 20px;
+    min-height: 80px;
+    white-space: pre-wrap;
+    font-size: 0.82rem;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    margin-top: 12px;
+    line-height: 1.65;
+}
+
+/* ── Local run instructions ── */
+.local-run-note {
+    font-size: 0.88rem;
+    color: #666;
+    line-height: 1.7;
+    margin-bottom: 16px;
+}
+.local-run-note em { color: #aaa; }
+.code-block {
+    background: #f7f7f7;
+    border: 1px solid #e8e8e8;
+    border-left: 3px solid #2ABBA8;
+    padding: 18px 20px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.8;
+    color: #333;
+}
+.code-comment { color: #bbb; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-avatar { width: 120px; height: 120px; }
+    .cf-icon { width: 40px; height: 40px; }
+    .cf-icon svg { width: 40px; height: 40px; }
+}
+@media (max-width: 580px) {
+    .container { padding: 0 24px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .cat-filters { flex-wrap: wrap; }
+    .cat-filter { flex: 1 1 40%; }
+    .nav-links { display: none; }
+    .footer-inner { flex-direction: column; gap: 16px; align-items: flex-start; }
+    .footer-tagline { font-size: 0.88rem; }
+    .evo-item { grid-template-columns: 80px 1fr; }
+    .evo-arrow { display: none; }
+    .hero-inner { flex-direction: column-reverse; align-items: center; gap: 32px; }
+    .hero-avatar { width: 100px; height: 100px; }
+    .hero-title { font-size: 1.8rem; }
+    .hero-bar { flex-wrap: wrap; }
+}
+
+/* ── Emoji Reactions ────────────────────────────── */
+.reactions-section { border-top: 1px solid #f0f0f0; padding-top: 28px; }
+.reactions-label { font-size: 0.78rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: #aaa; margin-bottom: 16px; }
+.reaction-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.reaction-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: #f9f9f9; border: 1.5px solid #ebebeb; border-radius: 12px;
+  padding: 10px 16px; cursor: pointer; transition: all .15s ease;
+  font-family: inherit; min-width: 72px;
+}
+.reaction-btn:hover { background: #f0f0f0; border-color: #ddd; transform: translateY(-1px); }
+.reaction-btn.selected { background: #fff8f0; border-color: #f59e0b; }
+.reaction-emoji { font-size: 1.4rem; line-height: 1; }
+.reaction-label { font-size: 0.7rem; color: #888; font-weight: 500; white-space: nowrap; }
+
+
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <img class="nav-avatar" src="../../assets/lili-avatar.png" alt="Super-Lili" onerror="this.style.display='none'">
+        Super-Lili's Daily Adventure<span class="dot">.</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="../../index.html#tools">Tool Archive</a></li>
+        <li><a href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure" target="_blank" rel="noopener">GitHub</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="detail-nav-bar">
+  <div class="container">
+    <a class="back-link" href="../../index.html">&larr; Tool Archive</a>
+  </div>
+</div>
+
+<div class="detail-hero">
+  <div class="container">
+    <div class="detail-eyebrow">Design</div>
+    <h1>Brand Voice Aligner</h1>
+    <div class="detail-meta">2026-06-08</div>
+  </div>
+</div>
+
+<div>
+  <div class="container">
+
+    <section class="detail-section">
+      <div class="detail-label">What it does</div>
+      <p class="description-text">A tool that analyzes provided text against defined brand style guide elements (keywords, tone descriptors, prohibited terms) and provides a consistency score and specific suggestions for improving brand voice alignment.</p>
+      <a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Design Alchemy/2026-06-08_Brand_Voice_Aligner/main.py" target="_blank" rel="noopener">View Source &rarr;</a>
+    </section>
+
+    <section class="detail-section">
+      <div class="detail-label">Dependencies</div>
+      <ul class="req-list"><li style='color:#aaa;font-style:italic;list-style:none;'>None — runs entirely in browser</li></ul>
+    </section>
+
+    <section class="detail-section">
+      <div class="detail-label">Try in Browser</div>
+      <div class="try-it">
+        
+<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your brief, content, or design description here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
+</div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
+<script>
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport json\nimport re\nfrom typing import List, Dict, Any, Tuple\n\n# --- Constants for Brand Voice Analysis ---\nINFORMAL_WORDS = {\n    \"awesome\": {\"suggestion\": \"exceptional\", \"tone\": \"overly enthusiastic\"},\n    \"cool\": {\"suggestion\": \"innovative\", \"tone\": \"informal\"},\n    \"super\": {\"suggestion\": \"highly\", \"tone\": \"informal exaggeration\"},\n    \"amazing\": {\"suggestion\": \"remarkable\", \"tone\": \"overly enthusiastic\"},\n    \"blow your mind\": {\"suggestion\": \"exceed expectations\", \"tone\": \"colloquialism\"},\n    \"really excited\": {\"suggestion\": \"eager\", \"tone\": \"informal intensity\"},\n    # Add more as needed based on common deviations from a sophisticated tone\n}\n\n# Heuristics for tone inference (simplified)\nSOPHISTICATED_TONE_WORDS = [\"precise\", \"sophisticated\", \"authoritative\", \"meticulous\", \"strategic\", \"insightful\", \"transformative\", \"pinnacle\", \"excellence\"]\n\n# --- Helper Functions for NLP Simulation ---\n\ndef _escape_html(text: str) -> str:\n    \"\"\"Escapes HTML special characters in a string.\"\"\"\n    return text.replace(\"&\", \"&amp;\").replace(\"<\", \"&lt;\").replace(\">\", \"&gt;\").replace('\"', \"&quot;\").replace(\"'\", \"&#039;\")\n\ndef _segment_sentences(text: str) -> List[str]:\n    \"\"\"Segments text into sentences using basic heuristics.\"\"\"\n    # This regex attempts to split sentences while preserving some common exceptions\n    # like abbreviations (e.g., Mr. Smith) or decimals (e.g., 3.14).\n    # It matches periods, exclamation marks, or question marks that are followed by\n    # whitespace and an uppercase letter, or are at the end of the string.\n    # For robustness, we handle potential multiple spaces and ensure splits.\n    sentences = re.split(r'(?<=[.!?])\\\\s+(?=[A-Z])|\\\\s*(?<=[.!?]$)', text.strip())\n    \n    # Filter out empty strings and strip whitespace from each sentence\n    cleaned_sentences = [s.strip() for s in sentences if s.strip()]\n    return cleaned_sentences\n\ndef _detect_passive_voice(sentence: str) -> bool:\n    \"\"\"\n    A basic heuristic for detecting passive voice.\n    Looks for forms of \"to be\" followed by a past participle.\n    This is a simplification and will have false positives/negatives,\n    as it doesn't perform full grammatical parsing.\n    \"\"\"\n    sentence_lower = sentence.lower()\n    \n    # Regex for \"to be\" verb + a word ending in -ed or common irregular past participle patterns\n    # We include some common irregular past participles, but it's not exhaustive.\n    # This pattern tries to catch \"is/was/are/were/been/being + (word ending in -ed or -en or common irregular participle)\"\n    passive_voice_regex = r'\\\\b(?:is|am|are|was|were|been|being)\\\\b\\\\s+(?:\\\\w+ed|\\\\w+en|done|seen|made|taken|given|bought|caught|found|known|left|sent|told|thought)\\\\b'\n    \n    if re.search(passive_voice_regex, sentence_lower):\n        return True\n    return False\n\ndef _infer_tone(sentence: str, brand_profile: Dict[str, Any]) -> str:\n    \"\"\"\n    Infers the tone of a sentence based on predefined informal words\n    and comparison against desired sophisticated tone descriptors.\n    Returns 'informal', 'sophisticated', or 'neutral'.\n    \"\"\"\n    sentence_lower = sentence.lower()\n    \n    # Check for informal/prohibited words first\n    found_informal = False\n    for term in brand_profile.get(\"prohibited_terms\", []):\n        if re.search(r'\\\\b' + re.escape(term) + r'\\\\b', sentence_lower):\n            found_informal = True\n            break\n    if not found_informal: # Only check general informal if not already flagged by a prohibited term\n        for term in INFORMAL_WORDS:\n            if re.search(r'\\\\b' + re.escape(term) + r'\\\\b', sentence_lower):\n                found_informal = True\n                break\n    \n    if found_informal:\n        return \"informal\"\n            \n    # Check for words aligning with desired sophisticated tone\n    desired_tones = [t.lower() for t in brand_profile.get(\"tone_descriptors\", [])]\n    if any(any(re.search(r'\\\\b' + re.escape(s_word.lower()) + r'\\\\b', sentence_lower) for s_word in SOPHISTICATED_TONE_WORDS) for dt in desired_tones if dt in [s.lower() for s in SOPHISTICATED_TONE_WORDS]):\n        return \"sophisticated\"\n    \n    # Fallback\n    return \"neutral\"\n\ndef _generate_rewrite(original_segment: str, category: str, details: List[str], brand_profile: Dict[str, Any]) -> str:\n    \"\"\"\n    Generates a context-aware rewrite for a given segment based on deviation.\n    This is a simplified generative step and will not perform deep NLP parsing.\n    \"\"\"\n    rewrite = original_segment\n    \n    # Prioritize prohibited terms for direct replacement\n    if category == \"Prohibited Terms\":\n        for term_detail in details: # details might be like [\"Uses prohibited term: 'awesome'\"]\n            match = re.search(r\"'([^']+)'\", term_detail)\n            if match:\n                term = match.group(1) # Original casing\n                term_lower = term.lower()\n                replacement_info = INFORMAL_WORDS.get(term_lower, {})\n                replacement = replacement_info.get(\"suggestion\", \"[REPHRASE]\")\n                \n                # Use regex to replace whole word, case-insensitively, handling punctuation\n                if term_lower == \"really excited\":\n                    rewrite = re.sub(r'\\\\b(?:really)\\\\s+(?:excited)\\\\b', \"eager\", rewrite, flags=re.IGNORECASE)\n                else:\n                    rewrite = re.sub(r'\\\\b' + re.escape(term) + r'\\\\b', replacement, rewrite, flags=re.IGNORECASE)\n\n    elif category == \"Tone Deviation\":\n        problematic_words_str = next((d for d in details if \"uses words like\" in d), \"\")\n        # Extract words from \"Tone is informal, uses words like: 'word1', 'word2'\"\n        problematic_words_matches = re.findall(r\"'([^']+)'\", problematic_words_str)\n        \n        temp_rewrite = original_segment\n        for word in problematic_words_matches:\n            word_lower = word.lower()\n            if word_lower in INFORMAL_WORDS:\n                replacement = INFORMAL_WORDS[word_lower][\"suggestion\"]\n                temp_rewrite = re.sub(r'\\\\b' + re.escape(word) + r'\\\\b', replacement, temp_rewrite, flags=re.IGNORECASE)\n        \n        if temp_rewrite != original_segment:\n            rewrite = temp_rewrite\n        else:\n            first_tone = brand_profile.get('tone_descriptors', ['sophisticated'])[0]\n            rewrite = f\"Consider a more {first_tone} phrasing for: \\\\\"{original_segment}\\\\\"\"\n\n    elif category == \"Sentence Structure\" and \"passive voice\" in details[0]:\n        first_tone = brand_profile.get('tone_descriptors', ['sophisticated'])[0]\n        rewrite = f\"Rewrite this sentence in active voice to enhance its {first_tone} impact.\"\n    \n    elif category == \"Sentence Structure\" and \"long sentence\" in details[0]:\n        rewrite = f\"Consider breaking this sentence into shorter, more impactful statements.\"\n    \n    elif category == \"Keyword Missing\":\n        missing_keyword = details[0].split(\":\")[-1].strip().strip(\"'\") # Extract keyword\n        if missing_keyword:\n            rewrite = f\"Integrate '{missing_keyword}' into your content to reinforce your brand message.\"\n\n    # If no specific rewrite logic was applied, provide a general prompt\n    if rewrite == original_segment:\n        rewrite = f\"Refine this segment for better alignment with brand voice preferences.\"\n\n    return rewrite\n\n\ndef process(user_input_json: str) -> str:\n    \"\"\"\n    Main function to process user input for Brand Voice Alignment.\n    Returns a complete HTML page with analysis and suggestions.\n    \"\"\"\n    try:\n        input_data = json.loads(user_input_json)\n    except json.JSONDecodeError:\n        return _render_html_output({\"draft_text\": \"\", \"brand_profile\": {}}, {\"error_message\": \"Invalid JSON input. Please provide a valid JSON object.\"})\n\n    draft_text = input_data.get(\"draft_text\", \"\").strip()\n    brand_profile = input_data.get(\"brand_profile\", {})\n\n    # Ensure brand_profile fields are lists for easier processing and clean them\n    brand_profile[\"tone_descriptors\"] = [s.strip() for s in brand_profile.get(\"tone_descriptors\", []) if s.strip()]\n    brand_profile[\"keywords_to_include\"] = [s.strip() for s in brand_profile.get(\"keywords_to_include\", []) if s.strip()]\n    brand_profile[\"prohibited_terms\"] = [s.strip() for s in brand_profile.get(\"prohibited_terms\", []) if s.strip()]\n    brand_profile[\"target_emotion\"] = [s.strip() for s in brand_profile.get(\"target_emotion\", []) if s.strip()]\n    brand_profile[\"example_phrases\"] = [s.strip() for s in brand_profile.get(\"example_phrases\", []) if s.strip()]\n\n    # VALIDATION_FIRST - If input is insufficient, render the input UI with an error.\n    if not draft_text or len(draft_text) < 20:\n        return _render_html_output(input_data, {\"error_message\": \"Please provide a longer draft text (minimum 20 characters) for analysis.\"})\n    if not brand_profile or not brand_profile.get(\"name\"):\n        return _render_html_output(input_data, {\"error_message\": \"Please define or load a complete brand profile with a name.\"})\n    \n    # Initialize analysis variables\n    overall_consistency_score = 100\n    alignment_breakdown: List[Dict[str, Any]] = []\n    \n    sentences = _segment_sentences(draft_text)\n    \n    # A temporary structure to hold annotations per sentence and build the final HTML\n    # Each item will be (original_sentence_text, html_highlighted_text, list_of_issue_strings)\n    sentence_annotations: List[Tuple[str, str, List[str]]] = []\n\n    # --- Analysis Loop ---\n    # Process sentences for prohibited terms, tone, structure\n    for sentence_original in sentences:\n        current_sentence_highlighted = sentence_original\n        sentence_issue_details = []\n        \n        # Flags to prevent redundant score deductions for the same type of issue within one sentence\n        has_prohibited_term_issue_in_sentence = False\n        has_informal_tone_issue_in_sentence = False\n        has_passive_voice_issue_in_sentence = False\n        has_long_sentence_issue_in_sentence = False\n\n        # 1. Prohibited Terms\n        for term in brand_profile[\"prohibited_terms\"]:\n            if re.search(r'\\\\b' + re.escape(term) + r'\\\\b', sentence_original, re.IGNORECASE):\n                if not has_prohibited_term_issue_in_sentence:\n                    overall_consistency_score -= 10 # High penalty\n                    has_prohibited_term_issue_in_sentence = True\n                alignment_breakdown.append({\n                    \"category\": \"Prohibited Terms\",\n                    \"status\": \"Deviation\",\n                    \"details\": [f\"Uses prohibited term: '{term}'\"],\n                    \"original_segments\": [sentence_original],\n                    \"suggested_rewrites\": [_generate_rewrite(sentence_original, \"Prohibited Terms\", [f\"Uses prohibited term: '{term}'\"], brand_profile)]\n                })\n                current_sentence_highlighted = re.sub(r'(' + re.escape(term) + r')', r'<span class=\"highlight-red\">\\\\1</span>', current_sentence_highlighted, flags=re.IGNORECASE)\n                sentence_issue_details.append(f\"Prohibited Term: '{term}'\")\n\n        # 2. Tone Deviation (using predefined informal words not in brand_profile.prohibited_terms, or general informal tone)\n        inferred_tone = _infer_tone(sentence_original, brand_profile)\n        desired_sophisticated_tone = any(t.lower() in [s.lower() for s in SOPHISTICATED_TONE_WORDS] for t in brand_profile[\"tone_descriptors\"])\n        \n        if inferred_tone == \"informal\" and desired_sophisticated_tone:\n            # Find specific informal words in sentence that are not *also* in the brand_profile's prohibited terms\n            problematic_words_for_tone = [\n                k for k in INFORMAL_WORDS if re.search(r'\\\\b' + re.escape(k) + r'\\\\b', sentence_original, re.IGNORECASE) and k.lower() not in [pt.lower() for pt in brand_profile[\"prohibited_terms\"]]\n            ]\n\n            if problematic_words_for_tone and not has_informal_tone_issue_in_sentence:\n                overall_consistency_score -= 5 # Moderate penalty\n                has_informal_tone_issue_in_sentence = True\n                details_str = f\"Tone is informal, uses words like: '{', '.join(problematic_words_for_tone)}'\"\n                alignment_breakdown.append({\n                    \"category\": \"Tone Deviation\",\n                    \"status\": \"Deviation\",\n                    \"details\": [details_str],\n                    \"original_segments\": [sentence_original],\n                    \"suggested_rewrites\": [_generate_rewrite(sentence_original, \"Tone Deviation\", [details_str], brand_profile)]\n                })\n                # Highlight in yellow\n                for word in problematic_words_for_tone:\n                    current_sentence_highlighted = re.sub(r'(' + re.escape(word) + r')', r'<span class=\"highlight-yellow\">\\\\1</span>', current_sentence_highlighted, flags=re.IGNORECASE)\n                sentence_issue_details.append(f\"Informal Tone: {', '.join(problematic_words_for_tone)}\")\n            # For general informal tone (not tied to specific words) without highlighting, this is more semantic.\n            # We'll stick to highlighting based on detected words for now.\n\n        # 3. Sentence Structure & Voice\n        if brand_profile.get(\"active_passive_voice_preference\", \"\").lower() == \"active\":\n            if _detect_passive_voice(sentence_original):\n                if not has_passive_voice_issue_in_sentence:\n                    overall_consistency_score -= 3 # Lower penalty\n                    has_passive_voice_issue_in_sentence = True\n                alignment_breakdown.append({\n                    \"category\": \"Sentence Structure\",\n                    \"status\": \"Deviation\",\n                    \"details\": [\"Uses passive voice\"],\n                    \"original_segments\": [sentence_original],\n                    \"suggested_rewrites\": [_generate_rewrite(sentence_original, \"Sentence Structure\", [\"passive voice\"], brand_profile)]\n                })\n                # Highlight the entire sentence with orange border for passive voice\n                current_sentence_highlighted = f'<span class=\"highlight-orange-sentence\">{current_sentence_highlighted}</span>'\n                sentence_issue_details.append(f\"Passive Voice\")\n        \n        if brand_profile.get(\"sentence_structure_preference\", \"\").lower() == \"concise and impactful\":\n            word_count = len(re.findall(r'\\\\b\\\\w+\\\\b', sentence_original)) # Robust word count\n            if word_count > 20: # Heuristic for potentially long/unconcise sentences\n                if not has_long_sentence_issue_in_sentence:\n                    overall_consistency_score -= 2\n                    has_long_sentence_issue_in_sentence = True\n                details_str = f\"Sentence is long ({word_count} words), consider conciseness.\"\n                alignment_breakdown.append({\n                    \"category\": \"Sentence Structure\",\n                    \"status\": \"Potential Deviation\",\n                    \"details\": [details_str],\n                    \"original_segments\": [sentence_original],\n                    \"suggested_rewrites\": [_generate_rewrite(sentence_original, \"Sentence Structure\", [details_str], brand_profile)]\n                })\n                # Apply a light yellow highlight if no other sentence-level highlight is present\n                if not has_passive_voice_issue_in_sentence:\n                    current_sentence_highlighted = f'<span class=\"highlight-light-yellow-sentence\">{current_sentence_highlighted}</span>'\n                sentence_issue_details.append(f\"Long Sentence ({word_count} words)\")\n        \n        # Store for final annotated HTML\n        sentence_annotations.append((sentence_original, current_sentence_highlighted, sentence_issue_details))\n\n    # 4. Keywords to Include (check overall document presence)\n    missing_keywords = []\n    for keyword in brand_profile[\"keywords_to_include\"]:\n        if not re.search(r'\\\\b' + re.escape(keyword) + r'\\\\b', draft_text, re.IGNORECASE):\n            missing_keywords.append(keyword)\n\n    if missing_keywords:\n        for keyword in missing_keywords:\n            overall_consistency_score -= 7 # Moderate penalty for each missing key term\n            details_str = f\"Missing key brand keyword: '{keyword}'\"\n            alignment_breakdown.append({\n                \"category\": \"Keyword Missing\",\n                \"status\": \"Deviation\",\n                \"details\": [details_str],\n                \"original_segments\": [\"Overall document\"], # No specific segment, refers to the whole text\n                \"suggested_rewrites\": [_generate_rewrite(draft_text, \"Keyword Missing\", [details_str], brand_profile)]\n            })\n\n    # Ensure score is within 0-100 range\n    overall_consistency_score = max(0, min(100, overall_consistency_score))\n\n    # Build the final annotated HTML text from processed sentence annotations\n    final_annotated_parts = []\n    for original_text, highlighted_html, details_list in sentence_annotations:\n        if details_list:\n            # Join details with a specific separator for display in tooltip\n            data_issues_attr = _escape_html(\"; \".join(details_list))\n            # Wrap each sentence in a span with the \\`annotated-segment\\` class for tooltips\n            final_annotated_parts.append(\n                f'<span class=\"annotated-segment\" data-original=\"{_escape_html(original_text)}\" data-issues=\"{data_issues_attr}\">{highlighted_html}</span>'\n            )\n        else:\n            final_annotated_parts.append(_escape_html(original_text)) # Clean sentences also get wrapped and escaped\n    \n    annotated_text_html_content = \"<p>\" + \"</p><p>\".join(final_annotated_parts) + \"</p>\"\n    # Clean up any potential empty paragraphs from splitting, and ensure final HTML is correct\n    annotated_text_html_content = annotated_text_html_content.replace(\"<p></p>\", \"\")\n\n    # Summary Recommendation\n    summary_recommendation = \"Your draft shows strong alignment with your brand voice.\"\n    if overall_consistency_score < 90:\n        summary_recommendation = \"Your draft has some areas for improvement to better align with your brand voice.\"\n    if overall_consistency_score < 70:\n        summary_recommendation = \"Significant revisions are recommended to align your draft with your brand voice.\"\n    if overall_consistency_score < 50:\n        summary_recommendation = \"Your draft requires substantial rephrasing to meet brand voice standards.\"\n    \n    # Add specific summary points based on major deviations\n    if any(bd[\"category\"] == \"Prohibited Terms\" for bd in alignment_breakdown):\n        summary_recommendation += \" Specifically, addressing the use of prohibited terms should be a priority.\"\n    if any(bd[\"category\"] == \"Tone Deviation\" for bd in alignment_breakdown):\n        summary_recommendation += \" Focus on refining the tone to be more consistent with your desired style.\"\n    if any(bd[\"category\"] == \"Keyword Missing\" for bd in alignment_breakdown):\n        summary_recommendation += \" Consider integrating key brand keywords for stronger messaging.\"\n\n    output_data = {\n        \"overall_consistency_score\": overall_consistency_score,\n        \"alignment_breakdown\": alignment_breakdown,\n        \"summary_recommendation\": summary_recommendation,\n        \"annotated_text_html\": annotated_text_html_content,\n        \"error_message\": None # No error in this successful path\n    }\n\n    return _render_html_output(input_data, output_data)\n\ndef _render_html_output(input_data: Dict[str, Any], output_data: Dict[str, Any]) -> str:\n    \"\"\"\n    Renders the complete HTML interface with input form, analysis, and results.\n    This dynamically switches between Entry/Result states based on \\`output_data\\` content.\n    \"\"\"\n    draft_text = input_data.get(\"draft_text\", \"\")\n    brand_profile = input_data.get(\"brand_profile\", {})\n\n    # Default brand profile values for the UI if not provided or empty\n    bp_name = _escape_html(brand_profile.get(\"name\", \"\")) # Default to empty for new profile\n    bp_tone = _escape_html(\", \".join(brand_profile.get(\"tone_descriptors\", [\"sophisticated\", \"precise\"])))\n    bp_keywords = _escape_html(\", \".join(brand_profile.get(\"keywords_to_include\", [\"innovation\", \"excellence\"])))\n    bp_prohibited = _escape_html(\", \".join(brand_profile.get(\"prohibited_terms\", [\"awesome\", \"cool\"])))\n    bp_sentence_structure = _escape_html(brand_profile.get(\"sentence_structure_preference\", \"concise and impactful\"))\n    bp_voice_preference = _escape_html(brand_profile.get(\"active_passive_voice_preference\", \"active\"))\n    bp_target_emotion = _escape_html(\", \".join(brand_profile.get(\"target_emotion\", [\"trust\", \"excitement\"])))\n    bp_example_phrases = _escape_html(\"\\\\n\".join(brand_profile.get(\"example_phrases\", [\"\"])))\n\n    # If output_data contains an error_message or if no draft_text was provided, show input form with error/initial state.\n    error_message = output_data.get(\"error_message\")\n    \n    if error_message or not draft_text:\n        overall_score = 0 # Default score if no analysis happened\n        summary_recommendation = \"\"\n        annotated_text_html = \"\"\n        alignment_breakdown = []\n        is_initial_load_or_error = True\n    else:\n        overall_score = output_data[\"overall_consistency_score\"]\n        alignment_breakdown = output_data[\"alignment_breakdown\"]\n        summary_recommendation = _escape_html(output_data[\"summary_recommendation\"])\n        annotated_text_html = output_data[\"annotated_text_html\"]\n        is_initial_load_or_error = False\n\n    # Generate breakdown HTML\n    breakdown_html_items = \"\"\n    for i, item in enumerate(alignment_breakdown):\n        original_segments_str = _escape_html(\"<br>\".join(item[\"original_segments\"]))\n        suggested_rewrites_str = _escape_html(\"<br>\".join(item[\"suggested_rewrites\"]))\n        details_str = _escape_html(\"<br>\".join(item[\"details\"]))\n        breakdown_html_items += f\"\"\"\n            <div class=\"breakdown-item\">\n                <span class=\"category\">{_escape_html(item['category'])}:</span>\n                <span class=\"status {_escape_html(item['status'].lower().replace(' ', '-'))}\">{_escape_html(item['status'])}</span>\n                <p class=\"details\">{details_str}</p>\n                <div class=\"segment-pair\">\n                    <div class=\"original-segment\">\n                        <h4>Original:</h4>\n                        <p>{original_segments_str}</p>\n                    </div>\n                    <div class=\"suggested-rewrite\">\n                        <h4>Suggested Rewrite:</h4>\n                        <textarea rows=\"3\" class=\"rewrite-textarea\" data-index=\"{i}\">{suggested_rewrites_str}</textarea>\n                    </div>\n                </div>\n            </div>\n        \"\"\"\n\n    # Dial/Meter HTML and SVG (Rule 16)\n    radius = 40\n    circumference = 2 * 3.14159 * radius\n    arc_length = circumference * 0.75 # Use 270 degrees of the circle\n    \n    fill_length = (overall_score / 100) * arc_length\n    \n    # Define colors for score ranges\n    if overall_score >= 80:\n        score_color = \"#28a745\" # Green for High\n    elif overall_score >= 50:\n        score_color = \"#ffc107\" # Yellow for Medium\n    else:\n        score_color = \"#dc3545\" # Red for Low\n\n\n    html_content = f\"\"\"\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Brand Voice Aligner</title>\n    <style>\n        :root {{\n            --primary-brand-color: #6C63FF; /* A sophisticated purple/blue */\n            --secondary-brand-color: #E6E0FF; /* Lighter variant */\n            --text-color-dark: #2c3e50;\n            --text-color-light: #5a6268;\n            --background-color-light: #f8f9fa;\n            --background-color-dark: #ecf0f1;\n            --border-color: #dee2e6;\n\n            --highlight-red: #e74c3c;\n            --highlight-yellow: #f1c40f;\n            --highlight-orange: #e67e22;\n            --highlight-light-yellow: #fef0c9; /* for subtle deviation like long sentences */\n        }}\n\n        body {{\n            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;\n            margin: 0;\n            padding: 0;\n            background-color: var(--background-color-light);\n            color: var(--text-color-dark);\n            line-height: 1.6;\n            display: flex;\n            flex-direction: column;\n            min-height: 100vh;\n        }}\n\n        .container {{\n            max-width: 1200px;\n            margin: 20px auto;\n            padding: 20px;\n            background-color: #fff;\n            border-radius: 8px;\n            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);\n            flex-grow: 1;\n            display: flex;\n            flex-direction: column;\n        }}\n\n        h1, h2, h3, h4 {{\n            color: var(--primary-brand-color);\n            margin-top: 0;\n        }}\n\n        .header {{\n            text-align: center;\n            padding-bottom: 20px;\n            border-bottom: 1px solid var(--border-color);\n            margin-bottom: 20px;\n        }}\n        .header h1 {{\n            font-size: 2.5em;\n            font-weight: 600;\n        }}\n\n        /* UI Entry State / Result State toggling */\n        .input-section, .result-section {{\n            display: none; /* Controlled by JS or Python's initial render */\n        }}\n        .input-section.active, .result-section.active {{\n            display: block;\n        }}\n\n        .form-group {{\n            margin-bottom: 15px;\n        }}\n\n        label {{\n            display: block;\n            margin-bottom: 5px;\n            font-weight: 600;\n            color: var(--text-color-dark);\n        }}\n\n        textarea, input[type=\"text\"] {{\n            width: 100%;\n            padding: 10px;\n            border: 1px solid var(--border-color);\n            border-radius: 4px;\n            font-size: 1em;\n            box-sizing: border-box;\n            background-color: var(--background-color-dark);\n            color: var(--text-color-dark);\n        }}\n\n        textarea {{\n            min-height: 150px;\n            resize: vertical;\n        }}\n\n        .brand-profile-config {{\n            border: 1px solid var(--secondary-brand-color);\n            border-radius: 6px;\n            padding: 20px;\n            margin-top: 20px;\n            background-color: #fcfbff;\n        }}\n        .brand-profile-config.collapsed .config-fields {{\n            display: none;\n        }}\n        .brand-profile-config h3 {{\n            cursor: pointer;\n            display: flex;\n            justify-content: space-between;\n            align-items: center;\n            color: var(--text-color-dark);\n            font-size: 1.2em;\n        }}\n        .brand-profile-config h3::after {{\n            content: '\u25b2'; /* Up arrow for collapsed */\n            font-size: 0.8em;\n            transition: transform 0.2s ease;\n            transform: rotate(0deg); /* Initial state: pointing up */\n        }}\n        .brand-profile-config.expanded h3::after {{\n            content: '\u25bc'; /* Down arrow for expanded */\n            transform: rotate(0deg); /* No rotation needed if content changes */\n        }}\n\n        .button-group {{\n            display: flex;\n            justify-content: flex-end;\n            gap: 10px;\n            margin-top: 20px;\n            align-items: center;\n        }}\n\n        button {{\n            padding: 12px 25px;\n            border: none;\n            border-radius: 4px;\n            font-size: 1.1em;\n            cursor: pointer;\n            transition: background-color 0.2s ease, transform 0.1s ease;\n        }}\n\n        button.primary {{\n            background-color: var(--primary-brand-color);\n            color: #fff;\n        }}\n        button.primary:hover {{\n            background-color: #5b54d2;\n            transform: translateY(-1px);\n        }}\n        button.primary:active {{\n            transform: translateY(0);\n        }}\n\n        button.secondary {{\n            background-color: #e0e0e0;\n            color: var(--text-color-dark);\n        }}\n        button.secondary:hover {{\n            background-color: #d0d0d0;\n            transform: translateY(-1px);\n        }}\n        button.secondary:active {{\n            transform: translateY(0);\n        }}\n\n        /* UI Active State (Loading) */\n        .loading-spinner {{\n            border: 4px solid rgba(0, 0, 0, 0.1);\n            border-left-color: var(--primary-brand-color);\n            border-radius: 50%;\n            width: 24px;\n            height: 24px;\n            animation: spin 1s linear infinite;\n            display: none; /* Hidden by default */\n            margin-left: 10px;\n        }}\n        @keyframes spin {{\n            0% {{ transform: rotate(0deg); }}\n            100% {{ transform: rotate(360deg); }}\n        }}\n        .loading-spinner.active {{\n            display: inline-block;\n        }}\n\n        /* UI Result State */\n        .result-layout {{\n            display: flex;\n            flex-wrap: wrap; /* Allows wrapping on smaller screens */\n            gap: 20px;\n            margin-top: 20px;\n        }}\n\n        .text-panel {{\n            flex: 1 1 calc(50% - 10px); /* Two columns on wider screens */\n            background-color: var(--background-color-dark);\n            padding: 20px;\n            border-radius: 6px;\n            min-width: 300px; /* Minimum width for each panel */\n            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);\n            overflow-y: auto;\n            max-height: 600px; /* Limit height for scrolling */\n        }}\n\n        .text-panel h3 {{\n            border-bottom: 1px solid var(--border-color);\n            padding-bottom: 10px;\n            margin-bottom: 15px;\n            color: var(--text-color-dark);\n        }}\n\n        .original-text p, .annotated-text p {{\n            margin: 0 0 1em 0;\n            white-space: pre-wrap; /* Preserves line breaks from input */\n        }}\n        .original-text p:last-child, .annotated-text p:last-child {{\n            margin-bottom: 0;\n        }}\n\n\n        /* Highlighting for annotated text */\n        .highlight-red {{ background-color: rgba(231, 76, 60, 0.2); border-bottom: 1px dashed var(--highlight-red); cursor: help; }} /* Prohibited terms */\n        .highlight-yellow {{ background-color: rgba(241, 196, 15, 0.2); border-bottom: 1px dashed var(--highlight-yellow); cursor: help; }} /* Tone deviation */\n        /* Sentence-level highlights with padding and border for visibility */\n        .highlight-orange-sentence {{ background-color: rgba(230, 126, 34, 0.1); border-left: 3px solid var(--highlight-orange); padding-left: 5px; cursor: help; display: block; }} /* Passive voice - whole sentence */\n        .highlight-light-yellow-sentence {{ background-color: rgba(254, 240, 201, 0.1); border-left: 3px dotted var(--highlight-yellow); padding-left: 5px; cursor: help; display: block; }} /* Long sentence - whole sentence */\n\n        .tooltip {{\n            position: absolute;\n            background-color: var(--text-color-dark);\n            color: #fff;\n            padding: 8px 12px;\n            border-radius: 4px;\n            z-index: 1000;\n            font-size: 0.8em;\n            pointer-events: none;\n            box-shadow: 0 2px 5px rgba(0,0,0,0.2);\n            white-space: nowrap;\n        }}\n        .tooltip strong {{ display: block; margin-bottom: 4px; }}\n        .tooltip span {{ display: block; line-height: 1.3; }}\n\n\n        .score-summary {{\n            flex: 1 1 100%; /* Full width for score and summary */\n            display: flex;\n            flex-direction: column;\n            align-items: center;\n            gap: 20px;\n            padding: 20px;\n            border-radius: 6px;\n            background-color: var(--background-color-dark);\n            margin-top: 20px;\n        }}\n\n        .score-dial-container {{\n            position: relative;\n            width: 120px;\n            height: 120px;\n            display: flex;\n            flex-direction: column;\n            align-items: center;\n            justify-content: center;\n            font-weight: bold;\n            font-size: 1.8em;\n            color: var(--text-color-dark);\n        }}\n        .score-dial-label {{\n            font-size: 0.8em;\n            color: var(--text-color-light);\n            margin-top: 5px;\n        }}\n\n        .score-dial-svg {{\n            position: absolute;\n            top: 0;\n            left: 0;\n            width: 100%;\n            height: 100%;\n            transform: rotate(-135deg); /* Start arc at bottom-left */\n        }}\n        .score-dial-svg circle {{\n            transition: stroke-dasharray 1s ease-out;\n        }}\n\n        .summary-recommendation {{\n            text-align: center;\n            font-style: italic;\n            color: var(--text-color-light);\n            margin-top: 10px;\n            max-width: 800px;\n        }}\n\n        .breakdown-panel {{\n            flex: 1 1 100%; /* Full width below text panels */\n            background-color: var(--background-color-dark);\n            padding: 20px;\n            border-radius: 6px;\n            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);\n            margin-top: 20px;\n        }}\n\n        .breakdown-item {{\n            margin-bottom: 20px;\n            padding: 15px;\n            border-bottom: 1px solid var(--border-color);\n            background-color: #fff;\n            border-radius: 4px;\n        }}\n        .breakdown-item:last-child {{\n            border-bottom: none;\n        }}\n        .breakdown-item .category {{\n            font-weight: bold;\n            color: var(--primary-brand-color);\n            margin-right: 5px;\n        }}\n        .breakdown-item .status {{\n            font-size: 0.9em;\n            padding: 3px 8px;\n            border-radius: 3px;\n            color: #fff;\n        }}\n        .breakdown-item .status.deviation {{ background-color: var(--highlight-red); }}\n        .breakdown-item .status.potential-deviation {{ background-color: var(--highlight-orange); }}\n        .breakdown-item .status.alignment {{ background-color: #28a745; }} /* Not used currently, but good to have */\n        .breakdown-item .details {{\n            font-style: italic;\n            color: var(--text-color-light);\n            margin-top: 5px;\n        }}\n        .breakdown-item h4 {{\n            margin-top: 10px;\n            margin-bottom: 5px;\n            color: var(--text-color-dark);\n        }}\n        .segment-pair {{\n            display: flex;\n            gap: 15px;\n            margin-top: 10px;\n        }}\n        .original-segment, .suggested-rewrite {{\n            flex: 1;\n            padding: 10px;\n            border: 1px solid var(--border-color);\n            border-radius: 4px;\n            background-color: var(--background-color-light);\n        }}\n        .original-segment p, .suggested-rewrite textarea {{\n            margin: 0;\n            font-size: 0.95em;\n        }}\n        .suggested-rewrite textarea {{\n            width: 100%;\n            min-height: 100px; /* Fixed height for consistency */\n            resize: vertical;\n            border: none;\n            background-color: transparent;\n            font-family: inherit;\n            color: inherit;\n        }}\n        .action-buttons-result {{\n            display: flex;\n            justify-content: center;\n            gap: 15px;\n            margin-top: 30px;\n            padding-top: 20px;\n            border-top: 1px solid var(--border-color);\n        }}\n        .action-buttons-result button {{\n            padding: 10px 20px;\n            font-size: 1em;\n        }}\n        \n        .error-message {{\n            background-color: #fce4e4;\n            color: #c70000;\n            border: 1px solid #c70000;\n            padding: 15px;\n            border-radius: 4px;\n            margin-bottom: 20px;\n            font-weight: 500;\n            display: block; /* Always block, controlled by JS if empty */\n        }}\n\n        /* Responsive adjustments */\n        @media (max-width: 768px) {{\n            .result-layout {{\n                flex-direction: column;\n            }}\n            .text-panel {{\n                flex: 1 1 100%;\n            }}\n            .segment-pair {{\n                flex-direction: column;\n            }}\n        }}\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1>Brand Voice Aligner</h1>\n        </div>\n        \n        <div id=\"errorMessage\" class=\"error-message\" style=\"display: {{\"block\" if error_message else \"none\"}};\">\n            {_escape_html(error_message) if error_message else \"\"}\n        </div>\n\n        <!-- UI Entry State / Input Form -->\n        <div id=\"inputSection\" class=\"input-section {{\"active\" if is_initial_load_or_error else \"\"}}\">\n            <div class=\"form-group\">\n                <label for=\"draftContent\">Paste your draft content here...</label>\n                <textarea id=\"draftContent\" placeholder=\"Our new product launch is going to be totally awesome! It's super sleek and will blow your mind with its cool features. We're really excited for everyone to check it out soon and experience the amazing journey.\">{_escape_html(draft_text)}</textarea>\n            </div>\n\n            <div id=\"brandProfileConfig\" class=\"brand-profile-config {{\"expanded\" if brand_profile and brand_profile.get('name') else \"collapsed\"}}\">\n                <h3 onclick=\"toggleBrandProfileConfig()\">Define Your Brand Voice <span id=\"toggleIcon\">\u25bc</span></h3>\n                <div class=\"config-fields\">\n                    <div class=\"form-group\">\n                        <label for=\"profileName\">Profile Name:</label>\n                        <input type=\"text\" id=\"profileName\" value=\"{bp_name}\" placeholder=\"e.g., Lumi\u00e8re Corp - V2\">\n                    </div>\n                    <div class=\"form-group\">\n                        <label for=\"toneDescriptors\">Tone Descriptors (comma-separated):</label>\n                        <input type=\"text\" id=\"toneDescriptors\" value=\"{bp_tone}\" placeholder=\"e.g., sophisticated, precise, innovative\">\n                    </div>\n                    <div class=\"form-group\">\n                        <label for=\"keywordsInclude\">Keywords to Include (comma-separated):</label>\n                        <input type=\"text\" id=\"keywordsInclude\" value=\"{bp_keywords}\" placeholder=\"e.g., innovation, sustainability, excellence\">\n                    </div>\n                    <div class=\"form-group\">\n                        <label for=\"prohibitedTerms\">Prohibited Terms (comma-separated):</label>\n                        <input type=\"text\" id=\"prohibitedTerms\" value=\"{bp_prohibited}\" placeholder=\"e.g., awesome, cool, super, amazing\">\n                    </div>\n                    <div class=\"form-group\">\n                        <label for=\"sentenceStructure\">Sentence Structure Preference:</label>\n                        <input type=\"text\" id=\"sentenceStructure\" value=\"{bp_sentence_structure}\" placeholder=\"e.g., concise and impactful, varied\">\n                    </div>\n                    <div class=\"form-group\">\n                        <label for=\"voicePreference\">Active/Passive Voice Preference:</label>\n                        <input type=\"text\" id=\"voicePreference\" value=\"{bp_voice_preference}\" placeholder=\"e.g., active, neutral\">\n                    </div>\n                    <div class=\"form-group\">\n                        <label for=\"targetEmotion\">Target Emotion (comma-separated):</label>\n                        <input type=\"text\" id=\"targetEmotion\" value=\"{bp_target_emotion}\" placeholder=\"e.g., trust, excitement, admiration\">\n                    </div>\n                    <div class=\"form-group\">\n                        <label for=\"examplePhrases\">Example Phrases (one per line):</label>\n                        <textarea id=\"examplePhrases\" rows=\"4\" placeholder=\"Lumi\u00e8re embodies the pinnacle of precision engineering.\\\\nWe forge the future with visionary innovation.\">{bp_example_phrases}</textarea>\n                    </div>\n                </div>\n            </div>\n\n            <div class=\"button-group\">\n                <button type=\"button\" class=\"secondary\" onclick=\"loadExampleProfile()\">Load Example Profile</button>\n                <button type=\"button\" class=\"primary\" id=\"alignVoiceButton\" onclick=\"submitAnalysis()\">\n                    Align Voice\n                    <span id=\"loadingSpinner\" class=\"loading-spinner\"></span>\n                </button>\n            </div>\n        </div>\n\n        <!-- UI Result State -->\n        <div id=\"resultSection\" class=\"result-section {{\"active\" if not is_initial_load_or_error else \"\"}}\">\n            <div class=\"score-summary\">\n                <div class=\"score-dial-container\">\n                    <svg class=\"score-dial-svg\" width=\"100%\" height=\"100%\" viewBox=\"0 0 100 100\">\n                        <circle cx=\"50\" cy=\"50\" r=\"{radius}\" fill=\"none\" stroke=\"#e0e0e0\" stroke-width=\"8\" stroke-dasharray=\"{arc_length}\" stroke-dashoffset=\"{arc_length / 4}\" stroke-linecap=\"round\"></circle>\n                        <circle cx=\"50\" cy=\"50\" r=\"{radius}\" fill=\"none\" stroke=\"{score_color}\" stroke-width=\"8\" stroke-dasharray=\"{fill_length} {arc_length - fill_length}\" stroke-dashoffset=\"{arc_length / 4}\" stroke-linecap=\"round\"></circle>\n                    </svg>\n                    <span>{overall_score}</span>\n                    <span class=\"score-dial-label\">Alignment Score</span>\n                </div>\n                <p class=\"summary-recommendation\">{summary_recommendation}</p>\n            </div>\n\n            <div class=\"result-layout\">\n                <div class=\"text-panel original-text\">\n                    <h3>Original Draft</h3>\n                    <p>{_escape_html(draft_text)}</p>\n                </div>\n                <div class=\"text-panel annotated-text\">\n                    <h3>Annotated Draft</h3>\n                    {annotated_text_html}\n                </div>\n            </div>\n\n            <div class=\"breakdown-panel\">\n                <h3>Alignment Breakdown & Suggestions</h3>\n                <div class=\"breakdown-items-container\">\n                    {breakdown_html_items}\n                </div>\n            </div>\n            <div class=\"action-buttons-result\">\n                <button type=\"button\" class=\"primary\" onclick=\"copyRewrittenText()\">Copy Rewritten Text</button>\n                <button type=\"button\" class=\"secondary\" onclick=\"exportReport()\">Export Report</button>\n                <button type=\"button\" class=\"secondary\" onclick=\"resetTool()\">Refine Profile / New Analysis</button>\n            </div>\n        </div>\n    </div>\n\n    <script>\n        // Store input data for re-running analysis or modifying profile\n        // These are initialized by Python, for client-side JS reference.\n        let currentDraftText = {_escape_html(json.dumps(draft_text))};\n        let currentBrandProfile = {_escape_html(json.dumps(brand_profile))};\n        let currentAlignmentBreakdown = {_escape_html(json.dumps(alignment_breakdown))};\n        let currentSummaryRecommendation = {_escape_html(json.dumps(summary_recommendation))};\n        let currentOverallScore = {_escape_html(json.dumps(overall_score))};\n\n        document.addEventListener('DOMContentLoaded', () => {{\n            const inputSection = document.getElementById('inputSection');\n            const resultSection = document.getElementById('resultSection');\n            const brandProfileConfig = document.getElementById('brandProfileConfig');\n            const toggleIcon = document.getElementById('toggleIcon');\n\n            // Set initial state based on Python's rendering logic (is_initial_load_or_error)\n            if ({json.dumps(is_initial_load_or_error)}) {{ // True if error or initial empty load\n                inputSection.classList.add('active');\n                resultSection.classList.remove('active');\n            }} else {{ // False means a successful analysis was performed\n                inputSection.classList.remove('active');\n                resultSection.classList.add('active');\n            }}\n\n            // Expand brand profile config if data is pre-filled, or set default arrow\n            if (currentBrandProfile && Object.keys(currentBrandProfile).length > 0 && currentBrandProfile.name && currentBrandProfile.name.length > 0) {{\n                brandProfileConfig.classList.add('expanded');\n                brandProfileConfig.classList.remove('collapsed');\n                toggleIcon.textContent = '\u25bc'; // Down arrow for expanded\n            }} else {{\n                brandProfileConfig.classList.add('collapsed');\n                brandProfileConfig.classList.remove('expanded');\n                toggleIcon.textContent = '\u25b2'; // Up arrow for collapsed\n            }}\n            \n             // Attach event listeners for highlight tooltips\n            document.querySelectorAll('.annotated-segment, .highlight-red, .highlight-yellow, .highlight-orange-sentence, .highlight-light-yellow-sentence').forEach(element => {{\n                element.onmouseover = (e) => {{\n                    // Prioritize specific word highlights' data-issues if available, falling back to segment-level\n                    let issues = e.target.dataset.issues || '';\n                    if (!issues && e.target.closest('.annotated-segment')) {{\n                        issues = e.target.closest('.annotated-segment').dataset.issues || '';\n                    }}\n\n                    if (issues) {{\n                        const tooltip = document.createElement('div');\n                        tooltip.className = 'tooltip';\n                        // Split by '; ' to handle multiple issues per segment\n                        // Use _escape_html to prevent XSS if issue details contain user-controlled text\n                        tooltip.innerHTML = '<strong>Issues:</strong><br>' + issues.split('; ').map(issue => \\`<span>\\${_escape_html(issue)}</span>\\`).join('');\n                        tooltip.style.position = 'absolute';\n                        tooltip.style.top = (e.pageY + 15) + 'px';\n                        tooltip.style.left = (e.pageX + 15) + 'px';\n                        document.body.appendChild(tooltip);\n                        e.target.tooltipElement = tooltip; // Store reference to remove later\n                    }}\n                }};\n                element.onmouseout = (e) => {{\n                    if (e.target.tooltipElement) {{\n                        e.target.tooltipElement.remove();\n                        e.target.tooltipElement = null;\n                    }}\n                }};\n                element.onmousemove = (e) => {{\n                    if (e.target.tooltipElement) {{\n                        tooltip.style.top = (e.pageY + 15) + 'px';\n                        tooltip.style.left = (e.pageX + 15) + 'px';\n                    }}\n                }};\n            }});\n        }});\n\n        function toggleBrandProfileConfig() {{\n            const configDiv = document.getElementById('brandProfileConfig');\n            const toggleIcon = document.getElementById('toggleIcon');\n            configDiv.classList.toggle('collapsed');\n            configDiv.classList.toggle('expanded');\n            if (configDiv.classList.contains('expanded')) {{\n                toggleIcon.textContent = '\u25bc';\n            }} else {{\n                toggleIcon.textContent = '\u25b2';\n            }}\n        }}\n\n        function getBrandProfileFromUI() {{\n            return {{\n                name: document.getElementById('profileName').value,\n                tone_descriptors: document.getElementById('toneDescriptors').value.split(',').map(s => s.trim()).filter(s => s),\n                keywords_to_include: document.getElementById('keywordsInclude').value.split(',').map(s => s.trim()).filter(s => s),\n                prohibited_terms: document.getElementById('prohibitedTerms').value.split(',').map(s => s.trim()).filter(s => s),\n                sentence_structure_preference: document.getElementById('sentenceStructure').value,\n                active_passive_voice_preference: document.getElementById('voicePreference').value,\n                target_emotion: document.getElementById('targetEmotion').value.split(',').map(s => s.trim()).filter(s => s),\n                example_phrases: document.getElementById('examplePhrases').value.split('\\\\\\\\n').map(s => s.trim()).filter(s => s),\n            }};\n        }}\n\n        function submitAnalysis() {{\n            const draftText = document.getElementById('draftContent').value;\n            const brandProfile = getBrandProfileFromUI();\n\n            if (!draftText || draftText.trim().length < 20) {{\n                const errorDiv = document.getElementById('errorMessage');\n                errorDiv.style.display = 'block';\n                errorDiv.textContent = 'Please provide a longer draft text (minimum 20 characters) for analysis.';\n                return;\n            }}\n            if (!brandProfile.name) {{\n                const errorDiv = document.getElementById('errorMessage');\n                errorDiv.style.display = 'block';\n                errorDiv.textContent = 'Please define a brand profile name.';\n                return;\n            }}\n\n            document.getElementById('errorMessage').style.display = 'none'; // Hide any previous error\n            document.getElementById('alignVoiceButton').disabled = true;\n            document.getElementById('loadingSpinner').classList.add('active');\n\n            // This is a placeholder for actual interaction. In the Lili environment,\n            // submitting this form would trigger a re-run of the process() function\n            // with the new input, generating a fresh HTML output.\n            setTimeout(() => {{\n                alert('Analysis request sent. The page will refresh with your results once processing is complete.');\n                // In a real browser/server setup, you would typically POST this data:\n                // fetch('/process', { method: 'POST', body: JSON.stringify({ draft_text: draftText, brand_profile: brandProfile }) })\n                //    .then(response => response.text())\n                //    .then(html => document.open('text/html').write(html).close());\n                \n                // For this challenge, we just reset the button and expect the build system to handle re-rendering on next input.\n                document.getElementById('alignVoiceButton').disabled = false;\n                document.getElementById('loadingSpinner').classList.remove('active');\n            }}, 1500); // Simulate loading time\n        }}\n\n        function loadExampleProfile() {{\n            document.getElementById('draftContent').value = \"Our new product launch is going to be truly exceptional! It's a highly sophisticated device that will exceed expectations with its innovative features. We are eager for everyone to explore its transformative capabilities soon.\";\n            document.getElementById('profileName').value = \"Lumi\u00e8re Corp - V2\";\n            document.getElementById('toneDescriptors').value = \"sophisticated, precise, innovative, inspiring, authoritative\";\n            document.getElementById('keywordsInclude').value = \"innovation, precision, excellence, future-forward, transformative\";\n            document.getElementById('prohibitedTerms').value = \"awesome, cool, super, amazing, blow your mind, really excited\";\n            document.getElementById('sentenceStructure').value = \"concise and impactful\";\n            document.getElementById('voicePreference').value = \"active\";\n            document.getElementById('targetEmotion').value = \"trust, excitement, admiration\";\n            document.getElementById('examplePhrases').value = \"Lumi\u00e8re embodies the pinnacle of precision engineering.\\\\\\\\nWe forge the future with visionary innovation.\\\\\\\\nExperience the transformative power of our latest solution.\";\n            \n            const brandProfileConfig = document.getElementById('brandProfileConfig');\n            const toggleIcon = document.getElementById('toggleIcon');\n            brandProfileConfig.classList.add('expanded');\n            brandProfileConfig.classList.remove('collapsed');\n            toggleIcon.textContent = '\u25bc'; // Down arrow for expanded\n        }}\n\n        function copyRewrittenText() {{\n            let fullRewrittenText = [];\n            document.querySelectorAll('.rewrite-textarea').forEach(textarea => {{\n                fullRewrittenText.push(textarea.value);\n            }});\n            navigator.clipboard.writeText(fullRewrittenText.join('\\\\\\\\n\\\\\\\\n')).then(() => {{\n                alert('All suggested rewrites copied to clipboard!');\n            }}).catch(err => {{\n                console.error('Failed to copy text: ', err);\n                alert('Failed to copy text. Please try again or copy manually.');\n            }});\n        }}\n\n        function exportReport() {{\n            // Use the Python-generated data for the report, as it's static in this single-HTML context.\n            const reportContent = \\`\nBrand Voice Alignment Report\n------------------------------------\nOverall Consistency Score: \\${{currentOverallScore}}\n\nSummary Recommendation:\n\\${{currentSummaryRecommendation}}\n\nOriginal Draft:\n\\${{currentDraftText}}\n\n--- Alignment Breakdown ---\n\\` + JSON.parse(currentAlignmentBreakdown).map(item => \\`\nCategory: \\${{item.category}}\nStatus: \\${{item.status}}\nDetails: \\${{item.details.join('; ')}}\nOriginal Segment: \\${{item.original_segments.join('\\\\\\\\n')}}\nSuggested Rewrite: \\${{item.suggested_rewrites.join('\\\\\\\\n')}}\n\\`).join('\\\\\\\\n------------------------------------\\\\n') + \\`\n--- End Report ---\n            \\`;\n            const blob = new Blob([reportContent], {{ type: 'text/plain' }});\n            const a = document.createElement('a');\n            a.href = URL.createObjectURL(blob);\n            a.download = 'BrandVoiceAlignmentReport.txt';\n            document.body.appendChild(a);\n            a.click();\n            document.body.removeChild(a);\n            alert('Report exported as BrandVoiceAlignmentReport.txt!');\n        }}\n\n        function resetTool() {{\n            // Clear inputs and reset UI to the initial entry state.\n            document.getElementById('draftContent').value = '';\n            document.getElementById('profileName').value = '';\n            document.getElementById('toneDescriptors').value = '';\n            document.getElementById('keywordsInclude').value = '';\n            document.getElementById('prohibitedTerms').value = '';\n            document.getElementById('sentenceStructure').value = '';\n            document.getElementById('voicePreference').value = '';\n            document.getElementById('targetEmotion').value = '';\n            document.getElementById('examplePhrases').value = '';\n            \n            document.getElementById('inputSection').classList.add('active');\n            document.getElementById('resultSection').classList.remove('active');\n            document.getElementById('alignVoiceButton').disabled = false;\n            document.getElementById('loadingSpinner').classList.remove('active');\n            document.getElementById('errorMessage').style.display = 'none';\n\n            const brandProfileConfig = document.getElementById('brandProfileConfig');\n            brandProfileConfig.classList.add('collapsed');\n            brandProfileConfig.classList.remove('expanded');\n            document.getElementById('toggleIcon').textContent = '\u25b2';\n            \n            alert('Tool reset. You can now define a new brand profile or paste new content.');\n        }}\n    <\/script>\n</body>\n</html>\n\"\"\"\n    return html_content\n\ndef _cli_main():\n    \"\"\"\n    Command-line interface entry point for testing or direct execution.\n    For Mode 3 tools, this is primarily for development and testing.\n    \"\"\"\n    import sys\n    \n    # Use the test input from the spec by default for CLI\n    default_test_input = \"\"\"\n        { \"draft_text\": \"Our new product launch is going to be totally awesome! It's super sleek and will blow your mind with its cool features. We're really excited for everyone to check it out soon and experience the amazing journey.\", \"brand_profile\": { \"name\": \"Lumi\u00e8re Corp - V2\", \"tone_descriptors\": [\"sophisticated\", \"precise\", \"innovative\", \"inspiring\", \"authoritative\"], \"keywords_to_include\": [\"innovation\", \"precision\", \"excellence\", \"future-forward\", \"transformative\"], \"prohibited_terms\": [\"awesome\", \"cool\", \"super\", \"amazing\", \"blow your mind\", \"really excited\"], \"sentence_structure_preference\": \"concise and impactful\", \"active_passive_voice_preference\": \"active\", \"target_emotion\": [\"trust\", \"excitement\", \"admiration\"], \"example_phrases\": [\"Lumi\u00e8re embodies the pinnacle of precision engineering.\", \"We forge the future with visionary innovation.\", \"Experience the transformative power of our latest solution.\"] } }\n    \"\"\"\n    \n    if len(sys.argv) > 1:\n        user_input_arg = sys.argv[1]\n    else:\n        user_input_arg = default_test_input\n        # print(\"Using default test input for CLI. Provide JSON as argument for custom input.\")\n\n    # In a real CLI scenario, you might print the raw JSON output or open the HTML in a browser.\n    # For this exercise, we just print the HTML, as per Mode 3 requirement.\n    print(process(user_input_arg))\n\n# DUAL-MODE PATTERN\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    _cli_main()";
+const DEMO_INPUT = "Brand: Momi, a slow-living Japanese skincare line. Audience: women 28-45 who value ritual and simplicity. Tone: quiet luxury, minimal, honest. Deliverable: Instagram caption series for a new serum launch.";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      const demoNote = document.createElement('p');
+      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
+      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
+      document.getElementById('output').before(demoNote);
+      await runTool(true);
+    }
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool(isDemo) {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
+      outEl.textContent = '';
+      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
+      const iframe = document.createElement('iframe');
+      iframe.sandbox = 'allow-scripts allow-same-origin';
+      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
+      iframe.srcdoc = output;
+      outEl.appendChild(iframe);
+      iframe.addEventListener('load', () => {
+        try {
+          const h = iframe.contentDocument.body.scrollHeight;
+          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
+        } catch(e) {}
+      });
+    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
+</script>
+      </div>
+    </section>
+
+    
+<section class="detail-section reactions-section">
+  <div class="reactions-label">Was this useful?</div>
+  <div class="reaction-bar" id="reaction-bar-2026-06-08-brand-voice-aligner">
+    <button class="reaction-btn" data-key="fire" title="Used it!"><span class="reaction-emoji">🔥</span><span class="reaction-label">Used it!</span></button><button class="reaction-btn" data-key="useful" title="Useful"><span class="reaction-emoji">👍</span><span class="reaction-label">Useful</span></button><button class="reaction-btn" data-key="rocket" title="Inspiring"><span class="reaction-emoji">🚀</span><span class="reaction-label">Inspiring</span></button><button class="reaction-btn" data-key="heart" title="Love it"><span class="reaction-emoji">❤️</span><span class="reaction-label">Love it</span></button><button class="reaction-btn" data-key="confused" title="Not quite"><span class="reaction-emoji">😕</span><span class="reaction-label">Not quite</span></button>
+  </div>
+</section>
+<script>
+(function() {
+  var bar = document.getElementById('reaction-bar-2026-06-08-brand-voice-aligner');
+  if (!bar) return;
+  var storageKey = 'lili-rx-2026-06-08-brand-voice-aligner';
+  var selected = {};
+  try { selected = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch(e) {}
+  bar.querySelectorAll('.reaction-btn').forEach(function(btn) {
+    if (selected[btn.dataset.key]) btn.classList.add('selected');
+    btn.addEventListener('click', function() {
+      var k = btn.dataset.key;
+      selected[k] = !selected[k];
+      btn.classList.toggle('selected', !!selected[k]);
+      try { localStorage.setItem(storageKey, JSON.stringify(selected)); } catch(e) {}
+    });
+  });
+})();
+</script>
+
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <div class="footer-tagline">One friction point<span class="tagline-dot">.</span> One tool<span class="tagline-dot">.</span> Every day<span class="tagline-dot">.</span></div>
+        <span class="footer-copy">Super-Lili's Daily Adventure &nbsp;·&nbsp; 2026-06-08</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
