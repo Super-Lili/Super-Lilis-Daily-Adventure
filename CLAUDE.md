@@ -220,6 +220,7 @@ Ideas discussed and consciously deferred. Revisit when conditions are right.
 
 **Quality & Memory**
 - Error frequency quantification: track how many times each error pattern repeats across weeks. Currently errors are logged as text but not counted. Would make weekly evolution more precise.
+- Structured memory system: upgrade lili_memory.json to include failure_patterns, deepseek_verdict, was_shell fields per tool. Enables evolution reports to say "js_in_fstring error occurred 3 times this week" instead of vague "improve code quality". Build after 2 weeks of stable runs when real failure patterns emerge.
 - Real selection pressure: self-evolution is only meaningful with real user feedback. Tools need actual users who return (or don't). Without this, evolution is self-referential.
 - /schedule daily quality check: Claude checks today's tool at 10:00 Beijing time. Blocked by claude.ai remote connection issue as of 2026-06-08. Retry periodically.
 
