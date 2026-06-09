@@ -223,6 +223,9 @@ Ideas discussed and consciously deferred. Revisit when conditions are right.
 - Real selection pressure: self-evolution is only meaningful with real user feedback. Tools need actual users who return (or don't). Without this, evolution is self-referential.
 - /schedule daily quality check: Claude checks today's tool at 10:00 Beijing time. Blocked by claude.ai remote connection issue as of 2026-06-08. Retry periodically.
 
+**Alternative Direction**
+- Lili as Curator, not Creator: instead of building tools from scratch, Lili discovers the best existing tools for creative professionals, evaluates them, writes usage guides, and embeds them directly into the static site. Core value shifts from "original tool maker" to "trusted creative toolkit curator" — closer to the owner's editorial strengths and neo-slow media philosophy. Revisit if tool quality remains unstable after the first two weeks of stable runs.
+
 **Inspiration**
 - auto_research system (github.com/zartbot/blog/tree/main/auto_research): generates deep technical research reports automatically. Not directly applicable to Lili's creative-professional focus, but the deep synthesis approach is worth studying.
 - Owner can submit GitHub Issues with real-world phenomena and articles as tool inspiration — higher quality than random Reddit SCOUT.
