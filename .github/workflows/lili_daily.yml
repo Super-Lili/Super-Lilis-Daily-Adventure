@@ -2,9 +2,9 @@ name: 🌸 Super-Lili Daily Adventure
 
 on:
   schedule:
-    - cron: '5 0 * * *'   # 08:05 Beijing (primary)
-    - cron: '5 6 * * *'   # 14:05 Beijing (backup)
-    - cron: '5 12 * * *'  # 20:05 Beijing (backup)
+    - cron: '30 0 * * *'   # 08:30 Beijing (primary) — 30min after quota reset
+    - cron: '30 6 * * *'   # 14:30 Beijing (backup)
+    - cron: '30 12 * * *'  # 20:30 Beijing (backup)
   workflow_dispatch:
 
 jobs:
