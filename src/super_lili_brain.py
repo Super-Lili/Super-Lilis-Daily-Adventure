@@ -1119,6 +1119,16 @@ CODE REQUIREMENTS:
 [OK] Mode 3: process() returns complete <!DOCTYPE html>...
 [NO] Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
 [OK] Implement EXACTLY the transformation and algorithmic depth in the approved spec
+[NO] NEVER hardcode a dictionary of expected inputs/outputs - the algorithm must work on ANY input
+[NO] NEVER match keywords against a preset lookup table and return preset strings
+
+TEST FILE REQUIREMENTS (test_main.py):
+[OK] Import: from main import process
+[OK] Call process() with 2-3 DIFFERENT inputs (not just the spec test input)
+[OK] Assert that output is non-empty and changes between different inputs
+[OK] Assert at least one structural property of the output (e.g. contains a keyword, length > N)
+[NO] Do NOT assert exact output strings - the tool must work on arbitrary input
+[NO] Do NOT import libraries that aren't in the standard library
 
 OUTPUT FORMAT - COPY EXACTLY:
 ---CODE---
@@ -1695,7 +1705,17 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         is_html_output = output.lstrip().startswith(("<!DOCTYPE", "<html", "<!doctype"))
 
         if is_html_output:
-            # Mode 3: HTML app. Existence check only - structure score inferred from code.
+            # Mode 3: HTML app. Check length + detect hardcoded lookup tables in JS.
+            source_check = open(main_py, encoding="utf-8").read()
+            # Detect large hardcoded data dictionaries (sign of fake analysis)
+            # A legitimate algorithm won't have 5+ string literals as dict keys in one dict
+            hardcode_matches = re.findall(r'\{\s*(?:["\'][^"\']{10,}["\']:\s*\{[^}]{20,}\},?\s*){5,}\}', source_check)
+            if hardcode_matches:
+                return False, (
+                    "Hardcoded lookup table detected in Mode 3 tool. "
+                    "The tool must compute results from the input algorithmically, "
+                    "not by matching input against a preset dictionary of expected values."
+                )
             if len(output) < 500:
                 return False, (
                     f"HTML output too short: {len(output)} chars. "
