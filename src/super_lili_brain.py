@@ -1279,7 +1279,7 @@ def call_gemini_simple(prompt: str) -> str | None:
             resp = _deepseek_client.chat.completions.create(
                 model="deepseek-chat",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=4096,
+                max_tokens=8192,
             )
             text = resp.choices[0].message.content if resp.choices else None
             if text:
@@ -1601,14 +1601,12 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
     main_py = f"{skill_dir}/main.py"
     test_py = f"{skill_dir}/test_main.py"
 
-    # 1. Syntax check
+    # 1. Syntax check — use ast.parse() directly to avoid path-with-spaces issues
     try:
-        result = subprocess.run(
-            [sys.executable, "-c", f"import ast; ast.parse(open('{main_py}').read())"],
-            capture_output=True, text=True, timeout=10
-        )
-        if result.returncode != 0:
-            return False, f"Syntax error: {result.stderr[:200]}"
+        source_text = open(main_py, encoding="utf-8").read()
+        ast.parse(source_text)
+    except SyntaxError as e:
+        return False, f"Syntax error at line {e.lineno}: {e.msg}"
     except Exception as e:
         return False, f"Syntax check failed: {e}"
 
