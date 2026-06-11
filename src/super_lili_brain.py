@@ -64,6 +64,14 @@ except ImportError:
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
+# DeepSeek fallback client (used when all Gemini models fail in call_gemini_simple)
+_DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+try:
+    from openai import OpenAI as _OpenAI
+    _deepseek_client = _OpenAI(api_key=_DEEPSEEK_KEY, base_url="https://api.deepseek.com") if _DEEPSEEK_KEY else None
+except ImportError:
+    _deepseek_client = None
+
 _GH_TOKEN  = os.environ.get("GITHUB_TOKEN", "")
 _GH_REPO   = os.environ.get("GITHUB_REPOSITORY", "Super-Lili/Super-Lilis-Daily-Adventure")
 _GH_HEADERS = {
@@ -1263,6 +1271,23 @@ def call_gemini_simple(prompt: str) -> str | None:
                 if attempt < 2:
                     print(f"  ⏳ Waiting {wait}s before retry...")
                     time.sleep(wait)
+
+    # All Gemini models failed — try DeepSeek as fallback
+    if _deepseek_client:
+        print(f"  ↳ Gemini exhausted, trying DeepSeek fallback...")
+        try:
+            resp = _deepseek_client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=4096,
+            )
+            text = resp.choices[0].message.content if resp.choices else None
+            if text:
+                print(f"  [OK] DeepSeek fallback succeeded.")
+                return text
+            print(f"  [NO] DeepSeek returned empty response.")
+        except Exception as e:
+            print(f"  [NO] DeepSeek fallback failed: {type(e).__name__}: {e}")
     return None
 
 
