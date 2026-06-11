@@ -1053,6 +1053,9 @@ PATTERN: {scout.get('pattern', '')}
 {ctx['engineering_nudge']}
 
 SPEC DESIGN RULES:
+0. FRICTION LOCK: your tool must solve the EXACT moment described above (WHO + MOMENT).
+   Not a related problem. Not a generalised version. That specific person, that specific stuck moment.
+   If the friction is "designers exhausted writing pixel specs", the tool handles pixel specs - not "design handoff" broadly.
 1. INPUT_MODEL must STRUCTURALLY DIFFER from OUTPUT_MODEL (Rule 17)
    "Text in -> text out" is NOT a transformation. Define the data structures explicitly.
 2. ALGORITHMIC_DEPTH must describe computation the user cannot do in 10 seconds (Rule 18)
@@ -2196,6 +2199,17 @@ def evolve():
         print("❌ Phase 1 failed - API quota exhausted.")
         save_rest_day(today, "API quota exhausted - all models returned errors.")
         return
+
+    # If no grounding URLs, Gemini used training memory not real search - retry once
+    if not grounding_urls:
+        print("  ⚠ No grounding URLs - Gemini used training data, retrying SCOUT with search...")
+        time.sleep(30)
+        scout_content2, grounding_urls2 = call_gemini(build_scout_prompt(today, commission))
+        if scout_content2 and grounding_urls2:
+            scout_content, grounding_urls = scout_content2, grounding_urls2
+            print(f"  [OK] Retry found {len(grounding_urls2)} real source(s).")
+        else:
+            print("  ⚠ Retry also returned no grounding URLs - proceeding with caution.")
 
     scout = parse_scout_response(scout_content)
     if not all([scout.get("title"), scout.get("diary"), scout.get("solution")]):
