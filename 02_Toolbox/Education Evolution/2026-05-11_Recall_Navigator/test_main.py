@@ -1,4 +1,3 @@
-```python
 import pandas as pd
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -97,4 +96,3 @@ def test_recall_navigator():
 # python test_main.py
 if __name__ == "__main__":
     test_recall_navigator()
-```

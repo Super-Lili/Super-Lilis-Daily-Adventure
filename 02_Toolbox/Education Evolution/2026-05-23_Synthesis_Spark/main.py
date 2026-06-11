@@ -104,12 +104,12 @@ def extract_and_refine_concepts(text: str) -> List[str]:
             refined_concepts = []
             print("Concepts cleared. Starting fresh!")
         elif user_input:
-            refined_concepts.append(user_input.capitalize())
-            print(f"'{user_input.capitalize()}' added.")
+            refined_concepts.append(user_input)
+            print(f"'{user_input}' added.")
         else:
             print("Please enter a valid concept or command.")
 
-    return list(set(refined_concepts)) # Ensure uniqueness
+    return list(dict.fromkeys(refined_concepts))  # Unique, preserve insertion order
 
 
 def define_relationships(concepts: List[str], full_text: str) -> Dict[str, Dict[str, str]]:

@@ -292,7 +292,7 @@ def _generate_html_content(config: dict) -> str:
 
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.strokeStyle = `rgba(${parseInt(p.color.slice(1,3), 16)}, ${parseInt(p.color.slice(3,5), 16)}, ${parseInt(p.color.slice(5,7), 16)}, ${p.alpha})`;
+                ctx.strokeStyle = `rgba(${{parseInt(p.color.slice(1,3), 16)}}, ${{parseInt(p.color.slice(3,5), 16)}}, ${{parseInt(p.color.slice(5,7), 16)}}, ${{p.alpha}})`;
                 ctx.lineWidth = 2;
                 ctx.stroke();
             }}
@@ -376,7 +376,7 @@ def _generate_html_content(config: dict) -> str:
             const s = Math.floor(Math.random() * (60 - 30 + 1)) + 30; // 30-60
             const l1 = Math.floor(Math.random() * (85 - 70 + 1)) + 70; // 70-85
             const l2 = Math.floor(Math.random() * (75 - 60 + 1)) + 60; // 60-75
-            return [`hsl(${h}, ${s}%, ${l1}%)`, `hsl(${h}, ${s}%, ${l2}%)`];
+            return [`hsl(${{h}}, ${{s}}%, ${{l1}}%)`, `hsl(${{h}}, ${{s}}%, ${{l2}}%)`];
         }};
 
         function changeTheme() {{
@@ -396,14 +396,14 @@ def _generate_html_content(config: dict) -> str:
                 visual_type: Math.random() < 0.5 ? "ripple" : "gradient_shift"
             }};
             
-            document.body.style.background = `linear-gradient(135deg, ${newBgStart} 0%, ${newBgEnd} 100%)`;
+            document.body.style.background = `linear-gradient(135deg, ${{newBgStart}} 0%, ${{newBgEnd}} 100%)`;
 
             currentThemeConfig = newConfig;
             if (isSoundPlaying) {{
                 stopSound(); // Stop current sounds gracefully
                 startSound(); // Start new sounds with new config
             }}
-            updateStatusLabel(`Theme: ${newThemeName.charAt(0).toUpperCase() + newThemeName.slice(1)}`);
+            updateStatusLabel(`Theme: ${{newThemeName.charAt(0).toUpperCase() + newThemeName.slice(1)}}`);
             introMessage.style.opacity = '0'; // Fade out message on first interaction
         }}
 
@@ -426,8 +426,8 @@ def _generate_html_content(config: dict) -> str:
 
         // Pre-define palettes and soundscapes in JS for changeTheme to access
         // These are now correctly embedded from the module-level Python dictionaries
-        const palettes = {json.dumps(_PALETTES)};
-        const soundscapes = {json.dumps(_SOUNDSCAPES)};
+        const palettes = {{json.dumps(_PALETTES)}};
+        const soundscapes = {{json.dumps(_SOUNDSCAPES)}};
 
     </script>
 </body>

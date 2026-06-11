@@ -15,6 +15,11 @@ except ImportError:
     # Falling back to basic print statements.
     Console = None
     Progress = None
+    def TextColumn(*a, **kw): return None
+    def BarColumn(*a, **kw): return None
+    def TimeRemainingColumn(*a, **kw): return None
+    def TimeElapsedColumn(*a, **kw): return None
+    def Text(s="", **kwargs): return s
 
 def setup_cli_arguments() -> argparse.Namespace:
     """

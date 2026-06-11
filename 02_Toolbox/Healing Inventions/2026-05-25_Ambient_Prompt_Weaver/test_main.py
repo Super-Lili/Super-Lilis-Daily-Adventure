@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import shutil
-from ambient_prompt_weaver import main, create_demo_csv, process_tasks
+from main import main, create_demo_csv, process_tasks
 
 # Define paths for testing
 TEST_INPUT_CSV = "test_tasks_input.csv"

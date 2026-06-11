@@ -1,6 +1,6 @@
 import os
 import json
-from urban_respite_weave import process, _get_theme_config, _generate_gradient_colors
+from main import process, _get_theme_config, _generate_gradient_colo as _generate_gradient_colors
 
 # Mock the random choices for consistent testing if needed, though for an ambient tool,
 # variability is acceptable.

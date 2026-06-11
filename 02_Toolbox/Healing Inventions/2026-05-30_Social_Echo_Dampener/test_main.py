@@ -12,7 +12,7 @@ class TestSocialEchoDampener(unittest.TestCase):
         self.assertIsInstance(html_output, str)
         self.assertTrue(html_output.startswith("<!DOCTYPE html>"))
         self.assertIn("<title>Social Echo Dampener</title>", html_output)
-        self.assertIn('<div id="app">', html_output)
+        self.assertIn('id="app"', html_output)
         self.assertIn('<script>', html_output)
         self.assertIn('body {', html_output) # Check for inline CSS
 

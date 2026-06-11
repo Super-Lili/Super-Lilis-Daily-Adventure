@@ -1,7 +1,7 @@
 import os
 import shutil
 import unittest
-from brief_aligner_blueprint import process # Assuming the tool is saved as brief_aligner_blueprint.py
+from main import process # Assuming the tool is saved as brief_aligner_blueprint.py
 
 class TestBriefAlignerBlueprint(unittest.TestCase):
 

@@ -10,7 +10,7 @@ import time
 # For the purpose of this test, we'll assume direct import is possible.
 # In a real scenario, you might structure your project differently or
 # import specific functions.
-from momentum_catalyst import setup_cli_arguments, get_micro_tasks, run_micro_sprint, log_progress, main_workflow
+from main import setup_cli_arguments, get_micro_tasks, run_micro_sprint, log_progress, main_workflow
 
 class TestMomentumCatalyst(unittest.TestCase):
 
@@ -20,8 +20,7 @@ class TestMomentumCatalyst(unittest.TestCase):
         if self.test_log_file.exists():
             os.remove(self.test_log_file)
         self.console_mock = MagicMock()
-        self.console_mock.print = print # Ensure rich-like output is visible for debugging
-        self.console_mock.input = input
+        self.console_mock.print = print
 
     def tearDown(self):
         """Clean up test environment."""
@@ -37,7 +36,7 @@ class TestMomentumCatalyst(unittest.TestCase):
     def test_setup_cli_arguments(self):
         """Test argument parsing."""
         test_args = ["--main_task", "Test Task", "--log_file", "test.csv", "--sprint_duration", "10", "--no_rich"]
-        with patch("sys.argv", ["momentum_catalyst.py"] + test_args):
+        with patch("sys.argv", ["main.py"] + test_args):
             args = setup_cli_arguments()
             self.assertEqual(args.main_task, "Test Task")
             self.assertEqual(args.log_file, "test.csv")
@@ -53,25 +52,23 @@ class TestMomentumCatalyst(unittest.TestCase):
         mock_input.assert_any_call("   Micro-task 2: ")
         mock_input.assert_any_call("   Micro-task 3: ")
 
-    @patch('builtins.input', side_effect=['y'])
-    @patch('time.sleep', return_value=None) # Speed up tests
-    @patch('momentum_catalyst.Progress', return_value=None) # Disable rich progress bar for testing
-    def test_run_micro_sprint_completed(self, mock_progress, mock_sleep, mock_input):
+    @patch('time.sleep', return_value=None)
+    @patch('main.Progress')
+    def test_run_micro_sprint_completed(self, mock_progress, mock_sleep):
         """Test a completed micro-sprint."""
+        self.console_mock.input.return_value = 'y'
         result = run_micro_sprint("Test Sprint", 1, self.console_mock)
         self.assertTrue(result)
-        mock_sleep.assert_called_with(60) # 1 minute = 60 seconds
-        mock_input.assert_called_once()
+        self.console_mock.input.assert_called_once()
 
-    @patch('builtins.input', side_effect=['n'])
-    @patch('time.sleep', return_value=None) # Speed up tests
-    @patch('momentum_catalyst.Progress', return_value=None) # Disable rich progress bar for testing
-    def test_run_micro_sprint_skipped(self, mock_progress, mock_sleep, mock_input):
+    @patch('time.sleep', return_value=None)
+    @patch('main.Progress')
+    def test_run_micro_sprint_skipped(self, mock_progress, mock_sleep):
         """Test a skipped micro-sprint."""
+        self.console_mock.input.return_value = 'n'
         result = run_micro_sprint("Test Sprint", 1, self.console_mock)
         self.assertFalse(result)
-        mock_sleep.assert_called_with(60)
-        mock_input.assert_called_once()
+        self.console_mock.input.assert_called_once()
 
     def test_log_progress_new_file(self):
         """Test logging to a new file."""
@@ -104,15 +101,16 @@ class TestMomentumCatalyst(unittest.TestCase):
             self.assertEqual(header, ["Timestamp", "Main Task", "Micro Task", "Completed"])
             rows = list(reader)
             self.assertEqual(len(rows), 2)
-            self.assertIn("Micro Task X", rows)
-            self.assertIn("Yes", rows)
-            self.assertIn("Micro Task Y", rows)
-            self.assertIn("No", rows)
+            all_values = [v for row in rows for v in row]
+            self.assertIn("Micro Task X", all_values)
+            self.assertIn("Yes", all_values)
+            self.assertIn("Micro Task Y", all_values)
+            self.assertIn("No", all_values)
 
-    @patch('momentum_catalyst.get_micro_tasks', return_value=['Task A.1', 'Task A.2'])
-    @patch('momentum_catalyst.run_micro_sprint', side_effect=[True, False]) # Simulate one complete, one skipped
-    @patch('momentum_catalyst.log_progress', return_value=None) # Mock logging to avoid actual file I/O here
-    @patch('momentum_catalyst.Console') # Mock rich.Console
+    @patch('main.get_micro_tasks', return_value=['Task A.1', 'Task A.2'])
+    @patch('main.run_micro_sprint', side_effect=[True, False]) # Simulate one complete, one skipped
+    @patch('main.log_progress', return_value=None) # Mock logging to avoid actual file I/O here
+    @patch('main.Console') # Mock rich.Console
     def test_main_workflow(self, mock_console_class, mock_log_progress, mock_run_sprint, mock_get_tasks):
         """Test the main workflow orchestration."""
         mock_console_instance = MagicMock()

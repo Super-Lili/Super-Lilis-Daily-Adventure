@@ -3,7 +3,7 @@ import sys
 from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
-from synthesis_spark import main, load_learning_material, extract_and_refine_concepts, define_relationships, generate_recall_questions, save_structured_knowledge, save_recall_questions
+from main import main, load_learning_material, extract_and_refine_concepts, define_relationships, generate_recall_questions, save_structured_knowledge, save_recall_questions
 
 class TestSynthesisSpark(unittest.TestCase):
 
@@ -60,8 +60,9 @@ class TestSynthesisSpark(unittest.TestCase):
         self.assertIn("Use Case Diagrams", concepts)
         self.assertEqual(len(concepts), 3) # Based on side_effect
 
-    @patch('builtins.input', side_effect=['enables', 'is a part of', 'helps achieve'])
+    @patch('builtins.input', side_effect=['enables', '', 'is a part of'])
     def test_define_relationships(self, mock_input):
+        # Pairs in order: A-B (enables), A-C (skipped), B-C (is a part of)
         concepts = ["Concept A", "Concept B", "Concept C"]
         relationships = define_relationships(concepts, "Concept A enables Concept B. Concept B is a part of Concept C.")
         self.assertIn("Concept A", relationships)

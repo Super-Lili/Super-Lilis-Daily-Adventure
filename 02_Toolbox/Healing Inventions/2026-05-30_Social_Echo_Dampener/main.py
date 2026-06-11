@@ -228,7 +228,7 @@ def process(user_input: str = "") -> str:
 </body>
 </html>
     """
-    return html_content
+    return html_content.strip()
 
 _browser_input = globals().get('USER_INPUT', None)
 if _browser_input is not None:

@@ -1,4 +1,3 @@
-```python
 import unittest
 import os
 import shutil
@@ -278,4 +277,3 @@ class TestContentCurrentCatalyst(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-```

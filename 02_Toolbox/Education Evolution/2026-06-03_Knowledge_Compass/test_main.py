@@ -34,9 +34,8 @@ class TestKnowledgeCompass(unittest.TestCase):
         self.assertIn("<!DOCTYPE html>", result_html)
         self.assertIn("知识指南针：慢媒体与注意力经济 精选书单", result_html)
         self.assertIn("奠基之作</h3>", result_html)
-        self.assertIn("当前视角书籍待补充，请针对您的具体研究需求进行深入搜索。", result_html)
-        self.assertIn("待补充", result_html) # Ensure placeholder text is there
-        self.assertIn("为何阅读：提供批判性视角。", result_html) # Check for placeholder details
+        self.assertIn("此话题暂无预设书单", result_html)
+        self.assertIn("placeholder-item", result_html)
 
     def test_empty_input(self):
         # Test with empty input

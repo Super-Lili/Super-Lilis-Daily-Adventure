@@ -257,7 +257,7 @@ def process(text: str) -> str:
             .main-content {{
                 flex: 3;
                 min-width: 300px;
-            }
+            }}
 
             .side-panel {{
                 flex: 1;
@@ -281,7 +281,7 @@ def process(text: str) -> str:
                 word-wrap: break-word;
                 margin-bottom: 20px;
                 position: relative;
-            }
+            }}
 
             #editable-explanation:focus {{
                 outline: none;
@@ -752,49 +752,49 @@ Example: Our new blockchain-based distributed ledger solution utilizes a Byzanti
             let currentImplications = [];
 
             // Helper to update SVG meter
-            function updateClarityMeter(score, svgElement) {
+            function updateClarityMeter(score, svgElement) {{
                 const circle = svgElement.querySelector('.meter-fill');
                 const text = svgElement.querySelector('.meter-text');
                 const circumference = 2 * Math.PI * 45; // r=45
                 const offset = circumference - (score / 100) * circumference;
-                circle.style.strokeDasharray = `${circumference - offset} ${offset}`;
-                text.textContent = `${Math.round(score)}%`;
+                circle.style.strokeDasharray = `${{circumference - offset}} ${{offset}}`;
+                text.textContent = `${{Math.round(score)}}%`;
                 
                 // Color change based on score (optional, but adds dynamism)
-                if (score < 40) {
+                if (score < 40) {{
                     circle.style.stroke = '#e74c3c'; // Red
                     text.style.fill = '#e74c3c';
-                } else if (score < 70) {
+                }} else if (score < 70) {{
                     circle.style.stroke = '#f1c40f'; // Yellow
                     text.style.fill = '#f1c40f';
-                } else {
+                }} else {{
                     circle.style.stroke = var('--accent-green'); // Green
                     text.style.fill = var('--accent-green');
-                }
-            }
+                }}
+            }}
 
-            function animateClarityMeter(finalScore, duration = 1500, svgElement) {
+            function animateClarityMeter(finalScore, duration = 1500, svgElement) {{
                 let startScore = currentClarityScore;
                 let startTime = null;
 
-                function animate(currentTime) {
+                function animate(currentTime) {{
                     if (!startTime) startTime = currentTime;
                     const progress = (currentTime - startTime) / duration;
                     const animatedScore = startScore + (finalScore - startScore) * Math.min(progress, 1);
                     updateClarityMeter(animatedScore, svgElement);
-                    if (progress < 1) {
+                    if (progress < 1) {{
                         requestAnimationFrame(animate);
-                    } else {
+                    }} else {{
                         currentClarityScore = finalScore;
-                    }
-                }
+                    }}
+                }}
                 requestAnimationFrame(animate);
-            }
+            }}
 
-            function updateImplications(implications) {
+            function updateImplications(implications) {{
                 implicationsList.innerHTML = '';
                 finalImplicationsList.innerHTML = ''; // Keep final list updated too
-                implications.forEach(imp => {
+                implications.forEach(imp => {{
                     const li = document.createElement('li');
                     li.textContent = imp;
                     implicationsList.appendChild(li);
@@ -802,16 +802,16 @@ Example: Our new blockchain-based distributed ledger solution utilizes a Byzanti
                     const liFinal = document.createElement('li');
                     liFinal.textContent = imp;
                     finalImplicationsList.appendChild(liFinal);
-                });
+                }});
                 currentImplications = implications;
-            }
+            }}
 
-            function calculateClarityScore() {
+            function calculateClarityScore() {{
                 if (totalJargonCount === 0) return 100; // No jargon, perfect score
                 return Math.min(100, (30 + (appliedSuggestionCount / totalJargonCount) * 70)); // Base score + bonus for applying suggestions
-            }
+            }}
 
-            function highlightText(text) {
+            function highlightText(text) {{
                 let highlightedText = text;
                 totalJargonCount = 0;
                 const jargonEntries = Object.entries(jargonData);
@@ -819,54 +819,54 @@ Example: Our new blockchain-based distributed ledger solution utilizes a Byzanti
                 // Sort jargon phrases by length (descending) to prevent partial matches
                 jargonEntries.sort((a, b) => b[0].length - a[0].length);
 
-                for (const [jargon, data] of jargonEntries) {
+                for (const [jargon, data] of jargonEntries) {{
                     const regex = new RegExp(re.escape(jargon), 'g');
-                    highlightedText = highlightedText.replace(regex, (match) => {
+                    highlightedText = highlightedText.replace(regex, (match) => {{
                         totalJargonCount++;
-                        return `<span class="highlight" data-jargon="${html.escape(jargon)}">${match}</span>`;
-                    });
-                }
+                        return `<span class="highlight" data-jargon="${{html.escape(jargon)}}">${{match}}</span>`;
+                    }});
+                }}
                 return highlightedText;
-            }
+            }}
 
-            function transitionState(fromState, toState) {
+            function transitionState(fromState, toState) {{
                 fromState.classList.remove('state-visible');
                 fromState.style.opacity = '0';
-                setTimeout(() => {
+                setTimeout(() => {{
                     fromState.style.display = 'none';
                     toState.style.display = 'flex';
                     // Trigger reflow to ensure transition plays
                     toState.offsetHeight; 
                     toState.classList.add('state-visible');
                     // Special handling for the result state to set final score
-                    if (toState === resultState) {
+                    if (toState === resultState) {{
                         animateClarityMeter(calculateClarityScore(), 1000, finalClarityMeterSvg);
-                    }
-                }, 400); // Duration matches --transition-slow
-            }
+                    }}
+                }}, 400); // Duration matches --transition-slow
+            }}
 
             // Initial setup for the entry state
             inputExplanation.value = initialText;
             updateImplications(initialImplications); // Populate initial implications
 
             // Event Listeners
-            analyzeBtn.addEventListener('click', () => {
+            analyzeBtn.addEventListener('click', () => {{
                 const textToAnalyze = inputExplanation.value.trim();
-                if (textToAnalyze.length < 20) {
+                if (textToAnalyze.length < 20) {{
                      alert("Please provide a more substantial technical explanation (at least 20 words) for analysis.");
                      return;
-                }
+                }}
                 processedTextContent = textToAnalyze;
                 editableExplanation.innerHTML = highlightText(textToAnalyze);
                 currentClarityScore = calculateClarityScore();
                 animateClarityMeter(currentClarityScore, 1000, clarityMeterSvg);
                 transitionState(entryState, activeState);
                 editableExplanation.focus();
-            });
+            }});
 
-            editableExplanation.addEventListener('click', (event) => {
+            editableExplanation.addEventListener('click', (event) => {{
                 const target = event.target;
-                if (target.classList.contains('highlight')) {
+                if (target.classList.contains('highlight')) {{
                     activeSegmentSpan = target;
                     const jargon = target.dataset.jargon;
                     const data = jargonData[jargon];
@@ -876,19 +876,19 @@ Example: Our new blockchain-based distributed ledger solution utilizes a Byzanti
                     suggestionExplanation.textContent = data.explanation;
                     suggestionsPanel.classList.add('visible');
                     suggestionsPanel.setAttribute('aria-hidden', 'false');
-                }
-            });
+                }}
+            }});
 
-            applySuggestionBtn.addEventListener('click', () => {
-                if (activeSegmentSpan) {
+            applySuggestionBtn.addEventListener('click', () => {{
+                if (activeSegmentSpan) {{
                     const originalJargon = activeSegmentSpan.dataset.jargon;
                     const newText = proposedRewriteText.value;
                     const fullText = editableExplanation.textContent; // Get the raw text
                     // Replace only the occurrence of the segment being edited
                     // This is a simplified replacement. A more robust solution might use Range objects.
                     const newHighlightedContent = editableExplanation.innerHTML.replace(
-                        `<span class="highlight" data-jargon="${html.escape(originalJargon)}">${originalJargon}</span>`,
-                        `<span>${html.escape(newText)}</span>`
+                        `<span class="highlight" data-jargon="${{html.escape(originalJargon)}}">${{originalJargon}}</span>`,
+                        `<span>${{html.escape(newText)}}</span>`
                     );
                     editableExplanation.innerHTML = newHighlightedContent;
                     processedTextContent = editableExplanation.textContent; // Update stored content
@@ -899,53 +899,53 @@ Example: Our new blockchain-based distributed ledger solution utilizes a Byzanti
                     appliedSuggestionCount++;
                     const newScore = calculateClarityScore();
                     animateClarityMeter(newScore, 500, clarityMeterSvg);
-                }
+                }}
                 suggestionsPanel.classList.remove('visible');
                 suggestionsPanel.setAttribute('aria-hidden', 'true');
-            });
+            }});
 
-            editSuggestionBtn.addEventListener('click', () => {
+            editSuggestionBtn.addEventListener('click', () => {{
                 proposedRewriteText.focus();
-            });
+            }});
 
-            ignoreSuggestionBtn.addEventListener('click', () => {
-                if (activeSegmentSpan) {
+            ignoreSuggestionBtn.addEventListener('click', () => {{
+                if (activeSegmentSpan) {{
                     activeSegmentSpan.classList.remove('highlight');
                     activeSegmentSpan.style.borderBottom = 'none'; // Remove dashed line
                     activeSegmentSpan.style.backgroundColor = 'transparent'; // Remove background highlight
                     activeSegmentSpan.removeAttribute('data-jargon'); // Remove data attribute so it's not re-highlighted
                     activeSegmentSpan = null; // Clear active segment
-                }
+                }}
                 suggestionsPanel.classList.remove('visible');
                 suggestionsPanel.setAttribute('aria-hidden', 'true');
-            });
+            }});
             
-            finishAnalysisBtn.addEventListener('click', () => {
+            finishAnalysisBtn.addEventListener('click', () => {{
                 finalClarifiedText.value = editableExplanation.textContent; // Get final text from contenteditable
                 originalComparisonText.textContent = initialText;
                 revisedComparisonText.textContent = editableExplanation.textContent;
                 transitionState(activeState, resultState);
-            });
+            }});
 
-            copyClarifiedBtn.addEventListener('click', () => {
-                navigator.clipboard.writeText(finalClarifiedText.value).then(() => {
+            copyClarifiedBtn.addEventListener('click', () => {{
+                navigator.clipboard.writeText(finalClarifiedText.value).then(() => {{
                     alert('Clarified text copied to clipboard!');
-                }).catch(err => {
+                }}).catch(err => {{
                     console.error('Failed to copy text: ', err);
-                });
-            });
+                }});
+            }});
 
-            viewComparisonBtn.addEventListener('click', () => {
+            viewComparisonBtn.addEventListener('click', () => {{
                 sideBySideComparison.classList.add('visible');
                 sideBySideComparison.setAttribute('aria-hidden', 'false');
-            });
+            }});
 
-            closeComparisonBtn.addEventListener('click', () => {
+            closeComparisonBtn.addEventListener('click', () => {{
                 sideBySideComparison.classList.remove('visible');
                 sideBySideComparison.setAttribute('aria-hidden', 'true');
-            });
+            }});
 
-            startNewAnalysisBtn.addEventListener('click', () => {
+            startNewAnalysisBtn.addEventListener('click', () => {{
                 // Reset state variables
                 currentClarityScore = 0;
                 totalJargonCount = 0;
@@ -971,7 +971,7 @@ Example: Our new blockchain-based distributed ledger solution utilizes a Byzanti
                 
                 transitionState(resultState, entryState);
                 inputExplanation.focus();
-            });
+            }});
 
             // Set initial input text in entry state (from Python)
             inputExplanation.value = initialText;

@@ -1,7 +1,7 @@
 import unittest
 import os
 import re
-from EchoBloom import process, generate_ambient_properties, create_svg_pattern, _cli_main, _write_output_files
+from main import process, generate_ambient_properties, create_svg_pattern, _cli_main, _write_output_files
 
 class TestEchoBloom(unittest.TestCase):
 

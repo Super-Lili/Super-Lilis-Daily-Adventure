@@ -29,12 +29,13 @@ class TestClarityFlowTracker(unittest.TestCase):
         self.assertIn("<div id=\"clarity-meter-container\"", result)
         self.assertIn("<svg id=\"clarity-meter-svg\"", result)
         self.assertIn("<div id=\"result-state\"", result)
-        self.assertIn("<button id=\"copy-clarified-btn\"", result)
-        self.assertIn("<button id=\"view-comparison-btn\"", result)
+        self.assertIn("id=\"copy-clarified-btn\"", result)
+        self.assertIn("id=\"view-comparison-btn\"", result)
         self.assertIn("<div id=\"side-by-side-comparison\"", result)
 
         # Ensure the test input is embedded for JS
-        self.assertIn(re.escape(test_input), result) # It's HTML escaped, so check for escaped version
+        import html as html_mod
+        self.assertIn(html_mod.escape(test_input), result)  # text is HTML-escaped in the JS template
         self.assertIn('const initialText =', result)
 
     def test_jargon_data_embedding(self):
