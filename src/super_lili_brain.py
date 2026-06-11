@@ -1258,9 +1258,10 @@ def call_gemini_simple(prompt: str) -> str | None:
                     print(f"  [NO] {model_name} empty response, trying next model")
                 break
             except Exception as e:
-                wait = 15 * (2 ** attempt)
+                wait = 65 * (2 ** attempt)  # 65s, 130s — must exceed 60s rate limit window
                 print(f"  [NO] {model_name} attempt {attempt+1} exception: {type(e).__name__}: {e}")
                 if attempt < 2:
+                    print(f"  ⏳ Waiting {wait}s before retry...")
                     time.sleep(wait)
     return None
 
@@ -2181,6 +2182,10 @@ def evolve():
 
     source_badge, _ = _verify_source(scout, grounding_urls)
     print(f"  [OK] Scout complete: '{scout['solution']}' ({scout['category']})")
+
+    # Wait after SCOUT to avoid per-minute rate limit on next call
+    print(f"  ⏳ Waiting 65s for rate limit window to clear...")
+    time.sleep(65)
 
     # ══════════════════════════════════════════════════════════════════════════
     # PHASE 2 - SPEC: design the tool, validate before coding
