@@ -1243,11 +1243,23 @@ def call_gemini_simple(prompt: str) -> str | None:
         for attempt in range(3):
             try:
                 response = client.models.generate_content(model=model_name, contents=prompt)
-                if response.text:
-                    return response.text
+                text = None
+                try:
+                    text = response.text
+                except Exception as text_err:
+                    print(f"  [NO] {model_name} response.text error: {text_err}")
+                if text:
+                    return text
+                # Log why response was empty before breaking
+                try:
+                    finish = response.candidates[0].finish_reason if response.candidates else "no candidates"
+                    print(f"  [NO] {model_name} empty response (finish_reason={finish}), trying next model")
+                except Exception:
+                    print(f"  [NO] {model_name} empty response, trying next model")
                 break
             except Exception as e:
                 wait = 15 * (2 ** attempt)
+                print(f"  [NO] {model_name} attempt {attempt+1} exception: {type(e).__name__}: {e}")
                 if attempt < 2:
                     time.sleep(wait)
     return None
@@ -2181,6 +2193,7 @@ def evolve():
     for attempt in range(1, 3):
         spec_content = call_gemini_simple(build_spec_prompt(today, scout, spec_feedback))
         if not spec_content:
+            spec_feedback = f"attempt {attempt}: Gemini returned empty response for spec prompt"
             break
         spec = parse_spec_response(spec_content)
         spec_ok, spec_reason = validate_spec(spec)
