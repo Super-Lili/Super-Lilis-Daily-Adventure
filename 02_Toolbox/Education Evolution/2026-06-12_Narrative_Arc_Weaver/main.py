@@ -821,9 +821,114 @@ def process(text: str) -> str:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Narrative Arc Weaver: Research to Story</title>
+<title>Narrative Arc Weaver</title>
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-  body {{ 
-    font-family: -apple-system, BlinkMacSystemFont, 'Georgia', 'Times New Roman', serif;
-    background: #faf9f6; color: #222; line-height:
+  body {{
+    font-family: -apple-system, BlinkMacSystemFont, 'Georgia', serif;
+    background: #faf9f6; color: #222; line-height: 1.7; padding: 2rem 1rem;
+  }}
+  .container {{ max-width: 760px; margin: 0 auto; }}
+  h1 {{ font-size: 1.1rem; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: #888; margin-bottom: 0.4rem; }}
+  .subtitle {{ color: #aaa; font-size: 0.85rem; margin-bottom: 2rem; }}
+  .complexity-badge {{
+    display: inline-block; padding: 0.2em 0.7em; border-radius: 3px;
+    font-size: 0.75rem; font-weight: 600; color: #fff; margin-bottom: 2rem;
+    background: {complexity_color};
+  }}
+  .arc-section {{ margin-bottom: 1.8rem; border-left: 3px solid #e8e4dd; padding-left: 1.2rem; }}
+  .arc-section h2 {{ font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #888; margin-bottom: 0.5rem; }}
+  .arc-section p {{ color: #333; font-size: 1rem; }}
+  .hook-options {{ margin: 0.8rem 0; }}
+  .hook-option {{ cursor: pointer; padding: 0.6rem 1rem; border: 1px solid #e0dbd3; border-radius: 4px; margin-bottom: 0.5rem; font-size: 0.9rem; background: #fff; transition: background 0.15s; }}
+  .hook-option:hover {{ background: #f0ede8; }}
+  .hook-option.selected {{ border-color: #888; background: #f0ede8; }}
+  .glossary-item {{ margin-bottom: 0.8rem; }}
+  .glossary-term {{ font-weight: 600; font-size: 0.9rem; }}
+  .glossary-def {{ color: #555; font-size: 0.9rem; }}
+  .finding-item, .step-item {{ display: flex; gap: 0.6rem; margin-bottom: 0.5rem; font-size: 0.95rem; }}
+  .finding-bullet, .step-check {{ color: #aaa; flex-shrink: 0; }}
+  .divider {{ border: none; border-top: 1px solid #e8e4dd; margin: 2rem 0; }}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Narrative Arc Weaver</h1>
+  <div class="subtitle">Research transformed into story structure</div>
+  <div class="complexity-badge">{complexity_label} ({outline["complexity_score"]}%)</div>
+
+  <div class="arc-section">
+    <h2>The Hook</h2>
+    <p>{outline["the_hook"]["simplified"]}</p>
+    <div class="hook-options">{hooks_html}</div>
+  </div>
+
+  <div class="arc-section">
+    <h2>The Problem</h2>
+    <p>{outline["the_problem"]["simplified"]}</p>
+  </div>
+
+  <div class="arc-section">
+    <h2>The Journey</h2>
+    <p>{outline["the_journey"]["simplified"]}</p>
+  </div>
+
+  <div class="arc-section">
+    <h2>The Discovery</h2>
+    <p>{outline["the_discovery"]["simplified"]}</p>
+    {findings_html}
+  </div>
+
+  <div class="arc-section">
+    <h2>The So What?</h2>
+    <p>{outline["the_so_what"]["implications"]}</p>
+  </div>
+
+  <div class="arc-section">
+    <h2>Conclusion</h2>
+    <p>{outline["conclusion"]["simplified"]}</p>
+  </div>
+
+  <div class="arc-section">
+    <h2>Call to Action</h2>
+    {next_steps_html}
+  </div>
+
+  <hr class="divider">
+
+  <div class="arc-section">
+    <h2>Jargon Glossary</h2>
+    {glossary_html}
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.hook-option').forEach(function(el) {{
+    el.addEventListener('click', function() {{
+      document.querySelectorAll('.hook-option').forEach(function(h) {{ h.classList.remove('selected'); }});
+      el.classList.add('selected');
+    }});
+  }});
+</script>
+</body>
+</html>'''
+    return html
+
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == '__main__':
+    sample = (
+        "This cross-sectional study investigated the association between "
+        "high-sensitivity C-reactive protein (hs-CRP) and subclinical atherosclerosis "
+        "in a cohort of 1,200 middle-aged adults. Multivariate logistic regression "
+        "analyses revealed that elevated hs-CRP levels (>3 mg/L) were independently "
+        "associated with increased carotid intima-media thickness (cIMT) after adjusting "
+        "for confounders including age, BMI, lipid profiles, and hypertension status "
+        "(OR=2.14, 95% CI: 1.62-2.83, p<0.001). These findings suggest that systemic "
+        "inflammation may precede detectable structural vascular changes, underscoring "
+        "the potential utility of hs-CRP as an early biomarker for cardiovascular risk "
+        "stratification in asymptomatic populations."
+    )
+    result = process(sample)
+    print(result[:500] + "..." if len(result) > 500 else result)

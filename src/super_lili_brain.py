@@ -1253,7 +1253,10 @@ def call_gemini_simple(prompt: str) -> str | None:
     for model_name in models:
         for attempt in range(3):
             try:
-                response = client.models.generate_content(model=model_name, contents=prompt)
+                response = client.models.generate_content(
+                    model=model_name, contents=prompt,
+                    config=types.GenerateContentConfig(max_output_tokens=16384),
+                )
                 text = None
                 try:
                     text = response.text
@@ -2324,7 +2327,16 @@ def evolve():
 
     if not build_ok:
         print("❌ Phase 3 failed - build could not be validated after 3 attempts.")
-        print("  Shipping with validation warning (better to have something than nothing).")
+        # Never ship a tool with a syntax error - it will crash on every user interaction.
+        # Ship a rest day so tomorrow's run starts clean.
+        if "Syntax error" in build_reason or "unterminated" in build_reason.lower():
+            print("  Fatal: SyntaxError in generated code - saving rest day instead of shipping.")
+            if skill_dir and _Path(skill_dir).exists():
+                import shutil as _shutil2
+                _shutil2.rmtree(skill_dir, ignore_errors=True)
+            save_rest_day(today, f"Phase 3 (Build) SyntaxError: {build_reason}")
+            return
+        print("  Shipping with validation warning (non-syntax failure - tool may still run).")
         if skill_dir:
             merged["diary"] += (
                 "\n\n*(Note: This tool's automated tests did not pass - "
