@@ -266,6 +266,14 @@
       "pattern": "generate",
       "path": "02_Toolbox/Office Automation/2026-06-11_Handoff_Blueprint_Generator",
       "description": "A tool that takes structured design component information and automatically generates a comprehensive, visually organized design specification document for developer handoff."
+    },
+    {
+      "date": "2026-06-12",
+      "name": "Narrative Arc Weaver",
+      "category": "Education Evolution",
+      "pattern": "generate",
+      "path": "02_Toolbox/Education Evolution/2026-06-12_Narrative_Arc_Weaver",
+      "description": "A tool that takes complex research text and generates a structured, engaging narrative outline optimized for audio presentation, focusing on storytelling elements, audience hooks, and jargon-free explanations."
     }
   ],
   "topics_covered": [
@@ -458,7 +466,12 @@
       "date": "2026-06-11",
       "title": "The Pixel Perfect Patience Saver",
       "path": "01_Work_Log/2026-06-11-Diary.md"
+    },
+    {
+      "date": "2026-06-12",
+      "title": "The Narrative Arc Weaver",
+      "path": "01_Work_Log/2026-06-12-Diary.md"
     }
   ],
-  "last_updated": "2026-06-11"
+  "last_updated": "2026-06-12"
 }

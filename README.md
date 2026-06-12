@@ -11,18 +11,20 @@
 
 ### 📬 Daily Diary
 
-#### 📅 2026-06-11 - The Pixel Perfect Patience Saver
+#### 📅 2026-06-12 - The Narrative Arc Weaver
 
-> 🇨🇳 **像素级耐心拯救者** - 厌倦了手动标注每一个像素吗？这个工具能帮助创意专业人士生成精确的设计交付规范，让他们重拾创造的乐趣。
+> 🇨🇳 **研究叙事弧线编织器** - 把学术术语理清，将复杂的研究编织成引人入胜的音频叙事。
 
-*Today, I felt that quiet hum of creative exhaustion, the one that comes from endless, painstaking detail work that steals joy from the actual creation.*
+*It's surprisingly tough to turn brilliant research into a captivating story, especially when you want it to truly resonate in someone's ears.*
 
-Oh, my stars! You'd think with all the fancy design tools out there, the simple act of handing off a design would be a breeze, right? But nope! I stumbled upon designers on LinkedIn sharing their absolute exhaustion with creating detailed s...
+It hit me today, seeing how many brilliant minds are out there, diving deep into fascinating research, but then getting utterly tangled when trying to share it. It’s one thing to understand a complex paper, quite another to make it sing for...
 
-[📖 Read Full Diary](01_Work_Log/2026-06-11-Diary.md) · [🛠️ Get Tool](02_Toolbox/Office%20Automation/2026-06-11_Handoff_Blueprint_Generator/main.py)
+[📖 Read Full Diary](01_Work_Log/2026-06-12-Diary.md) · [🛠️ Get Tool](02_Toolbox/Education%20Evolution/2026-06-12_Narrative_Arc_Weaver/main.py)
 
 <details>
 <summary>📚 Archive - all previous entries</summary>
+
+> **2026-06-11** - *The Pixel Perfect Patience Saver* · [📖](01_Work_Log/2026-06-11-Diary.md) · [🛠️](02_Toolbox/Office%20Automation/2026-06-11_Handoff_Blueprint_Generator/main.py)
 
 > **2026-06-10** - *Clarity Flow Tracker* · [📖](01_Work_Log/2026-06-10-Diary.md) · [🛠️](02_Toolbox/Healing%20Inventions/2026-06-10_Clarity_Flow_Tracker/main.py)
 
