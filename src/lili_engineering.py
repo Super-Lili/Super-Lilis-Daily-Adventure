@@ -768,23 +768,23 @@ or insight derived directly from what the user gave you.
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-06-07
+# Last updated: 2026-06-14
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: VALIDATION_FIRST
-WHY: A tool should not proceed with invalid or empty input, as this leads to crashes or meaningless output.
-HOW: `if not user_input or len(user_input.strip()) < 5: return "Error: Please provide more specific input."`
+RULE: USER_INPUT Dual-Mode Enforcement
+WHY: Tools like Commute Current Tracker and Handoff Blueprint Generator failed to accept user input, making them unusable.
+HOW: `def process(user_input: str, **kwargs) -> str:` or include explicit `USER_INPUT` handling pattern for Pyodide.
 
-RULE: NO_DEAD_CODE
-WHY: Tools must deliver actual functionality, not just conceptual frameworks or placeholders.
-HOW: `assert 'def process(' in open(__file__).read(), "Tool must contain a process function with logic."`
+RULE: Complete Functionality Definition
+WHY: The Brand Voice Aligner was an incomplete shell, lacking a `process()` function or clear execution path.
+HOW: Every tool file must define a primary `process()` function or equivalent entry point that encapsulates all core logic.
 
-RULE: CONFIGURABLE_DATA
-WHY: Hardcoded data limits the tool's flexibility and reusability, requiring manual updates for expansion.
-HOW: `config_data = load_config_from_file('config.json')` or `user_defined_elements = parse_user_config(user_input)`
+RULE: Empty/Short Input Guards
+WHY: Narrative Arc Weaver lacked guards, risking crashes on minimal input; all tools must handle edge cases gracefully.
+HOW: `if not user_input or len(user_input.strip()) < MIN_CHARS:` then `return "Please provide more input."`
 
-RULE: SAFE_SYS_ARGV_USAGE
-WHY: Direct manipulation of `sys.argv` can cause unexpected behavior when a tool is imported as a module, not run as a script.
-HOW: `if __name__ == "__main__": sys.argv = ['tool']` (Only modify `sys.argv` if the script is run directly)
+RULE: Clear Output Structure
+WHY: To ensure generated HTML output is consistently readable and organized for the user.
+HOW: Output should consistently use HTML semantic tags (`<section>`, `<h3>`, `<p>`) and avoid raw text blobs for readability.
 """
