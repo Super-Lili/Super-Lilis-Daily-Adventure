@@ -1638,6 +1638,13 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
     except Exception:
         pass
 
+    # 2b. process() function existence check
+    if "def process(" not in source:
+        return False, (
+            "Missing process() function. Tool must define process(text: str) -> str "
+            "as the main entry point for browser and test execution."
+        )
+
     # 3. --help check
     try:
         result = subprocess.run(
