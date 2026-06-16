@@ -1122,16 +1122,25 @@ APPROVED SPEC:
 
 CODE REQUIREMENTS:
 [OK] 150+ lines, type hints, requirements block at top
-[OK] process(text) function as the main entry point
-[OK] DUAL-MODE PATTERN (Mode 1/2 mandatory):
-    _browser_input = globals().get('USER_INPUT', None)
-    if _browser_input is not None: print(process(_browser_input))
-    elif __name__ == "__main__": _cli_main()
-[OK] Mode 3: process() returns complete <!DOCTYPE html>...
-[NO] Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
 [OK] Implement EXACTLY the transformation and algorithmic depth in the approved spec
 [NO] NEVER hardcode a dictionary of expected inputs/outputs - the algorithm must work on ANY input
 [NO] NEVER match keywords against a preset lookup table and return preset strings
+[NO] Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
+[NO] NEVER use JS template literals (${{...}}) inside Python f-strings - use .format() or string concat instead
+
+MANDATORY STRUCTURE - your code MUST end with exactly this pattern:
+def process(text: str) -> str:
+    \"\"\"[one-line description of what this tool does]\"\"\"
+    if not text.strip():
+        return "[helpful empty-state message]"
+    # ... your transformation logic here ...
+    return result  # str for Mode 1/2, full HTML string for Mode 3
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+elif __name__ == "__main__":
+    _cli_main()
 
 TEST FILE REQUIREMENTS (test_main.py):
 [OK] Import: from main import process
@@ -2336,22 +2345,13 @@ def evolve():
         print("❌ Phase 3 failed - build could not be validated after 3 attempts.")
         # Never ship a tool with a syntax error - it will crash on every user interaction.
         # Ship a rest day so tomorrow's run starts clean.
-        if "Syntax error" in build_reason or "unterminated" in build_reason.lower():
-            print("  Fatal: SyntaxError in generated code - saving rest day instead of shipping.")
-            if skill_dir and _Path(skill_dir).exists():
-                import shutil as _shutil2
-                _shutil2.rmtree(skill_dir, ignore_errors=True)
-            save_rest_day(today, f"Phase 3 (Build) SyntaxError: {build_reason}")
-            return
-        print("  Shipping with validation warning (non-syntax failure - tool may still run).")
-        if skill_dir:
-            merged["diary"] += (
-                "\n\n*(Note: This tool's automated tests did not pass - "
-                "use with caution and check the README.)*"
-            )
-        else:
-            save_rest_day(today, f"Phase 3 (Build) failed: {build_feedback}")
-            return
+        # All validation failures are fatal - never ship a broken tool.
+        print(f"  Fatal: {build_reason} - saving rest day instead of shipping.")
+        if skill_dir and _Path(skill_dir).exists():
+            import shutil as _shutil2
+            _shutil2.rmtree(skill_dir, ignore_errors=True)
+        save_rest_day(today, f"Phase 3 (Build) failed: {build_reason}")
+        return
 
     # ══════════════════════════════════════════════════════════════════════════
     # PHASE 4 - EVALUATE: already handled inside validate_tool()
