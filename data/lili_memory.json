@@ -290,6 +290,14 @@
       "pattern": "gamify",
       "path": "02_Toolbox/Office Automation/2026-06-15_Administrative_Ascent_Navigator",
       "description": "This tool guides individuals through complex administrative and digital untangling processes during major life changes, breaking them into gamified, micro-tasks with clear progression and visual achievement tracking."
+    },
+    {
+      "date": "2026-06-16",
+      "name": "Rhythm Weaver",
+      "category": "Design Alchemy",
+      "pattern": "visualize",
+      "path": "02_Toolbox/Design Alchemy/2026-06-16_Rhythm_Weaver",
+      "description": "A tool that analyzes text and font properties, then generates a visual heatmap and specific recommendations to improve typographic rhythm, optical balance, and line breaks."
     }
   ],
   "topics_covered": [
@@ -497,7 +505,12 @@
       "date": "2026-06-15",
       "title": "The Life Labyrinth Ledger",
       "path": "01_Work_Log/2026-06-15-Diary.md"
+    },
+    {
+      "date": "2026-06-16",
+      "title": "The Rhythmic Eye",
+      "path": "01_Work_Log/2026-06-16-Diary.md"
     }
   ],
-  "last_updated": "2026-06-15"
+  "last_updated": "2026-06-16"
 }
