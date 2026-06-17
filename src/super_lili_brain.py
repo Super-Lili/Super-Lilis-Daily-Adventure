@@ -1294,7 +1294,7 @@ def call_gemini_simple(prompt: str) -> str | None:
             resp = _deepseek_client.chat.completions.create(
                 model="deepseek-chat",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=8192,
+                max_tokens=16384,
             )
             text = resp.choices[0].message.content if resp.choices else None
             if text:
