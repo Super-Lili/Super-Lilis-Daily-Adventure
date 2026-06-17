@@ -2181,8 +2181,13 @@ def evolve():
     today = os.environ.get("LILI_DATE") or datetime.utcnow().strftime("%Y-%m-%d")
     print(f"\n🌸 Super-Lili awakens - {today}")
 
-    if Path(f"01_Work_Log/{today}-Diary.md").exists():
-        print(f"[OK] Already ran today ({today}) - diary exists, skipping.")
+    tool_built_today = any(
+        d.is_dir() and today in d.name
+        for category in Path("02_Toolbox").iterdir() if category.is_dir()
+        for d in category.iterdir()
+    )
+    if tool_built_today:
+        print(f"[OK] Already built a tool today ({today}) - skipping.")
         return
 
     # ── Check for commissions ──────────────────────────────────────────────────
