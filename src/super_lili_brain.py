@@ -1612,14 +1612,14 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                   format_type: str = "", audience: str = "",
 ) -> tuple[bool, str]:
     """Validate the tool: syntax, browser compatibility, output quality."""
-    import subprocess, sys
+    import subprocess, sys, ast as _ast
     main_py = f"{skill_dir}/main.py"
     test_py = f"{skill_dir}/test_main.py"
 
     # 1. Syntax check — use ast.parse() directly to avoid path-with-spaces issues
     try:
         source_text = open(main_py, encoding="utf-8").read()
-        ast.parse(source_text)
+        _ast.parse(source_text)
     except SyntaxError as e:
         return False, f"Syntax error at line {e.lineno}: {e.msg}"
     except Exception as e:
@@ -2347,7 +2347,7 @@ def evolve():
         # Ship a rest day so tomorrow's run starts clean.
         # All validation failures are fatal - never ship a broken tool.
         print(f"  Fatal: {build_reason} - saving rest day instead of shipping.")
-        if skill_dir and _Path(skill_dir).exists():
+        if skill_dir and Path(skill_dir).exists():
             import shutil as _shutil2
             _shutil2.rmtree(skill_dir, ignore_errors=True)
         save_rest_day(today, f"Phase 3 (Build) failed: {build_reason}")
