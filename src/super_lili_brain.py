@@ -1094,11 +1094,14 @@ IMPORTANT: Each field (FORMAT, MODE, INPUT_MODEL, etc.) must be on a SINGLE LINE
 Do not wrap field values across multiple lines. Keep each value concise and on one line."""
 
 
-def build_code_prompt(today: str, scout: dict, spec: dict, feedback: str = "") -> str:
-    """Phase 3 - BUILD: write code from approved spec only."""
+def build_code_prompt(today: str, scout: dict, spec: dict, feedback: str = "", slim: bool = False) -> str:
+    """Phase 3 - BUILD: write code from approved spec only.
+    slim=True omits the engineering_nudge block for DeepSeek fallback (token budget).
+    """
     ctx = _build_context_block(today)
 
     feedback_block = f"\n⚠ PREVIOUS BUILD FAILED - fix this specific problem:\n{feedback}\n" if feedback else ""
+    nudge_block = "" if slim else ctx['engineering_nudge']
 
     return f"""Today is {today}.
 {feedback_block}
@@ -1118,7 +1121,7 @@ APPROVED SPEC:
   UI Result: {spec.get('ui_state_result', '')}
   Test input: {spec.get('test_input', '')}
 
-{ctx['engineering_nudge']}
+{nudge_block}
 
 CODE REQUIREMENTS:
 [OK] 150+ lines, type hints, requirements block at top
@@ -1256,8 +1259,10 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
     return None, []
 
 
-def call_gemini_simple(prompt: str) -> str | None:
-    """Call Gemini without search tool - for quick scoring/review tasks."""
+def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None) -> str | None:
+    """Call Gemini without search tool - for quick scoring/review tasks.
+    deepseek_prompt: if provided, use this shorter prompt for the DeepSeek fallback.
+    """
     models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
     for model_name in models:
         for attempt in range(3):
@@ -1290,11 +1295,12 @@ def call_gemini_simple(prompt: str) -> str | None:
     # All Gemini models failed — try DeepSeek as fallback
     if _deepseek_client:
         print(f"  ↳ Gemini exhausted, trying DeepSeek fallback...")
+        ds_prompt = deepseek_prompt if deepseek_prompt else prompt
         try:
             resp = _deepseek_client.chat.completions.create(
                 model="deepseek-chat",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=16384,
+                messages=[{"role": "user", "content": ds_prompt}],
+                max_tokens=8192,
             )
             text = resp.choices[0].message.content if resp.choices else None
             if text:
@@ -1652,6 +1658,20 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         return False, (
             "Missing process() function. Tool must define process(text: str) -> str "
             "as the main entry point for browser and test execution."
+        )
+
+    # 2c. Truncation detection - code must end with the mandatory dual-mode footer
+    if "globals().get('USER_INPUT'" not in source and "USER_INPUT" not in source:
+        return False, (
+            "Code appears truncated: missing USER_INPUT dual-mode footer. "
+            "The code was cut off before completion."
+        )
+    # Check the footer is near the end (last 30 lines), not just somewhere in the middle
+    last_30_lines = "\n".join(source.splitlines()[-30:])
+    if "globals().get('USER_INPUT'" not in last_30_lines and "USER_INPUT" not in last_30_lines:
+        return False, (
+            "Code appears truncated: USER_INPUT footer exists but not at end of file. "
+            "The code was likely cut off mid-way."
         )
 
     # 3. --help check
@@ -2296,7 +2316,8 @@ def evolve():
             print(f"  ⏳ Waiting 15s before retry...")
             time.sleep(15)
         build_content = call_gemini_simple(
-            build_code_prompt(today, scout, spec, build_feedback)
+            build_code_prompt(today, scout, spec, build_feedback),
+            deepseek_prompt=build_code_prompt(today, scout, spec, build_feedback, slim=True),
         )
         if not build_content:
             print("  [NO] Gemini returned nothing.")
