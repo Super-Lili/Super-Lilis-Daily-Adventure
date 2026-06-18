@@ -32,7 +32,8 @@ jobs:
         run: |
           DATE=$(TZ='Asia/Shanghai' date +'%Y-%m-%d')
           DOW=$(TZ='Asia/Shanghai' date +'%u')
-          if [ "$DOW" = "7" ] || [ -f "01_Work_Log/${DATE}-Diary.md" ]; then
+          TOOL_EXISTS=$(find 02_Toolbox -maxdepth 2 -name "${DATE}*" -type d | head -1)
+          if [ "$DOW" = "7" ] || [ -n "$TOOL_EXISTS" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
           else
             echo "skip=false" >> $GITHUB_OUTPUT
