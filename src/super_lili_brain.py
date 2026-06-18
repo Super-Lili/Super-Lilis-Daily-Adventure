@@ -1128,6 +1128,12 @@ CODE REQUIREMENTS:
 [OK] Implement EXACTLY the transformation and algorithmic depth in the approved spec
 [NO] NEVER hardcode a dictionary of expected inputs/outputs - the algorithm must work on ANY input
 [NO] NEVER match keywords against a preset lookup table and return preset strings
+[NO] ANTI-PATTERN - this will be REJECTED:
+    LOOKUP = {{"keyword1": {{"result": "..."}}, "keyword2": {{"result": "..."}}, ...}}
+    return LOOKUP.get(user_input, default)
+[OK] CORRECT pattern - compute from input:
+    score = sum(weights[i] * features[i] for i in range(len(features)))
+    result = transform(parse(user_input))
 [NO] Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
 [NO] NEVER use JS template literals (${{...}}) inside Python f-strings - use .format() or string concat instead
 
