@@ -1741,7 +1741,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                             )
                         alias_files_created.append(alias_path)
             result = subprocess.run(
-                [sys.executable, test_py],
+                [sys.executable, "test_main.py"],
                 capture_output=True, text=True, timeout=60,
                 cwd=skill_dir,
             )
