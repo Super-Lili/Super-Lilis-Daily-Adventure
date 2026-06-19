@@ -1266,9 +1266,30 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
 
 
 def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None) -> str | None:
-    """Call Gemini without search tool - for quick scoring/review tasks.
-    deepseek_prompt: if provided, use this shorter prompt for the DeepSeek fallback.
+    """Call DeepSeek first for SPEC/BUILD/Critic tasks; fall back to Gemini if needed.
+    deepseek_prompt: if provided, use this shorter prompt for DeepSeek.
+    SCOUT uses call_gemini() (with search tool) and is unaffected.
     """
+    # --- DeepSeek first (primary for non-search tasks) ---
+    if _deepseek_client:
+        ds_prompt = deepseek_prompt if deepseek_prompt else prompt
+        try:
+            print(f"  ↳ Trying DeepSeek (primary)...")
+            resp = _deepseek_client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[{"role": "user", "content": ds_prompt}],
+                max_tokens=8192,
+            )
+            text = resp.choices[0].message.content if resp.choices else None
+            if text:
+                print(f"  [OK] DeepSeek succeeded.")
+                return text
+            print(f"  [NO] DeepSeek returned empty response.")
+        except Exception as e:
+            print(f"  [NO] DeepSeek failed: {type(e).__name__}: {e}")
+
+    # --- Gemini fallback ---
+    print(f"  ↳ DeepSeek unavailable, falling back to Gemini...")
     models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
     for model_name in models:
         for attempt in range(3):
@@ -1283,8 +1304,8 @@ def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None) -> str |
                 except Exception as text_err:
                     print(f"  [NO] {model_name} response.text error: {text_err}")
                 if text:
+                    print(f"  [OK] Gemini fallback ({model_name}) succeeded.")
                     return text
-                # Log why response was empty before breaking
                 try:
                     finish = response.candidates[0].finish_reason if response.candidates else "no candidates"
                     print(f"  [NO] {model_name} empty response (finish_reason={finish}), trying next model")
@@ -1292,29 +1313,11 @@ def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None) -> str |
                     print(f"  [NO] {model_name} empty response, trying next model")
                 break
             except Exception as e:
-                wait = 65 * (2 ** attempt)  # 65s, 130s — must exceed 60s rate limit window
+                wait = 65 * (2 ** attempt)
                 print(f"  [NO] {model_name} attempt {attempt+1} exception: {type(e).__name__}: {e}")
                 if attempt < 2:
                     print(f"  ⏳ Waiting {wait}s before retry...")
                     time.sleep(wait)
-
-    # All Gemini models failed — try DeepSeek as fallback
-    if _deepseek_client:
-        print(f"  ↳ Gemini exhausted, trying DeepSeek fallback...")
-        ds_prompt = deepseek_prompt if deepseek_prompt else prompt
-        try:
-            resp = _deepseek_client.chat.completions.create(
-                model="deepseek-chat",
-                messages=[{"role": "user", "content": ds_prompt}],
-                max_tokens=8192,
-            )
-            text = resp.choices[0].message.content if resp.choices else None
-            if text:
-                print(f"  [OK] DeepSeek fallback succeeded.")
-                return text
-            print(f"  [NO] DeepSeek returned empty response.")
-        except Exception as e:
-            print(f"  [NO] DeepSeek fallback failed: {type(e).__name__}: {e}")
     return None
 
 
