@@ -1883,20 +1883,40 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             print(f"  [OK] Quality - Engineering: {eng_score}/5  Warmth: {warm_score}/5  ({combined} avg) - {reason_line}")
 
             # 8. Critic check - a demanding creative director finds specific flaws
-            # For HTML tools, skip the CSS/head and show the body content
-            output_sample = output[1500:2500] if len(output) > 1500 else output
+            # For Mode 3 HTML tools: the Python output is just an HTML template -
+            # the actual transformation happens in the browser via JavaScript.
+            # Show the Critic the source code logic, not the static HTML blob.
+            if is_html_output:
+                source_for_critic = open(main_py, encoding="utf-8").read()
+                critic_context = (
+                    f"This is a Mode 3 interactive HTML tool. The Python script outputs an HTML page "
+                    f"that runs in a browser. The actual transformation of user input happens via JavaScript.\n"
+                    f"Review the JavaScript logic in the source code, not the static HTML structure.\n\n"
+                    f"Source code (first 1200 chars of JS/logic):\n{source_for_critic[source_for_critic.find('<script'):source_for_critic.find('<script')+1200] if '<script' in source_for_critic else source_for_critic[:1200]}"
+                )
+                critic_flaws = (
+                    f"- The JavaScript logic is generic (same output regardless of what the user types)\n"
+                    f"- The tool does nothing the user couldn't do in 10 seconds themselves\n"
+                    f"- The tool has no real algorithmic depth - it just reformats without computing\n"
+                    f"- A professional would be embarrassed to show this to a colleague\n"
+                )
+            else:
+                critic_context = f"Tool output sample:\n{output[1500:2500] if len(output) > 1500 else output}"
+                critic_flaws = (
+                    f"- Output is generic (would be the same regardless of input)\n"
+                    f"- Output is padded with filler sentences that add no value\n"
+                    f"- A professional would be embarrassed to show this to a colleague\n"
+                    f"- The tool does nothing the user couldn't do in 10 seconds themselves\n"
+                    f"- The output structure is identical to the input structure (no real transformation)\n"
+                )
             critic_prompt = (
                 f"You are a demanding creative director reviewing an AI-generated tool.\n"
                 f"Your job is to find real problems - not to encourage.\n\n"
                 f"Tool purpose: {description or 'a productivity tool'}\n"
                 f"Test input used: {demo_input[:200]}\n"
-                f"Tool output sample:\n{output_sample}\n\n"
+                f"{critic_context}\n\n"
                 f"Find up to 3 specific flaws from this list:\n"
-                f"- Output is generic (would be the same regardless of input)\n"
-                f"- Output is padded with filler sentences that add no value\n"
-                f"- A professional would be embarrassed to show this to a colleague\n"
-                f"- The tool does nothing the user couldn't do in 10 seconds themselves\n"
-                f"- The output structure is identical to the input structure (no real transformation)\n\n"
+                f"{critic_flaws}\n"
                 f"If you find 2 or more serious flaws, reply: REJECT: [specific reasons]\n"
                 f"If the tool is acceptable, reply: PASS\n"
                 f"Be specific. One word answers are not acceptable."
