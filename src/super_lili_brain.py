@@ -1808,6 +1808,15 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                     "The tool must compute results from the input algorithmically, "
                     "not by matching input against a preset dictionary of expected values."
                 )
+            # Detect pre-populated HTML data nodes (e.g. <div data-name="X" data-value="Y">)
+            # A real interactive tool builds its DOM from user input in JS, not from pre-baked elements
+            data_attr_nodes = re.findall(r'<\w+[^>]*\bdata-\w+=["\'][^"\']{3,}["\'][^>]*data-\w+=["\'][^"\']{3,}["\']', source_check)
+            if len(data_attr_nodes) >= 5:
+                return False, (
+                    f"Hardcoded HTML data nodes detected: {len(data_attr_nodes)} elements with pre-filled data-* attributes. "
+                    "The tool embeds static data in HTML instead of computing from user input in JavaScript. "
+                    "Build the DOM dynamically from the user's input text - do not pre-populate elements."
+                )
             if len(output) < 500:
                 error_detail = f" Runtime error: {stderr_snippet}" if stderr_snippet else ""
                 return False, (
