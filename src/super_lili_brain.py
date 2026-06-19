@@ -2442,7 +2442,8 @@ def evolve():
                     f"to THAT specific input. If the user types 'apple harvest season', the output "
                     f"must be different from if they type 'quantum computing jobs'. "
                     f"No static checklists. No preset steps. No hardcoded categories.\n\n"
-                    f"Spec transformation: {spec.get('transformation','')}"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
             elif "hardcoded" in build_reason.lower() or "data-*" in build_reason.lower() or "pre-populated" in build_reason.lower():
                 build_feedback = (
@@ -2452,7 +2453,8 @@ def evolve():
                     f"REQUIRED FIX: Start with empty containers in HTML. In JavaScript, read the "
                     f"input text, parse it, compute results, then use createElement/innerHTML to "
                     f"build the output dynamically. Zero pre-filled data-* attributes allowed.\n\n"
-                    f"Spec transformation: {spec.get('transformation','')}"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
             else:
                 build_feedback = (
@@ -2460,7 +2462,8 @@ def evolve():
                     f"The approved spec says:\n"
                     f"  Transformation: {spec.get('transformation','')}\n"
                     f"  Algorithmic depth: {spec.get('algorithmic_depth','')}\n"
-                    f"Fix the code to match the spec exactly."
+                    f"Fix the code to match the spec exactly.\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
 
     if not build_ok:
