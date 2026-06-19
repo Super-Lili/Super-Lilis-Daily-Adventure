@@ -1795,6 +1795,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         # Detect Mode 3 HTML output - scoring the raw HTML is meaningless
         is_html_output = output.lstrip().startswith(("<!DOCTYPE", "<html", "<!doctype"))
 
+        stderr_snippet = (result.stderr or "").strip()[:300]
         if is_html_output:
             # Mode 3: HTML app. Check length + detect hardcoded lookup tables in JS.
             source_check = open(main_py, encoding="utf-8").read()
@@ -1808,17 +1809,19 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                     "not by matching input against a preset dictionary of expected values."
                 )
             if len(output) < 500:
+                error_detail = f" Runtime error: {stderr_snippet}" if stderr_snippet else ""
                 return False, (
                     f"HTML output too short: {len(output)} chars. "
-                    f"Mode 3 tools must return a complete HTML page (500+ chars)."
+                    f"Mode 3 tools must return a complete HTML page (500+ chars).{error_detail}"
                 )
             print(f"  [OK] Output check passed - Mode 3 HTML ({len(output)} chars).")
         else:
             # Mode 1/2: text or SVG output - must be substantive
             if not output or len(output) < 80 or len(output_lines) < 2:
+                error_detail = f" Runtime error: {stderr_snippet}" if stderr_snippet else ""
                 return False, (
                     f"Output too weak: {len(output)} chars, {len(output_lines)} lines. "
-                    f"Got: {repr(output[:200])}. "
+                    f"Got: {repr(output[:200])}.{error_detail} "
                     f"Must produce structured, substantive output (80+ chars, 2+ lines)."
                 )
             print(f"  [OK] Output check passed ({len(output)} chars, {len(output_lines)} lines).")
