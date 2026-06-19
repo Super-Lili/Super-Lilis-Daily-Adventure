@@ -2339,6 +2339,7 @@ def evolve():
     import shutil as _shutil
     skill_dir = None
     build_ok = False
+    build_reason = "unknown build failure"
     build_feedback = ""
     merged: dict = {**scout}  # initialise so it's always defined even if BUILD loop exits early
 
@@ -2352,13 +2353,20 @@ def evolve():
             deepseek_prompt=build_code_prompt(today, scout, spec, build_feedback, slim=True),
         )
         if not build_content:
-            print("  [NO] Gemini returned nothing.")
+            print("  [NO] No response from any model.")
+            build_reason = "No response from any model"
             continue
 
         build = parse_build_response(build_content)
         if not build.get("code"):
-            print("  [NO] No code in response.")
-            build_feedback = "Response contained no ---CODE--- section. Output only code."
+            print("  [NO] No code in response (missing ---CODE--- delimiter).")
+            build_reason = "No ---CODE--- section in response"
+            build_feedback = (
+                "Your response did not contain the ---CODE--- section.\n"
+                "You MUST start your response with ---CODE--- on its own line, "
+                "then the complete Python code, then ---TEST--- then the test, then ---BUILD_END---.\n"
+                "Do not add any explanation or preamble before ---CODE---."
+            )
             continue
 
         # Merge all phases into one parsed dict for save_tool
