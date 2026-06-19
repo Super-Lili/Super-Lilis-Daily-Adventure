@@ -2253,9 +2253,25 @@ def evolve():
     scout_content, grounding_urls = call_gemini(build_scout_prompt(today, commission))
 
     if not scout_content:
-        print("❌ Phase 1 failed - API quota exhausted.")
-        save_rest_day(today, "API quota exhausted - all models returned errors.")
-        return
+        print("  ↳ Gemini SCOUT failed - trying DeepSeek fallback for SCOUT...")
+        if _deepseek_client:
+            try:
+                ds_resp = _deepseek_client.chat.completions.create(
+                    model="deepseek-chat",
+                    messages=[{"role": "user", "content": build_scout_prompt(today, commission)}],
+                    max_tokens=4096,
+                )
+                scout_content = ds_resp.choices[0].message.content if ds_resp.choices else None
+                if scout_content:
+                    print("  [OK] DeepSeek SCOUT fallback succeeded (no grounding URLs).")
+                else:
+                    print("  [NO] DeepSeek SCOUT returned empty response.")
+            except Exception as e:
+                print(f"  [NO] DeepSeek SCOUT fallback failed: {e}")
+        if not scout_content:
+            print("❌ Phase 1 failed - all models exhausted.")
+            save_rest_day(today, "Phase 1 failed - Gemini quota exhausted and DeepSeek fallback failed.")
+            return
 
     # If no grounding URLs, Gemini used training memory not real search - retry once
     if not grounding_urls:
