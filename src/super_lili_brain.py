@@ -1159,9 +1159,9 @@ TEST FILE REQUIREMENTS (test_main.py):
 [NO] Do NOT assert exact output strings - the tool must work on arbitrary input
 [NO] Do NOT import libraries that aren't in the standard library
 
-OUTPUT FORMAT - COPY EXACTLY:
+OUTPUT FORMAT - COPY EXACTLY (do NOT output ---TEST--- until the Python code is 100% complete):
 ---CODE---
-[Full Python code]
+[Complete Python code - minimum 150 lines - do NOT stop early - write every line until the file ends with the USER_INPUT block]
 ---TEST---
 [test_main.py - from main import process - self-contained asserts]
 ---BUILD_END---"""
@@ -1434,8 +1434,12 @@ def parse_build_response(content: str) -> dict:
         try: return content.split(start)[1].split(end)[0].strip()
         except: return ""
 
+    code = ex("---CODE---", "---TEST---")
+    # If code is suspiciously short (< 50 lines), treat as truncated/empty
+    if code and len(code.splitlines()) < 50:
+        code = ""
     return {
-        "code": ex("---CODE---", "---TEST---"),
+        "code": code,
         "test": ex("---TEST---", "---BUILD_END---"),
     }
 
