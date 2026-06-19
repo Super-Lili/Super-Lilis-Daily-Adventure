@@ -2431,13 +2431,37 @@ def evolve():
             break
         else:
             print(f"  [NO] Build failed: {build_reason}")
-            build_feedback = (
-                f"Validation failed: {build_reason}\n"
-                f"The approved spec says:\n"
-                f"  Transformation: {spec.get('transformation','')}\n"
-                f"  Algorithmic depth: {spec.get('algorithmic_depth','')}\n"
-                f"Fix the code to match the spec exactly."
-            )
+            # Build specific, actionable feedback based on failure type
+            if "generic" in build_reason.lower() or "static" in build_reason.lower() or "same regardless" in build_reason.lower():
+                build_feedback = (
+                    f"CRITICAL FAILURE: {build_reason}\n\n"
+                    f"The tool output must CHANGE based on what the user types. Right now it produces "
+                    f"identical output regardless of input - this is useless.\n\n"
+                    f"REQUIRED FIX: Parse the actual user input text in JavaScript. Extract specific "
+                    f"words, numbers, entities, or patterns from it. Display results that are unique "
+                    f"to THAT specific input. If the user types 'apple harvest season', the output "
+                    f"must be different from if they type 'quantum computing jobs'. "
+                    f"No static checklists. No preset steps. No hardcoded categories.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}"
+                )
+            elif "hardcoded" in build_reason.lower() or "data-*" in build_reason.lower() or "pre-populated" in build_reason.lower():
+                build_feedback = (
+                    f"CRITICAL FAILURE: {build_reason}\n\n"
+                    f"You must NOT embed data in HTML elements. The HTML must be a blank template. "
+                    f"All data must be created by JavaScript at runtime by parsing the user's input.\n\n"
+                    f"REQUIRED FIX: Start with empty containers in HTML. In JavaScript, read the "
+                    f"input text, parse it, compute results, then use createElement/innerHTML to "
+                    f"build the output dynamically. Zero pre-filled data-* attributes allowed.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}"
+                )
+            else:
+                build_feedback = (
+                    f"Validation failed: {build_reason}\n"
+                    f"The approved spec says:\n"
+                    f"  Transformation: {spec.get('transformation','')}\n"
+                    f"  Algorithmic depth: {spec.get('algorithmic_depth','')}\n"
+                    f"Fix the code to match the spec exactly."
+                )
 
     if not build_ok:
         print("❌ Phase 3 failed - build could not be validated after 3 attempts.")
