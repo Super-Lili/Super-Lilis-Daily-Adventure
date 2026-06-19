@@ -1877,11 +1877,14 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             print(f"  [OK] Quality - Engineering: {eng_score}/5  Warmth: {warm_score}/5  ({combined} avg) - {reason_line}")
 
             # 8. Critic check - a demanding creative director finds specific flaws
+            # For HTML tools, skip the CSS/head and show the body content
+            output_sample = output[1500:2500] if len(output) > 1500 else output
             critic_prompt = (
                 f"You are a demanding creative director reviewing an AI-generated tool.\n"
                 f"Your job is to find real problems - not to encourage.\n\n"
                 f"Tool purpose: {description or 'a productivity tool'}\n"
-                f"Tool output (first 600 chars):\n{output[:600]}\n\n"
+                f"Test input used: {demo_input[:200]}\n"
+                f"Tool output sample:\n{output_sample}\n\n"
                 f"Find up to 3 specific flaws from this list:\n"
                 f"- Output is generic (would be the same regardless of input)\n"
                 f"- Output is padded with filler sentences that add no value\n"
