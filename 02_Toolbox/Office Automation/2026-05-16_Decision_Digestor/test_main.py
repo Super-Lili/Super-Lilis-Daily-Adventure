@@ -36,7 +36,17 @@ def extract_communication_entities(text: str) -> list[dict]:
         if match_action:
             if current_item:
                 entities.append(current_item)
-            current_item = {"Type": "Action Item", "Description": match_action.group(1).strip(), "Owner": "", "DueDate": ""}
+            desc = match_action.group(1).strip()
+            owner = ""
+            due = ""
+            m_o = re.search(r'(?:Owner|Assigned to|Responsible for|Contact):\s*([A-Za-z][A-Za-z\s]+?)(?:\.|$|Due|Deadline)', desc, re.IGNORECASE)
+            m_d = re.search(r'(?:Due by|Deadline|Complete by):\s*(\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4}|\d{2}/\d{2})', desc, re.IGNORECASE)
+            if m_o:
+                owner = m_o.group(1).strip()
+                desc = desc[:m_o.start()].strip().rstrip('.')
+            if m_d:
+                due = parse_date(m_d.group(1).strip())
+            current_item = {"Type": "Action Item", "Description": desc, "Owner": owner, "DueDate": due}
         elif match_decision:
             if current_item:
                 entities.append(current_item)
