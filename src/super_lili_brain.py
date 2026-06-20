@@ -1161,10 +1161,12 @@ TEST FILE REQUIREMENTS (test_main.py):
 
 OUTPUT FORMAT - COPY EXACTLY (do NOT output ---TEST--- until the Python code is 100% complete):
 ---CODE---
-[Complete Python code - minimum 150 lines - do NOT stop early - write every line until the file ends with the USER_INPUT block]
+[Complete Python code - keep under 350 lines total - do NOT stop early - write every line until the file ends with the USER_INPUT block]
 ---TEST---
-[test_main.py - from main import process - self-contained asserts]
----BUILD_END---"""
+[test_main.py - from main import process - self-contained asserts - keep under 30 lines]
+---BUILD_END---
+
+IMPORTANT LINE LIMIT: The entire ---CODE--- section must be under 350 lines. If your design requires more, simplify: remove comments, shorten variable names, combine functions. A working 300-line tool is better than a truncated 800-line tool."""
 
 
 def validate_spec(spec: dict) -> tuple[bool, str]:
@@ -2432,7 +2434,22 @@ def evolve():
         else:
             print(f"  [NO] Build failed: {build_reason}")
             # Build specific, actionable feedback based on failure type
-            if "generic" in build_reason.lower() or "static" in build_reason.lower() or "same regardless" in build_reason.lower():
+            if "unterminated" in build_reason.lower() or ("syntax error" in build_reason.lower() and attempt >= 2):
+                build_feedback = (
+                    f"CRITICAL: Your previous code was TRUNCATED because it was too long. "
+                    f"The response was cut off mid-string, causing a syntax error.\n\n"
+                    f"REQUIRED: Rewrite the entire tool in UNDER 350 LINES TOTAL. "
+                    f"This is a hard limit - do not exceed it.\n\n"
+                    f"How to stay under 350 lines:\n"
+                    f"- For Mode 3 HTML: use short variable names, minimal CSS (inline only), "
+                    f"no multi-line comments, combine JS logic into fewer functions\n"
+                    f"- For Mode 1/2: keep process() focused on one core transformation\n"
+                    f"- Remove all docstrings and comments\n"
+                    f"- The tool must still work - just write it more concisely\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
+            elif "generic" in build_reason.lower() or "static" in build_reason.lower() or "same regardless" in build_reason.lower():
                 build_feedback = (
                     f"CRITICAL FAILURE: {build_reason}\n\n"
                     f"The tool output must CHANGE based on what the user types. Right now it produces "
