@@ -2375,8 +2375,8 @@ def evolve():
     build_feedback = ""
     merged: dict = {**scout}  # initialise so it's always defined even if BUILD loop exits early
 
-    for attempt in range(1, 4):
-        print(f"  Attempt {attempt}/3...")
+    for attempt in range(1, 6):
+        print(f"  Attempt {attempt}/5...")
         if attempt > 1:
             print(f"  ⏳ Waiting 15s before retry...")
             time.sleep(15)
@@ -2467,7 +2467,7 @@ def evolve():
                 )
 
     if not build_ok:
-        print("❌ Phase 3 failed - build could not be validated after 3 attempts.")
+        print("❌ Phase 3 failed - build could not be validated after 5 attempts.")
         # Never ship a tool with a syntax error - it will crash on every user interaction.
         # Ship a rest day so tomorrow's run starts clean.
         # All validation failures are fatal - never ship a broken tool.
