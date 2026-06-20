@@ -1136,6 +1136,8 @@ CODE REQUIREMENTS:
     result = transform(parse(user_input))
 [NO] Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
 [NO] NEVER use JS template literals (${{...}}) inside Python f-strings - use .format() or string concat instead
+[NO] NEVER put HTML with JavaScript inside a Python f-string - JS curly braces break f-strings
+[OK] For Mode 3 HTML: assign HTML to a plain variable first, then use .replace() for dynamic parts
 
 MANDATORY STRUCTURE - your code MUST end with exactly this pattern:
 def process(text: str) -> str:
@@ -1899,16 +1901,17 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             # Show the Critic the source code logic, not the static HTML blob.
             if is_html_output:
                 source_for_critic = open(main_py, encoding="utf-8").read()
+                script_start = source_for_critic.find('<script')
+                js_snippet = source_for_critic[script_start:script_start+1200] if script_start != -1 else source_for_critic[:1200]
                 critic_context = (
-                    f"This is a Mode 3 interactive HTML tool. The Python script outputs an HTML page "
-                    f"that runs in a browser. The actual transformation of user input happens via JavaScript.\n"
-                    f"Review the JavaScript logic in the source code, not the static HTML structure.\n\n"
-                    f"Source code (first 1200 chars of JS/logic):\n{source_for_critic[source_for_critic.find('<script'):source_for_critic.find('<script')+1200] if '<script' in source_for_critic else source_for_critic[:1200]}"
+                    f"This is an interactive HTML tool (runs in browser).\n"
+                    f"Review the JavaScript source code below to judge whether it does something useful:\n\n"
+                    f"JS source snippet:\n{js_snippet}"
                 )
                 critic_flaws = (
-                    f"- The JavaScript logic is generic (same output regardless of what the user types)\n"
+                    f"- The JavaScript does nothing with user input (output is identical for any input)\n"
                     f"- The tool does nothing the user couldn't do in 10 seconds themselves\n"
-                    f"- The tool has no real algorithmic depth - it just reformats without computing\n"
+                    f"- The tool has no real algorithmic depth\n"
                     f"- A professional would be embarrassed to show this to a colleague\n"
                 )
             else:
