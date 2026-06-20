@@ -43,3 +43,4 @@ def test_process_structural_properties():
     assert "checkbox" in result.lower(), "Output must contain checkboxes"
     assert "reset" in result.lower() or "new ascent" in result.lower(), \
         "Output must contain a reset option"
+```
