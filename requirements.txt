@@ -9,3 +9,4 @@ openpyxl
 python-dateutil
 tabulate
 Pillow
+jinja2

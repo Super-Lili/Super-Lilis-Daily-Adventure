@@ -445,6 +445,14 @@ _SOURCE_ROTATION = [
      "published in the past 14 days about human behavior, social friction, wellbeing, "
      "or work/learning/health. A surprising data point from a credible source "
      "is more valuable than a trending tweet. Look for the finding that changes how you see something."),
+
+    # ── DESIGN INDUSTRY DEEP DIVES (added from 2026-06-21 weekly evolution proposal) ──
+    ("AIGA Journal/Blog (design industry)",
+     "Search aiga.org for articles and discussions from the past 30 days. "
+     "Look for friction in the design PROCESS itself - not visual trends, but "
+     "professional challenges: client education, design critique culture, "
+     "portfolio/case-study writing, design systems documentation, "
+     "the gap between design school training and studio reality."),
 ]
 
 
@@ -579,6 +587,7 @@ _SOURCE_DOMAIN_HINT = [
     "healing",   # 12 - life transitions
     "design",    # 13 - motion & typography
     "work",      # 14 - news & research
+    "studio",    # 15 - AIGA design industry
 ]
 
 
@@ -1137,7 +1146,11 @@ CODE REQUIREMENTS:
 [NO] Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
 [NO] NEVER use JS template literals (${{...}}) inside Python f-strings - use .format() or string concat instead
 [NO] NEVER put HTML with JavaScript inside a Python f-string - JS curly braces break f-strings
-[OK] For Mode 3 HTML: assign HTML to a plain variable first, then use .replace() for dynamic parts
+[OK] For Mode 3 HTML: use jinja2.Template (already installed, available without listing in requirements.txt).
+    Jinja2 uses {{{{ variable }}}} and {{% logic %}} - JS single braces {{}} pass through untouched, zero conflict.
+    Pattern: from jinja2 import Template
+             TEMPLATE = Template('<html><script>function run(v) {{ return v; }}</script><body>{{{{ result }}}}</body></html>')
+             html = TEMPLATE.render(result=computed_value)
 
 MANDATORY STRUCTURE - your code MUST end with exactly this pattern:
 def process(text: str) -> str:
