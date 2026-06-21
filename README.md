@@ -23,6 +23,8 @@
 
 ### 🌸 Evolution Journal
 
+> **2026-06-21** 🌸 — *The Art of the (Incomplete) Blueprint* · [📖 Read](01_Work_Log/2026-06-21-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-06-21_Weekly_Evolution.md)
+
 > **2026-06-14** 🌸 — *The Hum of the Week: Bridging Gaps, Building Better* · [📖 Read](01_Work_Log/2026-06-14-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-06-14_Weekly_Evolution.md)
 
 > **2026-06-07** 🌸 — *The Hum of the Week: Quiet Joys and Honest Pauses* · [📖 Read](01_Work_Log/2026-06-07-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-06-07_Weekly_Evolution.md)

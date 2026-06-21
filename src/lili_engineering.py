@@ -768,23 +768,20 @@ or insight derived directly from what the user gave you.
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-06-14
+# Last updated: 2026-06-21
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: USER_INPUT Dual-Mode Enforcement
-WHY: Tools like Commute Current Tracker and Handoff Blueprint Generator failed to accept user input, making them unusable.
-HOW: `def process(user_input: str, **kwargs) -> str:` or include explicit `USER_INPUT` handling pattern for Pyodide.
-
-RULE: Complete Functionality Definition
-WHY: The Brand Voice Aligner was an incomplete shell, lacking a `process()` function or clear execution path.
-HOW: Every tool file must define a primary `process()` function or equivalent entry point that encapsulates all core logic.
-
-RULE: Empty/Short Input Guards
-WHY: Narrative Arc Weaver lacked guards, risking crashes on minimal input; all tools must handle edge cases gracefully.
-HOW: `if not user_input or len(user_input.strip()) < MIN_CHARS:` then `return "Please provide more input."`
-
-RULE: Clear Output Structure
-WHY: To ensure generated HTML output is consistently readable and organized for the user.
-HOW: Output should consistently use HTML semantic tags (`<section>`, `<h3>`, `<p>`) and avoid raw text blobs for readability.
+RULE: Complete Code Blocks
+WHY: Tools were often submitted as incomplete fragments, rendering them unusable and leading to "truncated code" failures.
+HOW: `Ensure every code block submitted for a tool includes all necessary imports, function definitions, and a complete main execution path.`
+RULE: Explicit Input-to-Output Pipeline
+WHY: Tools lacked a clear mechanism to transform user input into a specific, tangible output, resulting in "no input-to-output pipeline" and generic outputs.
+HOW: `Define a clear 'def run(input_data: Dict) -> str:' function signature within each tool, explicitly processing input to generate a formatted string output.`
+RULE: Data-Driven Output Generation
+WHY: Tools frequently produced generic HTML/JS regardless of input, failing to provide specific value and being criticized for "same output regardless of input."
+HOW: `All output generation must dynamically incorporate processed 'input_data' into template variables or string formatting to ensure unique, tailored results.`
+RULE: Essential Imports Verified
+WHY: Runtime errors occurred due to missing basic imports like 'json', causing catastrophic failures during testing.
+HOW: `Before finalizing tool code, explicitly check for and include all standard library imports (e.g., 'import json') required for the tool's logic.`
 """
