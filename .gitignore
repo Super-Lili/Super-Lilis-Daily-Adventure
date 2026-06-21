@@ -17,6 +17,10 @@ demo_*/
 *_compass.html
 *_catalyst.html
 
+# Any HTML file landing directly in repo root is a stray tool-run artifact
+# (real site HTML lives under docs/ and 02_Toolbox/, never at root)
+/*.html
+
 # Claude Code internals — never commit these
 .claude/
 .clone/
