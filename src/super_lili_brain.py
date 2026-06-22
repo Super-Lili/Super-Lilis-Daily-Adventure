@@ -902,7 +902,13 @@ FORMAT SELECTION (declare in ---SPEC--- as FORMAT: [letter] - [why]):
   D - Live canvas / real-time transformer (Mode 3 HTML)
   E - Ambient / environment, no input needed (Mode 3 HTML)
   F - Generator + inline editor (Mode 3 HTML)
-  [NO] Don't default to A. Professional audiences -> B/C/F. Design -> D. Healing -> E/D.
+  [OK] DEFAULT TO A (Mode 1/2) unless the tool is IMPOSSIBLE to deliver as text/SVG.
+  [NO] Only pick B/C/D/E/F if the core value genuinely REQUIRES live visual interaction
+  (e.g. dragging, real-time animation, canvas drawing) - not just "would look nicer as a UI."
+  A text/SVG tool that actually computes something beats an HTML tool that fakes interactivity.
+  Recent build data: Mode 3 tools have repeatedly shipped fake JS (CSS toggles, hardcoded
+  copy-paste, unrendered templates) because one-shot HTML+JS generation is unreliable right now.
+  Mode 1/2 tools have a much higher real success rate. When in doubt, choose A.
 
 OUTPUT MODES:
   Mode 1 - process(text) returns plain string. Allowed: numpy, pandas, matplotlib, Pillow.
@@ -1253,6 +1259,19 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
     # Check 4: test input must exist
     if len(test_input) < 15:
         return False, f"TEST_INPUT is missing or too short. Got: '{test_input[:50]}'"
+
+    # Check 5: TEMPORARY - Mode 3 (formats B-F) disabled.
+    # 2026-06-19 to 06-22: every single BUILD failure has been a Mode 3 HTML tool shipping
+    # fake interactivity (CSS-toggle-only JS, hardcoded copy-paste, unrendered Jinja2 templates,
+    # hardcoded data-* nodes). One-shot HTML+JS generation is not reliable enough yet.
+    # Remove this gate once Mode 3 success rate is proven stable again.
+    fmt_letter = spec.get("format", "").strip()[:1].upper()
+    if fmt_letter and fmt_letter != "A":
+        return False, (
+            f"FORMAT '{fmt_letter}' selects Mode 3 (interactive HTML), which is temporarily "
+            "disabled due to repeated fake-interactivity failures. Re-spec as FORMAT: A "
+            "(Mode 1/2 - text or SVG output) with a genuine algorithmic transformation instead."
+        )
 
     return True, "ok"
 
