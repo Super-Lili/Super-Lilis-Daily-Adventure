@@ -300,6 +300,33 @@ def _get_recent_categories(n: int = 4) -> list[str]:
         return []
 
 
+def _get_recent_failed_categories(days: int = 3, min_failures: int = 2) -> list[str]:
+    """Categories where BUILD failed (Critic rejected or validation failed) min_failures+ times
+    in the last `days` days, read from tool_quality_ledger.jsonl. Unlike _get_recent_categories
+    (which only sees successful tools via lili_memory.json), this catches categories the model
+    keeps failing on even when no tool ever shipped."""
+    try:
+        import json as _json
+        from datetime import datetime as _dt2, timedelta as _td2
+        cutoff = (_dt2.utcnow() - _td2(days=days)).strftime("%Y-%m-%d")
+        ledger_path = Path("tool_quality_ledger.jsonl")
+        if not ledger_path.exists():
+            return []
+        counts: dict[str, int] = {}
+        for line in ledger_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            entry = _json.loads(line)
+            if entry.get("date", "") < cutoff or entry.get("passed", True):
+                continue
+            cat = entry.get("category", "")
+            if cat:
+                counts[cat] = counts.get(cat, 0) + 1
+        return [cat for cat, n in counts.items() if n >= min_failures]
+    except Exception:
+        return []
+
+
 def _get_recent_patterns(n: int = 4) -> list[str]:
     try:
         from lili_memory import load_memory
@@ -673,9 +700,13 @@ def _build_context_block(today: str) -> dict:
 
     # Diversity guards
     recent_cats = _get_recent_categories(2)
+    failed_cats = _get_recent_failed_categories(days=3, min_failures=2)
+    banned_cats = sorted(set(recent_cats) | set(failed_cats))
     avoid_cats = (
-        f"\nBANNED CATEGORIES TODAY (used in the last 2 days):\n  {', '.join(set(recent_cats))}"
-        if recent_cats else ""
+        f"\nBANNED CATEGORIES TODAY: {', '.join(banned_cats)}\n"
+        f"  (used in the last 2 days, OR failed BUILD 2+ times in the last 3 days - "
+        f"pick a different category, the model keeps generating generic output for these)"
+        if banned_cats else ""
     )
     blindspot_nudge = (
         f"\nBLINDSPOT ANTIDOTE FROM LAST WEEK'S SELF-REVIEW:\n"
