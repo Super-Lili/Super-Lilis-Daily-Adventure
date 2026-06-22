@@ -1973,14 +1973,19 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                 f"Tool purpose: {description or 'a productivity tool'}\n"
                 f"Test input used: {demo_input[:200]}\n"
                 f"{critic_context}\n\n"
-                f"Find up to 3 specific flaws from this list:\n"
+                f"Find specific flaws from this list:\n"
                 f"{critic_flaws}\n"
-                f"If you find 2 or more serious flaws, reply: REJECT: [specific reasons]\n"
-                f"If the tool is acceptable, reply: PASS\n"
+                f"Reply with EXACTLY one of:\n"
+                f"REJECT: [reasons] - use if 2+ serious flaws, OR the tool is fundamentally fake "
+                f"(hardcoded/static output, does nothing with input)\n"
+                f"MINOR: [the one flaw] - use if exactly 1 real flaw but the core mechanism genuinely "
+                f"works (input is processed, output changes with input, just rough around the edges)\n"
+                f"PASS: - use if no real flaws\n"
                 f"Be specific. One word answers are not acceptable."
             )
             critic_resp = call_gemini_simple(critic_prompt)
-            if critic_resp and critic_resp.strip().upper().startswith("REJECT"):
+            critic_verdict = critic_resp.strip().upper() if critic_resp else ""
+            if critic_verdict.startswith("REJECT"):
                 reject_reason = critic_resp.strip()[7:].strip()[:200]
                 print(f"  [NO] Critic rejected: {reject_reason}")
                 _append_quality_ledger(
@@ -1991,6 +1996,10 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                     passed=False, format_type=format_type, audience=audience,
                 )
                 return False, f"Critic review failed: {reject_reason}"
+            elif critic_verdict.startswith("MINOR"):
+                minor_reason = critic_resp.strip()[6:].strip()[:200]
+                print(f"  [OK] Critic: minor flaw, shipping anyway - {minor_reason}")
+                reason_line = f"[Shipped with minor flaw] {minor_reason}"
             else:
                 print(f"  [OK] Critic review passed.")
 
