@@ -1865,6 +1865,18 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                     "The tool embeds static data in HTML instead of computing from user input in JavaScript. "
                     "Build the DOM dynamically from the user's input text - do not pre-populate elements."
                 )
+            # Detect unrendered Jinja2/template placeholders leaking into the actual output -
+            # this means .render() was never called (or called without the right kwargs),
+            # so the tool ships a literal "{{ variable }}" string instead of computed data.
+            unrendered = re.findall(r'\{\{\s*\w+\s*\}\}', output)
+            if unrendered:
+                return False, (
+                    f"Unrendered template placeholder(s) found in actual output: {unrendered[:3]}. "
+                    "This means Template.render() was never called with the right keyword arguments, "
+                    "so the literal '{{ variable }}' string is shipped instead of computed data. "
+                    "Verify every Jinja2 variable in your template has a matching kwarg passed to .render(), "
+                    "and that render() is actually called before returning the HTML."
+                )
             if len(output) < 500:
                 error_detail = f" Runtime error: {stderr_snippet}" if stderr_snippet else ""
                 return False, (
@@ -2490,7 +2502,19 @@ def evolve():
         else:
             print(f"  [NO] Build failed: {build_reason}")
             # Build specific, actionable feedback based on failure type
-            if "unterminated" in build_reason.lower() or ("syntax error" in build_reason.lower() and attempt >= 2):
+            if "unrendered template placeholder" in build_reason.lower():
+                build_feedback = (
+                    f"CRITICAL: {build_reason}\n\n"
+                    f"You used Jinja2 syntax but never actually substituted the data. "
+                    f"REQUIRED FIX: After computing your result in Python, you MUST call "
+                    f"Template(...).render(your_variable=computed_value) and use the RETURN VALUE "
+                    f"of .render() as your HTML output - not the raw template string. "
+                    f"Double-check every {{{{ name }}}} in your template has a matching "
+                    f"keyword argument in the .render() call, spelled exactly the same.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
+            elif "unterminated" in build_reason.lower() or ("syntax error" in build_reason.lower() and attempt >= 2):
                 build_feedback = (
                     f"CRITICAL: Your previous code was TRUNCATED because it was too long. "
                     f"The response was cut off mid-string, causing a syntax error.\n\n"
