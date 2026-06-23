@@ -1273,14 +1273,16 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
     # 2026-06-19 to 06-22: every single BUILD failure has been a Mode 3 HTML tool shipping
     # fake interactivity (CSS-toggle-only JS, hardcoded copy-paste, unrendered Jinja2 templates,
     # hardcoded data-* nodes). One-shot HTML+JS generation is not reliable enough yet.
-    # Remove this gate once Mode 3 success rate is proven stable again.
+    # The model kept ignoring the prompt instruction and re-picking B-F even after explicit
+    # retry feedback (2026-06-23: picked FORMAT B twice in a row, burning both SPEC attempts).
+    # So instead of rejecting and hoping the model listens, force-override deterministically -
+    # the transformation/algorithmic content is still valid, only the delivery format changes.
+    # Remove this override once Mode 3 success rate is proven stable again.
     fmt_letter = spec.get("format", "").strip()[:1].upper()
     if fmt_letter and fmt_letter != "A":
-        return False, (
-            f"FORMAT '{fmt_letter}' selects Mode 3 (interactive HTML), which is temporarily "
-            "disabled due to repeated fake-interactivity failures. Re-spec as FORMAT: A "
-            "(Mode 1/2 - text or SVG output) with a genuine algorithmic transformation instead."
-        )
+        print(f"  ⚠ Spec picked FORMAT '{fmt_letter}' (Mode 3) - force-overriding to FORMAT A (Mode 1/2)")
+        spec["format"] = "A - forced override (Mode 3 temporarily disabled)"
+        spec["mode"] = "1"
 
     return True, "ok"
 
