@@ -1190,6 +1190,11 @@ CODE REQUIREMENTS:
     plain string inputs and assert simple properties (non-empty, length, substring present).
     A test that crashes with a Traceback (not a clean assert) means the test itself is buggy -
     keep it minimal and defensive.
+[NO] NEVER write a bare top-level statement that calls a function or parses arguments outside
+    a function body or outside `if __name__ == "__main__":`. test_main.py does
+    `from main import process`, which sets __name__ to "main" (NOT "__main__"), so ANY unguarded
+    top-level code still executes during that import and will crash the test before it even runs.
+    Only function defs, class defs, constants, and imports are allowed at true top level.
 [NO] NEVER use JS template literals (${{...}}) inside Python f-strings - use .format() or string concat instead
 [NO] NEVER put HTML with JavaScript inside a Python f-string - JS curly braces break f-strings
 [OK] For Mode 3 HTML: use jinja2.Template (already installed, available without listing in requirements.txt).
@@ -1777,6 +1782,30 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         return False, "--help timed out"
     except Exception as e:
         return False, f"--help error: {e}"
+
+    # 3b. Import check - catches crashes from unguarded top-level code.
+    # `python main.py --help` runs the file as __main__, so anything inside
+    # `if __name__ == "__main__":` executes fine. But test_main.py does
+    # `from main import process`, which sets __name__ to "main" (not "__main__"),
+    # so __main__-guarded code is skipped - any OTHER unguarded top-level statement
+    # (an argparse call, a stray function call, a missing import) still runs and
+    # can crash on plain import even though --help passed.
+    try:
+        result = subprocess.run(
+            [sys.executable, "-c", "from main import process"],
+            capture_output=True, text=True, timeout=15, cwd=skill_dir,
+        )
+        if result.returncode != 0:
+            return False, (
+                f"Import crashed: 'from main import process' raised an exception even though "
+                f"the file parses and --help works. This means there is unguarded top-level code "
+                f"(outside any function and outside 'if __name__ == \"__main__\":') that runs "
+                f"immediately on import. Error: {result.stderr[:300]}"
+            )
+    except subprocess.TimeoutExpired:
+        return False, "Import check timed out - main.py may hang on import"
+    except Exception as e:
+        return False, f"Import check error: {e}"
 
     # 4. Install dependencies
     req_file = f"{skill_dir}/requirements.txt"
@@ -2593,6 +2622,20 @@ def evolve():
                     f"REQUIRED FIX: Remove all input-format validation/rejection. Parse whatever text "
                     f"arrives using flexible heuristics (regex, sentence splitting, keyword detection) - "
                     f"do not require blank-line-separated sections, exact headers, or any structured syntax.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
+            elif "import crashed" in build_reason.lower():
+                build_feedback = (
+                    f"CRITICAL FAILURE: {build_reason}\n\n"
+                    f"Your main.py has unguarded top-level code that runs immediately when "
+                    f"the module is imported (not just when run as a script).\n\n"
+                    f"REQUIRED FIX: Move EVERY statement that calls a function, parses arguments, "
+                    f"or executes logic into either a function body or inside "
+                    f"'if __name__ == \"__main__\":'. The only things allowed at true top level are: "
+                    f"import statements, constant assignments (e.g. X = 5), function definitions, "
+                    f"and class definitions. Check the very top and very bottom of your file for "
+                    f"any stray function call or argparse.parse_args() outside a guard.\n\n"
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
