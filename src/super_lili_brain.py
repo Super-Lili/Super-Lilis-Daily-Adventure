@@ -1907,6 +1907,18 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         # Detect Mode 3 HTML output - scoring the raw HTML is meaningless
         is_html_output = output.lstrip().startswith(("<!DOCTYPE", "<html", "<!doctype"))
 
+        # Mode 3 is temporarily disabled (see validate_spec). The model sometimes ignores the
+        # spec's forced Mode 1/2 instruction and writes HTML+JS anyway - reject mechanically
+        # rather than relying on the model to have listened, since this is exactly the class
+        # of fake-interactivity bug Mode 3 lockdown was meant to prevent.
+        if is_html_output and format_type.strip()[:1].upper() == "A":
+            return False, (
+                "Tool produced HTML output (Mode 3) but the spec required FORMAT A (Mode 1/2 - "
+                "plain text or SVG string). Mode 3 is temporarily disabled. Rewrite process() to "
+                "return a plain text string or an SVG string starting with '<svg' - no JavaScript, "
+                "no <!DOCTYPE html>, no <script> tags."
+            )
+
         stderr_snippet = (result.stderr or "").strip()[:300]
         if is_html_output:
             # Mode 3: HTML app. Check length + detect hardcoded lookup tables in JS.
@@ -2627,6 +2639,17 @@ def evolve():
                     f"REQUIRED FIX: Remove all input-format validation/rejection. Parse whatever text "
                     f"arrives using flexible heuristics (regex, sentence splitting, keyword detection) - "
                     f"do not require blank-line-separated sections, exact headers, or any structured syntax.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
+            elif "mode 3 is temporarily disabled" in build_reason.lower():
+                build_feedback = (
+                    f"CRITICAL FAILURE: {build_reason}\n\n"
+                    f"You wrote HTML/JavaScript output despite the spec requiring Mode 1/2.\n\n"
+                    f"REQUIRED FIX: process(text) must return a plain Python string (formatted with "
+                    f"line breaks and labeled sections) or an SVG string starting with '<svg'. "
+                    f"Do NOT return anything starting with '<!DOCTYPE' or '<html'. No <script> tags "
+                    f"anywhere in the return value.\n\n"
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
