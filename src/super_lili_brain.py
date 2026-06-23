@@ -1181,6 +1181,15 @@ CODE REQUIREMENTS:
     score = sum(weights[i] * features[i] for i in range(len(features)))
     result = transform(parse(user_input))
 [NO] Forbidden in Mode 1/2: svgwrite, rich, click, requests, openpyxl, ics, pytz
+[NO] NEVER require the input to follow a specific structure (exact section count, blank-line
+    delimiters, specific headers, fixed field order). process(text) gets FREE-FORM TEXT from a
+    real person typing naturally - it must parse loosely (regex, keyword search, sentence
+    splitting) and produce a best-effort result. Never return an error like "Input must contain
+    3 sections separated by blank lines" - that rejects every real user.
+[NO] test_main.py must ONLY call process() (never any other function from main.py) with 2-3
+    plain string inputs and assert simple properties (non-empty, length, substring present).
+    A test that crashes with a Traceback (not a clean assert) means the test itself is buggy -
+    keep it minimal and defensive.
 [NO] NEVER use JS template literals (${{...}}) inside Python f-strings - use .format() or string concat instead
 [NO] NEVER put HTML with JavaScript inside a Python f-string - JS curly braces break f-strings
 [OK] For Mode 3 HTML: use jinja2.Template (already installed, available without listing in requirements.txt).
@@ -2569,6 +2578,32 @@ def evolve():
                     f"REQUIRED FIX: Start with empty containers in HTML. In JavaScript, read the "
                     f"input text, parse it, compute results, then use createElement/innerHTML to "
                     f"build the output dynamically. Zero pre-filled data-* attributes allowed.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
+            elif "must contain" in build_reason.lower() or "input must" in build_reason.lower() or "error: input" in build_reason.lower():
+                build_feedback = (
+                    f"CRITICAL FAILURE: {build_reason}\n\n"
+                    f"Your process() function rejected the test input because it expects a rigid, "
+                    f"self-invented input structure (e.g. a fixed number of sections, a specific "
+                    f"delimiter, exact field names). This is wrong - process(text) receives FREE-FORM "
+                    f"TEXT from a real user. It must never demand the input look a certain way.\n\n"
+                    f"REQUIRED FIX: Remove all input-format validation/rejection. Parse whatever text "
+                    f"arrives using flexible heuristics (regex, sentence splitting, keyword detection) - "
+                    f"do not require blank-line-separated sections, exact headers, or any structured syntax.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
+            elif "tests failed" in build_reason.lower() and "traceback" in build_reason.lower():
+                build_feedback = (
+                    f"CRITICAL FAILURE: {build_reason}\n\n"
+                    f"Your test_main.py crashed with an uncaught exception (not a clean assertion "
+                    f"failure) - this means the TEST FILE ITSELF has a bug: a typo, wrong import, "
+                    f"calling a function that doesn't exist in main.py, or wrong argument count.\n\n"
+                    f"REQUIRED FIX: Rewrite test_main.py to be minimal and defensive: only "
+                    f"'from main import process', call process() with 2-3 plain strings, and assert "
+                    f"basic properties (non-empty, length, contains a substring). Do not call any "
+                    f"helper function that isn't process() itself.\n\n"
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
