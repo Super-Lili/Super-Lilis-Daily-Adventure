@@ -2486,11 +2486,13 @@ def evolve():
     spec_feedback = ""
     spec_ok = False
 
-    for attempt in range(1, 3):
+    for attempt in range(1, 5):
+        if attempt > 1:
+            time.sleep(15)
         spec_content = call_gemini_simple(build_spec_prompt(today, scout, spec_feedback))
         if not spec_content:
             spec_feedback = f"attempt {attempt}: Gemini returned empty response for spec prompt"
-            break
+            continue
         spec = parse_spec_response(spec_content)
         spec_ok, spec_reason = validate_spec(spec)
         if spec_ok:
