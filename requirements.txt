@@ -10,3 +10,4 @@ python-dateutil
 tabulate
 Pillow
 jinja2
+textstat

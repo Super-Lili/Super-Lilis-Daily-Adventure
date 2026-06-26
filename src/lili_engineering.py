@@ -740,6 +740,36 @@ The test: if the user could replicate the output by doing Ctrl+H in a Google Doc
 
 
 ═══════════════════════════════════════════════════════
+RULE 18B — USE ESTABLISHED ALGORITHMS, DON'T INVENT YOUR OWN
+═══════════════════════════════════════════════════════
+
+Before writing custom analysis logic from scratch, ask: does a known, named
+algorithm or formula already solve this exact problem? If yes, implement THAT
+formula correctly rather than inventing an ad-hoc heuristic.
+
+  ✓ Readability scoring -> Flesch-Kincaid / Flesch Reading Ease formula
+  ✓ Text similarity -> difflib.SequenceMatcher, Levenshtein distance, Jaccard index
+  ✓ Keyword importance -> TF-IDF (manual formula or sklearn if available)
+  ✓ Date/duration parsing -> python-dateutil (already in requirements.txt)
+  ✓ Sentiment/tone signal -> simple lexicon-based scoring with a real word list,
+    not a single if/else guess
+  ✓ Statistical summary -> actual mean/median/stdev (statistics module), not
+    a made-up "score out of 10"
+
+Why this matters: a hand-invented heuristic ("if text contains 'urgent', score += 1")
+is exactly the pattern the Critic rejects as "fake" or "generic" - it doesn't
+generalise and often ignores most of the input. A named algorithm, even a simple
+one, is real computation that produces input-dependent output by construction.
+
+✗ Do NOT pip-install heavy ML/NLP libraries (spacy, transformers, sklearn's
+  full footprint) - they will fail to install or run in the sandboxed
+  validation environment and in Pyodide. Prefer the formula implemented in
+  plain Python, or a lightweight pure-Python library already in
+  requirements.txt (pandas, numpy, python-dateutil, statistics, difflib,
+  re, textstat if installed).
+
+
+═══════════════════════════════════════════════════════
 RULE 19 — HTML THREE-STATE MACHINE
 ═══════════════════════════════════════════════════════
 
