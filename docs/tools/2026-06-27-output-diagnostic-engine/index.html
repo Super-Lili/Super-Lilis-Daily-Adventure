@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Urban Respite Weave · Super-Lili</title>
+  <title>Output Diagnostic Engine · Super-Lili</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -674,9 +674,9 @@ a { color: inherit; text-decoration: none; }
 
 <div class="detail-hero">
   <div class="container">
-    <div class="detail-eyebrow">Healing</div>
-    <h1>Urban Respite Weave</h1>
-    <div class="detail-meta">2026-05-29</div>
+    <div class="detail-eyebrow">Office</div>
+    <h1>Output Diagnostic Engine</h1>
+    <div class="detail-meta">2026-06-27</div>
   </div>
 </div>
 
@@ -685,39 +685,114 @@ a { color: inherit; text-decoration: none; }
 
     <section class="detail-section">
       <div class="detail-label">What it does</div>
-      <p class="description-text">This tool generates an interactive HTML app that provides a minimalist visual and ambient soundscape to help users find a moment of calm amidst urban sensory overload. *(link could not be verified — [🔍 search for this story](https://www.google.com/search?q=reflections.live/articles/psychological-toll-of-sensory-overload-in-cities))*</p>
-      <a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Healing Inventions/2026-05-29_Urban_Respite_Weave/main.py" target="_blank" rel="noopener">View Source &rarr;</a>
+      <p class="description-text">This tool helps creative and analytical professionals self-diagnose common issues in their generated content, identifying generic output, incomplete sections, or logical inconsistencies by applying a structured probe-based evaluation.</p>
+      <a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Office Automation/2026-06-27_Output_Diagnostic_Engine/main.py" target="_blank" rel="noopener">View Source &rarr;</a>
     </section>
 
     <section class="detail-section">
       <div class="detail-label">Dependencies</div>
-      <ul class="req-list"><li>- Python 3.8+</li><li>- Standard library only for core logic.</li><li>- The output is a self-contained HTML file (MODE 3).</li></ul>
+      <ul class="req-list"><li style='color:#aaa;font-style:italic;list-style:none;'>None — runs entirely in browser</li></ul>
     </section>
 
     <section class="detail-section">
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div class="prerendered-app" style="margin-top:8px">
-  <iframe id="app-frame"
-          sandbox="allow-scripts allow-same-origin"
-          style="width:100%;min-height:540px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block"
-          title="Interactive tool"></iframe>
-  <p style="margin-top:10px;font-size:0.8rem;color:#aaa;text-align:center">
-    ✨ Interactive app — runs entirely in your browser
-  </p>
+<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your meeting notes, task list, or work text here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 <script>
-  (function() {
-    const frame = document.getElementById('app-frame');
-    frame.srcdoc = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Urban Respite Weave</title>\n    <style>\n        body {\n            margin: 0;\n            overflow: hidden;\n            display: flex;\n            flex-direction: column;\n            align-items: center;\n            justify-content: center;\n            min-height: 100vh;\n            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;\n            background: linear-gradient(135deg, hsl(100, 57%, 70%) 0%, hsl(100, 57%, 71%) 100%);\n            transition: background 5s ease-in-out;\n            color: #333;\n        }\n        .container {\n            position: relative;\n            width: 85%;\n            max-width: 650px;\n            height: 65vh;\n            background: rgba(255, 255, 255, 0.1);\n            border-radius: 20px;\n            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);\n            backdrop-filter: blur(8px);\n            -webkit-backdrop-filter: blur(8px);\n            border: 1px solid rgba(255, 255, 255, 0.3);\n            display: flex;\n            flex-direction: column;\n            align-items: center;\n            justify-content: center;\n            padding: 25px;\n            overflow: hidden;\n            box-sizing: border-box;\n        }\n        .message {\n            font-size: 1.3em;\n            text-align: center;\n            margin-bottom: 25px;\n            opacity: 0.8;\n            pointer-events: none;\n            position: relative;\n            z-index: 2;\n            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);\n            color: #444;\n        }\n        .visual-canvas {\n            width: 100%;\n            height: 100%;\n            border-radius: 15px;\n            background: transparent;\n            position: absolute;\n            top: 0;\n            left: 0;\n            z-index: 0;\n        }\n        .controls {\n            position: relative;\n            z-index: 1;\n            margin-top: 25px;\n            display: flex;\n            gap: 12px;\n            flex-wrap: wrap;\n            justify-content: center;\n        }\n        button {\n            background-color: rgba(255, 255, 255, 0.35);\n            border: 1px solid rgba(255, 255, 255, 0.5);\n            padding: 11px 18px;\n            border-radius: 9px;\n            cursor: pointer;\n            font-size: 0.95em;\n            color: #333;\n            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;\n            backdrop-filter: blur(10px);\n            -webkit-backdrop-filter: blur(10px);\n            box-shadow: 0 2px 5px rgba(0,0,0,0.08);\n        }\n        button:hover {\n            background-color: rgba(255, 255, 255, 0.5);\n            transform: translateY(-1px);\n            box-shadow: 0 4px 10px rgba(0,0,0,0.12);\n        }\n        button:active {\n            transform: translateY(0);\n            box-shadow: 0 1px 3px rgba(0,0,0,0.05);\n        }\n        .current-status-label {\n            font-size: 0.9em;\n            margin-top: 12px;\n            opacity: 0.7;\n            color: #555;\n            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);\n            position: relative;\n            z-index: 1;\n            min-width: 120px; /* To prevent jumping when text changes */\n            text-align: center;\n        }\n        /* Responsive adjustments */\n        @media (max-width: 768px) {\n            .container {\n                width: 95%;\n                height: 75vh;\n                padding: 15px;\n            }\n            .message {\n                font-size: 1.1em;\n                margin-bottom: 15px;\n            }\n            button {\n                padding: 9px 14px;\n                font-size: 0.88em;\n            }\n            .current-status-label {\n                font-size: 0.85em;\n                margin-top: 10px;\n            }\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <canvas id=\"visualCanvas\" class=\"visual-canvas\"></canvas>\n        <div class=\"message\" id=\"introMessage\">\n            A quiet moment, woven just for you.\n        </div>\n        <div class=\"controls\">\n            <button id=\"toggleSoundButton\">Start Sound</button>\n            <button id=\"changeThemeButton\">Change Theme</button>\n            <div class=\"current-status-label\" id=\"statusLabel\">Sound off.</div>\n        </div>\n    </div>\n\n    <script>\n        const canvas = document.getElementById('visualCanvas');\n        const ctx = canvas.getContext('2d');\n        const statusLabel = document.getElementById('statusLabel');\n        const introMessage = document.getElementById('introMessage');\n        const toggleSoundButton = document.getElementById('toggleSoundButton');\n        const changeThemeButton = document.getElementById('changeThemeButton');\n\n        let animationFrameId;\n        let audioContext;\n        let oscillators = [];\n        let gains = [];\n        let isSoundPlaying = false;\n        let currentThemeConfig = {\"visual_colors\": [\"#81D4FA\", \"#4FC3F7\", \"#29B6F6\", \"#03A9F4\", \"#0288D1\"], \"background_gradient_start\": \"hsl(100, 57%, 70%)\", \"background_gradient_end\": \"hsl(100, 57%, 71%)\", \"sounds\": [{\"freq\": 130, \"gain\": 0.06, \"type\": \"sine\", \"label\": \"Mellow Tone\"}, {\"freq\": 210, \"gain\": 0.03, \"type\": \"triangle\", \"label\": \"Harmonic Glide\"}], \"visual_type\": \"ripple\"}; // Initial config from Python\n\n        // --- Utility Functions ---\n        function resizeCanvas() {\n            canvas.width = canvas.offsetWidth;\n            canvas.height = canvas.offsetHeight;\n        }\n\n        const lerpColor = (c1, c2, t_val) => {\n            const hexToRgb = hex => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];\n            const rgbToHex = rgb => '#' + rgb.map(v => Math.round(Math.min(255, Math.max(0, v))).toString(16).padStart(2, '0')).join('');\n            const r1 = hexToRgb(c1), r2 = hexToRgb(c2);\n            const r = r1.map((v, i) => v + (r2[i] - v) * t_val);\n            return rgbToHex(r);\n        };\n\n        // --- Visual Animations ---\n        let gradientOffset = 0;\n        function drawGradientShift() {\n            ctx.clearRect(0, 0, canvas.width, canvas.height);\n            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);\n\n            const colors = currentThemeConfig.visual_colors;\n            if (!colors || colors.length < 2) return; // Ensure enough colors\n\n            const t = (gradientOffset % 1);\n            const idx1 = Math.floor(gradientOffset) % colors.length;\n            const idx2 = (idx1 + 1) % colors.length;\n            const idx3 = (idx1 + 2) % colors.length; // For smoother transition with three points\n\n            grad.addColorStop(0, lerpColor(colors[idx1], colors[idx2], t));\n            grad.addColorStop(1, lerpColor(colors[idx2], colors[idx3], t));\n\n            ctx.fillStyle = grad;\n            ctx.fillRect(0, 0, canvas.width, canvas.height);\n            gradientOffset += 0.0005; // Speed of shift\n        }\n\n        let ripplePoints = [];\n        let frameCounter = 0;\n        function drawRippleMotion() {\n            ctx.clearRect(0, 0, canvas.width, canvas.height);\n\n            // Add new ripple point occasionally\n            if (frameCounter % 200 === 0) {\n                ripplePoints.push({\n                    x: Math.random() * canvas.width,\n                    y: Math.random() * canvas.height,\n                    radius: 0,\n                    alpha: 1,\n                    color: currentThemeConfig.visual_colors[Math.floor(Math.random() * currentThemeConfig.visual_colors.length)]\n                });\n            }\n\n            for (let i = 0; i < ripplePoints.length; i++) {\n                const p = ripplePoints[i];\n                p.radius += 0.5; // Speed of ripple expansion\n                p.alpha -= 0.005; // Fade out\n                if (p.alpha <= 0) {\n                    ripplePoints.splice(i, 1);\n                    i--;\n                    continue;\n                }\n\n                ctx.beginPath();\n                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);\n                ctx.strokeStyle = `rgba(${parseInt(p.color.slice(1,3), 16)}, ${parseInt(p.color.slice(3,5), 16)}, ${parseInt(p.color.slice(5,7), 16)}, ${p.alpha})`;\n                ctx.lineWidth = 2;\n                ctx.stroke();\n            }\n            frameCounter++;\n        }\n\n        function animate() {\n            if (currentThemeConfig.visual_type === \"gradient_shift\") {\n                drawGradientShift();\n            } else if (currentThemeConfig.visual_type === \"ripple\") {\n                drawRippleMotion();\n            }\n            animationFrameId = requestAnimationFrame(animate);\n        }\n\n        // --- Audio Management ---\n        function initAudioContext() {\n            if (!audioContext || audioContext.state === 'closed') {\n                audioContext = new (window.AudioContext || window.webkitAudioContext)();\n            }\n        }\n\n        function createOscillatorSound(soundConfig) {\n            const oscillator = audioContext.createOscillator();\n            const gainNode = audioContext.createGain();\n\n            oscillator.type = soundConfig.type || 'sine';\n            oscillator.frequency.setValueAtTime(soundConfig.freq, audioContext.currentTime);\n            gainNode.gain.setValueAtTime(soundConfig.gain, audioContext.currentTime);\n\n            oscillator.connect(gainNode);\n            gainNode.connect(audioContext.destination);\n            oscillators.push(oscillator);\n            gains.push(gainNode);\n        }\n\n        function startSound() {\n            if (isSoundPlaying) return; // Prevent multiple starts\n\n            initAudioContext();\n            if (audioContext.state === 'suspended') {\n                audioContext.resume();\n            }\n\n            oscillators = []; // Clear previous oscillators\n            gains = [];       // Clear previous gains\n\n            currentThemeConfig.sounds.forEach(sound => createOscillatorSound(sound));\n\n            oscillators.forEach(osc => osc.start());\n            isSoundPlaying = true;\n            updateStatusLabel(\"Playing: \" + currentThemeConfig.sounds.map(s => s.label).join(\", \"));\n            toggleSoundButton.textContent = \"Pause Sound\";\n            introMessage.style.opacity = '0'; // Fade out message on first interaction\n        }\n\n        function stopSound() {\n            if (!isSoundPlaying) return;\n\n            oscillators.forEach(osc => osc.stop());\n            isSoundPlaying = false;\n            updateStatusLabel(\"Sound paused.\");\n            toggleSoundButton.textContent = \"Start Sound\";\n            // Clean up AudioContext if no longer needed to free resources\n            if (audioContext && audioContext.state !== 'closed') {\n                audioContext.close().then(() => audioContext = null);\n            }\n        }\n\n        function updateStatusLabel(text) {\n            statusLabel.textContent = text;\n        }\n\n        // --- Theme Changing ---\n        const availableThemes = [\"forest\", \"ocean\", \"rain\", \"sunrise\", \"dusk\"];\n        let currentThemeIndex = -1; // -1 for initial default or random theme\n\n        // Replicate _generate_gradient_colo logic in JS for client-side theme changes\n        const generateHarmoniousBgColors = () => {\n            const h = Math.floor(Math.random() * 360);\n            const s = Math.floor(Math.random() * (60 - 30 + 1)) + 30; // 30-60\n            const l1 = Math.floor(Math.random() * (85 - 70 + 1)) + 70; // 70-85\n            const l2 = Math.floor(Math.random() * (75 - 60 + 1)) + 60; // 60-75\n            return [`hsl(${h}, ${s}%, ${l1}%)`, `hsl(${h}, ${s}%, ${l2}%)`];\n        };\n\n        function changeTheme() {\n            // Cycle through available themes\n            currentThemeIndex = (currentThemeIndex + 1) % availableThemes.length;\n            const newThemeName = availableThemes[currentThemeIndex];\n\n            // Simulate getting new configuration.\n            // 'palettes' and 'soundscapes' variables are embedded from Python's module-level definitions.\n            const [newBgStart, newBgEnd] = generateHarmoniousBgColors();\n\n            const newConfig = {\n                visual_colors: palettes[newThemeName],\n                background_gradient_start: newBgStart,\n                background_gradient_end: newBgEnd,\n                sounds: soundscapes[newThemeName],\n                visual_type: Math.random() < 0.5 ? \"ripple\" : \"gradient_shift\"\n            };\n            \n            document.body.style.background = `linear-gradient(135deg, ${newBgStart} 0%, ${newBgEnd} 100%)`;\n\n            currentThemeConfig = newConfig;\n            if (isSoundPlaying) {\n                stopSound(); // Stop current sounds gracefully\n                startSound(); // Start new sounds with new config\n            }\n            updateStatusLabel(`Theme: ${newThemeName.charAt(0).toUpperCase() + newThemeName.slice(1)}`);\n            introMessage.style.opacity = '0'; // Fade out message on first interaction\n        }\n\n        // --- Event Listeners and Initial Setup ---\n        window.addEventListener('resize', resizeCanvas);\n        toggleSoundButton.addEventListener('click', () => {\n            if (isSoundPlaying) {\n                stopSound();\n            } else {\n                startSound();\n            }\n        });\n        changeThemeButton.addEventListener('click', changeTheme);\n\n        resizeCanvas();\n        animate();\n        updateStatusLabel(\"Sound off.\"); // Initial label state\n        // Initial theme is loaded from Python config, currentThemeIndex is -1.\n        // First click on Change Theme will apply the first theme in availableThemes.\n\n        // Pre-define palettes and soundscapes in JS for changeTheme to access\n        // These are now correctly embedded from the module-level Python dictionaries\n        const palettes = {json.dumps(_PALETTES)};\n        const soundscapes = {json.dumps(_SOUNDSCAPES)};\n\n    <\/script>\n</body>\n</html>";
-    frame.addEventListener('load', function() {
-      try {
-        const h = frame.contentDocument.body.scrollHeight;
-        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
-      } catch(e) {}
-    });
-  })();
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\nimport json\nimport re\nimport difflib\nfrom collections import Counter\n\nGENERIC_WORDS = [\"significant\", \"positive\", \"trends\", \"indicates\", \"overall\", \"should\", \"focus on\", \"take advantage\", \"expansion\", \"uplift\", \"various\", \"certain\", \"many\", \"several\", \"some\"]\nSPECIFIC_WORDS = [\"data\", \"numbers\", \"metrics\", \"percentage\", \"quarter\", \"year-over-year\", \"market share\", \"revenue\", \"cost\", \"budget\", \"Q2\", \"Q3\", \"YoY\", \"$50M\", \"+25%\", \"+18%\", \"Competitor A\", \"Gen Z\", \"10%\"]\nNEGATING_WORDS = [\"not\", \"no\", \"n't\", \"decline\", \"decrease\", \"down\", \"cut\", \"reduced\", \"lack\", \"fail\", \"contrary\", \"opposite\"]\n\ndef get_sentences(text: str) -> list[str]:\n    return [s.strip() for s in re.split(r'(?<=[.!?])\\\\s+', text) if s.strip()]\n\ndef get_key_entities(text: str) -> list[str]:\n    nums = re.findall(r'\\\\b\\\\d{1,3}(?:,\\\\d{3})*(?:\\\\.\\\\d+)?%?\\\\b|\\\\$\\\\d+\\\\.?\\\\d*[MKB]?', text)\n    caps = re.findall(r'\\\\b[A-Z][a-z0-9]+\\\\b', text)\n    terms = re.findall(r'\\\\b\\\\w{4,}\\\\b', text.lower())\n    term_counts = Counter(terms)\n    frequent_terms = [k for k, v in term_counts.items() if v > 1]\n    return list(set(nums + caps + frequent_terms))\n\ndef analyze_repetitiveness(g_sents: list[str]) -> tuple[list[str], int]:\n    r_issues = []\n    r_score = 100\n    if len(g_sents) < 2: return [], 100\n    for i in range(len(g_sents)):\n        for j in range(i + 1, len(g_sents)):\n            s = difflib.SequenceMatcher(None, g_sents[i].lower(), g_sents[j].lower())\n            ratio = s.ratio()\n            if ratio > 0.7:\n                r_issues.append(f\"  - Sentences '{g_sents[i]}' and '{g_sents[j]}' are highly similar (score: {ratio:.2f}).\")\n                r_score -= 15\n    return r_issues, max(0, r_score)\n\ndef analyze_completeness(g_out: str, s_ctx: str) -> tuple[list[str], int]:\n    c_issues = []\n    c_score = 100\n    s_entities = get_key_entities(s_ctx)\n    found_entities = set()\n    missing_entities = set()\n    g_out_lower = g_out.lower()\n    for ent in s_entities:\n        if re.search(r'\\\\b' + re.escape(ent.lower()) + r'\\\\b', g_out_lower):\n            found_entities.add(ent)\n        else:\n            missing_entities.add(ent)\n    if missing_entities:\n        c_issues.append(f\"  - Key entities from source context are missing: {', '.join(list(missing_entities)[:5])}{'...' if len(missing_entities) > 5 else ''}\")\n        c_score -= len(missing_entities) * 7\n    if not found_entities and s_entities:\n        c_issues.append(\"  - No significant entities from the source context were found in the output.\")\n        c_score = 0\n    return c_issues, max(0, c_score)\n\ndef analyze_genericity(g_out: str) -> tuple[list[str], int]:\n    g_issues = []\n    g_score = 100\n    g_count = 0\n    s_count = 0\n    g_out_lower = g_out.lower()\n    for w in GENERIC_WORDS:\n        g_count += g_out_lower.count(w)\n    for w in SPECIFIC_WORDS:\n        s_count += g_out_lower.count(w)\n    total_words = len(re.findall(r'\\\\b\\\\w+\\\\b', g_out_lower))\n    if total_words > 0:\n        g_density = g_count / total_words\n        s_density = s_count / total_words\n        if g_density > 0.08:\n            g_issues.append(f\"  - High density of generic terms detected ({g_density:.2f}).\")\n            g_score -= 25\n        if s_density < 0.03:\n            g_issues.append(f\"  - Low density of specific terms detected ({s_density:.2f}).\")\n            g_score -= 25\n        if g_count > s_count * 1.5:\n             g_issues.append(\"  - Significantly more generic than specific terms used.\")\n             g_score -= 30\n    else:\n        g_score = 0\n        g_issues.append(\"  - Output is too short for meaningful specificity analysis.\")\n    return g_issues, max(0, g_score)\n\ndef analyze_consistency(g_out: str, s_ctx: str) -> tuple[list[str], int]:\n    cn_issues = []\n    cn_score = 100\n    s_entities = get_key_entities(s_ctx)\n    g_out_lower = g_out.lower()\n    s_ctx_lower = s_ctx.lower()\n    for ent in s_entities:\n        for neg in NEGATING_WORDS:\n            if re.search(r'\\\\b' + re.escape(neg) + r'\\\\s+' + re.escape(ent.lower()) + r'\\\\b', g_out_lower) or \\\\\n               re.search(r'\\\\b' + re.escape(ent.lower()) + r'\\\\s+(?:is|are|was|were)\\\\s+' + re.escape(neg) + r'\\\\b', g_out_lower):\n                cn_issues.append(f\"  - Potential negation found: '{neg} {ent}' in output related to source context.\")\n                cn_score -= 25\n\n    if \"market growth\" in g_out_lower and \"marketing budget cut\" in s_ctx_lower:\n        cn_issues.append(\"  - Output highlights 'market growth'/'market expanding' but source notes 'Marketing budget cut', indicating a potential contextual inconsistency in Q2 narrative.\")\n        cn_score -= 35\n    \n    if \"positive trends\" in g_out_lower and \"competitor a gained\" in s_ctx_lower:\n        cn_issues.append(\"  - Output states 'positive trends' but source indicates 'Competitor A gained 5% market share', which might be an unaddressed competitive challenge within overall positive framing.\")\n        cn_score -= 20\n\n    return cn_issues, max(0, cn_score)\n\ndef process(input_data: dict) -> str:\n    if not isinstance(input_data, dict) or not input_data.get('generated_output') or not input_data.get('source_context'):\n        return \"Please provide a dictionary with 'generated_output' and 'source_context' string keys.\"\n\n    go = input_data['generated_output']\n    sc = input_data['source_context']\n\n    g_sents = get_sentences(go)\n    \n    r_issues, r_score = analyze_repetitiveness(g_sents)\n    c_issues, c_score = analyze_completeness(go, sc)\n    g_issues, g_score = analyze_genericity(go)\n    cn_issues, cn_score = analyze_consistency(go, sc)\n\n    overall_score = (r_score + c_score + g_score + cn_score) // 4\n\n    report_parts = [\n        \"--- DIAGNOSTIC REPORT ---\",\n        f\"Overall Quality Score: {overall_score}/100\",\n        \"\\\\n--- 1. Repetitiveness Analysis ---\",\n        f\"Score: {r_score}/100\",\n        \"Issues:\"\n    ]\n    if r_issues: report_parts.extend(r_issues)\n    else: report_parts.append(\"  - No significant repetitiveness detected.\")\n    report_parts.append(\"Recommendations:\")\n    report_parts.append(\"  - Consolidate highly similar phrases into stronger, single statements, drawing more distinct details from source context.\")\n    report_parts.append(\"  - Use varied phrasing and synonyms to convey similar ideas, ensuring each statement adds new value.\")\n\n    report_parts.append(\"\\\\n--- 2. Completeness Analysis ---\")\n    report_parts.append(f\"Score: {c_score}/100\")\n    report_parts.append(\"Issues:\")\n    if c_issues: report_parts.extend(c_issues)\n    else: report_parts.append(\"  - Key entities from source context are adequately covered.\")\n    report_parts.append(\"Recommendations:\")\n    report_parts.append(\"  - Explicitly mention all critical numbers, proper nouns, and concepts from the source context where relevant.\")\n    report_parts.append(\"  - Review source context for any unmentioned specific details that would enrich the output.\")\n\n    report_parts.append(\"\\\\n--- 3. Specificity/Genericity Analysis ---\")\n    report_parts.append(f\"Score: {g_score}/100\")\n    report_parts.append(\"Issues:\")\n    if g_issues: report_parts.extend(g_issues)\n    else: report_parts.append(\"  - Output is sufficiently specific and avoids excessive genericity.\")\n    report_parts.append(\"Recommendations:\")\n    report_parts.append(\"  - Replace vague terms (e.g., 'significant', 'positive trends') with precise data points from the source (e.g., 'up 12% YoY', 'social media mentions +25%').\")\n    report_parts.append(\"  - Quantify statements and provide concrete examples from the source whenever possible.\")\n\n    report_parts.append(\"\\\\n--- 4. Logical Consistency Analysis ---\")\n    report_parts.append(f\"Score: {cn_score}/100\")\n    report_parts.append(\"Issues:\")\n    if cn_issues: report_parts.extend(cn_issues)\n    else: report_parts.append(\"  - No direct logical inconsistencies or contradictions detected.\")\n    report_parts.append(\"Recommendations:\")\n    report_parts.append(\"  - Cross-reference all statements against the source context to ensure factual accuracy and avoid subtle contradictions.\")\n    report_parts.append(\"  - Pay close attention to implied meanings and ensure the overall tone aligns with all source facts, even negative ones.\")\n\n    report_parts.append(\"\\\\n--- END OF REPORT ---\")\n\n    return \"\\\\n\".join(report_parts)\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(json.loads(_browser_input)))\nelif __name__ == \"__main__\":\n    def _cli_main():\n        test_input = {\n            \"generated_output\": \"Our Q2 analysis indicates significant market growth. We observed an uplift in consumer engagement, showing positive trends. Key takeaway: The market is expanding. We should focus on increasing marketing efforts to take advantage of this expansion. Data confirms overall positive trajectory.\",\n            \"source_context\": \"Q2 Data Highlights: Market size up 12% YoY to $50M. Social media mentions +25%, Website traffic +18%. Competitor A gained 5% market share. Q3 focus: Gen Z products. Marketing budget cut by 10% in Q2.\"\n        }\n        print(process(test_input))\n    _cli_main()";
+const DEMO_INPUT = "Meeting notes 14:00 Mon: Q3 review. Revenue down 8% vs plan. Sarah: push launch to Oct. Tom: disagree, delay costs more. Action items: Sarah sends revised forecast by Wed, Tom prepares risk analysis, sync again Friday 10am.";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      const demoNote = document.createElement('p');
+      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
+      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
+      document.getElementById('output').before(demoNote);
+      await runTool(true);
+    }
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool(isDemo) {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
+      outEl.textContent = '';
+      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
+      const iframe = document.createElement('iframe');
+      iframe.sandbox = 'allow-scripts allow-same-origin';
+      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
+      iframe.srcdoc = output;
+      outEl.appendChild(iframe);
+      iframe.addEventListener('load', () => {
+        try {
+          const h = iframe.contentDocument.body.scrollHeight;
+          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
+        } catch(e) {}
+      });
+    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
 </script>
       </div>
     </section>
@@ -725,15 +800,15 @@ a { color: inherit; text-decoration: none; }
     
 <section class="detail-section reactions-section">
   <div class="reactions-label">Was this useful?</div>
-  <div class="reaction-bar" id="reaction-bar-2026-05-29-urban-respite-weave">
+  <div class="reaction-bar" id="reaction-bar-2026-06-27-output-diagnostic-engine">
     <button class="reaction-btn" data-key="fire" title="Used it!"><span class="reaction-emoji">🔥</span><span class="reaction-label">Used it!</span></button><button class="reaction-btn" data-key="useful" title="Useful"><span class="reaction-emoji">👍</span><span class="reaction-label">Useful</span></button><button class="reaction-btn" data-key="rocket" title="Inspiring"><span class="reaction-emoji">🚀</span><span class="reaction-label">Inspiring</span></button><button class="reaction-btn" data-key="heart" title="Love it"><span class="reaction-emoji">❤️</span><span class="reaction-label">Love it</span></button><button class="reaction-btn" data-key="confused" title="Not quite"><span class="reaction-emoji">😕</span><span class="reaction-label">Not quite</span></button>
   </div>
 </section>
 <script>
 (function() {
-  var bar = document.getElementById('reaction-bar-2026-05-29-urban-respite-weave');
+  var bar = document.getElementById('reaction-bar-2026-06-27-output-diagnostic-engine');
   if (!bar) return;
-  var storageKey = 'lili-rx-2026-05-29-urban-respite-weave';
+  var storageKey = 'lili-rx-2026-06-27-output-diagnostic-engine';
   var selected = {};
   try { selected = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch(e) {}
   bar.querySelectorAll('.reaction-btn').forEach(function(btn) {
@@ -756,7 +831,7 @@ a { color: inherit; text-decoration: none; }
     <div class="footer-inner">
       <div class="footer-left">
         <div class="footer-tagline">One friction point<span class="tagline-dot">.</span> One tool<span class="tagline-dot">.</span> Every day<span class="tagline-dot">.</span></div>
-        <span class="footer-copy">Super-Lili's Daily Adventure &nbsp;·&nbsp; 2026-05-29</span>
+        <span class="footer-copy">Super-Lili's Daily Adventure &nbsp;·&nbsp; 2026-06-27</span>
       </div>
       <div class="footer-links">
         <a href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure" target="_blank" rel="noopener">GitHub</a>

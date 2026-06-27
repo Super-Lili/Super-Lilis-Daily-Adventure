@@ -298,6 +298,14 @@
       "pattern": "visualize",
       "path": "02_Toolbox/Design Alchemy/2026-06-16_Rhythm_Weaver",
       "description": "A tool that analyzes text and font properties, then generates a visual heatmap and specific recommendations to improve typographic rhythm, optical balance, and line breaks."
+    },
+    {
+      "date": "2026-06-27",
+      "name": "Output Diagnostic Engine",
+      "category": "Office Automation",
+      "pattern": "score",
+      "path": "02_Toolbox/Office Automation/2026-06-27_Output_Diagnostic_Engine",
+      "description": "This tool helps creative and analytical professionals self-diagnose common issues in their generated content, identifying generic output, incomplete sections, or logical inconsistencies by applying a structured probe-based evaluation."
     }
   ],
   "topics_covered": [
@@ -510,7 +518,12 @@
       "date": "2026-06-16",
       "title": "The Rhythmic Eye",
       "path": "01_Work_Log/2026-06-16-Diary.md"
+    },
+    {
+      "date": "2026-06-27",
+      "title": "The Debugging Dynamo",
+      "path": "01_Work_Log/2026-06-27-Diary.md"
     }
   ],
-  "last_updated": "2026-06-16"
+  "last_updated": "2026-06-27"
 }
