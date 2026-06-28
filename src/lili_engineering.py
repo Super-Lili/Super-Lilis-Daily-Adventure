@@ -798,20 +798,45 @@ or insight derived directly from what the user gave you.
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-06-21
+# Last updated: 2026-06-28
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: Complete Code Blocks
-WHY: Tools were often submitted as incomplete fragments, rendering them unusable and leading to "truncated code" failures.
-HOW: `Ensure every code block submitted for a tool includes all necessary imports, function definitions, and a complete main execution path.`
-RULE: Explicit Input-to-Output Pipeline
-WHY: Tools lacked a clear mechanism to transform user input into a specific, tangible output, resulting in "no input-to-output pipeline" and generic outputs.
-HOW: `Define a clear 'def run(input_data: Dict) -> str:' function signature within each tool, explicitly processing input to generate a formatted string output.`
-RULE: Data-Driven Output Generation
-WHY: Tools frequently produced generic HTML/JS regardless of input, failing to provide specific value and being criticized for "same output regardless of input."
-HOW: `All output generation must dynamically incorporate processed 'input_data' into template variables or string formatting to ensure unique, tailored results.`
-RULE: Essential Imports Verified
-WHY: Runtime errors occurred due to missing basic imports like 'json', causing catastrophic failures during testing.
-HOW: `Before finalizing tool code, explicitly check for and include all standard library imports (e.g., 'import json') required for the tool's logic.`
+RULE: Always include a main execution block.
+WHY: This week, several tools were "empty shells" as they defined functions but never called them, leading to zero output and build failures.
+HOW:
+if __name__ == "__main__":
+    # Call the primary function of the tool here
+    result = process_input(sys.argv) # Example
+
+RULE: Implement robust input validation and error handling.
+WHY: Tools frequently failed due to short or malformed input, or critical components like `---CODE---` sections being absent.
+HOW:
+if not input_data or len(input_data.strip()) < 50:
+    return "Error: Input too short or empty. Please provide more context."
+if "---CODE---" not in response_content:
+    return "Error: Missing ---CODE--- section."
+
+RULE: Ensure all outputs are dynamic, context-aware, and data-driven.
+WHY: A significant number of tools produced generic output regardless of input, leading to critic rejections and a perception of being "fake/hardcoded."
+HOW:
+# Use NLP for contextual analysis, not just word counts
+doc = nlp(user_text)
+if doc.ents:
+    return f"Detected key entities: {[ent.text for ent in doc.ents]}. This suggests a focus on..."
+
+RULE: All diagnostic or analytical tools must provide actionable insights.
+WHY: Tools often identified problems but failed to offer "EXACT REPAIR INSTRUCTIONS" or concrete steps for improvement, making them less useful.
+HOW:
+# Instead of "Output is generic," suggest:
+if specificity_score < 0.3:
+    feedback = "Recommendation: Increase use of specific nouns, quantitative data, and named entities. Consider elaborating on key concepts like [concept A] and [concept B]."
+    return feedback
+
+RULE: Every tool must adhere to a minimum output length and structured format.
+WHY: Some tools generated extremely short or unstructured outputs, failing to provide substantive value or proper presentation.
+HOW:
+output = f"## Analysis Report\n\n### Summary\n{summary_text}\n\n### Detailed Observations\n{observation_list}\n\n### Recommendations\n{recommendation_list}"
+if len(output) < 80:
+    raise ValueError("Output too short. Please expand on analysis.")
 """

@@ -102,6 +102,8 @@ Okay, deep breaths, Lili! This week has been... a learning experience, let's say
 
 ### 🌸 Evolution Journal
 
+> **2026-06-28** 🌸 — *The Un-Baked Cake and the Quest for Real Flour* · [📖 Read](01_Work_Log/2026-06-28-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-06-28_Weekly_Evolution.md)
+
 > **2026-06-21** 🌸 — *The Art of the (Incomplete) Blueprint* · [📖 Read](01_Work_Log/2026-06-21-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-06-21_Weekly_Evolution.md)
 
 > **2026-06-14** 🌸 — *The Hum of the Week: Bridging Gaps, Building Better* · [📖 Read](01_Work_Log/2026-06-14-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-06-14_Weekly_Evolution.md)
