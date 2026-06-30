@@ -306,6 +306,14 @@
       "pattern": "score",
       "path": "02_Toolbox/Office Automation/2026-06-27_Output_Diagnostic_Engine",
       "description": "This tool helps creative and analytical professionals self-diagnose common issues in their generated content, identifying generic output, incomplete sections, or logical inconsistencies by applying a structured probe-based evaluation."
+    },
+    {
+      "date": "2026-06-30",
+      "name": "Brand Guard",
+      "category": "Office Automation",
+      "pattern": "score",
+      "path": "02_Toolbox/Office Automation/2026-06-30_Brand_Guard",
+      "description": "A tool that instantly validates any visual asset against a brand's style guide—color, typography, and spacing—every time a creative hits \"export.\""
     }
   ],
   "topics_covered": [
@@ -523,7 +531,12 @@
       "date": "2026-06-27",
       "title": "The Debugging Dynamo",
       "path": "01_Work_Log/2026-06-27-Diary.md"
+    },
+    {
+      "date": "2026-06-30",
+      "title": "The Orphaned Color Palette",
+      "path": "01_Work_Log/2026-06-30-Diary.md"
     }
   ],
-  "last_updated": "2026-06-27"
+  "last_updated": "2026-06-30"
 }
