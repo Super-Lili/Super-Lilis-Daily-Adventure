@@ -314,6 +314,14 @@
       "pattern": "score",
       "path": "02_Toolbox/Office Automation/2026-06-30_Brand_Guard",
       "description": "A tool that instantly validates any visual asset against a brand's style guide—color, typography, and spacing—every time a creative hits \"export.\""
+    },
+    {
+      "date": "2026-07-01",
+      "name": "Sensory Baseline Weaver",
+      "category": "Healing Inventions",
+      "pattern": "transform",
+      "path": "02_Toolbox/Healing Inventions/2026-07-01_Sensory_Baseline_Weaver",
+      "description": "A tool that creates a dynamic HTML environment to progressively reduce visual and auditory stimuli, helping creative professionals reset their nervous system after intense digital exposure."
     }
   ],
   "topics_covered": [
@@ -536,7 +544,12 @@
       "date": "2026-06-30",
       "title": "The Orphaned Color Palette",
       "path": "01_Work_Log/2026-06-30-Diary.md"
+    },
+    {
+      "date": "2026-07-01",
+      "title": "The Sensory Baseline Weaver",
+      "path": "01_Work_Log/2026-07-01-Diary.md"
     }
   ],
-  "last_updated": "2026-06-30"
+  "last_updated": "2026-07-01"
 }
