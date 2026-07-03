@@ -67,41 +67,51 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
 
 
 def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None, use_reasoner: bool = False) -> str | None:
-    """Call DeepSeek for SPEC/BUILD tasks.
-    use_reasoner=True -> deepseek-reasoner (R1) with automatic fallback to deepseek-v4-pro
-    use_reasoner=False -> deepseek-v4-pro
+    """Call the SPEC/BUILD model chain. Never dies from one provider's hiccup.
+
+    Chain: [deepseek-reasoner (SPEC only)] -> deepseek-v4-pro -> qwen3.7-max.
+    Empty responses are RETRIED (DeepSeek empties are transient server issues,
+    unlike Gemini where empty meant quota exhausted), then fall to next model.
     """
-    if not _deepseek_client:
-        print("  [NO] No DeepSeek client available.")
-        return None
     ds_prompt = deepseek_prompt if deepseek_prompt else prompt
-    models_to_try = ["deepseek-reasoner", "deepseek-v4-pro"] if use_reasoner else ["deepseek-v4-pro"]
-    for model in models_to_try:
-        succeeded = False
+
+    chain: list[tuple[object, str]] = []
+    if _deepseek_client:
+        if use_reasoner:
+            chain.append((_deepseek_client, "deepseek-reasoner"))
+        chain.append((_deepseek_client, "deepseek-v4-pro"))
+    if _qwen_client:
+        chain.append((_qwen_client, "qwen3.7-max"))
+    if not chain:
+        print("  [NO] No model client available.")
+        return None
+
+    for client, model in chain:
         for attempt in range(3):
             try:
-                print(f"  ↳ DeepSeek ({model}) attempt {attempt + 1}...")
-                resp = _deepseek_client.chat.completions.create(
+                print(f"  ↳ {model} attempt {attempt + 1}...")
+                resp = client.chat.completions.create(
                     model=model,
                     messages=[{"role": "user", "content": ds_prompt}],
                     max_tokens=8192,
                 )
                 text = resp.choices[0].message.content if resp.choices else None
-                if text:
-                    print(f"  [OK] DeepSeek ({model}) succeeded.")
+                if text and text.strip():
+                    print(f"  [OK] {model} succeeded.")
                     return text
-                print(f"  [NO] DeepSeek ({model}) returned empty response.")
-                break
+                try:
+                    finish = resp.choices[0].finish_reason if resp.choices else "no choices"
+                except Exception:
+                    finish = "unknown"
+                print(f"  [NO] {model} empty response (finish_reason={finish}).")
             except Exception as e:
-                wait = 15 * (2 ** attempt)
-                print(f"  [NO] DeepSeek ({model}) attempt {attempt + 1} failed: {type(e).__name__}: {e}")
-                if attempt < 2:
-                    print(f"  ⏳ Waiting {wait}s before retry...")
-                    time.sleep(wait)
-        if succeeded:
-            break
-        if use_reasoner and model == "deepseek-reasoner":
-            print(f"  ↳ R1 exhausted, falling back to deepseek-v4-pro...")
+                print(f"  [NO] {model} attempt {attempt + 1} failed: {type(e).__name__}: {e}")
+            if attempt < 2:
+                wait = 10 * (attempt + 1)
+                print(f"  ⏳ Waiting {wait}s before retry...")
+                time.sleep(wait)
+        print(f"  ↳ {model} exhausted, trying next model in chain...")
+    print("  [NO] All models in chain exhausted.")
     return None
 
 
