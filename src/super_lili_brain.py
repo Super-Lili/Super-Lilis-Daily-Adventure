@@ -1318,9 +1318,9 @@ def _call_qwen_search(prompt: str) -> tuple[str | None, list[str]]:
     tools = [{"type": "web_search", "web_search": {"enable": True}}]
     for attempt in range(3):
         try:
-            print(f"  ↳ Trying Qwen (qwen3.6-flash) search attempt {attempt + 1}...")
+            print(f"  ↳ Trying Qwen (qwen-plus) search attempt {attempt + 1}...")
             resp = _qwen_client.chat.completions.create(
-                model="qwen3.6-flash",
+                model="qwen-plus",
                 messages=[{"role": "user", "content": prompt}],
                 tools=tools,
                 extra_body={"enable_search": True},
