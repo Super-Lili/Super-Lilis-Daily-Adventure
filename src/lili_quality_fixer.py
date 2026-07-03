@@ -23,7 +23,7 @@ DOCS_TOOLS_DIR = REPO_ROOT / "docs" / "tools"
 TOOLBOX_DIR = REPO_ROOT / "02_Toolbox"
 
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
-DEEPSEEK_MODEL = "deepseek-chat"
+DEEPSEEK_MODEL = "deepseek-v4-pro"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 

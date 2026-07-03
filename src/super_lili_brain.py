@@ -12,8 +12,6 @@ import time
 import requests
 from datetime import datetime
 from pathlib import Path
-from google import genai
-from google.genai import types
 
 try:
     from lili_soul import LILI_PERSONALITY, LILI_SKILLS, EVOLUTION_NOTES
@@ -62,10 +60,7 @@ except ImportError:
     LILI_ENGINEERING_BASE = ""
     LILI_ENGINEERING_LESSONS = ""
 
-_GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
-client = genai.Client(api_key=_GEMINI_KEY) if _GEMINI_KEY else None
-
-# DeepSeek fallback client (used when all Gemini models fail in call_gemini_simple)
+# DeepSeek client - primary engine for SPEC/BUILD (Gemini fully removed)
 _DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 try:
     from openai import OpenAI as _OpenAI
@@ -1313,7 +1308,7 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
 
 
 # ─────────────────────────────────────────────────────────────
-# GEMINI CALL
+# MODEL CALLS (Qwen + DeepSeek)
 # ─────────────────────────────────────────────────────────────
 
 def _call_qwen_search(prompt: str) -> tuple[str | None, list[str]]:
@@ -2444,11 +2439,11 @@ def evolve():
     scout_content, grounding_urls = call_gemini(build_scout_prompt(today, commission))
 
     if not scout_content:
-        print("  ↳ Gemini SCOUT failed - trying DeepSeek fallback for SCOUT...")
+        print("  ↳ Qwen SCOUT failed - trying DeepSeek fallback for SCOUT...")
         if _deepseek_client:
             try:
                 ds_resp = _deepseek_client.chat.completions.create(
-                    model="deepseek-chat",
+                    model="deepseek-v4-pro",
                     messages=[{"role": "user", "content": build_scout_prompt(today, commission)}],
                     max_tokens=4096,
                 )
@@ -2461,19 +2456,11 @@ def evolve():
                 print(f"  [NO] DeepSeek SCOUT fallback failed: {e}")
         if not scout_content:
             print("❌ Phase 1 failed - all models exhausted.")
-            save_rest_day(today, "Phase 1 failed - Gemini quota exhausted and DeepSeek fallback failed.")
+            save_rest_day(today, "Phase 1 failed - Qwen search and DeepSeek fallback both failed.")
             return
 
-    # If no grounding URLs, Gemini used training memory not real search - retry once
-    if not grounding_urls:
-        print("  ⚠ No grounding URLs - Gemini used training data, retrying SCOUT with search...")
-        time.sleep(30)
-        scout_content2, grounding_urls2 = call_gemini(build_scout_prompt(today, commission))
-        if scout_content2 and grounding_urls2:
-            scout_content, grounding_urls = scout_content2, grounding_urls2
-            print(f"  [OK] Retry found {len(grounding_urls2)} real source(s).")
-        else:
-            print("  ⚠ Retry also returned no grounding URLs - proceeding with caution.")
+    # Qwen search does not expose grounding URLs; source verification happens in
+    # _verify_source() below via HTTP validation of the model-reported SOURCE URL.
 
     scout = parse_scout_response(scout_content)
     if not all([scout.get("title"), scout.get("diary"), scout.get("solution")]):
@@ -2484,9 +2471,7 @@ def evolve():
     source_badge, _ = _verify_source(scout, grounding_urls)
     print(f"  [OK] Scout complete: '{scout['solution']}' ({scout['category']})")
 
-    # Wait after SCOUT to avoid per-minute rate limit on next call
-    print(f"  ⏳ Waiting 65s for rate limit window to clear...")
-    time.sleep(65)
+    time.sleep(5)  # brief pause between providers; paid Qwen/DeepSeek have no per-minute quota issue
 
     # ══════════════════════════════════════════════════════════════════════════
     # PHASE 2 - SPEC: design the tool, validate before coding

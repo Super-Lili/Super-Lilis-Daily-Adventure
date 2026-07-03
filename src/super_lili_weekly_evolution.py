@@ -11,8 +11,6 @@ import json
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from google import genai
-from google.genai import types
 from openai import OpenAI
 
 deepseek_client = OpenAI(
@@ -568,7 +566,7 @@ Keep the entire response under 400 words."""
 
 
 # ─────────────────────────────────────────────────────────────
-# GEMINI CALL
+# MODEL CALLS (Qwen + DeepSeek)
 # ─────────────────────────────────────────────────────────────
 
 def call_gemini(prompt: str) -> str | None:
