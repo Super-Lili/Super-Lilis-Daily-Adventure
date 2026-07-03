@@ -93,7 +93,7 @@ def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None, use_reas
                 resp = client.chat.completions.create(
                     model=model,
                     messages=[{"role": "user", "content": ds_prompt}],
-                    max_tokens=8192,
+                    max_tokens=16384,  # Mode 3 HTML tools are long; 8192 was truncating (finish_reason=length)
                 )
                 text = resp.choices[0].message.content if resp.choices else None
                 if text and text.strip():

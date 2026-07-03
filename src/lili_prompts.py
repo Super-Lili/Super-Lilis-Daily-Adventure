@@ -1048,6 +1048,11 @@ CODE REQUIREMENTS:
 [OK] Implement EXACTLY the transformation and algorithmic depth in the approved spec
 [NO] NEVER hardcode a dictionary of expected inputs/outputs - the algorithm must work on ANY input
 [NO] NEVER match keywords against a preset lookup table and return preset strings
+[NO] NEVER assert external facts you cannot derive from the input text: syllable counts, word
+    etymology, dictionary definitions, historical dates, population/statistics, "this word means X".
+    The model does not know these reliably and WILL hallucinate them (e.g. wrong syllable counts) -
+    the Critic rejects hallucinated facts outright. Only compute from what is measurable in the
+    input itself: length, patterns, position, frequency, structure, user-provided context.
 [NO] ANTI-PATTERN - this will be REJECTED:
     LOOKUP = {{"keyword1": {{"result": "..."}}, "keyword2": {{"result": "..."}}, ...}}
     return LOOKUP.get(user_input, default)
