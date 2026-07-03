@@ -1247,12 +1247,12 @@ TEST FILE REQUIREMENTS (test_main.py):
 
 OUTPUT FORMAT - COPY EXACTLY (do NOT output ---TEST--- until the Python code is 100% complete):
 ---CODE---
-[Complete Python code - keep under 350 lines total - do NOT stop early - write every line until the file ends with the USER_INPUT block]
+[Complete Python code - keep under 200 lines total - do NOT stop early - write every line until the file ends with the USER_INPUT block]
 ---TEST---
 [test_main.py - from main import process - self-contained asserts - keep under 30 lines]
 ---BUILD_END---
 
-IMPORTANT LINE LIMIT: The entire ---CODE--- section must be under 350 lines. If your design requires more, simplify: remove comments, shorten variable names, combine functions. A working 300-line tool is better than a truncated 800-line tool."""
+IMPORTANT LINE LIMIT: The entire ---CODE--- section must be under 200 lines. If your design requires more, simplify: remove comments, shorten variable names, combine functions. A working 180-line tool is better than a truncated 800-line tool."""
 
 
 def validate_spec(spec: dict) -> tuple[bool, str]:
@@ -1317,37 +1317,27 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
 # ─────────────────────────────────────────────────────────────
 
 def _call_qwen_search(prompt: str) -> tuple[str | None, list[str]]:
-    """Call Qwen with web_search tool via DashScope OpenAI-compatible API.
+    """Call Qwen with web search via DashScope OpenAI-compatible API.
 
-    Returns (response_text, source_urls). Used as primary SCOUT engine.
+    DashScope web search is enabled via extra_body only - do NOT pass tools=[].
+    Returns (response_text, source_urls).
     """
     if not _qwen_client:
         return None, []
-    tools = [{"type": "web_search", "web_search": {"enable": True}}]
     for attempt in range(3):
         try:
             print(f"  ↳ Trying Qwen (qwen-plus) search attempt {attempt + 1}...")
             resp = _qwen_client.chat.completions.create(
                 model="qwen-plus",
                 messages=[{"role": "user", "content": prompt}],
-                tools=tools,
                 extra_body={"enable_search": True},
                 max_tokens=4096,
             )
             text = resp.choices[0].message.content if resp.choices else None
             if text:
-                print(f"  [OK] Qwen search succeeded.")
-                # Try to extract citation URLs from response metadata
-                urls: list[str] = []
-                try:
-                    for choice in resp.choices:
-                        if hasattr(choice.message, "tool_calls") and choice.message.tool_calls:
-                            for tc in choice.message.tool_calls:
-                                if hasattr(tc, "function") and tc.function.name == "web_search":
-                                    pass  # citations come in content, not tool_calls
-                except Exception:
-                    pass
-                return text, urls
+                print(f"  [OK] Qwen search succeeded ({len(text)} chars).")
+                return text, []
+            print(f"  [NO] Qwen attempt {attempt + 1} empty response.")
         except Exception as e:
             wait = 15 * (2 ** attempt)
             print(f"  [NO] Qwen attempt {attempt + 1} failed: {e}")
@@ -2616,9 +2606,9 @@ def evolve():
                 build_feedback = (
                     f"CRITICAL: Your previous code was TRUNCATED because it was too long. "
                     f"The response was cut off mid-string, causing a syntax error.\n\n"
-                    f"REQUIRED: Rewrite the entire tool in UNDER 350 LINES TOTAL. "
+                    f"REQUIRED: Rewrite the entire tool in UNDER 200 LINES TOTAL. "
                     f"This is a hard limit - do not exceed it.\n\n"
-                    f"How to stay under 350 lines:\n"
+                    f"How to stay under 200 lines:\n"
                     f"- For Mode 3 HTML: use short variable names, minimal CSS (inline only), "
                     f"no multi-line comments, combine JS logic into fewer functions\n"
                     f"- For Mode 1/2: keep process() focused on one core transformation\n"
