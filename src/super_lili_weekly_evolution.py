@@ -15,7 +15,6 @@ from google import genai
 from google.genai import types
 from openai import OpenAI
 
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 deepseek_client = OpenAI(
     api_key=os.environ.get("DEEPSEEK_API_KEY", ""),
     base_url="https://api.deepseek.com"
@@ -573,29 +572,24 @@ Keep the entire response under 400 words."""
 # ─────────────────────────────────────────────────────────────
 
 def call_gemini(prompt: str) -> str | None:
-    search_tool = types.Tool(google_search=types.GoogleSearch())
-    models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
-
-    for model_name in models:
-        for attempt in range(3):
-            try:
-                print(f"  ↳ Trying {model_name} (attempt {attempt + 1})...")
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(tools=[search_tool])
-                )
-                if response.text:
-                    print(f"  ✓ {model_name} succeeded.")
-                    return response.text
-                break  # empty response — no point retrying this model
-            except Exception as e:
-                wait = 15 * (2 ** attempt)  # 15s, 30s, 60s
-                print(f"  ✗ {model_name} attempt {attempt + 1} failed: {e}")
-                if attempt < 2:
-                    print(f"  ⏳ Waiting {wait}s before retry...")
-                    time.sleep(wait)
-
+    """Weekly evolution analysis via DeepSeek (Gemini removed)."""
+    for attempt in range(3):
+        try:
+            print(f"  ↳ DeepSeek evolution attempt {attempt + 1}...")
+            resp = deepseek_client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=8192,
+            )
+            text = resp.choices[0].message.content if resp.choices else None
+            if text:
+                print(f"  [OK] DeepSeek succeeded.")
+                return text
+        except Exception as e:
+            wait = 15 * (2 ** attempt)
+            print(f"  [NO] DeepSeek attempt {attempt + 1} failed: {e}")
+            if attempt < 2:
+                time.sleep(wait)
     return None
 
 

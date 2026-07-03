@@ -62,7 +62,8 @@ except ImportError:
     LILI_ENGINEERING_BASE = ""
     LILI_ENGINEERING_LESSONS = ""
 
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+_GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
+client = genai.Client(api_key=_GEMINI_KEY) if _GEMINI_KEY else None
 
 # DeepSeek fallback client (used when all Gemini models fail in call_gemini_simple)
 _DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
@@ -71,6 +72,17 @@ try:
     _deepseek_client = _OpenAI(api_key=_DEEPSEEK_KEY, base_url="https://api.deepseek.com") if _DEEPSEEK_KEY else None
 except ImportError:
     _deepseek_client = None
+
+# Qwen client for SCOUT web search (primary; Gemini search is fallback)
+_QWEN_KEY = os.environ.get("QWEN_API_KEY", "")
+try:
+    from openai import OpenAI as _QwenOpenAI
+    _qwen_client = _QwenOpenAI(
+        api_key=_QWEN_KEY,
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    ) if _QWEN_KEY else None
+except Exception:
+    _qwen_client = None
 
 _GH_TOKEN  = os.environ.get("GITHUB_TOKEN", "")
 _GH_REPO   = os.environ.get("GITHUB_REPOSITORY", "Super-Lili/Super-Lilis-Daily-Adventure")
@@ -1296,103 +1308,63 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
 # GEMINI CALL
 # ─────────────────────────────────────────────────────────────
 
-def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
-    """Call Gemini with Google Search grounding.
+def _call_qwen_search(prompt: str) -> tuple[str | None, list[str]]:
+    """Call Qwen with web_search tool via DashScope OpenAI-compatible API.
 
-    Returns (response_text, grounding_urls) where grounding_urls is the list
-    of URLs Gemini actually retrieved during search - these are the verified
-    sources, not model-reported ones.
+    Returns (response_text, source_urls). Used as primary SCOUT engine.
     """
-    search_tool = types.Tool(google_search=types.GoogleSearch())
-    models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
-
-    for model_name in models:
-        # 3 connection-level retries per model with exponential backoff
-        for attempt in range(3):
-            try:
-                print(f"  ↳ Trying {model_name} (attempt {attempt + 1})...")
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(tools=[search_tool])
-                )
-                if response.text:
-                    print(f"  [OK] {model_name} succeeded.")
-                    # Extract grounding URLs from metadata - these are real, verified sources
-                    grounding_urls: list[str] = []
-                    try:
-                        if response.candidates:
-                            meta = response.candidates[0].grounding_metadata
-                            if meta and meta.grounding_chunks:
-                                for chunk in meta.grounding_chunks:
-                                    if chunk.web and chunk.web.uri:
-                                        url = chunk.web.uri
-                                        # Skip Gemini redirect wrappers - use bare URLs only
-                                        if not url.startswith("https://vertexaisearch.cloud.google.com"):
-                                            grounding_urls.append(url)
-                        if grounding_urls:
-                            print(f"  [OK] Grounding: {len(grounding_urls)} real source URL(s) retrieved")
-                        else:
-                            print(f"  ⚠ Grounding: no source URLs in metadata (model may have used training knowledge)")
-                    except Exception as meta_err:
-                        print(f"  ⚠ Could not extract grounding metadata: {meta_err}")
-                    return response.text, grounding_urls
-                break  # empty response - no point retrying this model
-            except Exception as e:
-                wait = 15 * (2 ** attempt)  # 15s, 30s, 60s
-                print(f"  [NO] {model_name} attempt {attempt + 1} failed: {e}")
-                if attempt < 2:
-                    print(f"  ⏳ Waiting {wait}s before retry...")
-                    time.sleep(wait)
-
+    if not _qwen_client:
+        return None, []
+    tools = [{"type": "web_search", "web_search": {"enable": True}}]
+    for attempt in range(3):
+        try:
+            print(f"  ↳ Trying Qwen (qwen-plus) search attempt {attempt + 1}...")
+            resp = _qwen_client.chat.completions.create(
+                model="qwen-plus",
+                messages=[{"role": "user", "content": prompt}],
+                tools=tools,
+                extra_body={"enable_search": True},
+                max_tokens=4096,
+            )
+            text = resp.choices[0].message.content if resp.choices else None
+            if text:
+                print(f"  [OK] Qwen search succeeded.")
+                # Try to extract citation URLs from response metadata
+                urls: list[str] = []
+                try:
+                    for choice in resp.choices:
+                        if hasattr(choice.message, "tool_calls") and choice.message.tool_calls:
+                            for tc in choice.message.tool_calls:
+                                if hasattr(tc, "function") and tc.function.name == "web_search":
+                                    pass  # citations come in content, not tool_calls
+                except Exception:
+                    pass
+                return text, urls
+        except Exception as e:
+            wait = 15 * (2 ** attempt)
+            print(f"  [NO] Qwen attempt {attempt + 1} failed: {e}")
+            if attempt < 2:
+                print(f"  ⏳ Waiting {wait}s before retry...")
+                time.sleep(wait)
     return None, []
 
 
+def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
+    """SCOUT web search via Qwen. Returns (response_text, source_urls)."""
+    return _call_qwen_search(prompt)
+
+
 def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None) -> str | None:
-    """Call Gemini first for SPEC/BUILD/Critic tasks; fall back to DeepSeek only if Gemini's
-    quota/models are exhausted. deepseek_prompt: if provided, use this shorter prompt for DeepSeek.
-    SCOUT uses call_gemini() (with search tool) and is unaffected.
-
-    Gemini is primary because it reliably produces working code; every BUILD failure during the
-    week DeepSeek was primary (2026-06-19 to 06-23) traced back to DeepSeek-authored bugs (fake
-    interactivity, unrendered templates, unguarded top-level code, rigid input parsing). DeepSeek
-    remains the fallback for when Gemini's free-tier quota (20 req/day) is exhausted.
+    """Call DeepSeek for SPEC/BUILD/Critic tasks. Gemini fully removed.
+    deepseek_prompt: if provided, use this instead of prompt (kept for call-site compatibility).
     """
-    # --- Gemini first (primary) ---
-    models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
-    for model_name in models:
-        for attempt in range(3):
-            try:
-                response = client.models.generate_content(
-                    model=model_name, contents=prompt,
-                    config=types.GenerateContentConfig(max_output_tokens=16384),
-                )
-                text = None
-                try:
-                    text = response.text
-                except Exception as text_err:
-                    print(f"  [NO] {model_name} response.text error: {text_err}")
-                if text:
-                    print(f"  [OK] Gemini ({model_name}) succeeded.")
-                    return text
-                try:
-                    finish = response.candidates[0].finish_reason if response.candidates else "no candidates"
-                    print(f"  [NO] {model_name} empty response (finish_reason={finish}), trying next model")
-                except Exception:
-                    print(f"  [NO] {model_name} empty response, trying next model")
-                break
-            except Exception as e:
-                wait = 65 * (2 ** attempt)
-                print(f"  [NO] {model_name} attempt {attempt+1} exception: {type(e).__name__}: {e}")
-                if attempt < 2:
-                    print(f"  ⏳ Waiting {wait}s before retry...")
-                    time.sleep(wait)
-
-    # --- DeepSeek fallback (only when all Gemini models/retries are exhausted) ---
-    if _deepseek_client:
-        ds_prompt = deepseek_prompt if deepseek_prompt else prompt
+    if not _deepseek_client:
+        print("  [NO] No DeepSeek client available.")
+        return None
+    ds_prompt = deepseek_prompt if deepseek_prompt else prompt
+    for attempt in range(3):
         try:
-            print(f"  ↳ Gemini exhausted, falling back to DeepSeek...")
+            print(f"  ↳ DeepSeek attempt {attempt + 1}...")
             resp = _deepseek_client.chat.completions.create(
                 model="deepseek-chat",
                 messages=[{"role": "user", "content": ds_prompt}],
@@ -1400,12 +1372,15 @@ def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None) -> str |
             )
             text = resp.choices[0].message.content if resp.choices else None
             if text:
-                print(f"  [OK] DeepSeek fallback succeeded.")
+                print(f"  [OK] DeepSeek succeeded.")
                 return text
             print(f"  [NO] DeepSeek returned empty response.")
         except Exception as e:
-            print(f"  [NO] DeepSeek failed: {type(e).__name__}: {e}")
-
+            wait = 15 * (2 ** attempt)
+            print(f"  [NO] DeepSeek attempt {attempt + 1} failed: {type(e).__name__}: {e}")
+            if attempt < 2:
+                print(f"  ⏳ Waiting {wait}s before retry...")
+                time.sleep(wait)
     return None
 
 

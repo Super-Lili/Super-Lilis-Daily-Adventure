@@ -42,8 +42,8 @@ jobs:
       - name: Run
         if: steps.check.outputs.skip == 'false'
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          QWEN_API_KEY: ${{ secrets.QWEN_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYTHONPATH: src
         run: python src/super_lili_brain.py

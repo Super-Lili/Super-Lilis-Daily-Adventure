@@ -8,8 +8,7 @@ Uses GITHUB_TOKEN (auto-provided by Actions) — no extra secrets needed.
 import os
 import time
 import requests
-from google import genai
-from google.genai import types
+from openai import OpenAI
 
 try:
     from lili_soul import LILI_PERSONALITY
@@ -21,7 +20,10 @@ try:
 except ImportError:
     def get_memory_context(): return ""
 
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+_deepseek_client = OpenAI(
+    api_key=os.environ.get("DEEPSEEK_API_KEY", ""),
+    base_url="https://api.deepseek.com",
+)
 
 GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
 REPO = os.environ.get("GITHUB_REPOSITORY", "Super-Lili/Super-Lilis-Daily-Adventure")
@@ -201,20 +203,19 @@ English version first, then --- divider, then Chinese version.
 
 def craft_response(issue: dict) -> str | None:
     prompt = build_response_prompt(issue)
-    models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
-
-    for model_name in models:
+    for attempt in range(3):
         try:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt,
+            resp = _deepseek_client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=2048,
             )
-            if response.text:
-                return response.text.strip()
+            text = resp.choices[0].message.content if resp.choices else None
+            if text:
+                return text.strip()
         except Exception as e:
-            print(f"  ✗ {model_name}: {e}")
-            time.sleep(2)
-
+            print(f"  [NO] DeepSeek attempt {attempt + 1}: {e}")
+            time.sleep(5)
     return None
 
 
