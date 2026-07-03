@@ -1078,9 +1078,13 @@ CODE REQUIREMENTS:
 [NO] NEVER put HTML with JavaScript inside a Python f-string - JS curly braces break f-strings
 [OK] For Mode 3 HTML: use jinja2.Template (already installed, available without listing in requirements.txt).
     Jinja2 uses {{{{ variable }}}} and {{% logic %}} - JS single braces {{}} pass through untouched, zero conflict.
+[CRITICAL] The template string MUST be a RAW triple-quoted string: Template(r'''...''').
+    The leading r is mandatory - it makes every backslash literal so CSS content:'\\2014',
+    JS regex /\\d+/, and \\n inside scripts do NOT trigger a Python "line continuation" syntax error.
     Pattern: from jinja2 import Template
-             TEMPLATE = Template('<html><script>function run(v) {{ return v; }}</script><body>{{{{ result }}}}</body></html>')
+             TEMPLATE = Template(r'''<html><script>function run(v) {{ return v; }}</script><body>{{{{ result }}}}</body></html>''')
              html = TEMPLATE.render(result=computed_value)
+    Never wrap HTML-with-JavaScript in an f-string - JS braces collide with f-string braces.
 
 MANDATORY STRUCTURE - your code MUST end with exactly this pattern:
 def process(text: str) -> str:

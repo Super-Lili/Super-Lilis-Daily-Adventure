@@ -567,6 +567,27 @@ def evolve():
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
+            elif any(s in build_reason.lower() for s in (
+                "line continuation", "was never closed", "unexpected character", "invalid syntax",
+                "unmatched", "f-string", "invalid escape",
+            )):
+                build_feedback = (
+                    f"CRITICAL: {build_reason}\n\n"
+                    f"This is a Python STRING-ESCAPING bug from embedding HTML/CSS/JS in Python. "
+                    f"The two usual causes and their fixes:\n\n"
+                    f"1. BACKSLASH in your HTML/CSS/JS (e.g. content:'\\2014', a regex like /\\d+/, "
+                    f"or \\n inside JS): Python reads '\\' as an escape and breaks. "
+                    f"FIX: make the ENTIRE template a RAW triple-quoted string: "
+                    f"TEMPLATE = Template(r'''<html>...your full markup...</html>''')  "
+                    f"The leading r makes backslashes literal.\n\n"
+                    f"2. CURLY BRACES / PARENS from JS colliding with an f-string: never wrap HTML "
+                    f"that contains JavaScript in an f-string. Build the HTML with jinja2.Template on a "
+                    f"raw string, compute your data in Python first, then Template.render(var=value). "
+                    f"Do NOT use f-strings anywhere near the markup.\n\n"
+                    f"Rewrite process() this way. Verify every ( [ {{ has a matching close.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
             elif "unterminated" in build_reason.lower() or ("syntax error" in build_reason.lower() and attempt >= 2):
                 build_feedback = (
                     f"CRITICAL: Your previous code was TRUNCATED because it was too long. "
