@@ -1354,32 +1354,62 @@ def call_gemini(prompt: str) -> tuple[str | None, list[str]]:
     return _call_qwen_search(prompt)
 
 
-def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None) -> str | None:
-    """Call DeepSeek for SPEC/BUILD/Critic tasks. Gemini fully removed.
-    deepseek_prompt: if provided, use this instead of prompt (kept for call-site compatibility).
+def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None, use_reasoner: bool = False) -> str | None:
+    """Call DeepSeek for SPEC/BUILD tasks.
+    use_reasoner=True -> deepseek-reasoner (R1, for SPEC architecture design)
+    use_reasoner=False -> deepseek-chat (V3, for BUILD code generation)
     """
     if not _deepseek_client:
         print("  [NO] No DeepSeek client available.")
         return None
+    model = "deepseek-reasoner" if use_reasoner else "deepseek-chat"
     ds_prompt = deepseek_prompt if deepseek_prompt else prompt
     for attempt in range(3):
         try:
-            print(f"  ↳ DeepSeek attempt {attempt + 1}...")
+            print(f"  ↳ DeepSeek ({model}) attempt {attempt + 1}...")
             resp = _deepseek_client.chat.completions.create(
-                model="deepseek-chat",
+                model=model,
                 messages=[{"role": "user", "content": ds_prompt}],
                 max_tokens=8192,
             )
             text = resp.choices[0].message.content if resp.choices else None
             if text:
-                print(f"  [OK] DeepSeek succeeded.")
+                print(f"  [OK] DeepSeek ({model}) succeeded.")
                 return text
-            print(f"  [NO] DeepSeek returned empty response.")
+            print(f"  [NO] DeepSeek ({model}) returned empty response.")
         except Exception as e:
             wait = 15 * (2 ** attempt)
-            print(f"  [NO] DeepSeek attempt {attempt + 1} failed: {type(e).__name__}: {e}")
+            print(f"  [NO] DeepSeek ({model}) attempt {attempt + 1} failed: {type(e).__name__}: {e}")
             if attempt < 2:
                 print(f"  ⏳ Waiting {wait}s before retry...")
+                time.sleep(wait)
+    return None
+
+
+def call_qwen_critic(prompt: str) -> str | None:
+    """Independent Critic review via Qwen-Max.
+    Using a different model from BUILD (DeepSeek) breaks the self-grading echo chamber.
+    """
+    if not _qwen_client:
+        print("  [NO] No Qwen client for Critic, falling back to DeepSeek.")
+        return call_gemini_simple(prompt)
+    for attempt in range(3):
+        try:
+            print(f"  ↳ Qwen Critic (qwen-max) attempt {attempt + 1}...")
+            resp = _qwen_client.chat.completions.create(
+                model="qwen-max",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=1024,
+            )
+            text = resp.choices[0].message.content if resp.choices else None
+            if text:
+                print(f"  [OK] Qwen Critic succeeded.")
+                return text
+            print(f"  [NO] Qwen Critic empty response.")
+        except Exception as e:
+            wait = 15 * (2 ** attempt)
+            print(f"  [NO] Qwen Critic attempt {attempt + 1} failed: {e}")
+            if attempt < 2:
                 time.sleep(wait)
     return None
 
@@ -2046,7 +2076,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                 f"PASS: - use if no real flaws\n"
                 f"Be specific. One word answers are not acceptable."
             )
-            critic_resp = call_gemini_simple(critic_prompt)
+            critic_resp = call_qwen_critic(critic_prompt)
             critic_verdict = critic_resp.strip().upper() if critic_resp else ""
             if critic_verdict.startswith("REJECT"):
                 reject_reason = critic_resp.strip()[7:].strip()[:200]
@@ -2464,7 +2494,7 @@ def evolve():
     for attempt in range(1, 5):
         if attempt > 1:
             time.sleep(15)
-        spec_content = call_gemini_simple(build_spec_prompt(today, scout, spec_feedback))
+        spec_content = call_gemini_simple(build_spec_prompt(today, scout, spec_feedback), use_reasoner=True)
         if not spec_content:
             spec_feedback = f"attempt {attempt}: Gemini returned empty response for spec prompt"
             continue
