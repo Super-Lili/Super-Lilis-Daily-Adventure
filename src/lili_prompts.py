@@ -984,13 +984,30 @@ SPEC DESIGN RULES:
 4. Q1/Q2/Q3 must be specific and verifiable - not vague
 
 FORMAT OPTIONS:
-  A - Single text input -> output (Mode 1/2)
+  A - Single text input -> computed output (Mode 1/2 - Python text or SVG)
   B - Multi-field form (Mode 3 HTML)
   C - Wizard / progressive steps (Mode 3 HTML)
   D - Live canvas / real-time transformer (Mode 3 HTML)
   E - Ambient / environment, no input needed (Mode 3 HTML)
   F - Generator + inline editor (Mode 3 HTML)
-  [NO] Don't default to A. Professional audiences -> B/C/F. Design -> D. Healing -> E/D.
+
+FORMAT ROUTING - choose by what can be reliably BUILT and VALIDATED, not by what looks fancy:
+  >> If the tool's core value is COMPUTING something FROM text the user provides
+     (analyze, score, extract, rank, diff, restructure, summarise, detect, compare
+     parts of the input against each other) -> ALWAYS Format A (Mode 1/2).
+     Reason: Mode 1/2 tools are executed for real and judged on their ACTUAL output.
+     The same tool wrapped in HTML renders a static-looking preview and gets rejected
+     as "fake / does nothing with input" - because the analysis is exactly what Mode 1/2
+     already does honestly. Do NOT wrap analysis in a UI.
+  >> Choose Mode 3 (B-F) ONLY when the value is genuinely interactive or ambient and
+     literally cannot exist as computed text/SVG:
+       D - real-time visual manipulation (dragging, drawing, live canvas)
+       E - ambient/generative artifact with NO input analysis (a clock, a soundscape,
+           a generative visual that just runs)
+       F - generator where in-place editing IS the point
+       B/C - only if the multi-step interaction itself is the core value, not decoration
+  >> Litmus test: "does the user paste text and get insights back?" -> that is Format A.
+     When unsure, choose A. A real computed result beats a pretty shell that fakes it.
 
 OUTPUT FORMAT - YOU MUST OUTPUT THESE EXACT TAGS OR THE SPEC WILL BE REJECTED:
 ---SPEC_START---
