@@ -94,6 +94,27 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
     if len(test_input) < 15:
         return False, f"TEST_INPUT is missing or too short. Got: '{test_input[:50]}'"
 
+    # Check 5: reject un-deliverable promises. The tool is a single self-contained file with
+    # no database, no pretrained model, no internet. Specs that promise comparison against a
+    # "curated corpus", "database of exemplars", "trained model", or factual knowledge lookups
+    # cannot be honestly built - BUILD then fakes it and Critic rejects it as fundamentally fake.
+    # Force SPEC to design depth that computes FROM THE INPUT, not from data the tool lacks.
+    promise_haystack = f"{algo_depth} {spec.get('transformation','')} {output_model}".lower()
+    undeliverable = [
+        "corpus", "curated", "exemplar", "database of", "dataset of", "knowledge base",
+        "pretrained", "pre-trained", "trained model", "reference set", "large dictionary",
+        "industry benchmark", "real-world examples of", "comparison against a set of",
+    ]
+    hit = next((kw for kw in undeliverable if kw in promise_haystack), None)
+    if hit:
+        return False, (
+            f"ALGORITHMIC_DEPTH promises something a single self-contained file cannot deliver "
+            f"(matched: '{hit}'). The tool has no external corpus/database/pretrained model/internet. "
+            f"Redesign the depth to COMPUTE FROM THE USER'S INPUT only: measure structure, patterns, "
+            f"ratios, positions, consistency, or relationships WITHIN the text the user provides. "
+            f"Do not promise comparison against reference data the tool does not contain."
+        )
+
     # Mode 3 (HTML formats B-F) is ENABLED again as of 2026-07-03.
     # It was force-overridden to Mode A during 2026-06-19~07-03 because the older/weaker
     # models shipped fake interactivity. Now BUILD runs on deepseek-v4-pro with an

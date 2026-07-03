@@ -974,6 +974,12 @@ SPEC DESIGN RULES:
 1. INPUT_MODEL must STRUCTURALLY DIFFER from OUTPUT_MODEL (Rule 17)
    "Text in -> text out" is NOT a transformation. Define the data structures explicitly.
 2. ALGORITHMIC_DEPTH must describe computation the user cannot do in 10 seconds (Rule 18)
+2b. SELF-CONTAINMENT (critical): the tool is ONE file with NO database, NO corpus, NO
+   pretrained model, NO internet. The depth MUST compute from the user's own input -
+   measuring structure, patterns, ratios, positions, consistency, or relationships WITHIN
+   the text they provide. NEVER promise "comparison against a curated corpus / database of
+   exemplars / industry benchmark / trained model" - the tool cannot contain that, so it
+   would be faked and rejected. Ask: can this run with ZERO external data? If no, redesign.
 3. For Mode 3 HTML: define all 3 UI states (Rule 19)
 4. Q1/Q2/Q3 must be specific and verifiable - not vague
 
