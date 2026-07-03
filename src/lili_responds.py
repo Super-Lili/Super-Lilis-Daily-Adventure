@@ -206,7 +206,7 @@ def craft_response(issue: dict) -> str | None:
     for attempt in range(3):
         try:
             resp = _deepseek_client.chat.completions.create(
-                model="deepseek-chat",
+                model="deepseek-v4-pro",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=2048,
             )

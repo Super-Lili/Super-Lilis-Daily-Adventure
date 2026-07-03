@@ -1362,7 +1362,7 @@ def call_gemini_simple(prompt: str, deepseek_prompt: str | None = None, use_reas
     if not _deepseek_client:
         print("  [NO] No DeepSeek client available.")
         return None
-    model = "deepseek-reasoner" if use_reasoner else "deepseek-chat"
+    model = "deepseek-reasoner" if use_reasoner else "deepseek-v4-pro"
     ds_prompt = deepseek_prompt if deepseek_prompt else prompt
     for attempt in range(3):
         try:

@@ -554,7 +554,7 @@ Keep the entire response under 400 words."""
 
     try:
         response = deepseek_client.chat.completions.create(
-            model="deepseek-chat",
+            model="deepseek-v4-pro",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=1000,
             temperature=0.3,
@@ -577,7 +577,7 @@ def call_gemini(prompt: str) -> str | None:
         try:
             print(f"  ↳ DeepSeek evolution attempt {attempt + 1}...")
             resp = deepseek_client.chat.completions.create(
-                model="deepseek-chat",
+                model="deepseek-v4-pro",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=8192,
             )
