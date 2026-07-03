@@ -15,6 +15,95 @@ from pathlib import Path
 
 from lili_llm import call_gemini_simple, call_qwen_critic
 
+
+# ─────────────────────────────────────────────────────────────
+# MODE 3 BROWSER GROUND-TRUTH VALIDATION
+# ─────────────────────────────────────────────────────────────
+
+def _browser_interactivity_check(html: str, test_input: str) -> tuple[bool, bool, str]:
+    """Actually run a Mode 3 tool in a headless browser to get GROUND TRUTH on whether
+    its JavaScript does real work with user input (instead of asking an LLM to guess).
+
+    Returns (ran, changed, detail):
+      ran=False     -> inconclusive (Playwright unavailable / crashed). Caller must NOT
+                       reject on this - fall back to the LLM Critic. Fail-open by design.
+      ran=True,  changed=False -> the page did NOT react to input at all -> static/fake.
+      ran=True,  changed=True  -> DOM genuinely changed in response to input -> real.
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception as e:
+        return False, False, f"playwright unavailable ({type(e).__name__})"
+
+    import tempfile
+    html_path = None
+    try:
+        with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False, encoding="utf-8") as fh:
+            fh.write(html)
+            html_path = fh.name
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(args=["--no-sandbox"])
+            page = browser.new_page()
+            page.set_default_timeout(8000)
+            page.goto(f"file://{html_path}")
+            page.wait_for_timeout(400)
+
+            before = (page.inner_text("body") or "").strip()
+            before_nodes = page.eval_on_selector_all("*", "els => els.length")
+
+            # Drive the UI: fill every text field with the test input, fire events,
+            # then click every button. This is a generic "does it react" probe.
+            sample = (test_input or "The quick brown fox jumps over the lazy dog. "
+                      "This is a realistic multi-sentence test input for the tool.")[:600]
+            filled = page.evaluate(
+                """(val) => {
+                    let n = 0;
+                    for (const el of document.querySelectorAll('textarea, input[type=text], input:not([type]), [contenteditable=true]')) {
+                        try {
+                            if (el.isContentEditable) { el.innerText = val; }
+                            else { el.value = val; }
+                            el.dispatchEvent(new Event('input',  {bubbles:true}));
+                            el.dispatchEvent(new Event('change', {bubbles:true}));
+                            el.dispatchEvent(new KeyboardEvent('keyup', {bubbles:true}));
+                            n++;
+                        } catch(e){}
+                    }
+                    return n;
+                }""",
+                sample,
+            )
+            # Click buttons / submit-like controls to trigger compute handlers.
+            page.evaluate(
+                """() => {
+                    const sel = 'button, [role=button], input[type=submit], input[type=button], .btn';
+                    for (const el of document.querySelectorAll(sel)) {
+                        try { el.click(); } catch(e){}
+                    }
+                }"""
+            )
+            page.wait_for_timeout(600)
+
+            after = (page.inner_text("body") or "").strip()
+            after_nodes = page.eval_on_selector_all("*", "els => els.length")
+            browser.close()
+
+        text_changed = after != before and len(after) > 0
+        nodes_changed = after_nodes != before_nodes
+        changed = bool(text_changed or nodes_changed)
+        detail = (f"fields_filled={filled}, text_changed={text_changed}, "
+                  f"nodes {before_nodes}->{after_nodes}")
+        return True, changed, detail
+    except Exception as e:
+        return False, False, f"browser run failed: {type(e).__name__}: {e}"
+    finally:
+        if html_path:
+            try:
+                os.unlink(html_path)
+            except Exception:
+                pass
+
+
 # ─────────────────────────────────────────────────────────────
 
 def validate_url(url: str, timeout: int = 8) -> tuple[bool, str]:
@@ -611,6 +700,23 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                     f"Mode 3 tools must return a complete HTML page (500+ chars).{error_detail}"
                 )
             print(f"  [OK] Output check passed - Mode 3 HTML ({len(output)} chars).")
+
+            # GROUND-TRUTH interactivity probe: actually run the tool in a headless browser,
+            # feed it the test input, and verify the DOM reacts. This replaces guessing with
+            # execution. Fail-open: if the browser can't run (unavailable/crash), we skip this
+            # gate and let the LLM Critic decide, so a browser flake never causes a false reject.
+            ran, changed, detail = _browser_interactivity_check(output, demo_input)
+            if ran and not changed:
+                return False, (
+                    "Browser ground-truth check: the tool's DOM did NOT change when the test "
+                    f"input was entered and controls were clicked ({detail}). The JavaScript does "
+                    "nothing with user input - this is a static/fake interactive tool. Make the JS "
+                    "read the input, compute from it, and update the DOM at runtime."
+                )
+            if ran:
+                print(f"  [OK] Browser interactivity confirmed - DOM reacts to input ({detail}).")
+            else:
+                print(f"  · Browser probe skipped ({detail}) - falling back to Critic.")
         else:
             # Mode 1/2: text or SVG output - must be substantive
             if not output or len(output) < 80 or len(output_lines) < 2:

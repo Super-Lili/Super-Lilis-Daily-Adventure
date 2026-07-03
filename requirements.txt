@@ -1,6 +1,6 @@
-google-genai
 openai
 requests
+playwright
 pandas
 matplotlib
 numpy
