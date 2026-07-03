@@ -761,13 +761,15 @@ FORMAT SELECTION (declare in ---SPEC--- as FORMAT: [letter] - [why]):
   D - Live canvas / real-time transformer (Mode 3 HTML)
   E - Ambient / environment, no input needed (Mode 3 HTML)
   F - Generator + inline editor (Mode 3 HTML)
-  [OK] DEFAULT TO A (Mode 1/2) unless the tool is IMPOSSIBLE to deliver as text/SVG.
-  [NO] Only pick B/C/D/E/F if the core value genuinely REQUIRES live visual interaction
-  (e.g. dragging, real-time animation, canvas drawing) - not just "would look nicer as a UI."
-  A text/SVG tool that actually computes something beats an HTML tool that fakes interactivity.
-  Recent build data: Mode 3 tools have repeatedly shipped fake JS (CSS toggles, hardcoded
-  copy-paste, unrendered templates) because one-shot HTML+JS generation is unreliable right now.
-  Mode 1/2 tools have a much higher real success rate. When in doubt, choose A.
+  Pick the format the tool's CORE VALUE actually needs - do not force everything into one mode.
+  [OK] Pick A (Mode 1/2) when the value is the computed RESULT and text/SVG delivers it fully.
+  [OK] Pick B/C/D/E/F (Mode 3 HTML) when the value genuinely needs live interaction:
+       dragging, real-time preview, canvas drawing, progressive input, in-place editing.
+  CRITICAL for Mode 3: the JavaScript must do REAL work with the user's input - parse it,
+  compute from it, build the DOM from it at runtime. Any of these = automatic rejection:
+    [NO] CSS-only toggles pretending to be logic   [NO] hardcoded lookup tables / preset answers
+    [NO] pre-filled data-* attributes in the HTML  [NO] output identical regardless of input
+  If you cannot make the JS genuinely compute from input, fall back to Mode A instead of faking it.
 
 OUTPUT MODES:
   Mode 1 - process(text) returns plain string. Allowed: numpy, pandas, matplotlib, Pillow.
@@ -1016,6 +1018,11 @@ def build_code_prompt(today: str, scout: dict, spec: dict, feedback: str = "", s
     feedback_block = f"\n⚠ PREVIOUS BUILD FAILED - fix this specific problem:\n{feedback}\n" if feedback else ""
     nudge_block = "" if slim else ctx['engineering_nudge']
 
+    # Mode 3 (HTML) needs room for HTML+CSS+JS; Mode 1/2 stays tight to avoid truncation.
+    _is_mode3 = spec.get("mode", "").strip().startswith("3") or spec.get("format", "").strip()[:1].upper() in ("B", "C", "D", "E", "F")
+    _line_cap = 320 if _is_mode3 else 200
+    _line_floor = "220" if _is_mode3 else "150"
+
     return f"""Today is {today}.
 {feedback_block}
 You have an approved tool spec. Write the code now - nothing else.
@@ -1037,7 +1044,7 @@ APPROVED SPEC:
 {nudge_block}
 
 CODE REQUIREMENTS:
-[OK] 150+ lines, type hints, requirements block at top
+[OK] {_line_floor}+ lines, type hints, requirements block at top
 [OK] Implement EXACTLY the transformation and algorithmic depth in the approved spec
 [NO] NEVER hardcode a dictionary of expected inputs/outputs - the algorithm must work on ANY input
 [NO] NEVER match keywords against a preset lookup table and return preset strings
@@ -1094,12 +1101,12 @@ TEST FILE REQUIREMENTS (test_main.py):
 
 OUTPUT FORMAT - COPY EXACTLY (do NOT output ---TEST--- until the Python code is 100% complete):
 ---CODE---
-[Complete Python code - keep under 200 lines total - do NOT stop early - write every line until the file ends with the USER_INPUT block]
+[Complete Python code - keep under {_line_cap} lines total - do NOT stop early - write every line until the file ends with the USER_INPUT block]
 ---TEST---
 [test_main.py - from main import process - self-contained asserts - keep under 30 lines]
 ---BUILD_END---
 
-IMPORTANT LINE LIMIT: The entire ---CODE--- section must be under 200 lines. If your design requires more, simplify: remove comments, shorten variable names, combine functions. A working 180-line tool is better than a truncated 800-line tool."""
+IMPORTANT LINE LIMIT: The entire ---CODE--- section must be under {_line_cap} lines. If your design requires more, simplify: remove comments, shorten variable names, combine functions. A working tool within the limit is better than a truncated 800-line tool."""
 
 
 

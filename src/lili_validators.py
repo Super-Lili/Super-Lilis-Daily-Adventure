@@ -94,20 +94,12 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
     if len(test_input) < 15:
         return False, f"TEST_INPUT is missing or too short. Got: '{test_input[:50]}'"
 
-    # Check 5: TEMPORARY - Mode 3 (formats B-F) disabled.
-    # 2026-06-19 to 06-22: every single BUILD failure has been a Mode 3 HTML tool shipping
-    # fake interactivity (CSS-toggle-only JS, hardcoded copy-paste, unrendered Jinja2 templates,
-    # hardcoded data-* nodes). One-shot HTML+JS generation is not reliable enough yet.
-    # The model kept ignoring the prompt instruction and re-picking B-F even after explicit
-    # retry feedback (2026-06-23: picked FORMAT B twice in a row, burning both SPEC attempts).
-    # So instead of rejecting and hoping the model listens, force-override deterministically -
-    # the transformation/algorithmic content is still valid, only the delivery format changes.
-    # Remove this override once Mode 3 success rate is proven stable again.
-    fmt_letter = spec.get("format", "").strip()[:1].upper()
-    if fmt_letter and fmt_letter != "A":
-        print(f"  ⚠ Spec picked FORMAT '{fmt_letter}' (Mode 3) - force-overriding to FORMAT A (Mode 1/2)")
-        spec["format"] = "A - forced override (Mode 3 temporarily disabled)"
-        spec["mode"] = "1"
+    # Mode 3 (HTML formats B-F) is ENABLED again as of 2026-07-03.
+    # It was force-overridden to Mode A during 2026-06-19~07-03 because the older/weaker
+    # models shipped fake interactivity. Now BUILD runs on deepseek-v4-pro with an
+    # independent qwen3.7-max Critic + mechanical fake-interactivity guards in
+    # validate_tool() (hardcoded lookup tables, pre-filled data-* nodes, unrendered
+    # templates), so real Mode 3 tools can be validated properly. No format override.
 
     return True, "ok"
 
@@ -553,17 +545,9 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         # Detect Mode 3 HTML output - scoring the raw HTML is meaningless
         is_html_output = output.lstrip().startswith(("<!DOCTYPE", "<html", "<!doctype"))
 
-        # Mode 3 is temporarily disabled (see validate_spec). The model sometimes ignores the
-        # spec's forced Mode 1/2 instruction and writes HTML+JS anyway - reject mechanically
-        # rather than relying on the model to have listened, since this is exactly the class
-        # of fake-interactivity bug Mode 3 lockdown was meant to prevent.
-        if is_html_output and format_type.strip()[:1].upper() == "A":
-            return False, (
-                "Tool produced HTML output (Mode 3) but the spec required FORMAT A (Mode 1/2 - "
-                "plain text or SVG string). Mode 3 is temporarily disabled. Rewrite process() to "
-                "return a plain text string or an SVG string starting with '<svg' - no JavaScript, "
-                "no <!DOCTYPE html>, no <script> tags."
-            )
+        # Mode 3 (HTML) is allowed again as of 2026-07-03. The fake-interactivity guards
+        # below (hardcoded lookup tables, pre-filled data-* nodes, unrendered templates)
+        # plus the JS-source Critic review are what keep Mode 3 honest.
 
         stderr_snippet = (result.stderr or "").strip()[:300]
         if is_html_output:
