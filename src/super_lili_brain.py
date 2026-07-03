@@ -942,6 +942,14 @@ TRULY USABLE:
   [OK] Minimum 4 named functions with type hints. [OK] Labeled output sections, not raw text blobs.
   [NO] No external API keys. [NO] No terminal-only output.
 
+DIFFERENTIATION RULE (critical - Critic will reject for this):
+  If the tool analyses multiple items from input (words, phrases, sentences, ideas),
+  EACH item's output MUST be visibly different from every other item's output.
+  [NO] Do NOT reuse the same sentence structure for different items.
+  [NO] Do NOT copy-paste interpretations with only the subject noun swapped.
+  [OK] Each item must surface a UNIQUE insight derived from that specific item's content.
+  Test yourself: if you swapped two items' outputs, would a reader notice? If no - rewrite.
+
 {ctx['engineering_nudge']}
 QUALITY BAR: Would a non-technical person feel their problem is actually solved?
 If no - go deeper. Sophistication invisible to user, obvious in result."""
@@ -2691,6 +2699,22 @@ def evolve():
                     f"'from main import process', call process() with 2-3 plain strings, and assert "
                     f"basic properties (non-empty, length, contains a substring). Do not call any "
                     f"helper function that isn't process() itself.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
+            elif "identical" in build_reason.lower() or "nearly identical" in build_reason.lower() or "generic" in build_reason.lower() and "same" in build_reason.lower():
+                build_feedback = (
+                    f"CRITICAL FAILURE: {build_reason}\n\n"
+                    f"Your tool outputs nearly identical results for different input items. "
+                    f"This is the most common failure mode for multi-item analysis tools.\n\n"
+                    f"REQUIRED FIX: For EACH item extracted from the input, your code must derive "
+                    f"a UNIQUE analysis specific to that item's actual content - not a template "
+                    f"with the item name substituted in. Use different algorithms per item type, "
+                    f"extract different semantic properties, and produce outputs that would be "
+                    f"obviously WRONG if swapped between two different items.\n\n"
+                    f"Concretely: if analysing words A, B, C - run different logic on each one "
+                    f"(e.g. syllable count, connotation lookup, etymology, register, ambiguity score) "
+                    f"so outputs A, B, C are structurally and semantically distinct.\n\n"
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
