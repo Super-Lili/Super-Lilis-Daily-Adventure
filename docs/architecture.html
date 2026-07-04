@@ -239,13 +239,13 @@ body {
       <div class="trigger-chip" id="t-weekly">
         <div class="t-icon">🌸</div>
         <div class="t-name">每周日 Cron</div>
-        <div class="t-time">08:05 · 14:05 · 20:05 北京时间</div>
+        <div class="t-time">08:30 · 14:30 · 20:30 北京时间</div>
       </div>
 
       <div class="trigger-chip" id="t-daily">
         <div class="t-icon">⏰</div>
         <div class="t-name">每日 Cron（周一 ~ 周六）</div>
-        <div class="t-time">08:05 · 14:05 · 20:05 北京时间</div>
+        <div class="t-time">08:30 · 14:30 · 20:30 北京时间</div>
       </div>
 
       <div class="trigger-spacer"></div>
@@ -265,7 +265,7 @@ body {
           <div class="panel-body">
             <div class="step s-i"><span class="sn">扫描未回应 Issues</span><span class="ss">过滤已标记的</span></div>
             <div class="step s-i"><span class="sn">分类 Issue 类型</span><span class="ss">bug · 功能需求 · 提问 · 感谢</span></div>
-            <div class="step s-i"><span class="sn">Gemini 生成双语回复</span><span class="ss">莉莉的口气，不是机器人</span></div>
+            <div class="step s-i"><span class="sn">DeepSeek 生成双语回复</span><span class="ss">莉莉的口气，不是机器人</span></div>
             <div class="step s-i"><span class="sn">发布评论</span><span class="ss">添加 lili-responded 标签</span></div>
           </div>
         </div>
@@ -282,7 +282,7 @@ body {
             <div class="step s-w"><span class="sn">读取过去 7 天</span><span class="ss">日记 + 工具 + lili_soul.py</span></div>
             <div class="step s-w"><span class="sn">quality_ledger 最近 14 条</span><span class="ss">Engineering + Warmth 评分历史</span></div>
             <div class="step s-w"><span class="sn">拉取 GitHub Issues 用户反馈</span><span class="ss">真实用户声音注入进化 Prompt</span></div>
-            <div class="step s-w"><span class="sn">Gemini 自我反思</span><span class="ss">优势 · 成长点 · OSS 工具侦察</span></div>
+            <div class="step s-w"><span class="sn">DeepSeek 自我反思</span><span class="ss">优势 · 成长点 · OSS 工具侦察</span></div>
             <div class="step s-wo"><span class="sn">重写 lili_soul.py</span><span class="ss">性格更温暖 · 技能更精准</span></div>
             <div class="step s-wo"><span class="sn">生成 lili_engineering.py</span><span class="ss">工程规范 + 反模式清单</span></div>
             <div class="step s-wo"><span class="sn">生成 lili_blindspot.py</span><span class="ss">下周盲点 + 工具方向</span></div>
@@ -295,15 +295,15 @@ body {
       <div>
         <div class="panel" id="p-daily">
           <div class="panel-hdr hdr-daily">
-            🧠 每日大脑
-            <span class="panel-hdr-file">super_lili_brain.py</span>
+            🧠 每日大脑 · ReAct 五阶段
+            <span class="panel-hdr-file">llm / prompts / validators / pipeline</span>
           </div>
           <div class="panel-body">
-            <div class="step s-d"><span class="sn">构建 Prompt</span><span class="ss">注入灵魂 + 记忆 + 工程规范 + 话题轮换</span></div>
-            <div class="step s-d"><span class="sn">侦察摩擦点</span><span class="ss">Gemini + Google Search 实时信源</span></div>
-            <div class="step s-d"><span class="sn">生成内容</span><span class="ss">双语日记 + 工具代码</span></div>
-            <div class="step s-ds"><span class="sn">两维质量评分</span><span class="ss">Engineering(1-5) + Warmth(1-5) · combined ≥ 3.0 通过</span></div>
-            <div class="step s-d"><span class="sn">写入仓库</span><span class="ss">02_Toolbox/ · 01_Work_Log/</span></div>
+            <div class="step s-d"><span class="sn">1 · SCOUT 侦察</span><span class="ss">Qwen 联网搜索 → 找真实摩擦点 + 写日记</span></div>
+            <div class="step s-d"><span class="sn">2 · SPEC 设计</span><span class="ss">DeepSeek-R1 · validate_spec（自包含 + 具体算法）</span></div>
+            <div class="step s-d"><span class="sn">3 · BUILD 构建</span><span class="ss">DeepSeek-v4-pro · 最多 5 次带错误重试</span></div>
+            <div class="step s-ds"><span class="sn">4 · EVALUATE 评估</span><span class="ss">语法/浏览器验证/评分/Critic(qwen3.7-max)</span></div>
+            <div class="step s-d"><span class="sn">5 · REFLECT 沉淀</span><span class="ss">存工具 + 双语日记 · 02_Toolbox/ · 01_Work_Log/</span></div>
             <div class="step s-ds"><span class="sn">追加 quality_ledger.jsonl</span><span class="ss">为下周进化积累数据</span></div>
             <div class="step s-d"><span class="sn">重建 GitHub Pages</span><span class="ss">generate_site.py → docs/index.html</span></div>
           </div>
