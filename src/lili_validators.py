@@ -174,6 +174,25 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
     if all(w in algo_depth.lower() for w in trivial_words[:2]) and len(algo_depth) < 60:
         return False, f"ALGORITHMIC_DEPTH describes only formatting/display: '{algo_depth}'"
 
+    # Check 2b: algorithmic depth must read as a CONCRETE mechanical procedure, not an
+    # aspiration. Aspirational specs ("structure into insightful chapters") let BUILD satisfy
+    # them with lazy heuristics (grab first sentence) that the Critic then rejects. Require at
+    # least one concrete computational verb so the depth names an operation BUILD can implement.
+    concrete_verbs = [
+        "split", "count", "measure", "group", "rank", "sort", "detect", "compare", "score",
+        "extract", "match", "parse", "token", "frequency", "ratio", "overlap", "cluster",
+        "map", "weight", "index", "position", "length", "distance", "pattern", "segment",
+        "aggregate", "tally", "normalize", "normalise", "classify by", "step ", "1.", "2.",
+    ]
+    if not any(v in algo_depth.lower() for v in concrete_verbs):
+        return False, (
+            f"ALGORITHMIC_DEPTH is aspirational, not a concrete procedure: '{algo_depth[:120]}'. "
+            "Rewrite it as named mechanical steps a programmer implements verbatim (e.g. "
+            "'split on X; count Y per group; rank by Z; flag where overlap < 0.2'). Use concrete "
+            "verbs (split/count/measure/group/rank/detect/score/parse) - no 'understand', "
+            "'insight', or 'intelligently' without the actual operation that produces it."
+        )
+
     # Check 3: Q1/Q2/Q3 must be specific
     for label, val in [("Q1_PASS", q1), ("Q2_PASS", q2), ("Q3_PASS", q3)]:
         if len(val) < 10:

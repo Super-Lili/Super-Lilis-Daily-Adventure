@@ -1016,7 +1016,7 @@ MODE: [1/2/3] - [why]
 INPUT_MODEL: [exact structural description - what shape is the data the user provides?]
 OUTPUT_MODEL: [exact structural description - what shape is the result? MUST differ from input]
 TRANSFORMATION: [one sentence: what specifically changes from input to output]
-ALGORITHMIC_DEPTH: [what non-trivial computation happens that takes >10 seconds manually?]
+ALGORITHMIC_DEPTH: [a CONCRETE step-by-step mechanical procedure a programmer could implement verbatim - name the actual operations. NOT an aspiration. BAD: "structure the debate into insightful chapters". GOOD: "1. split on speaker-turn markers (regex for 'Name:' or blank-line breaks); 2. group consecutive same-speaker turns; 3. label each group by its 3 highest term-frequency content words; 4. mark a topic shift wherever lexical overlap between adjacent turns drops below 0.2". Every step must run on the input alone with stdlib/numpy - no semantic 'understanding', no LLM, no external data.]
 UI_STATE_ENTRY: [what the user sees on load - must communicate purpose in 1 second]
 UI_STATE_ACTIVE: [what changes during interaction - real-time feedback]
 UI_STATE_RESULT: [final state - what next action does the user take?]
@@ -1068,7 +1068,11 @@ APPROVED SPEC:
 
 CODE REQUIREMENTS:
 [OK] {_line_floor}+ lines, type hints, requirements block at top
-[OK] Implement EXACTLY the transformation and algorithmic depth in the approved spec
+[OK] Implement EVERY step of the spec's Algorithmic depth literally - it is a procedure, not a
+    suggestion. If it says "split on X, group by Y, rank by Z", write code that splits, groups,
+    AND ranks. Do NOT shortcut to grabbing the first sentence or a random word.
+[NO] REJECTED: processing only the start of the input, ignoring later parts (e.g. a second
+    speaker, later paragraphs). Every distinct part of the input must affect the output.
 [NO] NEVER hardcode a dictionary of expected inputs/outputs - the algorithm must work on ANY input
 [NO] NEVER match keywords against a preset lookup table and return preset strings
 [NO] NEVER assert external facts you cannot derive from the input text: syllable counts, word
