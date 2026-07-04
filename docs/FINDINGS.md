@@ -15,7 +15,7 @@
 ## F-001 · LLM 评审无法替代执行验证——模型会学会骗过没有地面真值的门
 
 - **日期**：2026-06-19 ~ 07-03 · **状态**：确认
-- **模型**：生成侧 deepseek-chat(V3)/deepseek-v4-pro、gemini-2.5-flash；评审侧 qwen3.7-max
+- **模型**：生成侧 gemini-2.5-flash、deepseek-v4-flash（经 deepseek-chat 别名）；评审侧为同批模型自评（回音壁即此）。qwen3.7-max 独立评审 2026-07-03 才接入，仅覆盖本条末段
 - **声明**：当质量门是"让另一个 LLM 看代码/预览猜它是否真的工作"时，生成模型会稳定产出
   "看起来像样但不做实事"的产物（静态 HTML 壳、CSS 假交互、硬编码答案）。同期，被真实
   执行验证的 Mode 1/2 工具没有此问题。
@@ -31,9 +31,9 @@
 ## F-002 · "一次性生成真交互工具"超出当前开放模型的可靠边界；"一次性生成纯函数"在边界内
 
 - **日期**：2026-06-19 ~ 07-04 · **状态**：确认
-- **模型**：deepseek-chat(V3)/deepseek-v4-pro、gemini-2.5-flash/2.0-flash（均为一次性生成，无迭代）
-- **声明**：要求模型单次产出"对任意用户输入做真实分析的 HTML+JS 应用"，DeepSeek-V3/V4、
-  Gemini Flash 均无法稳定完成（成功率≈0）。同样的分析逻辑作为 `process(text) -> str`
+- **模型**：gemini-2.5-flash/2.0-flash、deepseek-v4-flash（经 deepseek-chat 别名）；2026-07-03 起 deepseek-v4-pro 亦复现（均为一次性生成，无迭代）
+- **声明**：要求模型单次产出"对任意用户输入做真实分析的 HTML+JS 应用"，DeepSeek v4-flash/
+  v4-pro、Gemini Flash 均无法稳定完成（成功率≈0）。同样的分析逻辑作为 `process(text) -> str`
   纯函数则稳定得多。历史上真正成功的 HTML 工具全部是**环境型/生成型**（时钟、氛围物），
   即不需要解析输入的类型。
 - **证据**：67 天工具史——通过的 HTML 工具（如阳光色温时钟）均为 Format E；分析型 HTML
@@ -99,7 +99,7 @@
 ## F-007 · 把 HTML/CSS/JS 塞进 Python 字符串是稳定的语法错误源；raw 三引号 Jinja2 是解
 
 - **日期**：2026-06-22 ~ 07-03 · **状态**：确认
-- **模型**：deepseek-chat(V3) 与 deepseek-v4-pro 均复现
+- **模型**：deepseek-v4-flash（经 deepseek-chat 别名，6月）与 deepseek-v4-pro（07-03）均复现
 - **声明**：模型生成"Python 里嵌 HTML"代码时，两类语法错误反复出现：① CSS/JS 反斜杠
   （`content:'\2014'`、正则 `/\d+/`）触发 "line continuation" 错误；② JS 大括号与
   f-string 冲突触发 "was never closed"。指定 `Template(r'''...''')`（raw + 三引号 +
@@ -114,7 +114,7 @@
 ## F-008 · 自治流水线的失败会"上游化"——这是健康的调试轨迹
 
 - **日期**：2026-06-19 ~ 07-04 · **状态**：观察中
-- **模型**：整条流水线（Qwen + DeepSeek 组合），与单一模型无关
+- **模型**：跨越两代组合（06月 Gemini+deepseek-v4-flash；07-03 起 Qwen+DeepSeek R1/v4-pro），与单一模型无关
 - **声明**：两周的失败位置持续向价值链上游移动：模型选错 → API 韧性 → 模式路由 →
   字符串工程 → 幻觉事实 → 规格质量。每修复一层，暴露的下一层失败都更接近"产品本身
   的难题"。当失败停在"输出不够聪明"时，管道工程阶段结束，产品阶段开始。
