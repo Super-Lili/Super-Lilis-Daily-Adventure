@@ -633,16 +633,20 @@ def evolve():
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
-            elif "must contain" in build_reason.lower() or "input must" in build_reason.lower() or "error: input" in build_reason.lower():
+            elif (any(s in build_reason.lower() for s in ("must contain", "input must", "error: input", "check the format", "please provide", "please check"))
+                  or ("output too weak" in build_reason.lower()
+                      and any(s in build_reason.lower() for s in ("not found", "no valid", "found in", "format", "please")))):
                 build_feedback = (
                     f"CRITICAL FAILURE: {build_reason}\n\n"
-                    f"Your process() function rejected the test input because it expects a rigid, "
-                    f"self-invented input structure (e.g. a fixed number of sections, a specific "
-                    f"delimiter, exact field names). This is wrong - process(text) receives FREE-FORM "
-                    f"TEXT from a real user. It must never demand the input look a certain way.\n\n"
-                    f"REQUIRED FIX: Remove all input-format validation/rejection. Parse whatever text "
-                    f"arrives using flexible heuristics (regex, sentence splitting, keyword detection) - "
-                    f"do not require blank-line-separated sections, exact headers, or any structured syntax.\n\n"
+                    f"Your process() function REFUSED to work because the input lacked the structure "
+                    f"it expected (specific markers, sections, labels). Refusing is as wrong as "
+                    f"fabricating - process(text) receives FREE-FORM TEXT from a real person.\n\n"
+                    f"REQUIRED FIX - graceful degradation, not rejection:\n"
+                    f"1. Try your primary structural marker first (speaker labels, timecodes, headers).\n"
+                    f"2. If absent, FALL BACK to coarser segmentation: paragraphs, then sentences, "
+                    f"then fixed-size chunks - and run the same analysis on those units.\n"
+                    f"3. Always produce real, substantive output. A limits-note may be APPENDED to "
+                    f"the output, never returned INSTEAD of it.\n\n"
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )

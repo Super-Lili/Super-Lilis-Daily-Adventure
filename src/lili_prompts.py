@@ -1114,6 +1114,12 @@ CODE REQUIREMENTS:
     real person typing naturally - it must parse loosely (regex, keyword search, sentence
     splitting) and produce a best-effort result. Never return an error like "Input must contain
     3 sections separated by blank lines" - that rejects every real user.
+[OK] GRACEFUL DEGRADATION is mandatory: when your primary structural marker is absent
+    (no speaker labels, no timecodes, no headers), FALL BACK to a coarser segmentation
+    (paragraphs -> sentences -> fixed-size chunks) and still produce the best analysis the
+    input allows. Returning a one-line "not found, please check the format" error is an
+    automatic validation failure - honesty about limits belongs in a note appended to real
+    output, never in place of output.
 [NO] test_main.py must ONLY call process() (never any other function from main.py) with 2-3
     plain string inputs and assert simple properties (non-empty, length, substring present).
     A test that crashes with a Traceback (not a clean assert) means the test itself is buggy -
