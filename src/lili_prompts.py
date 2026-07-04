@@ -1097,6 +1097,11 @@ CODE REQUIREMENTS:
     The model does not know these reliably and WILL hallucinate them (e.g. wrong syllable counts) -
     the Critic rejects hallucinated facts outright. Only compute from what is measurable in the
     input itself: length, patterns, position, frequency, structure, user-provided context.
+[NO] NEVER invent entries to make the output LOOK complete. Every row/section/item in the output
+    must be traceable to a specific span of the input. If the input has no conclusion, do NOT
+    emit a "Conclusion" entry with an invented timecode/position; if only 3 real items exist,
+    output 3, not a padded 5. An honest short output beats a complete-looking fabricated one -
+    the Critic rejects padding and invented entries as hallucination.
 [NO] ANTI-PATTERN - this will be REJECTED:
     LOOKUP = {{"keyword1": {{"result": "..."}}, "keyword2": {{"result": "..."}}, ...}}
     return LOOKUP.get(user_input, default)

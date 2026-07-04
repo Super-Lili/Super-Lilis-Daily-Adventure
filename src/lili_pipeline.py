@@ -684,6 +684,21 @@ def evolve():
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
+            elif any(s in build_reason.lower() for s in ("filler", "padded", "padding", "add no value", "adds no value", "hallucinat", "invented", "arbitrary")):
+                build_feedback = (
+                    f"CRITICAL FAILURE: {build_reason}\n\n"
+                    f"Your tool INVENTED output entries that have no basis in the input (padding, "
+                    f"fabricated items, arbitrary values) to make the result look complete.\n\n"
+                    f"REQUIRED FIX - this is a DELETION task, not an addition task:\n"
+                    f"1. Remove every output row/section/item that cannot be traced to a specific "
+                    f"span of the input text.\n"
+                    f"2. Never emit placeholder entries (a 'Conclusion' with an invented position, "
+                    f"a generic final row) to complete an expected shape.\n"
+                    f"3. Let the output length follow the input content: 3 real items beat 5 where "
+                    f"2 are fabricated.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
             elif "identical" in build_reason.lower() or "nearly identical" in build_reason.lower() or "generic" in build_reason.lower() and "same" in build_reason.lower():
                 build_feedback = (
                     f"CRITICAL FAILURE: {build_reason}\n\n"

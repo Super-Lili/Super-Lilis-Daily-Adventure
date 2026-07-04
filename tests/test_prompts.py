@@ -70,6 +70,12 @@ class CodePromptTests(unittest.TestCase):
         p = build_code_prompt("2026-07-04", SCOUT, spec())
         self.assertIn("NEVER assert external facts", p)
 
+    def test_no_padding_rule_present(self):
+        # F-009: models invent entries to complete a structure's expected shape.
+        p = build_code_prompt("2026-07-04", SCOUT, spec())
+        self.assertIn("NEVER invent entries", p)
+        self.assertIn("traceable to a specific span of the input", p)
+
     def test_raw_string_jinja_guidance_present(self):
         p = build_code_prompt("2026-07-04", SCOUT, spec(mode="3", fmt="B - form"))
         self.assertIn("Template(r'''", p)
