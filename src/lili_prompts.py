@@ -1032,13 +1032,30 @@ IMPORTANT: Each field (FORMAT, MODE, INPUT_MODEL, etc.) must be on a SINGLE LINE
 Do not wrap field values across multiple lines. Keep each value concise and on one line."""
 
 
-def build_code_prompt(today: str, scout: dict, spec: dict, feedback: str = "", slim: bool = False) -> str:
+def build_code_prompt(today: str, scout: dict, spec: dict, feedback: str = "", slim: bool = False,
+                      prev_code: str = "") -> str:
     """Phase 3 - BUILD: write code from approved spec only.
     slim=True omits the engineering_nudge block for DeepSeek fallback (token budget).
+    prev_code: the previous attempt's code. When provided together with feedback,
+    the prompt switches to PATCH MODE: repair the named problem instead of
+    regenerating from scratch (a rejected tool is usually 90% good code).
     """
     ctx = _build_context_block(today)
 
-    feedback_block = f"\n⚠ PREVIOUS BUILD FAILED - fix this specific problem:\n{feedback}\n" if feedback else ""
+    if feedback and prev_code:
+        feedback_block = (
+            f"\n⚠ PATCH MODE - your previous code failed validation for this SPECIFIC reason:\n"
+            f"{feedback}\n\n"
+            f"YOUR PREVIOUS CODE (mostly good - do NOT start over):\n"
+            f"```python\n{prev_code}\n```\n\n"
+            f"Fix ONLY what the failure reason requires. Keep everything that already works: "
+            f"same structure, same function names, same working logic. Output the COMPLETE "
+            f"corrected file in the required ---CODE--- format (not a diff).\n"
+        )
+    elif feedback:
+        feedback_block = f"\n⚠ PREVIOUS BUILD FAILED - fix this specific problem:\n{feedback}\n"
+    else:
+        feedback_block = ""
     nudge_block = "" if slim else ctx['engineering_nudge']
 
     # Mode 3 (HTML) needs room for HTML+CSS+JS; Mode 1/2 stays tight to avoid truncation.

@@ -496,6 +496,7 @@ def evolve():
     build_ok = False
     build_reason = "unknown build failure"
     build_feedback = ""
+    prev_code = ""  # previous attempt's code - enables critique-patch instead of re-roll
     merged: dict = {**scout}  # initialise so it's always defined even if BUILD loop exits early
 
     for attempt in range(1, 6):
@@ -503,9 +504,11 @@ def evolve():
         if attempt > 1:
             print(f"  ⏳ Waiting 15s before retry...")
             time.sleep(15)
+            if prev_code and build_feedback:
+                print("  🩹 Patch mode: repairing previous code instead of regenerating.")
         build_content = call_gemini_simple(
-            build_code_prompt(today, scout, spec, build_feedback),
-            deepseek_prompt=build_code_prompt(today, scout, spec, build_feedback, slim=True),
+            build_code_prompt(today, scout, spec, build_feedback, prev_code=prev_code),
+            deepseek_prompt=build_code_prompt(today, scout, spec, build_feedback, slim=True, prev_code=prev_code),
         )
         if not build_content:
             print("  [NO] No response from any model.")
@@ -523,6 +526,8 @@ def evolve():
                 "Do not add any explanation or preamble before ---CODE---."
             )
             continue
+
+        prev_code = build["code"]  # keep for patch mode if validation fails below
 
         # Merge all phases into one parsed dict for save_tool
         merged = {**scout, **build}
@@ -589,6 +594,7 @@ def evolve():
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
             elif "unterminated" in build_reason.lower() or ("syntax error" in build_reason.lower() and attempt >= 2):
+                prev_code = ""  # truncated code must be REWRITTEN shorter, not patched back in
                 build_feedback = (
                     f"CRITICAL: Your previous code was TRUNCATED because it was too long. "
                     f"The response was cut off mid-string, causing a syntax error.\n\n"

@@ -82,6 +82,23 @@ class CodePromptTests(unittest.TestCase):
         p = build_code_prompt("2026-07-04", SCOUT, spec(), feedback="fix the crash")
         self.assertIn("fix the crash", p)
 
+    def test_patch_mode_includes_previous_code(self):
+        p = build_code_prompt("2026-07-04", SCOUT, spec(),
+                              feedback="the title is hallucinated",
+                              prev_code="def process(text):\n    return text")
+        self.assertIn("PATCH MODE", p)
+        self.assertIn("def process(text):", p)
+        self.assertIn("do NOT start over", p)
+
+    def test_no_patch_mode_without_prev_code(self):
+        p = build_code_prompt("2026-07-04", SCOUT, spec(), feedback="fix it")
+        self.assertNotIn("PATCH MODE", p)
+
+    def test_no_patch_mode_without_feedback(self):
+        # First attempt: prev_code alone must not trigger patch mode.
+        p = build_code_prompt("2026-07-04", SCOUT, spec(), prev_code="x = 1")
+        self.assertNotIn("PATCH MODE", p)
+
     def test_smoke_no_unescaped_fstring_braces(self):
         # If someone adds an unescaped {var} to a prompt template, building
         # any prompt raises - these three calls are the regression net.
