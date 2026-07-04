@@ -1,0 +1,32 @@
+name: 🧪 Unit Tests
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'requirements.txt'
+      - '.github/workflows/lili_tests.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # LLM calls are mocked in tests/_bootstrap.py - tests make no network
+      # requests and need no API keys.
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
