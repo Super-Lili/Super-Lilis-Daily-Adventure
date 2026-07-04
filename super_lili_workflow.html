@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>超级莉莉工作流程图</title>
+<style>
+  body { margin:0; background:#f7f5f0; font-family: -apple-system, sans-serif; padding:20px; }
+  svg { width:100%; max-width:1180px; display:block; margin:0 auto; background:#fff; border-radius:12px; }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1180 880" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>超级莉莉工作流程图</title>
+<style>
+.box { fill: #f4f2ed; stroke: #ddd8cc; stroke-width: 1.5; }
+.boxAccent { fill: #fdf0e6; stroke: #e08a3c; stroke-width: 1.5; }
+.boxFail { fill: #f4f2ed; stroke: #c0392b; stroke-width: 1.5; stroke-dasharray: 4 3; }
+.title { font-size: 15px; font-weight: 600; fill: #222; }
+.sub { font-size: 11.5px; fill: #555; }
+.label { font-size: 11px; fill: #555; }
+.phaseNum { font-size: 11px; font-weight: 700; fill: #e08a3c; }
+.sectionTitle { font-size: 13px; font-weight: 700; fill: #222; }
+.edge { stroke: #888; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+.edgeRed { stroke: #c0392b; stroke-width: 1.5; fill: none; marker-end: url(#arrowRed); }
+</style>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="#888"/>
+</marker>
+<marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/>
+</marker>
+</defs>
+
+<rect width="1180" height="880" fill="#ffffff"/>
+
+<text x="40" y="38" class="sectionTitle" font-size="18">每日流水线 · ReAct 五阶段</text>
+<text x="40" y="58" class="sub">08:30 / 14:30 / 20:30 北京时间自动触发（任一成功后跳过余下）</text>
+
+<rect x="40" y="90" width="190" height="92" rx="10" class="boxAccent"/>
+<text x="58" y="112" class="phaseNum">PHASE 1</text>
+<text x="58" y="132" class="title">SCOUT 侦察</text>
+<text x="58" y="150" class="sub">Qwen 联网搜索</text>
+<text x="58" y="166" class="sub">找真实摩擦点，写日记</text>
+
+<path d="M230,136 L268,136" class="edge"/>
+
+<rect x="268" y="90" width="190" height="92" rx="10" class="boxAccent"/>
+<text x="286" y="112" class="phaseNum">PHASE 2</text>
+<text x="286" y="132" class="title">SPEC 设计</text>
+<text x="286" y="150" class="sub">DeepSeek-R1 推理</text>
+<text x="286" y="166" class="sub">先验证再建造（自包含+具体算法）</text>
+
+<path d="M458,136 L496,136" class="edge"/>
+
+<rect x="496" y="90" width="230" height="92" rx="10" class="boxAccent"/>
+<text x="514" y="112" class="phaseNum">PHASE 3</text>
+<text x="514" y="132" class="title">BUILD 构建</text>
+<text x="514" y="150" class="sub">DeepSeek-v4-pro，最多5次重试</text>
+<text x="514" y="166" class="sub">写代码 → 验证 → 失败则带错误重试</text>
+
+<path d="M726,136 L764,136" class="edge"/>
+
+<rect x="764" y="90" width="190" height="92" rx="10" class="boxAccent"/>
+<text x="782" y="112" class="phaseNum">PHASE 4</text>
+<text x="782" y="132" class="title">EVALUATE 评估</text>
+<text x="782" y="150" class="sub">语法/输出/浏览器/Critic</text>
+<text x="782" y="166" class="sub">Qwen 独立审查，嵌入BUILD循环</text>
+
+<path d="M954,136 L992,136" class="edge"/>
+
+<rect x="992" y="90" width="148" height="92" rx="10" class="boxAccent"/>
+<text x="1010" y="112" class="phaseNum">PHASE 5</text>
+<text x="1010" y="132" class="title">REFLECT</text>
+<text x="1010" y="150" class="sub">存日记+记忆</text>
+<text x="1010" y="166" class="sub">更新网站</text>
+
+<path d="M611,182 C611,220 496,220 496,182" class="edgeRed" fill="none"/>
+<text x="510" y="236" class="label" fill="#c0392b">最多5次：带具体失败原因重试</text>
+
+<rect x="40" y="270" width="350" height="150" rx="10" class="boxFail"/>
+<text x="60" y="296" class="sectionTitle" fill="#c0392b">5次都失败 → Rest Day</text>
+<text x="60" y="320" class="label">删除已生成的工具目录</text>
+<text x="60" y="340" class="label">写"今天莉莉在休息"日记 + 失败原因</text>
+<text x="60" y="360" class="label">不发布任何半成品工具</text>
+<text x="60" y="384" class="label" font-weight="600">失败原因写进日记，次日带修复重跑（工具目录判断，不被日记挡住）</text>
+
+<path d="M611,182 L611,230 L390,230 L390,270" class="edge" stroke-dasharray="3 3"/>
+
+<rect x="415" y="270" width="350" height="150" rx="10" class="box"/>
+<text x="435" y="296" class="sectionTitle">validate_tool() 检查链</text>
+<text x="435" y="320" class="label">1. 语法（ast.parse）</text>
+<text x="435" y="340" class="label">2. 浏览器兼容 + import检查</text>
+<text x="435" y="360" class="label">3. 运行 test_main.py</text>
+<text x="435" y="380" class="label">4. 输出质量/硬编码/未渲染</text>
+<text x="605" y="320" class="label">5. Mode3 无头浏览器验证</text>
+<text x="605" y="340" class="label">6. 两维质量评分</text>
+<text x="605" y="360" class="label">7. Critic审查(qwen3.7-max)</text>
+<text x="605" y="380" class="label">8. Win Rate对比</text>
+
+<path d="M859,182 L859,230 L590,230 L590,270" class="edge" stroke-dasharray="3 3"/>
+
+<path d="M1066,182 L1066,420" class="edge" stroke-dasharray="3 3"/>
+<rect x="790" y="270" width="350" height="150" rx="10" class="boxAccent"/>
+<text x="810" y="296" class="sectionTitle">通过 → 发布</text>
+<text x="810" y="320" class="label">保存工具到 02_Toolbox/</text>
+<text x="810" y="340" class="label">写真实日记（中英双语）</text>
+<text x="810" y="360" class="label">add_tool() 写入记忆</text>
+<text x="810" y="380" class="label">generate_site.py 重建网站</text>
+
+<line x1="40" y1="470" x2="1140" y2="470" stroke="#ddd8cc" stroke-width="1"/>
+
+<text x="40" y="505" class="sectionTitle" font-size="16">周进化 · 每周日</text>
+<text x="40" y="524" class="sub">读取过去7天的 tool_quality_ledger.jsonl，自我审查并改写工程规则</text>
+
+<rect x="40" y="550" width="200" height="100" rx="10" class="box"/>
+<text x="58" y="574" class="title" font-size="14">Reflection</text>
+<text x="58" y="594" class="sub">本周诚实自评</text>
+<text x="58" y="612" class="sub">成功率/失败模式</text>
+
+<path d="M240,600 L278,600" class="edge"/>
+
+<rect x="278" y="550" width="200" height="100" rx="10" class="box"/>
+<text x="296" y="574" class="title" font-size="14">Blindspot 分析</text>
+<text x="296" y="594" class="sub">类目失衡/套路重复</text>
+<text x="296" y="612" class="sub">下周解药建议</text>
+
+<path d="M478,600 L516,600" class="edge"/>
+
+<rect x="516" y="550" width="200" height="100" rx="10" class="box"/>
+<text x="534" y="574" class="title" font-size="14">改写工程规则</text>
+<text x="534" y="594" class="sub">lili_engineering.py</text>
+<text x="534" y="612" class="sub">LILI_ENGINEERING_LESSONS</text>
+
+<path d="M716,600 L754,600" class="edge"/>
+
+<rect x="754" y="550" width="200" height="100" rx="10" class="box"/>
+<text x="772" y="574" class="title" font-size="14">提案（需人工采纳）</text>
+<text x="772" y="594" class="sub">Open Source 推荐</text>
+<text x="772" y="612" class="sub">信息源提案</text>
+
+<path d="M954,600 L992,600" class="edge"/>
+
+<rect x="992" y="550" width="148" height="100" rx="10" class="box"/>
+<text x="1010" y="574" class="title" font-size="14">写报告</text>
+<text x="1010" y="594" class="sub">03_Evolution_Log/</text>
+<text x="1010" y="612" class="sub">+ 网站日志页</text>
+
+<rect x="40" y="690" width="1100" height="150" rx="10" class="box" stroke-dasharray="2 4"/>
+<text x="60" y="716" class="sectionTitle">2026-07 大改造：双引擎 + 按可靠性分流 + Mode3 浏览器验证</text>
+<text x="60" y="744" class="label">· 彻底移除 Gemini，改 Qwen（SCOUT+Critic）+ DeepSeek（SPEC-R1 / BUILD-v4-pro），跨厂商后备链，空响应重试</text>
+<text x="60" y="766" class="label">· super_lili_brain.py 2700行 → 拆 llm / prompts / validators / pipeline 四模块 + 薄入口壳</text>
+<text x="60" y="788" class="label">· 按可靠性分流：分析型工具走 Mode1/2（真实执行）；Mode3 用无头浏览器验证 DOM 真变（fail-open）</text>
+<text x="60" y="810" class="label">· SPEC 双闸：拒绝承诺外部语料/数据库；算法深度必须是具体机械过程，不是愿景</text>
+</svg>
+</body>
+</html>
