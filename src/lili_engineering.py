@@ -223,16 +223,23 @@ The tools that get used twice are the ones that:
 RULE 8 — INTERACTIVE HTML TOOLS (MODE 3)
 ═══════════════════════════════════════════════════════
 
-The tool runner now supports a third output mode: process() returns a
+The tool runner supports a third output mode: process() returns a
 complete HTML page. The HTML runs in a sandboxed iframe with full browser
 API access. This unlocks an entirely new class of tools.
 
-WHEN TO USE HTML MODE:
-  ✓ The tool needs to stay open and respond to user interaction
-  ✓ The tool involves sound, animation, or visual feedback
-  ✓ The tool is an ambient experience (something that runs in the background)
-  ✓ The tool involves a game, a companion, a ritual, or a creative toy
-  ✓ The Healing Inventions category — STRONGLY PREFER HTML MODE
+VERIFIED BY A REAL BROWSER (2026-07): every Mode 3 tool is now run in a
+headless browser during validation - the test input is typed in, controls
+are clicked, and the DOM must actually change. A tool whose JavaScript does
+nothing with input (static HTML, CSS-only toggles, hardcoded answers) is
+REJECTED by execution, not opinion. So Mode 3 must be GENUINELY interactive.
+
+WHEN TO USE HTML MODE (only when the value truly needs it):
+  ✓ Real-time visual manipulation — dragging, drawing, live canvas
+  ✓ Sound, animation, or continuous visual feedback (Web Audio, Canvas)
+  ✓ An ambient/generative experience that just runs (a clock, a soundscape)
+  ✓ A game, a companion, a ritual, or a creative toy
+  ✓ In-place editing where editing itself is the point
+  ✗ Do NOT wrap a text analysis in HTML just to look richer — see RULE 9.
 
 HEALING INVENTIONS MUST USE HTML MODE:
   The old pattern (text in → poetic sentence out) is retired.
@@ -261,19 +268,38 @@ HTML MODE ENGINEERING STANDARDS:
   ✗ NO localStorage for sensitive data
   ✗ NO tools that require a login or account
 
+HTML STRING-BUILDING (avoids the syntax errors that cause rest days):
+  ✓ Build the page with a RAW triple-quoted Jinja2 template: Template(r'''...''').
+    The leading r makes backslashes literal, so CSS content:'\\2014', JS regex
+    /\\d+/, and \\n in scripts do NOT trigger a Python "line continuation" error.
+  ✓ Compute data in Python first, then TEMPLATE.render(var=value).
+  ✗ NEVER wrap HTML-with-JavaScript in a Python f-string — JS braces {} collide
+    with f-string braces and break the file.
+
 
 ═══════════════════════════════════════════════════════
-RULE 9 — CHOOSE THE RIGHT MODE FOR EACH CATEGORY
+RULE 9 — CHOOSE THE MODE BY WHAT CAN BE RELIABLY BUILT AND VALIDATED
 ═══════════════════════════════════════════════════════
 
-  Healing Inventions    → MODE 3 (HTML interactive) — mandatory
-  Design Alchemy        → MODE 3 (HTML) preferred; MODE 2 (SVG) only if purely static
-  Education Evolution   → MODE 3 (HTML) for anything interactive; MODE 1 only for
-                          pure reference output (cheat sheets, glossaries)
-  Office Automation     → MODE 1 (text) — structured output for copy-paste
+Hard-won lesson (2026-07): one-shot generation of a Mode 3 tool that does
+REAL analysis of the user's input is unreliable. When the value is computing
+something from text, a Mode 1/2 tool is executed and judged on its ACTUAL
+output; the same logic wrapped in HTML renders a static-looking preview and
+gets rejected as "fake / does nothing with input." So route by reliability:
 
-  Decision rule: if the user needs to click, type, see feedback, or hear sound
-  → always MODE 3. Static SVG is acceptable only when the output IS the image.
+  >> The value is COMPUTING from the user's text (analyze, score, extract,
+     rank, diff, restructure, summarise, detect, compare parts of the input)
+     → MODE 1 (text) or MODE 2 (SVG). This is executed for real. Reliable.
+     Office Automation and most Education/Design analysis tools live here.
+
+  >> The value is genuinely INTERACTIVE or AMBIENT and cannot exist as
+     computed text/SVG (live canvas, real-time drag/draw, a running ambient
+     artifact, in-place editing, sound) → MODE 3. Browser-verified.
+     Healing Inventions and live Design toys live here.
+
+  Litmus test: "does the user paste text and get insights back?" → MODE 1/2.
+  When unsure, choose MODE 1/2 — a real computed result beats a pretty shell
+  that fakes it. Static SVG is right when the output IS the image.
 
 
 ═══════════════════════════════════════════════════════
@@ -792,7 +818,37 @@ Apply the Input Replacement Test to every sentence in the output:
 
 Every sentence that survives must contain a specific fact, decision, action,
 or insight derived directly from what the user gave you.
-10 sharp lines beat 40 padded lines. Density is value."""
+10 sharp lines beat 40 padded lines. Density is value.
+
+
+═══════════════════════════════════════════════════════
+RULE 21 — SELF-CONTAINED, CONCRETE, HONEST (the 2026-07 lessons)
+═══════════════════════════════════════════════════════
+
+The tool is ONE self-contained file: no database, no corpus, no pretrained
+model, no internet, no LLM at runtime. Design only within that reality.
+
+SELF-CONTAINMENT — never promise data the tool cannot contain:
+  ✗ "compare against a curated corpus of brand-voice exemplars"
+  ✗ "match against an industry benchmark / database of examples"
+  ✗ "use a trained model to classify tone"
+  These get faked at BUILD time and rejected as fundamentally fake.
+  ✓ Compute FROM the user's input: structure, patterns, ratios, positions,
+    frequency, consistency, relationships WITHIN the text they gave you.
+
+NO HALLUCINATED FACTS — the model does not reliably know and WILL invent:
+  ✗ syllable counts, etymology, dictionary definitions, dates, statistics.
+  ✓ Only assert what is measurable from the input itself.
+
+CONCRETE ALGORITHM, NOT ASPIRATION — the depth must be a procedure a
+programmer implements verbatim, and every step must run:
+  ✗ "structure the debate into insightful chapters" (aspiration → lazy build
+     that grabs the first sentence and hallucinates a title)
+  ✓ "split on speaker-turn markers; group consecutive same-speaker turns;
+     label each group by its 3 highest term-frequency words; flag a topic
+     shift where lexical overlap between adjacent turns drops below 0.2"
+  Implement EVERY step. Every distinct part of the input (a second speaker,
+  later paragraphs) must affect the output - never process only the start."""
 
 
 # ─────────────────────────────────────────────────────────────
