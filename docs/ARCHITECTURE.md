@@ -3,6 +3,9 @@
 > 工程说明文档 — 记录系统整体架构、数据流与关键文件职责。
 > 上次大改：2026-07-03/04（去 Gemini、Qwen+DeepSeek 双引擎、brain 拆模块、Mode 3 浏览器验证）。
 
+**可视化架构图**：[`architecture.html`](architecture.html)（规范图，改架构时同步更新）· 截图 [`assets/architecture.png`](assets/architecture.png)。
+本文是文字版，与上图互为对照。Super-Lili 是完全开放的自进化实验，架构公开。
+
 ---
 
 ## 触发层：GitHub Actions

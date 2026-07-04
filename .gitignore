@@ -20,9 +20,6 @@ demo_*/
 # Any HTML file landing directly in repo root is a stray tool-run artifact
 # (real site HTML lives under docs/ and 02_Toolbox/, never at root)
 /*.html
-# ...except the hand-maintained architecture diagram - Super-Lili is a fully
-# open self-evolution experiment, so its architecture is public.
-!/super_lili_workflow.html
 
 # Claude Code internals — never commit these
 .claude/
