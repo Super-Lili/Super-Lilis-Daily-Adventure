@@ -4,6 +4,7 @@
 > 上次大改：2026-07-03/04（去 Gemini、Qwen+DeepSeek 双引擎、brain 拆模块、Mode 3 浏览器验证）。
 
 **可视化架构图**：[`architecture.html`](architecture.html)（规范图，改架构时同步更新）· 截图 [`assets/architecture.png`](assets/architecture.png)。
+**能力边界发现录**：[`FINDINGS.md`](FINDINGS.md) — 实验确凿学到的可泛化结论（证据驱动）。
 本文是文字版，与上图互为对照。Super-Lili 是完全开放的自进化实验，架构公开。
 
 ---
