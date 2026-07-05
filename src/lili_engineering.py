@@ -854,45 +854,27 @@ programmer implements verbatim, and every step must run:
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-06-28
+# Last updated: 2026-07-05
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: Always include a main execution block.
-WHY: This week, several tools were "empty shells" as they defined functions but never called them, leading to zero output and build failures.
-HOW:
-if __name__ == "__main__":
-    # Call the primary function of the tool here
-    result = process_input(sys.argv) # Example
+RULE: Validate that output contains specific data from input
+WHY: Sixteen podcast chapter marker tools produced outputs with invented timestamps and chapter titles unrelated to the transcript provided.
+HOW: `assert any(word from input appears in output) or return explicit error: "Output does not reference input data"`
 
-RULE: Implement robust input validation and error handling.
-WHY: Tools frequently failed due to short or malformed input, or critical components like `---CODE---` sections being absent.
-HOW:
-if not input_data or len(input_data.strip()) < 50:
-    return "Error: Input too short or empty. Please provide more context."
-if "---CODE---" not in response_content:
-    return "Error: Missing ---CODE--- section."
+RULE: Every generate() function must return a constrained type
+WHY: Open-ended string generation was the root cause of template filler ("Every steel speaks of...") across all failed tools.
+HOW: `def generate(input) -> Report | Score | Table | ErrorResult: # never -> str`
 
-RULE: Ensure all outputs are dynamic, context-aware, and data-driven.
-WHY: A significant number of tools produced generic output regardless of input, leading to critic rejections and a perception of being "fake/hardcoded."
-HOW:
-# Use NLP for contextual analysis, not just word counts
-doc = nlp(user_text)
-if doc.ents:
-    return f"Detected key entities: {[ent.text for ent in doc.ents]}. This suggests a focus on..."
+RULE: Include at least one concrete example in the docstring of every public function
+WHY: Brand Guard passed because its hex-to-RGB function had explicit examples; podcast tools failed because their docstrings described intent without showing actual input/output pairs.
+HOW: Include a triple-backtick example block in every function docstring showing one real call with expected return value.
 
-RULE: All diagnostic or analytical tools must provide actionable insights.
-WHY: Tools often identified problems but failed to offer "EXACT REPAIR INSTRUCTIONS" or concrete steps for improvement, making them less useful.
-HOW:
-# Instead of "Output is generic," suggest:
-if specificity_score < 0.3:
-    feedback = "Recommendation: Increase use of specific nouns, quantitative data, and named entities. Consider elaborating on key concepts like [concept A] and [concept B]."
-    return feedback
+RULE: All output must pass through a structural validator before returning
+WHY: Multiple tools this week returned syntactically valid but semantically empty outputs that the critic caught but the code didn't self-check.
+HOW: `def validate_output(output: Any) -> bool: # check for minimum substantive content, presence of input-derived data, non-empty sections`
 
-RULE: Every tool must adhere to a minimum output length and structured format.
-WHY: Some tools generated extremely short or unstructured outputs, failing to provide substantive value or proper presentation.
-HOW:
-output = f"## Analysis Report\n\n### Summary\n{summary_text}\n\n### Detailed Observations\n{observation_list}\n\n### Recommendations\n{recommendation_list}"
-if len(output) < 80:
-    raise ValueError("Output too short. Please expand on analysis.")
+RULE: Use tabulate for all multi-row structured output
+WHY: Raw text blob outputs were flagged by the critic repeatedly; structured tables force explicit column definition and make emptiness visible.
+HOW: `from tabulate import tabulate; return tabulate(rows, headers, tablefmt="grid")`
 """

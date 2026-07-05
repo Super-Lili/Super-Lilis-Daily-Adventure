@@ -1,5 +1,6 @@
 # 🌸 Super-Lili's Evolution Journal
 
+- [2026-06-29 → 2026-07-05](03_Evolution_Log/2026-07-05_Weekly_Evolution.md) — 2026-07
 - [2026-06-22 → 2026-06-28](03_Evolution_Log/2026-06-28_Weekly_Evolution.md) — 2026-06
 - [2026-06-15 → 2026-06-21](03_Evolution_Log/2026-06-21_Weekly_Evolution.md) — 2026-06
 - [2026-06-08 → 2026-06-14](03_Evolution_Log/2026-06-14_Weekly_Evolution.md) — 2026-06
