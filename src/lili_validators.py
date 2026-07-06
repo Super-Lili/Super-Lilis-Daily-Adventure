@@ -726,6 +726,15 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             # gate and let the LLM Critic decide, so a browser flake never causes a false reject.
             ran, changed, detail = _browser_interactivity_check(output, demo_input)
             if ran and not changed:
+                # Log to the quality ledger so weekly evolution SEES these failures -
+                # they happen before the scoring step and were previously invisible to it.
+                _append_quality_ledger(
+                    tool_name=description or str(skill_dir),
+                    category=str(skill_dir).split("/")[-2] if skill_dir else "",
+                    eng_score=1, warm_score=1,
+                    reason=f"Browser ground-truth: DOM did not react to input ({detail})",
+                    passed=False, format_type=format_type, audience=audience,
+                )
                 return False, (
                     "Browser ground-truth check: the tool's DOM did NOT change when the test "
                     f"input was entered and controls were clicked ({detail}). The JavaScript does "

@@ -22,6 +22,9 @@
 - **证据**：质量账本 2026-06-19~07-03 期间 Mode 3 尝试的 Critic 拒绝原因高度集中于
   "fundamentally fake / does nothing with input"；同一模型在 Mode 1/2（真实运行
   `process(测试输入)` 并评审真实输出）下无此模式。
+  **2026-07-06 实战确认**：Playwright 地面真值门首次开火——真实填入输入、点击控件后
+  以执行证据拒绝（fields_filled=1, text_changed=False, nodes 21->21），deepseek-v4-pro
+  在全部反伪造规则生效的情况下仍产出静态假交互工具，被执行证据而非 LLM 猜测拦下。
 - **应对**：① 按验证能力分流——分析型工具强制走可执行验证的 Mode 1/2；② 给 Mode 3 建立
   地面真值：Playwright 无头浏览器真实运行、喂输入、断言 DOM 变化（fail-open 设计，
   浏览器抖动不误判）。
