@@ -1,7 +1,7 @@
 # CLAUDE.md — Super-Lili Project Memory
 
 > Written for the Claude agent picking up this project. Read this first.
-> Last updated: 2026-06-05 · Updated monthly.
+> Last updated: 2026-07-06 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
 
 ---
 
@@ -120,7 +120,35 @@ Phase 5 REFLECT — save_diary(), update_readme(), add_tool() to memory, mark_is
 - Use ASCII equivalents: `-` for dashes, `[OK]`/`[NO]` for checkmarks, `->` for arrows
 - PostToolUse hook auto-checks syntax after every edit (see `.claude/settings.local.json`)
 
-**PostToolUse syntax check hook**: configured in `.claude/settings.local.json` — runs `ast.parse()` on every Edit/Write to `super_lili_brain.py`, surfaces `SYNTAX ERROR` immediately before push
+**PostToolUse syntax check hook**: configured in `.claude/settings.local.json` — runs `ast.parse()` on every Edit/Write to any `src/*.py`, surfaces `SYNTAX ERROR` immediately before push
+
+### Phase 9 — Model Sovereignty & Ground Truth (2026-07-03 to 2026-07-06)
+
+The biggest overhaul since ReAct. Full details in `docs/ARCHITECTURE.md`; evidence-backed lessons in `docs/FINDINGS.md` (F-001 ~ F-010).
+
+**Gemini fully removed** (quota exhaustion + paid upgrade never completed). New model roles:
+| Phase | Model | Notes |
+|-------|-------|-------|
+| SCOUT | `qwen-plus` (DashScope web search via `extra_body={"enable_search": True}`, never `tools=[]`) | DeepSeek fallback |
+| SPEC | `deepseek-reasoner` (R1) | falls back to v4-pro |
+| BUILD | `deepseek-v4-pro` | `deepseek-chat` alias actually resolves to v4-flash (billing-confirmed) |
+| Critic | `qwen3.7-max` | independent of BUILD model — breaks self-grading echo chamber |
+| Weekly evolution / Issues | `deepseek-v4-pro` | |
+
+Cross-provider fallback chain (R1 → v4-pro → qwen3.7-max); empty responses are retried (DeepSeek empties are transient, unlike Gemini where empty = quota gone).
+
+**Module split**: `super_lili_brain.py` (2700 lines) → `lili_llm.py` / `lili_prompts.py` / `lili_validators.py` / `lili_pipeline.py` + 49-line entry shim. Actions entry unchanged.
+
+**Validation stack (the core theme: every gate needs ground truth)**:
+- Reliability routing: analysis tools ("paste text, get insights") → Mode 1/2 (executed for real); Mode 3 only for genuinely interactive/ambient concepts
+- Mode 3 ground truth: Playwright headless browser fills input, clicks controls, asserts DOM changed. Fail-open (browser flake never causes false rest day). First live catch: 2026-07-06
+- validate_spec new gates: self-containment (no corpus/database/pretrained promises), concrete algorithm (named mechanical steps, not aspirations)
+- BUILD anti-hallucination rules: no external facts, no invented entries to complete a shape, graceful degradation mandatory (marker absent → paragraphs → sentences → chunks, never refuse)
+- Critique-patch loop: retries repair previous code (PATCH MODE) instead of re-rolling from scratch; truncation failures clear prev_code
+
+**Test suite**: `tests/` (43 unittest tests, openai mocked, zero network) + `lili_tests.yml` CI on every push. Feedback loop: hours → seconds.
+
+**FINDINGS.md**: evidence-backed record of AI capability boundaries (docs/FINDINGS.md). Every entry must name the specific models — reconstruct attribution from commit/billing history, never from memory of the current stack.
 
 ---
 
@@ -130,7 +158,7 @@ Phase 5 REFLECT — save_diary(), update_readme(), add_tool() to memory, mark_is
 - **Mode 1**: `process(text)` returns plain text
 - **Mode 2**: `process(text)` returns SVG string
 - **Mode 3**: `process(text)` returns full HTML page (runs in sandboxed iframe — Web Audio, Canvas, localStorage all available)
-- **Direction**: all new tools default to Mode 3. Healing Inventions must be Mode 3.
+- **Direction (2026-07)**: route by validation reliability — analysis tools go Mode 1/2 (executed for real); Mode 3 reserved for genuinely interactive/ambient concepts (browser-verified via Playwright). See FINDINGS F-001/F-002.
 
 ### Category System
 - 🎨 Design Alchemy
@@ -244,5 +272,10 @@ Ideas discussed and consciously deferred. Revisit when conditions are right.
 - **Unicode in Python source causes SyntaxError on GitHub Actions**: em-dash, en-dash, checkmarks in f-strings/docstrings break Python 3.11. Fixed: replaced all with ASCII equivalents. Local Python 3.13 is stricter and catches these too.
 - **Missing closing triple-quote after f-string edit**: adding lines inside an f-string without preserving the closing `"""` silently breaks the entire function and the one after it. Always verify `ast.parse()` passes after edits.
 - **validate_spec thresholds were too strict**: fields with multi-line values got truncated to <20 chars by single-line parser, causing false rejections. Fixed: relaxed thresholds + multi-line field parser.
-- **API quota exhausted from repeated manual triggers**: each run consumes 6-8 Gemini calls. Triggering 5+ times in a day depletes the free tier daily quota. Wait for quota reset (midnight UTC) before retrying.
-- **Rest day diary blocks rerun**: if `save_rest_day()` runs and pushes a diary file, subsequent triggers skip because diary exists. Must delete the file from GitHub before retriggering.
+- **API quota exhausted from repeated manual triggers** (Gemini era, historical): each run consumed 6-8 Gemini calls; 5+ triggers/day depleted the free tier. Root cause of the 2026-06-19 switch away from Gemini.
+- **Rest day diary blocks rerun** (fixed): the daily workflow skip check now reads the tool directory (`find 02_Toolbox`), not the diary — a rest-day diary no longer blocks later same-day triggers, and a successful run overwrites it.
+- **One empty DeepSeek response treated as model-dead**: Gemini-era `break` logic caused two avoidable rest days on 2026-07-03. DeepSeek empties are transient — retry with backoff. See FINDINGS F-003.
+- **Prompt examples become executable specs**: suggesting "syllable count, etymology" as differentiation examples made the model fabricate wrong syllable counts. Every example in feedback must be safe to execute literally. See F-004.
+- **One-sided prohibitions create pendulums**: banning fabrication (14:30) produced polite refusal to work (20:30 same day). Every "never X" must name the correct middle state (graceful degradation). See F-010.
+- **Browser-check rejections were invisible to evolution**: they returned before the scoring step, so never reached the quality ledger. Fixed 2026-07-06 — now logged with probe detail.
+- **Findings must name models from commit/billing history, not memory**: attribution written from the current stack fabricated history (claimed Qwen was the June Critic; it arrived 2026-07-03). Owner caught it.
