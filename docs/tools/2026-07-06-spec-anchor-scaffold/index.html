@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Urban Respite Weave · Super-Lili</title>
+  <title>Spec Anchor Scaffold · Super-Lili</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -674,9 +674,9 @@ a { color: inherit; text-decoration: none; }
 
 <div class="detail-hero">
   <div class="container">
-    <div class="detail-eyebrow">Healing</div>
-    <h1>Urban Respite Weave</h1>
-    <div class="detail-meta">2026-05-29</div>
+    <div class="detail-eyebrow">Office</div>
+    <h1>Spec Anchor Scaffold</h1>
+    <div class="detail-meta">2026-07-06</div>
   </div>
 </div>
 
@@ -685,39 +685,114 @@ a { color: inherit; text-decoration: none; }
 
     <section class="detail-section">
       <div class="detail-label">What it does</div>
-      <p class="description-text">This tool generates an interactive HTML app that provides a minimalist visual and ambient soundscape to help users find a moment of calm amidst urban sensory overload. *(link could not be verified — [🔍 search for this story](https://www.google.com/search?q=reflections.live/articles/psychological-toll-of-sensory-overload-in-cities))*</p>
-      <a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Healing Inventions/2026-05-29_Urban_Respite_Weave/main.py" target="_blank" rel="noopener">View Source &rarr;</a>
+      <p class="description-text">A minimal, reusable Python scaffold that validates a tool’s input parsing, output structure, and graceful degradation path—before generating any UI or logic.</p>
+      <a class="btn btn-dark" href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/02_Toolbox/Office Automation/2026-07-06_Spec_Anchor_Scaffold/main.py" target="_blank" rel="noopener">View Source &rarr;</a>
     </section>
 
     <section class="detail-section">
       <div class="detail-label">Dependencies</div>
-      <ul class="req-list"><li>- Python 3.8+</li><li>- Standard library only for core logic.</li><li>- The output is a self-contained HTML file (MODE 3).</li></ul>
+      <ul class="req-list"><li style='color:#aaa;font-style:italic;list-style:none;'>None — runs entirely in browser</li></ul>
     </section>
 
     <section class="detail-section">
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div class="prerendered-app" style="margin-top:8px">
-  <iframe id="app-frame"
-          sandbox="allow-scripts allow-same-origin"
-          style="width:100%;min-height:540px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block"
-          title="Interactive tool"></iframe>
-  <p style="margin-top:10px;font-size:0.8rem;color:#aaa;text-align:center">
-    ✨ Interactive app — runs entirely in your browser
-  </p>
+<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your meeting notes, task list, or work text here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 <script>
-  (function() {
-    const frame = document.getElementById('app-frame');
-    frame.srcdoc = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Urban Respite Weave</title>\n    <style>\n        body {\n            margin: 0;\n            overflow: hidden;\n            display: flex;\n            flex-direction: column;\n            align-items: center;\n            justify-content: center;\n            min-height: 100vh;\n            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;\n            background: linear-gradient(135deg, hsl(113, 55%, 76%) 0%, hsl(113, 55%, 70%) 100%);\n            transition: background 5s ease-in-out;\n            color: #333;\n        }\n        .container {\n            position: relative;\n            width: 85%;\n            max-width: 650px;\n            height: 65vh;\n            background: rgba(255, 255, 255, 0.1);\n            border-radius: 20px;\n            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);\n            backdrop-filter: blur(8px);\n            -webkit-backdrop-filter: blur(8px);\n            border: 1px solid rgba(255, 255, 255, 0.3);\n            display: flex;\n            flex-direction: column;\n            align-items: center;\n            justify-content: center;\n            padding: 25px;\n            overflow: hidden;\n            box-sizing: border-box;\n        }\n        .message {\n            font-size: 1.3em;\n            text-align: center;\n            margin-bottom: 25px;\n            opacity: 0.8;\n            pointer-events: none;\n            position: relative;\n            z-index: 2;\n            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);\n            color: #444;\n        }\n        .visual-canvas {\n            width: 100%;\n            height: 100%;\n            border-radius: 15px;\n            background: transparent;\n            position: absolute;\n            top: 0;\n            left: 0;\n            z-index: 0;\n        }\n        .controls {\n            position: relative;\n            z-index: 1;\n            margin-top: 25px;\n            display: flex;\n            gap: 12px;\n            flex-wrap: wrap;\n            justify-content: center;\n        }\n        button {\n            background-color: rgba(255, 255, 255, 0.35);\n            border: 1px solid rgba(255, 255, 255, 0.5);\n            padding: 11px 18px;\n            border-radius: 9px;\n            cursor: pointer;\n            font-size: 0.95em;\n            color: #333;\n            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;\n            backdrop-filter: blur(10px);\n            -webkit-backdrop-filter: blur(10px);\n            box-shadow: 0 2px 5px rgba(0,0,0,0.08);\n        }\n        button:hover {\n            background-color: rgba(255, 255, 255, 0.5);\n            transform: translateY(-1px);\n            box-shadow: 0 4px 10px rgba(0,0,0,0.12);\n        }\n        button:active {\n            transform: translateY(0);\n            box-shadow: 0 1px 3px rgba(0,0,0,0.05);\n        }\n        .current-status-label {\n            font-size: 0.9em;\n            margin-top: 12px;\n            opacity: 0.7;\n            color: #555;\n            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);\n            position: relative;\n            z-index: 1;\n            min-width: 120px; /* To prevent jumping when text changes */\n            text-align: center;\n        }\n        /* Responsive adjustments */\n        @media (max-width: 768px) {\n            .container {\n                width: 95%;\n                height: 75vh;\n                padding: 15px;\n            }\n            .message {\n                font-size: 1.1em;\n                margin-bottom: 15px;\n            }\n            button {\n                padding: 9px 14px;\n                font-size: 0.88em;\n            }\n            .current-status-label {\n                font-size: 0.85em;\n                margin-top: 10px;\n            }\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <canvas id=\"visualCanvas\" class=\"visual-canvas\"></canvas>\n        <div class=\"message\" id=\"introMessage\">\n            A quiet moment, woven just for you.\n        </div>\n        <div class=\"controls\">\n            <button id=\"toggleSoundButton\">Start Sound</button>\n            <button id=\"changeThemeButton\">Change Theme</button>\n            <div class=\"current-status-label\" id=\"statusLabel\">Sound off.</div>\n        </div>\n    </div>\n\n    <script>\n        const canvas = document.getElementById('visualCanvas');\n        const ctx = canvas.getContext('2d');\n        const statusLabel = document.getElementById('statusLabel');\n        const introMessage = document.getElementById('introMessage');\n        const toggleSoundButton = document.getElementById('toggleSoundButton');\n        const changeThemeButton = document.getElementById('changeThemeButton');\n\n        let animationFrameId;\n        let audioContext;\n        let oscillators = [];\n        let gains = [];\n        let isSoundPlaying = false;\n        let currentThemeConfig = {\"visual_colors\": [\"#FFECB3\", \"#FFCC80\", \"#FFB74D\", \"#FFA726\", \"#FB8C00\"], \"background_gradient_start\": \"hsl(113, 55%, 76%)\", \"background_gradient_end\": \"hsl(113, 55%, 70%)\", \"sounds\": [{\"freq\": 130, \"gain\": 0.06, \"type\": \"sine\", \"label\": \"Mellow Tone\"}, {\"freq\": 210, \"gain\": 0.03, \"type\": \"triangle\", \"label\": \"Harmonic Glide\"}], \"visual_type\": \"gradient_shift\"}; // Initial config from Python\n\n        // --- Utility Functions ---\n        function resizeCanvas() {\n            canvas.width = canvas.offsetWidth;\n            canvas.height = canvas.offsetHeight;\n        }\n\n        const lerpColor = (c1, c2, t_val) => {\n            const hexToRgb = hex => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];\n            const rgbToHex = rgb => '#' + rgb.map(v => Math.round(Math.min(255, Math.max(0, v))).toString(16).padStart(2, '0')).join('');\n            const r1 = hexToRgb(c1), r2 = hexToRgb(c2);\n            const r = r1.map((v, i) => v + (r2[i] - v) * t_val);\n            return rgbToHex(r);\n        };\n\n        // --- Visual Animations ---\n        let gradientOffset = 0;\n        function drawGradientShift() {\n            ctx.clearRect(0, 0, canvas.width, canvas.height);\n            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);\n\n            const colors = currentThemeConfig.visual_colors;\n            if (!colors || colors.length < 2) return; // Ensure enough colors\n\n            const t = (gradientOffset % 1);\n            const idx1 = Math.floor(gradientOffset) % colors.length;\n            const idx2 = (idx1 + 1) % colors.length;\n            const idx3 = (idx1 + 2) % colors.length; // For smoother transition with three points\n\n            grad.addColorStop(0, lerpColor(colors[idx1], colors[idx2], t));\n            grad.addColorStop(1, lerpColor(colors[idx2], colors[idx3], t));\n\n            ctx.fillStyle = grad;\n            ctx.fillRect(0, 0, canvas.width, canvas.height);\n            gradientOffset += 0.0005; // Speed of shift\n        }\n\n        let ripplePoints = [];\n        let frameCounter = 0;\n        function drawRippleMotion() {\n            ctx.clearRect(0, 0, canvas.width, canvas.height);\n\n            // Add new ripple point occasionally\n            if (frameCounter % 200 === 0) {\n                ripplePoints.push({\n                    x: Math.random() * canvas.width,\n                    y: Math.random() * canvas.height,\n                    radius: 0,\n                    alpha: 1,\n                    color: currentThemeConfig.visual_colors[Math.floor(Math.random() * currentThemeConfig.visual_colors.length)]\n                });\n            }\n\n            for (let i = 0; i < ripplePoints.length; i++) {\n                const p = ripplePoints[i];\n                p.radius += 0.5; // Speed of ripple expansion\n                p.alpha -= 0.005; // Fade out\n                if (p.alpha <= 0) {\n                    ripplePoints.splice(i, 1);\n                    i--;\n                    continue;\n                }\n\n                ctx.beginPath();\n                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);\n                ctx.strokeStyle = `rgba(${parseInt(p.color.slice(1,3), 16)}, ${parseInt(p.color.slice(3,5), 16)}, ${parseInt(p.color.slice(5,7), 16)}, ${p.alpha})`;\n                ctx.lineWidth = 2;\n                ctx.stroke();\n            }\n            frameCounter++;\n        }\n\n        function animate() {\n            if (currentThemeConfig.visual_type === \"gradient_shift\") {\n                drawGradientShift();\n            } else if (currentThemeConfig.visual_type === \"ripple\") {\n                drawRippleMotion();\n            }\n            animationFrameId = requestAnimationFrame(animate);\n        }\n\n        // --- Audio Management ---\n        function initAudioContext() {\n            if (!audioContext || audioContext.state === 'closed') {\n                audioContext = new (window.AudioContext || window.webkitAudioContext)();\n            }\n        }\n\n        function createOscillatorSound(soundConfig) {\n            const oscillator = audioContext.createOscillator();\n            const gainNode = audioContext.createGain();\n\n            oscillator.type = soundConfig.type || 'sine';\n            oscillator.frequency.setValueAtTime(soundConfig.freq, audioContext.currentTime);\n            gainNode.gain.setValueAtTime(soundConfig.gain, audioContext.currentTime);\n\n            oscillator.connect(gainNode);\n            gainNode.connect(audioContext.destination);\n            oscillators.push(oscillator);\n            gains.push(gainNode);\n        }\n\n        function startSound() {\n            if (isSoundPlaying) return; // Prevent multiple starts\n\n            initAudioContext();\n            if (audioContext.state === 'suspended') {\n                audioContext.resume();\n            }\n\n            oscillators = []; // Clear previous oscillators\n            gains = [];       // Clear previous gains\n\n            currentThemeConfig.sounds.forEach(sound => createOscillatorSound(sound));\n\n            oscillators.forEach(osc => osc.start());\n            isSoundPlaying = true;\n            updateStatusLabel(\"Playing: \" + currentThemeConfig.sounds.map(s => s.label).join(\", \"));\n            toggleSoundButton.textContent = \"Pause Sound\";\n            introMessage.style.opacity = '0'; // Fade out message on first interaction\n        }\n\n        function stopSound() {\n            if (!isSoundPlaying) return;\n\n            oscillators.forEach(osc => osc.stop());\n            isSoundPlaying = false;\n            updateStatusLabel(\"Sound paused.\");\n            toggleSoundButton.textContent = \"Start Sound\";\n            // Clean up AudioContext if no longer needed to free resources\n            if (audioContext && audioContext.state !== 'closed') {\n                audioContext.close().then(() => audioContext = null);\n            }\n        }\n\n        function updateStatusLabel(text) {\n            statusLabel.textContent = text;\n        }\n\n        // --- Theme Changing ---\n        const availableThemes = [\"forest\", \"ocean\", \"rain\", \"sunrise\", \"dusk\"];\n        let currentThemeIndex = -1; // -1 for initial default or random theme\n\n        // Replicate _generate_gradient_colo logic in JS for client-side theme changes\n        const generateHarmoniousBgColors = () => {\n            const h = Math.floor(Math.random() * 360);\n            const s = Math.floor(Math.random() * (60 - 30 + 1)) + 30; // 30-60\n            const l1 = Math.floor(Math.random() * (85 - 70 + 1)) + 70; // 70-85\n            const l2 = Math.floor(Math.random() * (75 - 60 + 1)) + 60; // 60-75\n            return [`hsl(${h}, ${s}%, ${l1}%)`, `hsl(${h}, ${s}%, ${l2}%)`];\n        };\n\n        function changeTheme() {\n            // Cycle through available themes\n            currentThemeIndex = (currentThemeIndex + 1) % availableThemes.length;\n            const newThemeName = availableThemes[currentThemeIndex];\n\n            // Simulate getting new configuration.\n            // 'palettes' and 'soundscapes' variables are embedded from Python's module-level definitions.\n            const [newBgStart, newBgEnd] = generateHarmoniousBgColors();\n\n            const newConfig = {\n                visual_colors: palettes[newThemeName],\n                background_gradient_start: newBgStart,\n                background_gradient_end: newBgEnd,\n                sounds: soundscapes[newThemeName],\n                visual_type: Math.random() < 0.5 ? \"ripple\" : \"gradient_shift\"\n            };\n            \n            document.body.style.background = `linear-gradient(135deg, ${newBgStart} 0%, ${newBgEnd} 100%)`;\n\n            currentThemeConfig = newConfig;\n            if (isSoundPlaying) {\n                stopSound(); // Stop current sounds gracefully\n                startSound(); // Start new sounds with new config\n            }\n            updateStatusLabel(`Theme: ${newThemeName.charAt(0).toUpperCase() + newThemeName.slice(1)}`);\n            introMessage.style.opacity = '0'; // Fade out message on first interaction\n        }\n\n        // --- Event Listeners and Initial Setup ---\n        window.addEventListener('resize', resizeCanvas);\n        toggleSoundButton.addEventListener('click', () => {\n            if (isSoundPlaying) {\n                stopSound();\n            } else {\n                startSound();\n            }\n        });\n        changeThemeButton.addEventListener('click', changeTheme);\n\n        resizeCanvas();\n        animate();\n        updateStatusLabel(\"Sound off.\"); // Initial label state\n        // Initial theme is loaded from Python config, currentThemeIndex is -1.\n        // First click on Change Theme will apply the first theme in availableThemes.\n\n        // Pre-define palettes and soundscapes in JS for changeTheme to access\n        // These are now correctly embedded from the module-level Python dictionaries\n        const palettes = {json.dumps(_PALETTES)};\n        const soundscapes = {json.dumps(_SOUNDSCAPES)};\n\n    <\/script>\n</body>\n</html>";
-    frame.addEventListener('load', function() {
-      try {
-        const h = frame.contentDocument.body.scrollHeight;
-        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
-      } catch(e) {}
-    });
-  })();
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n\"\"\"Spec Anchor Scaffold - validate a Lili tool's source code for runtime behavior.\nRequirements: standard library only.\n\"\"\"\n\nimport re\nimport builtins\nfrom typing import Set, Tuple, Optional, Any\n\n_SAFE_NAMES = (\n    'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'bytearray', 'bytes',\n    'callable', 'chr', 'classmethod', 'complex', 'delattr', 'dict', 'dir',\n    'divmod', 'enumerate', 'filter', 'float', 'format', 'frozenset',\n    'getattr', 'globals', 'hasattr', 'hash', 'hex', 'id', 'int',\n    'isinstance', 'issubclass', 'iter', 'len', 'list', 'locals', 'map',\n    'max', 'memoryview', 'min', 'next', 'object', 'oct', 'ord', 'pow',\n    'print', 'property', 'range', 'repr', 'reversed', 'round', 'set',\n    'setattr', 'slice', 'sorted', 'staticmethod', 'str', 'sum', 'super',\n    'tuple', 'type', 'vars', 'zip',\n    'Exception', 'ValueError', 'TypeError', 'IndexError', 'KeyError',\n    'ImportError', 'AttributeError', 'ArithmeticError', 'ZeroDivisionError',\n    'OverflowError', 'FloatingPointError', 'RuntimeError', 'NotImplementedError',\n    'MemoryError', 'RecursionError', 'StopIteration', 'SystemExit',\n    'True', 'False', 'None'\n)\nSAFE_BUILTINS = {n: getattr(builtins, n) for n in _SAFE_NAMES if hasattr(builtins, n)}\n\nFILLER_REGEX = re.compile(\n    r'\\\\bhardcoded\\\\b|\\\\bsample\\\\b|\\\\blorem\\\\sipsum\\\\b', re.IGNORECASE\n)\n\ndef tokenize(text: str) -> Set[str]:\n    \"\"\"Lowercase, strip punctuation, return set of words.\"\"\"\n    return set(re.findall(r'\\\\b\\\\w+\\\\b', text.lower()))\n\ndef jaccard_similarity(set1: Set[str], set2: Set[str]) -> float:\n    if not set1 and not set2:\n        return 1.0\n    union = set1 | set2\n    if not union:\n        return 0.0\n    return len(set1 & set2) / len(union)\n\ndef compile_and_extract(src: str) -> Tuple[bool, Optional[Any], str]:\n    try:\n        code = compile(src, '<string>', 'exec')\n    except Exception as e:\n        return False, None, f\"Compilation error: {e}\"\n    namespace: dict = {'__builtins__': SAFE_BUILTINS}\n    try:\n        exec(code, namespace)\n    except Exception as e:\n        return False, None, f\"Execution error: {e}\"\n    func = namespace.get('process')\n    if not callable(func):\n        return False, None, \"No callable 'process' function found\"\n    return True, func, \"\"\n\ndef has_filler(text: str) -> bool:\n    return bool(FILLER_REGEX.search(text))\n\ndef process(text: str) -> str:\n    \"\"\"Validate a Lili tool's source code for runtime behaviour.\"\"\"\n    if not text.strip():\n        return (\"PARSER CHECK: FAIL - empty source code\\\\n\"\n                \"STATIC OUTPUT TEST: SKIPPED\\\\n\"\n                \"INPUT DEPENDENCE SCORE: N/A\\\\n\"\n                \"FALLBACK/ERROR HANDLING: SKIPPED\\\\n\"\n                \"FINAL VERDICT: FAIL\")\n\n    ok, func, err = compile_and_extract(text)\n    if not ok:\n        return (f\"PARSER CHECK: FAIL\\\\n- {err}\\\\n\"\n                \"STATIC OUTPUT TEST: SKIPPED (compilation failed)\\\\n\"\n                \"INPUT DEPENDENCE SCORE: N/A\\\\n\"\n                \"FALLBACK/ERROR HANDLING: SKIPPED\\\\n\"\n                \"FINAL VERDICT: FAIL\")\n\n    test_inputs = [\n        \"\",\n        \"hello world this is a test\",\n        \"a different test with unique words like aurora and cascade\"\n    ]\n    results = []  # (idx, inp, [out1, out2], [exc1, exc2])\n    for idx, inp in enumerate(test_inputs):\n        outs = []\n        excs = []\n        for _ in range(2):\n            try:\n                o = func(inp)\n                outs.append(o)\n                excs.append(None)\n            except Exception as e:\n                outs.append(f\"EXCEPTION: {e}\")\n                excs.append(str(e))\n        results.append((idx, inp, outs, excs))\n\n    # non-determinism detection\n    non_det = any(\n        (e1 is None and e2 is None and o1 != o2)\n        for _, _, (o1, o2), (e1, e2) in results\n    )\n\n    # static output test\n    first_ok = [outs[0] for _, _, outs, excs in results if excs[0] is None]\n    if len(first_ok) >= 2 and all(o == first_ok[0] for o in first_ok[1:]):\n        static_pass = False\n        static_detail = \"all successful inputs produced identical output\"\n    else:\n        static_pass = True\n        static_detail = \"outputs differ across inputs\"\n\n    # input dependence score (Jaccard)\n    jac_scores = []\n    for _, inp, outs, excs in results:\n        if excs[0] is None:\n            jac_scores.append(jaccard_similarity(tokenize(inp), tokenize(outs[0])))\n    if jac_scores:\n        avg_jac = sum(jac_scores) / len(jac_scores)\n        flag = \"HIGH\" if avg_jac > 0.3 else \"MEDIUM\" if avg_jac > 0.1 else \"LOW\"\n    else:\n        avg_jac = None\n\n    # fallback / error detection\n    any_exc = any(any(e for e in excs) for _, _, _, excs in results)\n    filler_found = any(\n        has_filler(outs[0]) for _, _, outs, excs in results if excs[0] is None\n    )\n    fallback_detected = False\n    if len(first_ok) >= 2 and all(o == first_ok[0] for o in first_ok[1:]):\n        common = first_ok[0]\n        if len(common) < 20:\n            all_inp_words = set()\n            for _, inp, _, _ in results:\n                all_inp_words.update(tokenize(inp))\n            low_common = common.lower()\n            if not any(w in low_common for w in all_inp_words):\n                fallback_detected = True\n\n    fallback_pass = not (any_exc or filler_found or fallback_detected)\n\n    # build report with bullet points\n    lines = []\n    lines.append(\"PARSER CHECK: PASS\")\n    lines.append(f\"STATIC OUTPUT TEST: {'PASS' if static_pass else 'FAIL'}\")\n    lines.append(f\"- {static_detail}\")\n    if non_det:\n        lines.append(\"- Non-determinism detected (same input gave different outputs)\")\n\n    if avg_jac is not None:\n        lines.append(f\"INPUT DEPENDENCE SCORE: {avg_jac:.3f} ({flag})\")\n    else:\n        lines.append(\"INPUT DEPENDENCE SCORE: N/A (no successful calls)\")\n\n    lines.append(f\"FALLBACK/ERROR HANDLING: {'PASS' if fallback_pass else 'FAIL'}\")\n    if any_exc:\n        lines.append(\"- Exceptions occurred during process calls\")\n        for idx, _, outs, excs in results:\n            errs = [e for e in excs if e]\n            if errs:\n                lines.append(f\"  Input {idx+1}: {', '.join(errs)}\")\n    if filler_found:\n        lines.append(\"- Filler phrase detected ('hardcoded', 'sample', etc.)\")\n    if fallback_detected:\n        lines.append(\"- Fallback string detected (short identical output with no input words)\")\n\n    final_pass = static_pass and fallback_pass\n    lines.append(f\"FINAL VERDICT: {'PASS' if final_pass else 'FAIL'}\")\n\n    return \"\\\\n\".join(lines)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    def _cli_main():\n        print(\"Spec Anchor Scaffold: run with USER_INPUT environment variable.\")\n    _cli_main()";
+const DEMO_INPUT = "Meeting notes 14:00 Mon: Q3 review. Revenue down 8% vs plan. Sarah: push launch to Oct. Tom: disagree, delay costs more. Action items: Sarah sends revised forecast by Wed, Tom prepares risk analysis, sync again Friday 10am.";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      const demoNote = document.createElement('p');
+      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
+      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
+      document.getElementById('output').before(demoNote);
+      await runTool(true);
+    }
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool(isDemo) {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
+      outEl.textContent = '';
+      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
+      const iframe = document.createElement('iframe');
+      iframe.sandbox = 'allow-scripts allow-same-origin';
+      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
+      iframe.srcdoc = output;
+      outEl.appendChild(iframe);
+      iframe.addEventListener('load', () => {
+        try {
+          const h = iframe.contentDocument.body.scrollHeight;
+          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
+        } catch(e) {}
+      });
+    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
 </script>
       </div>
     </section>
@@ -725,15 +800,15 @@ a { color: inherit; text-decoration: none; }
     
 <section class="detail-section reactions-section">
   <div class="reactions-label">Was this useful?</div>
-  <div class="reaction-bar" id="reaction-bar-2026-05-29-urban-respite-weave">
+  <div class="reaction-bar" id="reaction-bar-2026-07-06-spec-anchor-scaffold">
     <button class="reaction-btn" data-key="fire" title="Used it!"><span class="reaction-emoji">🔥</span><span class="reaction-label">Used it!</span></button><button class="reaction-btn" data-key="useful" title="Useful"><span class="reaction-emoji">👍</span><span class="reaction-label">Useful</span></button><button class="reaction-btn" data-key="rocket" title="Inspiring"><span class="reaction-emoji">🚀</span><span class="reaction-label">Inspiring</span></button><button class="reaction-btn" data-key="heart" title="Love it"><span class="reaction-emoji">❤️</span><span class="reaction-label">Love it</span></button><button class="reaction-btn" data-key="confused" title="Not quite"><span class="reaction-emoji">😕</span><span class="reaction-label">Not quite</span></button>
   </div>
 </section>
 <script>
 (function() {
-  var bar = document.getElementById('reaction-bar-2026-05-29-urban-respite-weave');
+  var bar = document.getElementById('reaction-bar-2026-07-06-spec-anchor-scaffold');
   if (!bar) return;
-  var storageKey = 'lili-rx-2026-05-29-urban-respite-weave';
+  var storageKey = 'lili-rx-2026-07-06-spec-anchor-scaffold';
   var selected = {};
   try { selected = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch(e) {}
   bar.querySelectorAll('.reaction-btn').forEach(function(btn) {
@@ -756,7 +831,7 @@ a { color: inherit; text-decoration: none; }
     <div class="footer-inner">
       <div class="footer-left">
         <div class="footer-tagline">One friction point<span class="tagline-dot">.</span> One tool<span class="tagline-dot">.</span> Every day<span class="tagline-dot">.</span></div>
-        <span class="footer-copy">Super-Lili's Daily Adventure &nbsp;·&nbsp; 2026-05-29</span>
+        <span class="footer-copy">Super-Lili's Daily Adventure &nbsp;·&nbsp; 2026-07-06</span>
       </div>
       <div class="footer-links">
         <a href="https://github.com/Super-Lili/Super-Lilis-Daily-Adventure" target="_blank" rel="noopener">GitHub</a>

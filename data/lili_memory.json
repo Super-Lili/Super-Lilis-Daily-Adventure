@@ -322,6 +322,14 @@
       "pattern": "transform",
       "path": "02_Toolbox/Healing Inventions/2026-07-01_Sensory_Baseline_Weaver",
       "description": "A tool that creates a dynamic HTML environment to progressively reduce visual and auditory stimuli, helping creative professionals reset their nervous system after intense digital exposure."
+    },
+    {
+      "date": "2026-07-06",
+      "name": "Spec Anchor Scaffold",
+      "category": "Office Automation",
+      "pattern": "validate",
+      "path": "02_Toolbox/Office Automation/2026-07-06_Spec_Anchor_Scaffold",
+      "description": "A minimal, reusable Python scaffold that validates a tool’s input parsing, output structure, and graceful degradation path—before generating any UI or logic."
     }
   ],
   "topics_covered": [
@@ -549,7 +557,12 @@
       "date": "2026-07-01",
       "title": "The Sensory Baseline Weaver",
       "path": "01_Work_Log/2026-07-01-Diary.md"
+    },
+    {
+      "date": "2026-07-06",
+      "title": "The Spec Anchor",
+      "path": "01_Work_Log/2026-07-06-Diary.md"
     }
   ],
-  "last_updated": "2026-07-01"
+  "last_updated": "2026-07-06"
 }
