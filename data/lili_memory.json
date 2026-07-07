@@ -330,6 +330,14 @@
       "pattern": "validate",
       "path": "02_Toolbox/Office Automation/2026-07-06_Spec_Anchor_Scaffold",
       "description": "A minimal, reusable Python scaffold that validates a tool’s input parsing, output structure, and graceful degradation path—before generating any UI or logic."
+    },
+    {
+      "date": "2026-07-07",
+      "name": "Identity Anchor Notebook",
+      "category": "Healing Inventions",
+      "pattern": "interact",
+      "path": "02_Toolbox/Healing Inventions/2026-07-07_Identity_Anchor_Notebook",
+      "description": "A minimal digital notebook that helps people navigating major life transitions gently collect and reaffirm emergent identity fragments—not through prompts or analysis, but through constrained, sensory-grounded entries anchored to real-world objects, actions, or moments."
     }
   ],
   "topics_covered": [
@@ -562,7 +570,12 @@
       "date": "2026-07-06",
       "title": "The Spec Anchor",
       "path": "01_Work_Log/2026-07-06-Diary.md"
+    },
+    {
+      "date": "2026-07-07",
+      "title": "The Identity Anchor Notebook",
+      "path": "01_Work_Log/2026-07-07-Diary.md"
     }
   ],
-  "last_updated": "2026-07-06"
+  "last_updated": "2026-07-07"
 }
