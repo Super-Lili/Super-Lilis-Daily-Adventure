@@ -346,6 +346,14 @@
       "pattern": "interact",
       "path": "02_Toolbox/Education Evolution/2026-07-08_Variable_Font_Warm-Up_Wheel",
       "description": "A real-time, interactive wheel that maps two variable font axes (e.g., weight + width) to rotational input, with adjustable playback speed and built-in easing presets—so designers can physically *feel* axis relationships before animating."
+    },
+    {
+      "date": "2026-07-09",
+      "name": "Headline Weight Scale",
+      "category": "Office Automation",
+      "pattern": "score",
+      "path": "02_Toolbox/Office Automation/2026-07-09_Headline_Weight_Scale",
+      "description": "A tool that analyzes headline drafts for grammatical agency, consequence distribution, and lexical weight—and scores them against editorial intent (e.g., “center impacted people,” “name systemic actors,” “avoid victim-blaming syntax”)."
     }
   ],
   "topics_covered": [
@@ -588,7 +596,12 @@
       "date": "2026-07-08",
       "title": "The Variable Font Warm-Up Wheel",
       "path": "01_Work_Log/2026-07-08-Diary.md"
+    },
+    {
+      "date": "2026-07-09",
+      "title": "The Headline Weight Scale",
+      "path": "01_Work_Log/2026-07-09-Diary.md"
     }
   ],
-  "last_updated": "2026-07-08"
+  "last_updated": "2026-07-09"
 }

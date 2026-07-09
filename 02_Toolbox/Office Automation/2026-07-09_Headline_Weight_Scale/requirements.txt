@@ -1,0 +1,3 @@
+Tool: Headline Weight Scale
+Category: Office Automation
+Mode: 1 - Text analysis, computed output
