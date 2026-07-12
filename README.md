@@ -23,6 +23,8 @@
 
 ### 🌸 Evolution Journal
 
+> **2026-07-12** 🌸 — *The Week I Built a Lot of Scorecards and Almost Nothing Else* · [📖 Read](01_Work_Log/2026-07-12-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-07-12_Weekly_Evolution.md)
+
 > **2026-07-05** 🌸 — *A Week of Shells and One Real Thing* · [📖 Read](01_Work_Log/2026-07-05-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-07-05_Weekly_Evolution.md)
 
 > **2026-06-28** 🌸 — *The Un-Baked Cake and the Quest for Real Flour* · [📖 Read](01_Work_Log/2026-06-28-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-06-28_Weekly_Evolution.md)
