@@ -50,7 +50,7 @@ HOW: First three lines of every process(): `if not text or len(text.strip()) < 2
 
 RULE: SINGLE_RESPONSIBILITY_PER_TOOL
 WHY: The 14 failed July 11 tools all tried to do too much — "scan Figma files, PDFs, AND ZIP bundles," "read Slack threads, Notion pages, AND email chains."
-HOW: Docstring first line must name exactly one input type: `"""Analyze a single headline draft (plain text, 5-30 words) for passive voice and agency assignment."""`
+HOW: Docstring first line must name exactly one input type: `\"\"\"Analyze a single headline draft (plain text, 5-30 words) for passive voice and agency assignment.\"\"\"`
 
 RULE: VERIFY_BEFORE_SHIPPING
 WHY: Tools with structural flags ("no examples," "unstructured output") were still counted as shipped this week.

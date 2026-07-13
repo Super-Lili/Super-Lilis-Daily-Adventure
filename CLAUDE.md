@@ -1,7 +1,7 @@
 # CLAUDE.md — Super-Lili Project Memory
 
 > Written for the Claude agent picking up this project. Read this first.
-> Last updated: 2026-07-06 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
+> Last updated: 2026-07-13 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
 
 ---
 
@@ -279,3 +279,4 @@ Ideas discussed and consciously deferred. Revisit when conditions are right.
 - **One-sided prohibitions create pendulums**: banning fabrication (14:30) produced polite refusal to work (20:30 same day). Every "never X" must name the correct middle state (graceful degradation). See F-010.
 - **Browser-check rejections were invisible to evolution**: they returned before the scoring step, so never reached the quality ledger. Fixed 2026-07-06 — now logged with probe detail.
 - **Findings must name models from commit/billing history, not memory**: attribution written from the current stack fabricated history (claimed Qwen was the June Critic; it arrived 2026-07-03). Owner caught it.
+- **Weekly evolution's auto-generated content can break its own carrier files, and nothing catches it**: the 2026-07-12 weekly evolution run wrote an engineering-lesson example containing a literal `"""..."""` docstring into `LILI_ENGINEERING_LESSONS` (`src/lili_engineering.py`) and the duplicate copy in `LILI_BLINDSPOT_ANALYSIS` (`src/lili_blindspot.py`) — the embedded triple-quotes closed the outer triple-quoted string early, leaving a `SyntaxError` in both files from that commit onward. The PostToolUse hook that catches this for Claude-driven edits does not run when Lili's own pipeline writes these files. Found 2026-07-13 because it broke `tests/test_prompts.py` (import chain: `lili_prompts` → `lili_blindspot`). Fixed by escaping the embedded quotes (`\"\"\"`) in both files. The self-evolution write path (whatever code renders `ENGINEERING_LESSONS`/`BLINDSPOT_ANALYSIS` into these `.py` files) should `ast.parse()` its own output before committing, the same way the Claude-side hook does.
