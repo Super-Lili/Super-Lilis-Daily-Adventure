@@ -354,6 +354,14 @@
       "pattern": "score",
       "path": "02_Toolbox/Office Automation/2026-07-09_Headline_Weight_Scale",
       "description": "A tool that analyzes headline drafts for grammatical agency, consequence distribution, and lexical weight—and scores them against editorial intent (e.g., “center impacted people,” “name systemic actors,” “avoid victim-blaming syntax”)."
+    },
+    {
+      "date": "2026-07-13",
+      "name": "Thought-to-Type Threshold",
+      "category": "Healing Inventions",
+      "pattern": "transform",
+      "path": "02_Toolbox/Healing Inventions/2026-07-13_Thought-to-Type_Threshold",
+      "description": "A minimal, always-on HTML page that introduces a deliberate, adjustable 300–800ms delay between keypress and character appearance — turning the ‘frozen cursor’ moment into a perceptible, trainable threshold."
     }
   ],
   "topics_covered": [
@@ -601,7 +609,12 @@
       "date": "2026-07-09",
       "title": "The Headline Weight Scale",
       "path": "01_Work_Log/2026-07-09-Diary.md"
+    },
+    {
+      "date": "2026-07-13",
+      "title": "The Forgotten Half-Second Between Thought and Type",
+      "path": "01_Work_Log/2026-07-13-Diary.md"
     }
   ],
-  "last_updated": "2026-07-09"
+  "last_updated": "2026-07-13"
 }
