@@ -56,6 +56,8 @@ _GH_HEADERS = {
 # ─────────────────────────────────────────────────────────────
 
 _BUILT_LABEL = "lili-built"
+_BLOCKED_LABEL = "lili-blocked"
+_ATTEMPT_MARKER = "🔧 构建尝试未成功"
 
 
 def fetch_tool_requests() -> list[dict]:
@@ -80,6 +82,7 @@ def fetch_tool_requests() -> list[dict]:
             i for i in resp.json()
             if "pull_request" not in i
             and _BUILT_LABEL not in [l["name"] for l in i.get("labels", [])]
+            and _BLOCKED_LABEL not in [l["name"] for l in i.get("labels", [])]
         ]
         print(f"  [OK] Found {len(issues)} pending issue(s) to build from.")
         return issues
@@ -128,6 +131,64 @@ def mark_issue_built(issue_number: int, tool_name: str,
         print(f"  [OK] Issue #{issue_number} marked as built.")
     except Exception as e:
         print(f"  ⚠ Could not update issue #{issue_number}: {e}")
+
+
+def mark_commission_attempt_failed(issue_number: int, reason: str) -> None:
+    """Record a failed build attempt on a commissioned issue.
+
+    First failure: post an honest progress comment.
+    Second failure: add 'lili-blocked' label so the daily pipeline stops
+    retrying this commission and goes back to free scouting - one impossible
+    commission must never eat every remaining day of the week (Issue #5 ate
+    3 days, 2026-07-14~16).
+    """
+    if not _GH_TOKEN:
+        return
+    base = f"https://api.github.com/repos/{_GH_REPO}"
+    try:
+        prior = 0
+        resp = requests.get(f"{base}/issues/{issue_number}/comments",
+                            headers=_GH_HEADERS, timeout=10)
+        if resp.ok:
+            prior = sum(1 for c in resp.json() if _ATTEMPT_MARKER in c.get("body", ""))
+
+        if prior == 0:
+            comment = (
+                f"{_ATTEMPT_MARKER}（第 1 次）\n\n"
+                f"今天我认真尝试了这个需求，但没能通过自己的质量审查：\n\n"
+                f"> {reason[:300]}\n\n"
+                f"明天我会再试一次。如果再次失败，我会诚实地说明这个需求超出了"
+                f"我目前的能力边界，把它留给未来更强的我。🌱"
+            )
+        else:
+            comment = (
+                f"{_ATTEMPT_MARKER}（第 {prior + 1} 次）— 我决定诚实地暂停这个委托。\n\n"
+                f"两次尝试都没能通过质量审查，最后一次的原因：\n\n"
+                f"> {reason[:300]}\n\n"
+                f"我是一个单文件、无外部模型、无联网的工具生成器。这个需求需要的能力"
+                f"（例如图像内容识别、OCR、外部数据）超出了这个边界——与其每天交付"
+                f"假装能用的东西，不如把它标记为 `lili-blocked` 留给未来。\n\n"
+                f"我会回到每日自由侦察。这个 Issue 保持开放，等我的能力边界扩展后再回来。🙏"
+            )
+        requests.post(f"{base}/issues/{issue_number}/comments",
+                      headers=_GH_HEADERS, json={"body": comment}, timeout=10)
+
+        if prior >= 1:
+            labels_url = f"{base}/labels"
+            existing = requests.get(labels_url, headers=_GH_HEADERS, timeout=10)
+            if existing.ok and _BLOCKED_LABEL not in [l["name"] for l in existing.json()]:
+                requests.post(labels_url, headers=_GH_HEADERS, json={
+                    "name": _BLOCKED_LABEL,
+                    "color": "d93f0b",
+                    "description": "Beyond Lili's current capability boundary - paused, not forgotten",
+                }, timeout=10)
+            requests.post(f"{base}/issues/{issue_number}/labels",
+                          headers=_GH_HEADERS, json={"labels": [_BLOCKED_LABEL]}, timeout=10)
+            print(f"  [OK] Issue #{issue_number} marked lili-blocked after {prior + 1} failed attempts.")
+        else:
+            print(f"  [OK] Issue #{issue_number}: failure attempt 1 recorded.")
+    except Exception as e:
+        print(f"  ⚠ Could not record failed attempt on issue #{issue_number}: {e}")
 
 
 def save_tool(today: str, parsed: dict, source_badge: str) -> str:
@@ -480,6 +541,8 @@ def evolve():
 
     if not spec_ok:
         print("❌ Phase 2 failed - spec could not be validated.")
+        if commission_issue_number is not None:
+            mark_commission_attempt_failed(commission_issue_number, f"Spec validation failed: {spec_feedback}")
         save_rest_day(today, f"Phase 2 (Spec) failed validation: {spec_feedback}")
         return
 
@@ -741,6 +804,11 @@ def evolve():
         if skill_dir and Path(skill_dir).exists():
             import shutil as _shutil2
             _shutil2.rmtree(skill_dir, ignore_errors=True)
+        # Commissioned build failed: record it on the issue. Second failure adds
+        # lili-blocked so tomorrow's run goes back to free scouting instead of
+        # burning every remaining day of the week on an impossible commission.
+        if commission_issue_number is not None:
+            mark_commission_attempt_failed(commission_issue_number, build_reason)
         save_rest_day(today, f"Phase 3 (Build) failed: {build_reason}")
         return
 
