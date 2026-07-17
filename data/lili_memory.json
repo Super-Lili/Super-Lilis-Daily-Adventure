@@ -362,6 +362,14 @@
       "pattern": "transform",
       "path": "02_Toolbox/Healing Inventions/2026-07-13_Thought-to-Type_Threshold",
       "description": "A minimal, always-on HTML page that introduces a deliberate, adjustable 300–800ms delay between keypress and character appearance — turning the ‘frozen cursor’ moment into a perceptible, trainable threshold."
+    },
+    {
+      "date": "2026-07-17",
+      "name": "The Humming Page",
+      "category": "Healing Inventions",
+      "pattern": "transform",
+      "path": "02_Toolbox/Healing Inventions/2026-07-17_The_Humming_Page",
+      "description": "A minimal, always-on web page that emits a single, ultra-stable, analog-style low-frequency hum (58–65 Hz), generated in-browser with Web Audio API, adjustable only by subtle slider (±2 Hz), with optional gentle pulse modulation—designed to coexist with wakeful alertness, not override it."
     }
   ],
   "topics_covered": [
@@ -614,7 +622,12 @@
       "date": "2026-07-13",
       "title": "The Forgotten Half-Second Between Thought and Type",
       "path": "01_Work_Log/2026-07-13-Diary.md"
+    },
+    {
+      "date": "2026-07-17",
+      "title": "The Humming Page",
+      "path": "01_Work_Log/2026-07-17-Diary.md"
     }
   ],
-  "last_updated": "2026-07-13"
+  "last_updated": "2026-07-17"
 }
