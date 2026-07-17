@@ -20,6 +20,53 @@ deepseek_client = OpenAI(
 
 
 # ─────────────────────────────────────────────────────────────
+# SELF-MODIFICATION GUARDRAIL
+# The 2026-07-12 evolution run wrote a lesson containing a literal
+# triple-quoted docstring example into lili_engineering.py, closing the
+# outer string early and leaving a SyntaxError that poisoned every import
+# for a day. A self-modifying system must ast-verify its own output
+# BEFORE persisting it - on failure we keep last week's file untouched.
+# ─────────────────────────────────────────────────────────────
+
+def _sanitize_embedded(text: str) -> str:
+    """Make model-authored text safe to embed inside a triple-quoted string."""
+    if not text:
+        return text
+    # Escape triple quotes so they cannot terminate the enclosing literal.
+    text = text.replace('"""', '\\"\\"\\"')
+    # A trailing backslash would escape the closing quotes of the literal.
+    while text.endswith("\\") and not text.endswith("\\\\"):
+        text = text[:-1]
+    return text
+
+
+def _guarded_write(path, content: str, required_names: list[str], label: str) -> bool:
+    """Write a generated .py file ONLY if it parses, execs, and defines the
+    expected names. On failure: refuse, keep last week's file, report loudly."""
+    import ast as _ast
+    try:
+        _ast.parse(content)
+    except SyntaxError as e:
+        print(f"  [GUARD] {label}: generated content has a SyntaxError "
+              f"(line {e.lineno}: {e.msg}) - keeping last week's file. NOT WRITTEN.")
+        return False
+    try:
+        namespace: dict = {}
+        exec(compile(content, str(path), "exec"), namespace)
+    except Exception as e:
+        print(f"  [GUARD] {label}: generated content crashed on exec "
+              f"({type(e).__name__}: {e}) - keeping last week's file. NOT WRITTEN.")
+        return False
+    missing = [n for n in required_names if n not in namespace]
+    if missing:
+        print(f"  [GUARD] {label}: generated content is missing {missing} "
+              f"- keeping last week's file. NOT WRITTEN.")
+        return False
+    Path(path).write_text(content, encoding="utf-8")
+    return True
+
+
+# ─────────────────────────────────────────────────────────────
 # DATA COLLECTION
 # ─────────────────────────────────────────────────────────────
 
@@ -214,6 +261,17 @@ def build_evolution_prompt(today_str: str, week_start: str,
             f"  Avg Engineering: {avg_eng:.1f}/5 | Avg Warmth: {avg_warm:.1f}/5 | Avg Combined: {avg_comb:.1f}/5\n\n"
             + "\n".join(ledger_rows)
         )
+        # Statistical aggregate over 28 days - lets reflection cite counted
+        # failure modes ("fake-static occurred 73x") instead of impressions.
+        try:
+            from lili_ledger_report import build_ledger_report
+            quality_block += (
+                "\n\n  FAILURE-MODE AGGREGATE (28 days, keyword-bucketed - "
+                "cite these counts in your reflection):\n"
+                + build_ledger_report(days=28)
+            )
+        except Exception as _rep_err:
+            print(f"  ⚠ Ledger report unavailable: {_rep_err}")
     else:
         quality_block = "  (No quality scores recorded yet — quality ledger is empty)"
 
@@ -649,14 +707,15 @@ def update_soul(parsed: dict, today_str: str):
 # Do NOT edit manually — changes will be overwritten next Sunday.
 # Last evolved: {today_str}
 
-LILI_PERSONALITY = """{personality}"""
+LILI_PERSONALITY = """{_sanitize_embedded(personality)}"""
 
 LILI_SKILLS = {skills_raw}
 
-EVOLUTION_NOTES = """{notes}"""
+EVOLUTION_NOTES = """{_sanitize_embedded(notes)}"""
 '''
-    (Path(__file__).parent / "lili_soul.py").write_text(soul_content, encoding="utf-8")
-    print("  ✓ lili_soul.py updated.")
+    if _guarded_write(Path(__file__).parent / "lili_soul.py", soul_content,
+                      ["LILI_PERSONALITY", "LILI_SKILLS", "EVOLUTION_NOTES"], "lili_soul.py"):
+        print("  ✓ lili_soul.py updated.")
 
 
 def save_blindspot(parsed: dict, today_str: str):
@@ -680,16 +739,16 @@ def save_blindspot(parsed: dict, today_str: str):
                 antidote = re.sub(r"^E\.\s*(NEXT WEEK['']?S? ANTIDOTE:?\s*)?", "", line.strip(), flags=re.IGNORECASE).strip().strip('"').strip("'")
                 break
 
-    soul_path = Path(__file__).parent / "lili_blindspot.py"
-    soul_path.write_text(
+    content = (
         f'# lili_blindspot.py — Auto-updated every Sunday by Weekly Evolution.\n'
         f'# Do NOT edit manually. Last updated: {today_str}\n\n'
-        f'LILI_BLINDSPOT_ANALYSIS = """\n{blindspot_text}\n"""\n\n'
+        f'LILI_BLINDSPOT_ANALYSIS = """\n{_sanitize_embedded(blindspot_text)}\n"""\n\n'
         f'# The single most important instruction for this week:\n'
-        f'LILI_BLINDSPOT_ANTIDOTE = """{antidote}"""\n',
-        encoding="utf-8"
+        f'LILI_BLINDSPOT_ANTIDOTE = """{_sanitize_embedded(antidote)}"""\n'
     )
-    print(f"  ✓ lili_blindspot.py updated.")
+    if _guarded_write(Path(__file__).parent / "lili_blindspot.py", content,
+                      ["LILI_BLINDSPOT_ANALYSIS", "LILI_BLINDSPOT_ANTIDOTE"], "lili_blindspot.py"):
+        print(f"  ✓ lili_blindspot.py updated.")
 
 
 def save_engineering_lessons(parsed: dict, today_str: str):
@@ -724,11 +783,12 @@ def save_engineering_lessons(parsed: dict, today_str: str):
         f"# Do NOT edit manually. Overwritten each Sunday.\n"
         f"# Last updated: {today_str}\n"
         f"# ─────────────────────────────────────────────────────────────\n\n"
-        f'LILI_ENGINEERING_LESSONS = """\n{lessons}\n"""\n'
+        f'LILI_ENGINEERING_LESSONS = """\n{_sanitize_embedded(lessons)}\n"""\n'
     )
 
-    eng_path.write_text(base_section + new_tail, encoding="utf-8")
-    print(f"  ✓ lili_engineering.py updated with {lessons.count('RULE:')} new rules (base rules preserved).")
+    if _guarded_write(eng_path, base_section + new_tail,
+                      ["LILI_ENGINEERING_BASE", "LILI_ENGINEERING_LESSONS"], "lili_engineering.py"):
+        print(f"  ✓ lili_engineering.py updated with {lessons.count('RULE:')} new rules (base rules preserved).")
 
 
 def save_evolution_log(parsed: dict, today_str: str, week_start: str):
