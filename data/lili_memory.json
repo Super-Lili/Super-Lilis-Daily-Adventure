@@ -370,6 +370,14 @@
       "pattern": "transform",
       "path": "02_Toolbox/Healing Inventions/2026-07-17_The_Humming_Page",
       "description": "A minimal, always-on web page that emits a single, ultra-stable, analog-style low-frequency hum (58–65 Hz), generated in-browser with Web Audio API, adjustable only by subtle slider (±2 Hz), with optional gentle pulse modulation—designed to coexist with wakeful alertness, not override it."
+    },
+    {
+      "date": "2026-07-18",
+      "name": "Rate Anchor Calculator",
+      "category": "Education Evolution",
+      "pattern": "visualize",
+      "path": "02_Toolbox/Education Evolution/2026-07-18_Rate_Anchor_Calculator",
+      "description": "A minimal web tool that lets freelancers log past project deliverables, hidden labor (e.g., “explained Figma auto-layout to non-designer PM”), and client concessions—and surfaces pattern-matched rate anchors for new quotes."
     }
   ],
   "topics_covered": [
@@ -627,7 +635,12 @@
       "date": "2026-07-17",
       "title": "The Humming Page",
       "path": "01_Work_Log/2026-07-17-Diary.md"
+    },
+    {
+      "date": "2026-07-18",
+      "title": "The Rate Anchor Calculator",
+      "path": "01_Work_Log/2026-07-18-Diary.md"
     }
   ],
-  "last_updated": "2026-07-17"
+  "last_updated": "2026-07-18"
 }
