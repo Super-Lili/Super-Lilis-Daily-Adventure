@@ -854,27 +854,27 @@ programmer implements verbatim, and every step must run:
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-07-12
+# Last updated: 2026-07-19
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: REQUIRE_EXAMPLES_IN_CODE
-WHY: Three of four tools this week shipped with "no examples in code" — making verification impossible for the critic pipeline.
-HOW: At the bottom of every process() function, include: `# Example: process("headline: Families face rising costs\nactive_voice_detected: False") # → Score: 2/10, Passive construction masks actor`
+RULE: File-Ingestion-First Architecture
+WHY: Every tool this week assumed clean text pasted into a textarea; real users have PDFs, screenshots, and scanned forms.
+HOW: import pdfplumber; with pdfplumber.open(user_file) as pdf: text = pdf.pages[0].extract_text()
 
-RULE: STRUCTURED_OUTPUT_MANDATORY
-WHY: "Output likely unstructured" flagged on three tools — tools that return raw text strings can't be validated programmatically.
-HOW: Every process() must return: `{"sections": [{"header": "...", "body": "..."}, ...], "score": int}` — never a bare string.
+RULE: Input-Guard With Specific Feedback
+WHY: Multiple shipped tools returned identical output for empty input or wildly different inputs, making them indistinguishable from static pages.
+HOW: if len(input_text.strip()) < 20: return "⚠️ Need at least 20 words. You provided {len(input_text.strip())}. Try pasting a full paragraph."
 
-RULE: GRACEFUL_EMPTY_INPUT
-WHY: Several failed tools crashed or hallucinated on empty or trivial input because they assumed meaningful content.
-HOW: First three lines of every process(): `if not text or len(text.strip()) < 20: return {"error": "Input too short for meaningful analysis. Please provide at least 20 words.", "sections": [], "score": 0}`
+RULE: Single-File HTML Cap Only
+WHY: Every tool that attempted multi-file architecture was truncated mid-attribute; single-file HTML via Jinja2 is the only reliable output format.
+HOW: from jinja2 import Template; html = Template(SINGLE_FILE_TEMPLATE).render(data=processed)
 
-RULE: SINGLE_RESPONSIBILITY_PER_TOOL
-WHY: The 14 failed July 11 tools all tried to do too much — "scan Figma files, PDFs, AND ZIP bundles," "read Slack threads, Notion pages, AND email chains."
-HOW: Docstring first line must name exactly one input type: `\"\"\"Analyze a single headline draft (plain text, 5-30 words) for passive voice and agency assignment.\"\"\"`
+RULE: Output Must Vary With Input
+WHY: The most common Critic rejection was "JS logic is generic, same output regardless of input"—a shipped tool that doesn't respond to input is a static page.
+HOW: Include a 3-example test in the docstring: \"\"\"Examples: Input "cat" → "3 letters, 1 syllable" | Input "elephant" → "8 letters, 3 syllables" | Input "" → Error message\"\"\"
 
-RULE: VERIFY_BEFORE_SHIPPING
-WHY: Tools with structural flags ("no examples," "unstructured output") were still counted as shipped this week.
-HOW: Before marking a tool complete, run: `assert 'examples' in tool_code`, `assert 'process(' in tool_code and 'return {' in tool_code`, `assert len(tool_code.split('\n')) > 80`.
+RULE: No Undefined Audio Context
+WHY: The Humming Page that shipped connected a slider to no audio node; Web Audio API requires explicit node chain verification.
+HOW: const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain).connect(ctx.destination);
 """
