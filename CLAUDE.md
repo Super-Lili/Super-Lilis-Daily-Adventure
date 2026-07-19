@@ -1,7 +1,7 @@
 # CLAUDE.md — Super-Lili Project Memory
 
 > Written for the Claude agent picking up this project. Read this first.
-> Last updated: 2026-07-13 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
+> Last updated: 2026-07-19 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
 
 ---
 
@@ -146,9 +146,16 @@ Cross-provider fallback chain (R1 → v4-pro → qwen3.7-max); empty responses a
 - BUILD anti-hallucination rules: no external facts, no invented entries to complete a shape, graceful degradation mandatory (marker absent → paragraphs → sentences → chunks, never refuse)
 - Critique-patch loop: retries repair previous code (PATCH MODE) instead of re-rolling from scratch; truncation failures clear prev_code
 
-**Test suite**: `tests/` (43 unittest tests, openai mocked, zero network) + `lili_tests.yml` CI on every push. Feedback loop: hours → seconds.
+**Test suite**: `tests/` (53 unittest tests as of 2026-07-17, openai mocked, zero network) + `lili_tests.yml` CI on every push. Feedback loop: hours → seconds.
 
 **FINDINGS.md**: evidence-backed record of AI capability boundaries (docs/FINDINGS.md). Every entry must name the specific models — reconstruct attribution from commit/billing history, never from memory of the current stack.
+
+### Phase 10 — Self-Modification Guardrail & Statistical Ledger (2026-07-16 to 2026-07-17)
+
+- `5d0091e` **Impossible-commission circuit breaker**: commissions previously retried daily forever, so an out-of-scope Issue could consume the whole week. Issue #5 (screenshot organization — needs vision AI + OCR a single-file sandboxed tool cannot have) ate 07-14~16. Fix: `mark_commission_attempt_failed()` in `lili_pipeline.py` — 1st failure posts an honest progress comment, 2nd adds a new `lili-blocked` label and posts a capability-boundary explanation; `fetch_tool_requests` skips blocked issues so the pipeline returns to free scouting the next day. Issue stays open (paused, not forgotten). See FINDINGS F-014.
+- `0955e35` **Self-write guardrail** (closes the 2026-07-12 pitfall below): weekly evolution writes model-authored text directly into `.py` carrier files (`lili_soul.py`, `lili_blindspot.py`, `lili_engineering.py`) as triple-quoted string literals — the same failure class as embedding HTML/JS in Python (F-007), but for its own reflection text. `_sanitize_embedded()` escapes triple-quotes and trailing backslashes before embedding; `_guarded_write()` runs `ast.parse()` + `exec()` + a required-names check *before* persisting, and on any failure keeps last week's file untouched instead of committing broken code. Verified end-to-end against the exact 2026-07-12 killer input. See FINDINGS F-013.
+- `0955e35` **`lili_ledger_report.py`**: aggregates `tool_quality_ledger.jsonl` over a 28-day window — pass rate by ISO week, keyword-bucketed failure modes (taxonomy synced with retry branches), per-category performance, repeat-offender concepts (3+ fails). Injected into the weekly evolution prompt so reflection cites counted facts instead of impressions of the last few days. Implements the "Error frequency quantification" item from Future Backlog (now removed from backlog as done).
+- Test suite grew 43 → 53 (sanitizer on the incident payload, guarded-write refusal/acceptance matrix, bucket classification, report from sample ledger).
 
 ---
 
@@ -170,9 +177,12 @@ Cross-provider fallback chain (R1 → v4-pro → qwen3.7-max); empty responses a
 ```
 User opens Issue
   → lili_responds.py replies same day, adds lili-responded label
-  → Next day: evolve() detects lili-responded without lili-built
+  → Next day: evolve() detects lili-responded without lili-built or lili-blocked
   → Skips random topic selection, builds from Issue content
-  → Adds lili-built label, posts tool link in Issue comment
+  → Success: adds lili-built label, posts tool link in Issue comment
+  → Failure: mark_commission_attempt_failed() posts a progress comment (1st)
+    or a capability-boundary explanation + lili-blocked label (2nd) —
+    blocked issues are skipped so the pipeline returns to free scouting
 ```
 
 ### Website Generation
@@ -226,7 +236,7 @@ Written by project owner xiaojiahaina, based on the neo-slow media framework (20
 ## Unfinished / Future Direction
 
 - **Open to public**: once Issues are open to real users, authentic needs become the best evolution fuel
-- **Quality ceiling**: current tools are uneven — 34 tools, maybe 2-3 reach "creative professional uses it weekly" standard. Direction is right, needs time
+- **Quality ceiling**: current tools are uneven — 51 tools as of 2026-07-19 (28-day ledger: 4% pass rate per build attempt, 10/280), maybe 2-3 reach "creative professional uses it weekly" standard. Direction is right, needs time
 
 ---
 
@@ -247,7 +257,7 @@ Ideas discussed and consciously deferred. Revisit when conditions are right.
 - Lili modifies her own core code (super_lili_brain.py): via PR review flow — Lili proposes, owner approves. Revisit after 2 weeks of stable quality runs (from 2026-06-08).
 
 **Quality & Memory**
-- Error frequency quantification: track how many times each error pattern repeats across weeks. Currently errors are logged as text but not counted. Would make weekly evolution more precise.
+- ~~Error frequency quantification~~ — **done 2026-07-17** (`0955e35`): `lili_ledger_report.py` aggregates the 28-day ledger into pass rate by week, keyword-bucketed failure modes, per-category performance, and repeat-offender concepts (3+ fails), injected into the weekly evolution prompt.
 - Structured memory system: upgrade lili_memory.json to include failure_patterns, deepseek_verdict, was_shell fields per tool. Enables evolution reports to say "js_in_fstring error occurred 3 times this week" instead of vague "improve code quality". Build after 2 weeks of stable runs when real failure patterns emerge.
 - Real selection pressure: self-evolution is only meaningful with real user feedback. Tools need actual users who return (or don't). Without this, evolution is self-referential.
 - /schedule daily quality check: Claude checks today's tool at 10:00 Beijing time. Blocked by claude.ai remote connection issue as of 2026-06-08. Retry periodically.
@@ -279,4 +289,5 @@ Ideas discussed and consciously deferred. Revisit when conditions are right.
 - **One-sided prohibitions create pendulums**: banning fabrication (14:30) produced polite refusal to work (20:30 same day). Every "never X" must name the correct middle state (graceful degradation). See F-010.
 - **Browser-check rejections were invisible to evolution**: they returned before the scoring step, so never reached the quality ledger. Fixed 2026-07-06 — now logged with probe detail.
 - **Findings must name models from commit/billing history, not memory**: attribution written from the current stack fabricated history (claimed Qwen was the June Critic; it arrived 2026-07-03). Owner caught it.
-- **Weekly evolution's auto-generated content can break its own carrier files, and nothing catches it**: the 2026-07-12 weekly evolution run wrote an engineering-lesson example containing a literal `"""..."""` docstring into `LILI_ENGINEERING_LESSONS` (`src/lili_engineering.py`) and the duplicate copy in `LILI_BLINDSPOT_ANALYSIS` (`src/lili_blindspot.py`) — the embedded triple-quotes closed the outer triple-quoted string early, leaving a `SyntaxError` in both files from that commit onward. The PostToolUse hook that catches this for Claude-driven edits does not run when Lili's own pipeline writes these files. Found 2026-07-13 because it broke `tests/test_prompts.py` (import chain: `lili_prompts` → `lili_blindspot`). Fixed by escaping the embedded quotes (`\"\"\"`) in both files. The self-evolution write path (whatever code renders `ENGINEERING_LESSONS`/`BLINDSPOT_ANALYSIS` into these `.py` files) should `ast.parse()` its own output before committing, the same way the Claude-side hook does.
+- **Weekly evolution's auto-generated content can break its own carrier files, and nothing catches it**: the 2026-07-12 weekly evolution run wrote an engineering-lesson example containing a literal `"""..."""` docstring into `LILI_ENGINEERING_LESSONS` (`src/lili_engineering.py`) and the duplicate copy in `LILI_BLINDSPOT_ANALYSIS` (`src/lili_blindspot.py`) — the embedded triple-quotes closed the outer triple-quoted string early, leaving a `SyntaxError` in both files from that commit onward. The PostToolUse hook that catches this for Claude-driven edits does not run when Lili's own pipeline writes these files. Found 2026-07-13 because it broke `tests/test_prompts.py` (import chain: `lili_prompts` → `lili_blindspot`). Fixed by escaping the embedded quotes (`\"\"\"`) in both files. The self-evolution write path (whatever code renders `ENGINEERING_LESSONS`/`BLINDSPOT_ANALYSIS` into these `.py` files) should `ast.parse()` its own output before committing, the same way the Claude-side hook does. **Closed 2026-07-17** (`0955e35`): `_sanitize_embedded()` + `_guarded_write()` in `super_lili_weekly_evolution.py` now escape triple-quotes/trailing backslashes and `ast.parse()`+`exec()`-verify every generated carrier file before writing, refusing (and keeping last week's file) on any failure. Verified against the exact 07-12 killer input. See FINDINGS F-013.
+- **Commissions with no valid completion path can eat the whole week**: Issue #5 (organize phone screenshots — needs vision AI + OCR that a single-file sandboxed browser tool cannot provide) was retried once per day for 3 consecutive days (2026-07-14~16) because the commission loop had no termination condition — it simply retried until `lili-built` was set, which for an impossible task is never. Root cause: retry-until-success logic assumed every commission was eventually buildable. Fixed 2026-07-16 (`5d0091e`): `mark_commission_attempt_failed()` posts an honest progress comment on the 1st failure and a capability-boundary explanation + `lili-blocked` label on the 2nd, after which `fetch_tool_requests` skips the issue and the pipeline returns to free scouting. See FINDINGS F-014.
