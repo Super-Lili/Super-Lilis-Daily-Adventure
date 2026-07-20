@@ -378,6 +378,14 @@
       "pattern": "visualize",
       "path": "02_Toolbox/Education Evolution/2026-07-18_Rate_Anchor_Calculator",
       "description": "A minimal web tool that lets freelancers log past project deliverables, hidden labor (e.g., “explained Figma auto-layout to non-designer PM”), and client concessions—and surfaces pattern-matched rate anchors for new quotes."
+    },
+    {
+      "date": "2026-07-20",
+      "name": "Prosody-Aware Chapter Marker",
+      "category": "Office Automation",
+      "pattern": "extract",
+      "path": "02_Toolbox/Office Automation/2026-07-20_Prosody-Aware_Chapter_Marker",
+      "description": "A tool that ingests raw podcast audio (or transcript), detects meaningful speech boundaries using prosodic cues—not just silence—and generates editable, semantically grounded chapter markers with auto-suggested titles."
     }
   ],
   "topics_covered": [
@@ -640,7 +648,12 @@
       "date": "2026-07-18",
       "title": "The Rate Anchor Calculator",
       "path": "01_Work_Log/2026-07-18-Diary.md"
+    },
+    {
+      "date": "2026-07-20",
+      "title": "Chapter Marking Compass",
+      "path": "01_Work_Log/2026-07-20-Diary.md"
     }
   ],
-  "last_updated": "2026-07-18"
+  "last_updated": "2026-07-20"
 }
