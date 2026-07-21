@@ -386,6 +386,14 @@
       "pattern": "extract",
       "path": "02_Toolbox/Office Automation/2026-07-20_Prosody-Aware_Chapter_Marker",
       "description": "A tool that ingests raw podcast audio (or transcript), detects meaningful speech boundaries using prosodic cues—not just silence—and generates editable, semantically grounded chapter markers with auto-suggested titles."
+    },
+    {
+      "date": "2026-07-21",
+      "name": "Headline Resonance Ledger",
+      "category": "Office Automation",
+      "pattern": "visualize",
+      "path": "02_Toolbox/Office Automation/2026-07-21_Headline_Resonance_Ledger",
+      "description": "A tool that imports your past headline drafts (plain text or CSV), tags them by campaign, audience mood, and send date, then renders them as a navigable, chronologically anchored visual ledger—with no scoring, only contextual resonance."
     }
   ],
   "topics_covered": [
@@ -653,7 +661,12 @@
       "date": "2026-07-20",
       "title": "Chapter Marking Compass",
       "path": "01_Work_Log/2026-07-20-Diary.md"
+    },
+    {
+      "date": "2026-07-21",
+      "title": "The Headline Hoarder’s Ledger",
+      "path": "01_Work_Log/2026-07-21-Diary.md"
     }
   ],
-  "last_updated": "2026-07-20"
+  "last_updated": "2026-07-21"
 }
