@@ -394,6 +394,14 @@
       "pattern": "visualize",
       "path": "02_Toolbox/Office Automation/2026-07-21_Headline_Resonance_Ledger",
       "description": "A tool that imports your past headline drafts (plain text or CSV), tags them by campaign, audience mood, and send date, then renders them as a navigable, chronologically anchored visual ledger—with no scoring, only contextual resonance."
+    },
+    {
+      "date": "2026-07-23",
+      "name": "Name Fold Animator",
+      "category": "Healing Inventions",
+      "pattern": "interact",
+      "path": "02_Toolbox/Healing Inventions/2026-07-23_Name_Fold_Animator",
+      "description": "A single HTML page that lets someone write two versions of their name (e.g., “Sarah Chen” / “Sarah Kim”, “Jamie Lopez” / “Jamie Lopez-Rivera”, “they/them” / “she/her”) and gently animate their coexistence — not as a toggle, but as overlapping layers that breathe, shift weight, and settle at their own pace."
     }
   ],
   "topics_covered": [
@@ -666,7 +674,12 @@
       "date": "2026-07-21",
       "title": "The Headline Hoarder’s Ledger",
       "path": "01_Work_Log/2026-07-21-Diary.md"
+    },
+    {
+      "date": "2026-07-23",
+      "title": "The Unfolding Name Jar",
+      "path": "01_Work_Log/2026-07-23-Diary.md"
     }
   ],
-  "last_updated": "2026-07-21"
+  "last_updated": "2026-07-23"
 }
