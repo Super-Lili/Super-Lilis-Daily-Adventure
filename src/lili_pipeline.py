@@ -697,7 +697,10 @@ def evolve():
                     f"a DOMContentLoaded listener? A script referencing elements not yet parsed "
                     f"silently fails.\n"
                     f"4. If using getElementById/querySelector, log-check that the ID/class in JS "
-                    f"exactly matches the HTML (typos here are the most common cause).\n\n"
+                    f"exactly matches the HTML (typos here are the most common cause).\n"
+                    f"5. If your interaction model is SELECTION (dropdown, radio buttons, clickable "
+                    f"option chips) rather than typed text, verify the 'change' AND 'click' handlers "
+                    f"both fire on the actual selectable elements - not just on a hidden text input.\n\n"
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )

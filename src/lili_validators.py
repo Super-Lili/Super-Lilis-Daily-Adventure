@@ -20,6 +20,20 @@ from lili_llm import call_gemini_simple, call_qwen_critic
 # MODE 3 BROWSER GROUND-TRUTH VALIDATION
 # ─────────────────────────────────────────────────────────────
 
+# Console messages that are environment artifacts, not code bugs - surfacing
+# these as "errors to fix" wastes a retry on something the model cannot fix
+# by writing different code (e.g. headless Chromium blocks Clipboard API
+# writes by sandbox policy, regardless of how correct the tool's JS is).
+_BROWSER_ENV_NOISE = ("clipboard",)
+
+
+def _is_environment_noise(console_message: str) -> bool:
+    """True if a captured console error is a known headless-browser artifact
+    rather than a genuine bug in the tool's own JavaScript."""
+    msg = console_message.lower()
+    return any(n in msg for n in _BROWSER_ENV_NOISE)
+
+
 def _browser_interactivity_check(html: str, test_input: str) -> tuple[bool, bool, str]:
     """Actually run a Mode 3 tool in a headless browser to get GROUND TRUTH on whether
     its JavaScript does real work with user input (instead of asking an LLM to guess).
@@ -82,6 +96,42 @@ def _browser_interactivity_check(html: str, test_input: str) -> tuple[bool, bool
                 }""",
                 sample,
             )
+            # Drive SELECTION-based controls too - not every real tool is a text
+            # box. A tool whose whole interaction model is "pick an option" (a
+            # <select>, radio group, checkboxes, or clickable option chips) has
+            # zero elements matching the text-fill probe above; without this,
+            # such a tool always looks static/fake regardless of whether its JS
+            # is real. Pick a non-default <select> option, check radios/boxes,
+            # and click anything that looks like a selectable chip/tab/option.
+            selected = page.evaluate(
+                """() => {
+                    let n = 0;
+                    document.querySelectorAll('select').forEach(function(el) {
+                        try {
+                            if (el.options && el.options.length > 1) {
+                                el.selectedIndex = el.selectedIndex === 1 ? 2 % el.options.length : 1;
+                                el.dispatchEvent(new Event('input',  {bubbles:true}));
+                                el.dispatchEvent(new Event('change', {bubbles:true}));
+                                n++;
+                            }
+                        } catch(e){}
+                    });
+                    document.querySelectorAll('input[type=radio], input[type=checkbox]').forEach(function(el) {
+                        try {
+                            el.checked = true;
+                            el.dispatchEvent(new Event('input',  {bubbles:true}));
+                            el.dispatchEvent(new Event('change', {bubbles:true}));
+                            n++;
+                        } catch(e){}
+                    });
+                    const chipSel = '[role=option], [role=tab], [role=radio], .chip, .option, ' +
+                                    '.choice, [data-value], [data-option]';
+                    document.querySelectorAll(chipSel).forEach(function(el) {
+                        try { el.click(); n++; } catch(e){}
+                    });
+                    return n;
+                }"""
+            )
             # Click buttons / submit-like controls to trigger compute handlers.
             page.evaluate(
                 """() => {
@@ -100,10 +150,11 @@ def _browser_interactivity_check(html: str, test_input: str) -> tuple[bool, bool
         text_changed = after != before and len(after) > 0
         nodes_changed = after_nodes != before_nodes
         changed = bool(text_changed or nodes_changed)
-        detail = (f"fields_filled={filled}, text_changed={text_changed}, "
-                  f"nodes {before_nodes}->{after_nodes}")
-        if console_errors:
-            unique_errors = list(dict.fromkeys(console_errors))[:3]
+        detail = (f"fields_filled={filled}, selections_made={selected}, "
+                  f"text_changed={text_changed}, nodes {before_nodes}->{after_nodes}")
+        real_errors = [e for e in console_errors if not _is_environment_noise(e)]
+        if real_errors:
+            unique_errors = list(dict.fromkeys(real_errors))[:3]
             detail += f", console_errors={unique_errors}"
         return True, changed, detail
     except Exception as e:

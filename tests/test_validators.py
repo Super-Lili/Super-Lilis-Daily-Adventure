@@ -14,6 +14,7 @@ from lili_validators import (
     extract_test_input,
     _strip_fences,
     _browser_interactivity_check,
+    _is_environment_noise,
 )
 
 
@@ -166,6 +167,24 @@ class BrowserProbeTests(unittest.TestCase):
         ran, changed, detail = _browser_interactivity_check("<html><body>x</body></html>", "input")
         self.assertFalse(ran)
         self.assertIsInstance(detail, str)
+
+
+class EnvironmentNoiseFilterTests(unittest.TestCase):
+    # 2026-07-24: a "select an intent/tone from options" tool was rejected as
+    # fake because the probe couldn't find any text field to fill AND the
+    # only console error was a headless-sandbox clipboard permission denial -
+    # an environment artifact, not a code bug. This filter keeps such noise
+    # out of retry feedback so the model isn't told to "fix" the unfixable.
+    def test_clipboard_denial_is_noise(self):
+        self.assertTrue(_is_environment_noise(
+            "Failed to execute 'writeText' on 'Clipboard': Write permission denied."))
+
+    def test_real_type_error_is_not_noise(self):
+        self.assertFalse(_is_environment_noise(
+            "TypeError: Cannot read properties of null (reading 'value')"))
+
+    def test_case_insensitive(self):
+        self.assertTrue(_is_environment_noise("CLIPBOARD write blocked"))
 
 
 if __name__ == "__main__":
