@@ -286,12 +286,26 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
             f"Do not promise comparison against reference data the tool does not contain."
         )
 
-    # Mode 3 (HTML formats B-F) is ENABLED again as of 2026-07-03.
-    # It was force-overridden to Mode A during 2026-06-19~07-03 because the older/weaker
-    # models shipped fake interactivity. Now BUILD runs on deepseek-v4-pro with an
-    # independent qwen3.7-max Critic + mechanical fake-interactivity guards in
-    # validate_tool() (hardcoded lookup tables, pre-filled data-* nodes, unrendered
-    # templates), so real Mode 3 tools can be validated properly. No format override.
+    # Mode 3 (HTML formats C/D/E) is ENABLED - it was force-overridden to Mode A during
+    # 2026-06-19~07-03 because weaker models shipped fake interactivity. Now BUILD runs on
+    # deepseek-v4-pro with an independent qwen3.7-max Critic + mechanical
+    # fake-interactivity guards + the Playwright ground-truth probe, so real Mode 3 tools
+    # can be validated properly.
+    #
+    # EXCEPT B and F, which are dead formats: over 28 days they took 43 attempts and
+    # shipped ZERO tools (B 0/25, F 0/18), while D managed 8% and E 11%. The prompt tells
+    # the model not to pick them, but the model has a history of ignoring format
+    # instructions (2026-06-23: picked B twice in a row, burning both SPEC retries), so
+    # rewrite deterministically instead of rejecting and hoping it listens - the
+    # transformation/algorithmic content of the spec stays valid, only delivery changes.
+    _DEAD_FORMAT_REMAP = {"B": ("A", "1"), "F": ("D", "3")}
+    fmt_letter = spec.get("format", "").strip()[:1].upper()
+    if fmt_letter in _DEAD_FORMAT_REMAP:
+        new_fmt, new_mode = _DEAD_FORMAT_REMAP[fmt_letter]
+        print(f"  [!] Spec picked dead FORMAT '{fmt_letter}' (0 ships in 28 days) "
+              f"- remapping to '{new_fmt}'")
+        spec["format"] = f"{new_fmt} - remapped from dead format {fmt_letter}"
+        spec["mode"] = new_mode
 
     return True, "ok"
 

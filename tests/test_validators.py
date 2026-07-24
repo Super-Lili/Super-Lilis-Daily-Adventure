@@ -89,6 +89,29 @@ class ValidateSpecTests(unittest.TestCase):
         self.assertTrue(ok, reason)
         self.assertTrue(spec["format"].startswith("D"), spec["format"])
 
+    def test_dead_format_b_remapped_to_a(self):
+        # B shipped 0/25 over 28 days; the model ignores prompt bans, so
+        # validate_spec rewrites deterministically rather than rejecting.
+        spec = good_spec(format="B - multi-field form", mode="3")
+        ok, reason = validate_spec(spec)
+        self.assertTrue(ok, reason)
+        self.assertTrue(spec["format"].startswith("A"), spec["format"])
+        self.assertEqual(spec["mode"], "1")
+
+    def test_dead_format_f_remapped_to_d(self):
+        spec = good_spec(format="F - generator with inline editor", mode="3")
+        ok, reason = validate_spec(spec)
+        self.assertTrue(ok, reason)
+        self.assertTrue(spec["format"].startswith("D"), spec["format"])
+        self.assertEqual(spec["mode"], "3")
+
+    def test_live_formats_untouched(self):
+        for letter in ("A", "C", "D", "E"):
+            spec = good_spec(format=f"{letter} - some rationale", mode="3")
+            ok, reason = validate_spec(spec)
+            self.assertTrue(ok, reason)
+            self.assertTrue(spec["format"].startswith(letter), spec["format"])
+
     def test_short_test_input_rejected(self):
         ok, reason = validate_spec(good_spec(test_input="hi"))
         self.assertFalse(ok)

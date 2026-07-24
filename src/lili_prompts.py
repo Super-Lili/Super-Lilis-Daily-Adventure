@@ -756,15 +756,17 @@ TOOL-TO-PORTRAIT FIT (answer YES to all 3 before writing code):
 
 FORMAT SELECTION (declare in ---SPEC--- as FORMAT: [letter] - [why]):
   A - Single text input -> output (Mode 1/2)
-  B - Multi-field structured form (Mode 3 HTML)
   C - Wizard / progressive steps (Mode 3 HTML)
   D - Live canvas / real-time transformer (Mode 3 HTML)
   E - Ambient / environment, no input needed (Mode 3 HTML)
-  F - Generator + inline editor (Mode 3 HTML)
+  [NO] B (multi-field form) and F (generator + inline editor) are DISABLED - 43 attempts
+       across 28 days produced ZERO shippable tools in these two formats. Do not pick them.
+       A concept that wants a form belongs in A; one that wants an editor belongs in D.
+
   Pick the format the tool's CORE VALUE actually needs - do not force everything into one mode.
   [OK] Pick A (Mode 1/2) when the value is the computed RESULT and text/SVG delivers it fully.
-  [OK] Pick B/C/D/E/F (Mode 3 HTML) when the value genuinely needs live interaction:
-       dragging, real-time preview, canvas drawing, progressive input, in-place editing.
+  [OK] Pick D/E (Mode 3 HTML) when the value is CRAFT or PRESENCE rather than analysis:
+       real-time visual manipulation, a living instrument, an ambient object that just runs.
   CRITICAL for Mode 3: the JavaScript must do REAL work with the user's input - parse it,
   compute from it, build the DOM from it at runtime. Any of these = automatic rejection:
     [NO] CSS-only toggles pretending to be logic   [NO] hardcoded lookup tables / preset answers
@@ -839,7 +841,7 @@ Write BOTH English and Chinese diary versions. Chinese: re-expressed, not transl
 ---PATTERN---
 [Exactly one of: extract | generate | visualize | track | score | transform | interact | alert | gamify]
 ---SPEC---
-FORMAT: [A/B/C/D/E/F] - [one sentence: why this format]
+FORMAT: [A/C/D/E] - [one sentence: why this format]  (B and F are disabled)
 Q1-PASS: [exact moment of failure this tool addresses]
 Q2-PASS: [why the specific person would recognize it as built for them]
 Q3-PASS: [specific output - what can they do with it in 5 minutes?]
@@ -985,33 +987,37 @@ SPEC DESIGN RULES:
 
 FORMAT OPTIONS:
   A - Single text input -> computed output (Mode 1/2 - Python text or SVG)
-  B - Multi-field form (Mode 3 HTML)
   C - Wizard / progressive steps (Mode 3 HTML)
   D - Live canvas / real-time transformer (Mode 3 HTML)
   E - Ambient / environment, no input needed (Mode 3 HTML)
-  F - Generator + inline editor (Mode 3 HTML)
+  [NO] B and F are DISABLED (43 attempts / 28 days / ZERO shipped). Never pick them.
 
-FORMAT ROUTING - choose by what can be reliably BUILT and VALIDATED, not by what looks fancy:
-  >> If the tool's core value is COMPUTING something FROM text the user provides
-     (analyze, score, extract, rank, diff, restructure, summarise, detect, compare
-     parts of the input against each other) -> ALWAYS Format A (Mode 1/2).
-     Reason: Mode 1/2 tools are executed for real and judged on their ACTUAL output.
-     The same tool wrapped in HTML renders a static-looking preview and gets rejected
-     as "fake / does nothing with input" - because the analysis is exactly what Mode 1/2
-     already does honestly. Do NOT wrap analysis in a UI.
-  >> Choose Mode 3 (B-F) ONLY when the value is genuinely interactive or ambient and
-     literally cannot exist as computed text/SVG:
-       D - real-time visual manipulation (dragging, drawing, live canvas)
-       E - ambient/generative artifact with NO input analysis (a clock, a soundscape,
-           a generative visual that just runs)
-       F - generator where in-place editing IS the point
-       B/C - only if the multi-step interaction itself is the core value, not decoration
-  >> Litmus test: "does the user paste text and get insights back?" -> that is Format A.
-     When unsure, choose A. A real computed result beats a pretty shell that fakes it.
+FORMAT ROUTING - measured pass rates over 311 attempts in 28 days, not opinion:
+    D (live canvas)      8%  <- best odds
+    E (ambient object)  11%  <- best odds
+    A (text analysis)    3%
+    B (form)             0%  DISABLED
+    F (editor)           0%  DISABLED
+
+  The real dividing line is NOT text-vs-HTML. It is whether the tool's value
+  DEPENDS ON ALGORITHMIC DEPTH:
+  >> Value depends on deep analysis of the user's text (score it, judge it, find
+     insight in it) -> hardest case, ~3%. A single self-contained file with no
+     model and no corpus genuinely cannot analyse language deeply, so these tools
+     either get rejected for "no real algorithmic depth" or ship as thin wrappers.
+     If you choose this path, the algorithm must be a REAL named computation
+     (frequency, ratio, position, variance, set overlap) - not "understand" or "assess".
+  >> Value is CRAFT or PRESENCE - a live instrument, a tunable visual, an object
+     that simply runs well and feels right -> 2-3x better odds, and it matches
+     RULE 16 (physical-world emotional grounding). PREFER THIS when the friction
+     point allows it.
+  >> Litmus test: "would this friction point be solved better by a well-made OBJECT
+     than by a paragraph of analysis?" If yes -> D or E. If the user really must
+     paste text and get computed output -> A, with a genuinely mechanical algorithm.
 
 OUTPUT FORMAT - YOU MUST OUTPUT THESE EXACT TAGS OR THE SPEC WILL BE REJECTED:
 ---SPEC_START---
-FORMAT: [A/B/C/D/E/F] - [one sentence: why this format]
+FORMAT: [A/C/D/E] - [one sentence: why this format]  (B and F are disabled)
 MODE: [1/2/3] - [why]
 INPUT_MODEL: [exact structural description - what shape is the data the user provides?]
 OUTPUT_MODEL: [exact structural description - what shape is the result? MUST differ from input]
