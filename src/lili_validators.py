@@ -46,6 +46,15 @@ def _browser_interactivity_check(html: str, test_input: str) -> tuple[bool, bool
             browser = p.chromium.launch(args=["--no-sandbox"])
             page = browser.new_page()
             page.set_default_timeout(8000)
+
+            # Capture real JS runtime errors so a failed probe can tell the model
+            # WHY the DOM didn't react (e.g. a TypeError from a bad selector) instead
+            # of a generic "make the JS work" that repeats verbatim across retries.
+            console_errors: list[str] = []
+            page.on("console", lambda msg: console_errors.append(msg.text)
+                    if msg.type == "error" else None)
+            page.on("pageerror", lambda exc: console_errors.append(str(exc)))
+
             page.goto(f"file://{html_path}")
             page.wait_for_timeout(400)
 
@@ -93,6 +102,9 @@ def _browser_interactivity_check(html: str, test_input: str) -> tuple[bool, bool
         changed = bool(text_changed or nodes_changed)
         detail = (f"fields_filled={filled}, text_changed={text_changed}, "
                   f"nodes {before_nodes}->{after_nodes}")
+        if console_errors:
+            unique_errors = list(dict.fromkeys(console_errors))[:3]
+            detail += f", console_errors={unique_errors}"
         return True, changed, detail
     except Exception as e:
         return False, False, f"browser run failed: {type(e).__name__}: {e}"

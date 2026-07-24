@@ -672,6 +672,55 @@ def evolve():
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
+            elif "browser ground-truth" in build_reason.lower():
+                # Browser-verified: the DOM provably did not react. Generic "make it
+                # interactive" advice was repeating verbatim across patch attempts with
+                # zero new information. Surface real console errors when captured -
+                # give the model something concrete to fix instead of guessing again.
+                console_hint = ""
+                if "console_errors=" in build_reason:
+                    console_hint = (
+                        f"\nThe browser's own console reported these JS runtime errors - "
+                        f"fix these specific errors first, they are very likely why nothing ran:\n"
+                        f"{build_reason.split('console_errors=')[-1][:300]}\n"
+                    )
+                build_feedback = (
+                    f"CRITICAL FAILURE (browser-verified, not a guess): {build_reason}\n"
+                    f"{console_hint}\n"
+                    f"REQUIRED FIX - check these concrete wiring points, in order:\n"
+                    f"1. Are event listeners actually attached? (addEventListener on the right "
+                    f"element ID/class - verify the selector matches an element that exists)\n"
+                    f"2. Does the handler function get CALLED? Add no debug logging, but verify "
+                    f"the function body actually mutates the DOM (textContent/innerHTML/appendChild) "
+                    f"rather than just computing a value and discarding it.\n"
+                    f"3. Is the script tag placed AFTER the elements it references, or wrapped in "
+                    f"a DOMContentLoaded listener? A script referencing elements not yet parsed "
+                    f"silently fails.\n"
+                    f"4. If using getElementById/querySelector, log-check that the ID/class in JS "
+                    f"exactly matches the HTML (typos here are the most common cause).\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
+            elif any(s in build_reason.lower() for s in ("filler", "padded", "padding", "add no value", "adds no value", "hallucinat", "invented", "arbitrary")):
+                # Checked BEFORE generic/static: Critic wording for this failure class
+                # ("hallucinating a GENERIC Conclusion chapter") often contains the word
+                # "generic" itself, so this branch was being silently shadowed by the
+                # generic/static branch below since 2026-07-04 - found via routing test,
+                # confirmed against real ledger entries (07-04, 07-06, 07-10, 07-16).
+                build_feedback = (
+                    f"CRITICAL FAILURE: {build_reason}\n\n"
+                    f"Your tool INVENTED output entries that have no basis in the input (padding, "
+                    f"fabricated items, arbitrary values) to make the result look complete.\n\n"
+                    f"REQUIRED FIX - this is a DELETION task, not an addition task:\n"
+                    f"1. Remove every output row/section/item that cannot be traced to a specific "
+                    f"span of the input text.\n"
+                    f"2. Never emit placeholder entries (a 'Conclusion' with an invented position, "
+                    f"a generic final row) to complete an expected shape.\n"
+                    f"3. Let the output length follow the input content: 3 real items beat 5 where "
+                    f"2 are fabricated.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
             elif "generic" in build_reason.lower() or "static" in build_reason.lower() or "same regardless" in build_reason.lower():
                 build_feedback = (
                     f"CRITICAL FAILURE: {build_reason}\n\n"
@@ -748,21 +797,6 @@ def evolve():
                     f"'from main import process', call process() with 2-3 plain strings, and assert "
                     f"basic properties (non-empty, length, contains a substring). Do not call any "
                     f"helper function that isn't process() itself.\n\n"
-                    f"Spec transformation: {spec.get('transformation','')}\n\n"
-                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
-                )
-            elif any(s in build_reason.lower() for s in ("filler", "padded", "padding", "add no value", "adds no value", "hallucinat", "invented", "arbitrary")):
-                build_feedback = (
-                    f"CRITICAL FAILURE: {build_reason}\n\n"
-                    f"Your tool INVENTED output entries that have no basis in the input (padding, "
-                    f"fabricated items, arbitrary values) to make the result look complete.\n\n"
-                    f"REQUIRED FIX - this is a DELETION task, not an addition task:\n"
-                    f"1. Remove every output row/section/item that cannot be traced to a specific "
-                    f"span of the input text.\n"
-                    f"2. Never emit placeholder entries (a 'Conclusion' with an invented position, "
-                    f"a generic final row) to complete an expected shape.\n"
-                    f"3. Let the output length follow the input content: 3 real items beat 5 where "
-                    f"2 are fabricated.\n\n"
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
