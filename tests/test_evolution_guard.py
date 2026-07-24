@@ -27,7 +27,11 @@ class SanitizeTests(unittest.TestCase):
         self.assertIn("example", ns["X"])
 
     def test_trailing_backslash_stripped(self):
-        content = f'X = """{_sanitize_embedded("ends with backslash \\")}"""\n'
+        # Python 3.11 (our CI target) forbids a backslash inside an f-string's
+        # {} expression - compute it first, then interpolate the plain value.
+        raw_with_trailing_backslash = "ends with backslash " + "\\"
+        safe = _sanitize_embedded(raw_with_trailing_backslash)
+        content = f'X = """{safe}"""\n'
         import ast
         ast.parse(content)
 
