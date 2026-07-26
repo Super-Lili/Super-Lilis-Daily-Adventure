@@ -854,27 +854,27 @@ programmer implements verbatim, and every step must run:
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-07-19
+# Last updated: 2026-07-26
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: File-Ingestion-First Architecture
-WHY: Every tool this week assumed clean text pasted into a textarea; real users have PDFs, screenshots, and scanned forms.
-HOW: import pdfplumber; with pdfplumber.open(user_file) as pdf: text = pdf.pages[0].extract_text()
+RULE: Empty Input Must Return Structured Error, Not Blank Page
+WHY: The Pre-Meeting Intent Memo shipped without an empty-input guard—a blank submission would produce undefined behavior.
+HOW: At line 1 of every process() function: `if not text or not text.strip(): return "<html><body><p>Please paste your meeting notes to begin.</p></body></html>"`
 
-RULE: Input-Guard With Specific Feedback
-WHY: Multiple shipped tools returned identical output for empty input or wildly different inputs, making them indistinguishable from static pages.
-HOW: if len(input_text.strip()) < 20: return "⚠️ Need at least 20 words. You provided {len(input_text.strip())}. Try pasting a full paragraph."
+RULE: Every Tool File Must Contain At Least One Complete Example Input and Expected Output
+WHY: The Headline Resonance Ledger and Name Fold Animator both shipped with "no examples in code"—meaning the next developer (or Lili next week) can't verify behavior without guessing.
+HOW: In a module docstring or comment block near the top: `# EXAMPLE INPUT: "CVS Pharmacy 05/12/2026 Insulin: $32.47\nWalgreens 05/13/2026 Test Strips: $24.99"\n# EXPECTED OUTPUT: [{"date": "2026-05-12", "item": "Insulin", "cost": 32.47}, ...]`
 
-RULE: Single-File HTML Cap Only
-WHY: Every tool that attempted multi-file architecture was truncated mid-attribute; single-file HTML via Jinja2 is the only reliable output format.
-HOW: from jinja2 import Template; html = Template(SINGLE_FILE_TEMPLATE).render(data=processed)
+RULE: JavaScript Must Actually Read and Transform User Input—Not Just Select DOM Elements
+WHY: The 7/24 build failures (multiple) and the 7/22 failure all involved JavaScript that selected elements and then did nothing with their values—a pattern the critic catches but only after auto-approval.
+HOW: Before shipping, verify: if the user types "test" in the input field, does the output change? If not, add: `const userValue = document.getElementById('input').value; outputElement.textContent = transform(userValue);`
 
-RULE: Output Must Vary With Input
-WHY: The most common Critic rejection was "JS logic is generic, same output regardless of input"—a shipped tool that doesn't respond to input is a static page.
-HOW: Include a 3-example test in the docstring: \"\"\"Examples: Input "cat" → "3 letters, 1 syllable" | Input "elephant" → "8 letters, 3 syllables" | Input "" → Error message\"\"\"
+RULE: Output Must Be Structured With At Least 3 Labeled Sections
+WHY: Unstructured output warnings appeared on the Name Fold Animator—the tool might produce a raw text blob instead of organized, usable results.
+HOW: Return format must include section markers: `output = "## Summary\n{summary}\n\n## Details\n{details}\n\n## Next Steps\n{steps}"`
 
-RULE: No Undefined Audio Context
-WHY: The Humming Page that shipped connected a slider to no audio node; Web Audio API requires explicit node chain verification.
-HOW: const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain).connect(ctx.destination);
+RULE: Use pdfplumber for Any Tool That Claims to Process PDFs or Receipts
+WHY: The 7/22 build failure showed "line item extraction is fundamentally broken"—the tool used basic string splitting on receipt text instead of a real PDF parser.
+HOW: `import pdfplumber; with pdfplumber.open("receipt.pdf") as pdf: text = pdf.pages[0].extract_text()`
 """
