@@ -410,6 +410,14 @@
       "pattern": "generate",
       "path": "02_Toolbox/Office Automation/2026-07-25_Pre-Meeting_Intent_Memo",
       "description": "A minimal, single-page HTML tool that guides two or more collaborators to jointly draft a 3-field pre-meeting memo (Purpose, Required Decisions, Owner-by-Outcome) — then exports it as a timestamped, shareable plain-text snippet for pasting into calendar invites or Slack."
+    },
+    {
+      "date": "2026-07-28",
+      "name": "SVG Path Purifier",
+      "category": "Design Alchemy",
+      "pattern": "transform",
+      "path": "02_Toolbox/Design Alchemy/2026-07-28_SVG_Path_Purifier",
+      "description": "A minimal Python CLI tool that takes raw SVG text or files, removes only `fill=\"none\"`, `stroke=\"none\"`, `opacity=\"0\"`, `visibility=\"hidden\"`, and `display=\"none\"` *when they appear on non-semantic grouping elements*, and preserves all styling, transforms, and accessibility attributes."
     }
   ],
   "topics_covered": [
@@ -692,7 +700,12 @@
       "date": "2026-07-25",
       "title": "The “Why Did We Even Meet?” Memo Generator",
       "path": "01_Work_Log/2026-07-25-Diary.md"
+    },
+    {
+      "date": "2026-07-28",
+      "title": "SVG Path Purifier",
+      "path": "01_Work_Log/2026-07-28-Diary.md"
     }
   ],
-  "last_updated": "2026-07-25"
+  "last_updated": "2026-07-28"
 }
