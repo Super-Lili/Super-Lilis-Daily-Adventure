@@ -34,11 +34,27 @@ jobs:
 
       - name: Check
         id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           DATE=$(TZ='Asia/Shanghai' date +'%Y-%m-%d')
           DOW=$(TZ='Asia/Shanghai' date +'%u')
           TOOL_EXISTS=$(find 02_Toolbox -maxdepth 2 -name "${DATE}*" -type d | head -1)
+          # Throttle workflow_dispatch specifically: each real attempt (success or
+          # rest-day) produces one "Daily Adventure" commit for that date. We run 3
+          # designed schedule slots per day; on 2026-07-29 an unexplained daily
+          # workflow_dispatch from outside this repo was firing a 4th attempt every
+          # morning, silently burning an extra SCOUT->SPEC->BUILD API cycle. This
+          # only throttles manual/API (workflow_dispatch) triggers once 3+ attempts
+          # already happened today - the 3 native `schedule` slots are NEVER
+          # throttled, so same-day resilience retries (e.g. after a rest day) keep
+          # working exactly as before, and a deliberate manual re-trigger during
+          # active debugging still only gets capped after 3 real attempts already ran.
+          ATTEMPTS_TODAY=$(git log --oneline --grep="${DATE} Daily Adventure" | wc -l | tr -d ' ')
           if [ "$DOW" = "7" ] || [ -n "$TOOL_EXISTS" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$ATTEMPTS_TODAY" -ge 3 ]; then
+            echo "  workflow_dispatch throttled: $ATTEMPTS_TODAY attempts already made today."
             echo "skip=true" >> $GITHUB_OUTPUT
           else
             echo "skip=false" >> $GITHUB_OUTPUT
