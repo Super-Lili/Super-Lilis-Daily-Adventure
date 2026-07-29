@@ -418,6 +418,14 @@
       "pattern": "transform",
       "path": "02_Toolbox/Design Alchemy/2026-07-28_SVG_Path_Purifier",
       "description": "A minimal Python CLI tool that takes raw SVG text or files, removes only `fill=\"none\"`, `stroke=\"none\"`, `opacity=\"0\"`, `visibility=\"hidden\"`, and `display=\"none\"` *when they appear on non-semantic grouping elements*, and preserves all styling, transforms, and accessibility attributes."
+    },
+    {
+      "date": "2026-07-29",
+      "name": "Recall Anchor Journal",
+      "category": "Education Evolution",
+      "pattern": "track",
+      "path": "02_Toolbox/Education Evolution/2026-07-29_Recall_Anchor_Journal",
+      "description": "A minimal, time-stamped recall journal that prompts users to record *only* the moment they successfully retrieve a concept without prompting — then auto-schedules gentle follow-ups based on that real-world retrieval evidence."
     }
   ],
   "topics_covered": [
@@ -705,7 +713,12 @@
       "date": "2026-07-28",
       "title": "SVG Path Purifier",
       "path": "01_Work_Log/2026-07-28-Diary.md"
+    },
+    {
+      "date": "2026-07-29",
+      "title": "The “I Remembered It Yesterday” Tracker",
+      "path": "01_Work_Log/2026-07-29-Diary.md"
     }
   ],
-  "last_updated": "2026-07-28"
+  "last_updated": "2026-07-29"
 }
