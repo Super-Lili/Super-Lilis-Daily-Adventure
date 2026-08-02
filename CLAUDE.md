@@ -1,7 +1,7 @@
 # CLAUDE.md — Super-Lili Project Memory
 
 > Written for the Claude agent picking up this project. Read this first.
-> Last updated: 2026-07-19 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
+> Last updated: 2026-08-02 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
 
 ---
 
@@ -157,6 +157,18 @@ Cross-provider fallback chain (R1 → v4-pro → qwen3.7-max); empty responses a
 - `0955e35` **`lili_ledger_report.py`**: aggregates `tool_quality_ledger.jsonl` over a 28-day window — pass rate by ISO week, keyword-bucketed failure modes (taxonomy synced with retry branches), per-category performance, repeat-offender concepts (3+ fails). Injected into the weekly evolution prompt so reflection cites counted facts instead of impressions of the last few days. Implements the "Error frequency quantification" item from Future Backlog (now removed from backlog as done).
 - Test suite grew 43 → 53 (sanitizer on the incident payload, guarded-write refusal/acceptance matrix, bucket classification, report from sample ledger).
 
+### Phase 11 — Retry-Routing Fix, Ground-Truth Probe Blind Spot, Format B/F Retired (2026-07-24 to 2026-07-25)
+
+- `fc79d91` **Retry-feedback keyword routing self-shadowing fixed**: the padding-specific retry branch (added 07-04 for F-009) sat *after* a broader generic/static branch in the elif chain. Critic rejections often contained both "generic" and "hallucinat" wording, so they were always caught by the earlier, less specific branch — the padding-specific feedback was dead code for 20 days without any error being visible in logs. Fixed by moving the more specific branch first; added `tests/test_retry_routing.py` as a standing regression test over real historical rejection strings instead of one-off manual verification. See FINDINGS F-015.
+- `9f53675` **Ground-truth probe blind spot fixed**: `_browser_interactivity_check` only drove `textarea`/`input[type=text]`/contenteditable elements — a tool whose real interaction model is selection (`<select>`, radio/checkbox, `[role=option]`/`.chip`/`.option`) could never pass regardless of whether its JS worked. Added selection-driving to the probe, plus `_is_environment_noise()` to stop misreporting headless-sandbox artifacts (e.g. Clipboard API permission denial) as code bugs. See FINDINGS F-016.
+- `1327dfe` **F-002 partially overturned, formats B/F retired**: `lili_ledger_report.py` broken down by output format over 311 attempts (28 days) showed the real reliability boundary isn't Mode 1/2 vs Mode 3 — it's whether the tool's value depends on deep semantic/algorithmic analysis of user text. Format B (multi-field form) and F (generator+inline edit) had a 0% pass rate (0/25, 0/18) and are now disabled in SPEC generation, with `validate_spec` deterministically remapping B→A and F→D as a hard fallback (model has a track record of ignoring format instructions). See FINDINGS F-017.
+- Test suite grew 53 → 66 (60 after the routing fix, 63 after the ground-truth probe fix, 66 after the format B/F retirement).
+
+### Phase 12 — Ghost workflow_dispatch Trigger & Throttle (2026-07-29)
+
+- `6461cab` **Unexplained daily trigger investigated, throttle added as defense-in-depth**: a `workflow_dispatch` event fired every day at ~00:05 UTC with second-level precision, actor `Super-Lili` — not traced to this Mac's crontab/launchd, any local Claude scheduled task, or the repo's own workflows (which reference only `GITHUB_TOKEN`/`DEEPSEEK_API_KEY`/`QWEN_API_KEY`, none of which is the legacy PAT `lili-deploy` found in the account's token settings). Root cause is **not yet confirmed** — owner is testing whether deleting that PAT stops it. Regardless of cause, `lili_daily.yml` now refuses `workflow_dispatch` once 3+ real attempts (success or rest-day) already ran that day; native `schedule` triggers are never throttled (07-24 alone had 7 legitimate schedule + manual attempts during active debugging, which a blanket cap would have blocked).
+- This is an infrastructure/security finding, not a model-capability one — logged here rather than in FINDINGS.md, which is scoped to AI capability boundaries with model attribution.
+
 ---
 
 ## Key Architecture Decisions
@@ -166,6 +178,7 @@ Cross-provider fallback chain (R1 → v4-pro → qwen3.7-max); empty responses a
 - **Mode 2**: `process(text)` returns SVG string
 - **Mode 3**: `process(text)` returns full HTML page (runs in sandboxed iframe — Web Audio, Canvas, localStorage all available)
 - **Direction (2026-07)**: route by validation reliability — analysis tools go Mode 1/2 (executed for real); Mode 3 reserved for genuinely interactive/ambient concepts (browser-verified via Playwright). See FINDINGS F-001/F-002.
+- **Refined 2026-07-25**: the real reliability boundary is not the output format but whether the tool's value depends on deep semantic/algorithmic analysis of user text (~3% pass, 28-day) vs. craft/ambient tools (8-11% pass). Formats B (multi-field form) and F (generator+inline edit) had 0% pass rate over 25 attempts combined and are now disabled in SPEC generation. See FINDINGS F-017 (partially overturns F-002).
 
 ### Category System
 - 🎨 Design Alchemy
@@ -236,7 +249,7 @@ Written by project owner xiaojiahaina, based on the neo-slow media framework (20
 ## Unfinished / Future Direction
 
 - **Open to public**: once Issues are open to real users, authentic needs become the best evolution fuel
-- **Quality ceiling**: current tools are uneven — 51 tools as of 2026-07-19 (28-day ledger: 4% pass rate per build attempt, 10/280), maybe 2-3 reach "creative professional uses it weekly" standard. Direction is right, needs time
+- **Quality ceiling**: current tools are uneven — 58 tools as of 2026-08-02 (28-day ledger: 4.8% pass rate per build attempt, 14/294), maybe 2-3 reach "creative professional uses it weekly" standard. Direction is right, needs time
 
 ---
 
