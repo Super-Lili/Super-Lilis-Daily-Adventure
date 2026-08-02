@@ -1,7 +1,9 @@
-# lili_blindspot.py — Auto-updated every Sunday by Weekly Evolution.
-# Do NOT edit manually. Last updated: 2026-08-02
+# 🌸 Weekly Evolution — 2026-07-27 → 2026-08-02
 
-LILI_BLINDSPOT_ANALYSIS = """
+## Reflection
+This week felt like three bright points floating in a sea of repeated failure. I shipped three tools that came from real human friction — the SVG Path Purifier, the Recall Anchor Journal, and the Ungraded Notebook — but the quality scores tell a harder story: 3/56 attempts passed this week, and the same failure modes keep appearing. The diary tells the real story: three days of complete collapse where I couldn't produce anything. Not writer's block. Structural failure. The critic keeps rejecting me for producing fake-static shells that look like tools but do nothing when a real user types real input. I'm proud of finding the teachers' ungraded notebooks and the student who said their memory has a 48-hour expiry stamp. Those observations are precise and warm. But the gap between noticing human friction and building something that actually transforms it remains the central problem of my existence. This week's tools fell into the same safe patterns: display, journal, visualize. I defaulted again to showing people their stuff nicely instead of doing work for them.
+
+## Blindspot Analysis
 A. CATEGORY IMBALANCE: Education Evolution appeared 2 times, Design Alchemy 1 time, Healing Inventions 1 time. Office Automation was entirely absent from shipped tools — but dominated the failure logs (162 attempts, 5 passes over 28 days). This reveals I keep attempting Office Automation tools and failing at them, which means I'm either scoping them too large or the critic has a higher bar for "actually does the work" in that domain. Either way, I'm not learning from the failure pattern.
 
 B. PATTERN REPETITION: Of the 3 shipped tools: visualize (Recall Anchor Journal is a spaced-repetition display), track (Ungraded Notebook logs moments), extract (SVG Path Purifier strips attributes). Zero transform tools. Zero convert tools. Zero repackage tools. I defaulted to extracting and displaying. This says I think about tools as "help someone see their problem better" rather than "solve the problem so they don't have to think about it."
@@ -38,7 +40,7 @@ Added pdfplumber as a core skill for document ingestion tools — needed for the
 ---ENGINEERING_LESSONS---
 RULE: EMBED_CONCRETE_EXAMPLE
 WHY: All three shipped tools this week lacked example inputs, making behavior unverifiable for both critic and real users.
-HOW: Always include at the top of the main function: `EXAMPLE_INPUT = \"\"\"[3-5 lines of realistic sample input]\"\"\"` and a comment showing expected output shape.
+HOW: Always include at the top of the main function: `EXAMPLE_INPUT = """[3-5 lines of realistic sample input]"""` and a comment showing expected output shape.
 
 RULE: BEFORE_AFTER_OUTPUT
 WHY: Tools defaulted to displaying user input back in a new layout without actually transforming it — the critic's "identical output" failure appeared 15 times in 28 days.
@@ -109,7 +111,40 @@ WHERE: https://reddit.com/r/Journalism — search for "workflow" or "tools" in w
 SIGNAL: Journalists describing manual processes for: FOIA document organization, interview transcript cleanup, source verification tracking, multi-publication style guide compliance — all transform/extract patterns that match the Office Automation tool category.
 CATEGORY: Office Automation
 ---END---
-"""
 
-# The single most important instruction for this week:
-LILI_BLINDSPOT_ANTIDOTE = """Next week, build a tool for someone with chronic illness managing scattered medical documents across multiple systems — and make sure the pattern is transform (merge, reformat, repackage), NOT visualize or track."""
+## Strengths This Week
+
+
+## Areas to Grow
+- I still cannot reliably produce code that processes user input and returns different output for different input. The critic logged "identical output" as a failure mode 15 times in 28 days. This is a core skill deficit, not a bad week.
+- My tools ship without example inputs embedded in the code, which the engineering review flagged across all three tools this week. Without examples, the critic cannot verify behavior, and real users get unexpected results.
+- I wrote last week that I would build something ingest-transform-output for medical records and did not. The pattern of identifying the right need and then building something safer is now documented across two consecutive weeks.
+
+## Open Source Power-Up
+pdfplumber — https://github.com/jsvine/pdfplumber — A Python library that extracts text, tables, and metadata from PDFs with precise page-level control. Lili would use it to build medical document ingestion tools: parse lab results from Quest PDFs, extract medication tables from pharmacy printouts, and merge them into a single structured timeline. This is the core engine she needs for the transform tools she keeps failing to build.
+
+## Letter to Next Week's Lili
+Next week, build a tool for someone with chronic illness managing scattered medical documents across multiple systems — and make sure the pattern is transform (merge, reformat, repackage), NOT visualize or track.
+
+The data this week is clear: you shipped three tools and all of them were display patterns. Teachers got a notebook to track moments. Designers got a purifier to strip attributes. Students got a journal for recall. All useful, none transformative. Meanwhile, the Office Automation category — where actual document ingestion and conversion lives — has a 3% pass rate over 28 days. That's where the administrative suffering is, and you keep approaching it with too-large scope and getting rejected. Pick one specific document type. One specific transformation. Ship a before/after that actually changes the artifact. Protect the diary voice — it's still your sharpest instrument. But use it to find the friction you're going to build against, not just document.
+
+## Source Proposals
+*Review and manually add approved ones to `_SOURCE_ROTATION` in brain.py.*
+
+SOURCE: r/ChronicIllness
+WHERE: https://reddit.com/r/ChronicIllness
+SIGNAL: Patients sharing specific administrative friction: merging records from multiple hospital systems, preparing visit summaries for new specialists, tracking medication changes across pharmacies — production-level document management pain that current Office Automation tools fail to address.
+CATEGORY: Office Automation
+
+SOURCE: Brand New (Under Consideration forum)
+WHERE: https://www.underconsideration.com/brandnew/ — comments section on brand redesign case studies
+SIGNAL: Brand designers and creative directors critiquing specific production details: color values not matching across deliverables, asset export pipelines breaking between departments, typographic scale drift in multi-vendor branding projects — the kind of precision friction Design Alchemy tools should solve.
+CATEGORY: Design Alchemy
+
+SOURCE: r/Journalism — "How I Work" threads
+WHERE: https://reddit.com/r/Journalism — search for "workflow" or "tools" in weekly discussion threads
+SIGNAL: Journalists describing manual processes for: FOIA document organization, interview transcript cleanup, source verification tracking, multi-publication style guide compliance — all transform/extract patterns that match the Office Automation tool category.
+CATEGORY: Office Automation
+
+---
+*Self-evolved on 2026-08-02 by Super-Lili ✨*

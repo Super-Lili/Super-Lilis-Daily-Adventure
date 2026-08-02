@@ -854,27 +854,27 @@ programmer implements verbatim, and every step must run:
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-07-26
+# Last updated: 2026-08-02
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: Empty Input Must Return Structured Error, Not Blank Page
-WHY: The Pre-Meeting Intent Memo shipped without an empty-input guard—a blank submission would produce undefined behavior.
-HOW: At line 1 of every process() function: `if not text or not text.strip(): return "<html><body><p>Please paste your meeting notes to begin.</p></body></html>"`
+RULE: EMBED_CONCRETE_EXAMPLE
+WHY: All three shipped tools this week lacked example inputs, making behavior unverifiable for both critic and real users.
+HOW: Always include at the top of the main function: `EXAMPLE_INPUT = \"\"\"[3-5 lines of realistic sample input]\"\"\"` and a comment showing expected output shape.
 
-RULE: Every Tool File Must Contain At Least One Complete Example Input and Expected Output
-WHY: The Headline Resonance Ledger and Name Fold Animator both shipped with "no examples in code"—meaning the next developer (or Lili next week) can't verify behavior without guessing.
-HOW: In a module docstring or comment block near the top: `# EXAMPLE INPUT: "CVS Pharmacy 05/12/2026 Insulin: $32.47\nWalgreens 05/13/2026 Test Strips: $24.99"\n# EXPECTED OUTPUT: [{"date": "2026-05-12", "item": "Insulin", "cost": 32.47}, ...]`
+RULE: BEFORE_AFTER_OUTPUT
+WHY: Tools defaulted to displaying user input back in a new layout without actually transforming it — the critic's "identical output" failure appeared 15 times in 28 days.
+HOW: Output must include at minimum two labeled sections: `## Input Summary` and `## Transformed Result` where the second section contains data not present in the first.
 
-RULE: JavaScript Must Actually Read and Transform User Input—Not Just Select DOM Elements
-WHY: The 7/24 build failures (multiple) and the 7/22 failure all involved JavaScript that selected elements and then did nothing with their values—a pattern the critic catches but only after auto-approval.
-HOW: Before shipping, verify: if the user types "test" in the input field, does the output change? If not, add: `const userValue = document.getElementById('input').value; outputElement.textContent = transform(userValue);`
+RULE: EMPTY_INPUT_GUARD
+WHY: Two of three tools this week had no guard for empty or very short input, causing silent failures.
+HOW: First line of process() should be: `if not user_input or len(user_input.strip()) < 20: return "⚠️ Please paste at least 20 words of text to process."`
 
-RULE: Output Must Be Structured With At Least 3 Labeled Sections
-WHY: Unstructured output warnings appeared on the Name Fold Animator—the tool might produce a raw text blob instead of organized, usable results.
-HOW: Return format must include section markers: `output = "## Summary\n{summary}\n\n## Details\n{details}\n\n## Next Steps\n{steps}"`
+RULE: STRUCTURED_SECTIONS
+WHY: Engineering review flagged "output likely unstructured" on two tools — output was a wall of text with no navigation.
+HOW: Every output must use at minimum three `## Markdown Headers` with distinct named sections.
 
-RULE: Use pdfplumber for Any Tool That Claims to Process PDFs or Receipts
-WHY: The 7/22 build failure showed "line item extraction is fundamentally broken"—the tool used basic string splitting on receipt text instead of a real PDF parser.
-HOW: `import pdfplumber; with pdfplumber.open("receipt.pdf") as pdf: text = pdf.pages[0].extract_text()`
+RULE: NO_STATIC_TEMPLATE
+WHY: The dominant failure mode this month was fake-static code (75 occurrences) — tools that return the same HTML regardless of user input.
+HOW: Before shipping, run `diff <(echo "input A" | tool) <(echo "different input B" | tool)` — the outputs must differ.
 """
