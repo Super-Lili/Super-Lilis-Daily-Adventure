@@ -27,6 +27,8 @@ def route(build_reason: str) -> str:
         "unmatched", "f-string", "invalid escape",
     )):
         return "string-escaping"
+    if "promise broken" in r:
+        return "promise-broken"
     if "unterminated" in r or "syntax error" in r:
         return "truncation"
     if "browser ground-truth" in r:
@@ -88,6 +90,20 @@ class RetryRoutingTests(unittest.TestCase):
         # mistaken for the browser-verified branch - different confidence, different advice.
         reason = "Critic: the JavaScript does nothing with user input, this is a static tool"
         self.assertEqual(route(reason), "generic-static")
+
+    def test_promise_broken_routes_correctly(self):
+        # The exact class of failure that shipped SVG Path Purifier broken: the
+        # spec's own MUST_NOT_CONTAIN commitment failed against real output.
+        reason = ('PROMISE BROKEN: the spec committed to removing [\'fill="none"\'] from '
+                  "the output (MUST_NOT_CONTAIN), but process(test_input) still contains "
+                  "it in the actual output.")
+        self.assertEqual(route(reason), "promise-broken")
+
+    def test_promise_broken_not_shadowed_by_rigid_input(self):
+        # MUST_CONTAIN/MUST_NOT_CONTAIN (field names, underscored) must not collide
+        # with the rigid-input branch's "must contain" (space-separated) keyword.
+        reason = "PROMISE BROKEN: output does not contain ['total: 42'] (MUST_CONTAIN)."
+        self.assertEqual(route(reason), "promise-broken")
 
 
 if __name__ == "__main__":

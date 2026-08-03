@@ -1030,6 +1030,21 @@ Q1_PASS: [exact moment of failure this tool addresses]
 Q2_PASS: [why the specific person recognizes it as built for them]
 Q3_PASS: [specific output - what do they do with it in 5 minutes?]
 TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
+MUST_NOT_CONTAIN: [literal substrings that must be ABSENT from process(TEST_INPUT)'s output if
+  your TRANSFORMATION claims to remove/strip/clean/fix something - derived directly from
+  TEST_INPUT. Write "none" only if your transformation genuinely adds/computes rather than
+  removes anything. Comma-separated, one per removed thing.]
+MUST_CONTAIN: [literal substrings or computed values that MUST appear in process(TEST_INPUT)'s
+  output if your TRANSFORMATION claims to add/extract/compute something. Write "none" only if
+  your transformation is pure removal with nothing new to check for. Comma-separated.]
+  MUST_NOT_CONTAIN and MUST_CONTAIN CANNOT both be "none" - every tool must commit to at least
+  one thing about its own TEST_INPUT that can be mechanically checked against its actual output,
+  not just judged by an LLM's impression. (Real incident this prevents: a tool named "SVG Path
+  Purifier" claimed to remove fill="none" from <g> elements; its README said so, its Critic
+  review passed, but the removal code silently matched zero elements due to an XML namespace
+  bug - the attribute was still in the output every time. Nothing ever mechanically checked the
+  promise against the actual output, so it shipped broken and stayed broken until a human tested
+  it by hand. MUST_NOT_CONTAIN: fill="none" would have caught this in one line at BUILD time.)
 ---SPEC_END---
 
 CRITICAL: Your response MUST start with ---SPEC_START--- and end with ---SPEC_END---.

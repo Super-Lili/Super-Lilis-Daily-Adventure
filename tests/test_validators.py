@@ -33,6 +33,8 @@ def good_spec(**overrides):
         "q2_pass": "yes - an editor recognises their own meeting notes",
         "q3_pass": "yes - the ranked list is actionable immediately",
         "test_input": "Alice will draft the brief by Friday. Bob reviews it next week.",
+        "must_not_contain": [],
+        "must_contain": ["Alice"],  # baseline satisfies the promise-commitment gate
     }
     spec.update(overrides)
     return spec

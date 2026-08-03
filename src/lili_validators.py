@@ -265,6 +265,24 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
     if len(test_input) < 15:
         return False, f"TEST_INPUT is missing or too short. Got: '{test_input[:50]}'"
 
+    # Check 4b: the spec must commit to at least one mechanically checkable claim
+    # about its own TEST_INPUT/output - not just an LLM's impression of quality.
+    # Real incident this prevents: "SVG Path Purifier" claimed (in its own README)
+    # to remove fill="none" from <g> elements. The removal code silently matched
+    # zero elements due to an XML namespace bug. Nothing ever checked the promise
+    # against the actual output - the Critic judged it "clean" on vibes, and it
+    # shipped broken. MUST_NOT_CONTAIN: 'fill="none"' would have caught this in
+    # one line at BUILD time, before it ever reached a human.
+    must_not_contain = spec.get("must_not_contain", [])
+    must_contain = spec.get("must_contain", [])
+    if not must_not_contain and not must_contain:
+        return False, (
+            "MUST_NOT_CONTAIN and MUST_CONTAIN are both empty/none. Every spec must commit to "
+            "at least one literal, mechanically-checkable claim about process(TEST_INPUT)'s "
+            "actual output - something removed (MUST_NOT_CONTAIN) or something added/computed "
+            "(MUST_CONTAIN). This is checked against the real output, not judged by an LLM."
+        )
+
     # Check 5: reject un-deliverable promises. The tool is a single self-contained file with
     # no database, no pretrained model, no internet. Specs that promise comparison against a
     # "curated corpus", "database of exemplars", "trained model", or factual knowledge lookups
@@ -418,8 +436,30 @@ def parse_spec_response(content: str) -> dict:
         "q2_pass":            field("Q2_PASS"),
         "q3_pass":            field("Q3_PASS"),
         "test_input":         field("TEST_INPUT"),
+        "must_not_contain":   _parse_literal_list(field("MUST_NOT_CONTAIN")),
+        "must_contain":       _parse_literal_list(field("MUST_CONTAIN")),
         "spec_raw":           raw,
     }
+
+
+def _parse_literal_list(raw_value: str) -> list[str]:
+    """Split a MUST_CONTAIN/MUST_NOT_CONTAIN spec field into literal substrings.
+    Treats 'none' (any casing, with or without trailing punctuation) as an
+    empty commitment list rather than a literal string to search for."""
+    value = raw_value.strip().strip(".").strip()
+    if not value or value.lower() in ("none", "n/a", "na"):
+        return []
+    items = []
+    for part in value.split(","):
+        item = part.strip()
+        # Only strip a genuinely WRAPPING quote pair (first char == last char,
+        # both quotes) - a literal like fill="none" ends in a quote that is
+        # part of the value itself, not a wrapper, and must survive intact.
+        if len(item) >= 2 and item[0] == item[-1] and item[0] in ('"', "'"):
+            item = item[1:-1].strip()
+        if item and item.lower() not in ("none", "n/a"):
+            items.append(item)
+    return items
 
 
 def parse_build_response(content: str) -> dict:
@@ -561,6 +601,8 @@ def _append_quality_ledger(tool_name: str, category: str,
 
 def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                   format_type: str = "", audience: str = "",
+                  must_contain: list[str] | None = None,
+                  must_not_contain: list[str] | None = None,
 ) -> tuple[bool, str]:
     """Validate the tool: syntax, browser compatibility, output quality."""
     import subprocess, sys, ast as _ast
@@ -832,6 +874,31 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                     f"Must produce structured, substantive output (80+ chars, 2+ lines)."
                 )
             print(f"  [OK] Output check passed ({len(output)} chars, {len(output_lines)} lines).")
+
+            # 6b. PROMISE CHECK: mechanically verify the SPEC's own commitments against the
+            # actual output of process(test_input) - not an LLM's impression. This is the
+            # exact check that would have caught "SVG Path Purifier" shipping with its
+            # removal logic silently matching nothing: the spec said MUST_NOT_CONTAIN
+            # 'fill="none"' but the real output still contained it.
+            still_present = [s for s in (must_not_contain or []) if s in output]
+            if still_present:
+                return False, (
+                    f"PROMISE BROKEN: the spec committed to removing {still_present!r} from the "
+                    f"output (MUST_NOT_CONTAIN), but process(test_input) still contains "
+                    f"{still_present[0]!r} in the actual output. The removal/fix logic is not "
+                    f"working - this is proven by execution, not a guess."
+                )
+            missing = [s for s in (must_contain or []) if s not in output]
+            if missing:
+                return False, (
+                    f"PROMISE BROKEN: the spec committed to producing {missing!r} in the output "
+                    f"(MUST_CONTAIN), but process(test_input) does not contain {missing[0]!r} in "
+                    f"the actual output. The claimed computation/extraction is not happening - "
+                    f"this is proven by execution, not a guess."
+                )
+            if must_contain or must_not_contain:
+                print(f"  [OK] Promise check passed ({len(must_not_contain or [])} removed, "
+                      f"{len(must_contain or [])} added, all verified in actual output).")
 
         # 7. Two-dimension quality score.
         #    Mode 3 HTML tools: score the code structure (not the raw HTML output).

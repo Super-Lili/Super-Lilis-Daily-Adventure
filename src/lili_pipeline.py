@@ -616,6 +616,8 @@ def evolve():
             description=scout.get("description", ""),
             format_type=tool_format,
             audience=today_audience,
+            must_contain=spec.get("must_contain"),
+            must_not_contain=spec.get("must_not_contain"),
         )
         if build_ok:
             print("  [OK] Build validated.")
@@ -653,6 +655,27 @@ def evolve():
                     f"raw string, compute your data in Python first, then Template.render(var=value). "
                     f"Do NOT use f-strings anywhere near the markup.\n\n"
                     f"Rewrite process() this way. Verify every ( [ {{ has a matching close.\n\n"
+                    f"Spec transformation: {spec.get('transformation','')}\n\n"
+                    f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
+                )
+            elif "promise broken" in build_reason.lower():
+                # Mechanically proven, not guessed: process(test_input) was actually run and
+                # the spec's own MUST_CONTAIN/MUST_NOT_CONTAIN commitment failed against the
+                # real output. This is a targeted logic bug (e.g. a namespace/matching bug
+                # silently no-oping a removal step) - patch mode should fix ONLY the specific
+                # matching/computation logic, not rewrite the whole tool.
+                build_feedback = (
+                    f"CRITICAL FAILURE (proven by running your own code, not a guess): {build_reason}\n\n"
+                    f"REQUIRED FIX: your process() function was ACTUALLY EXECUTED on the spec's "
+                    f"TEST_INPUT and the promised substring was checked against the REAL output. "
+                    f"Debug the specific step that should remove/add this content:\n"
+                    f"1. If removing something: is your matching logic actually finding the target? "
+                    f"(common cause: XML/HTML namespace prefixes, case sensitivity, whitespace "
+                    f"differences, or matching the wrong tag/attribute name)\n"
+                    f"2. If adding/computing something: is the computed value actually written to "
+                    f"the output, or computed and then discarded?\n"
+                    f"3. Add a quick manual check: does printing your intermediate variable right "
+                    f"before building the output show the value you expect?\n\n"
                     f"Spec transformation: {spec.get('transformation','')}\n\n"
                     f"REMEMBER: Start your response with ---CODE--- on its own line. No prose before it."
                 )
