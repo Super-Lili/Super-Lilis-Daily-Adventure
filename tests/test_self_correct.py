@@ -32,6 +32,18 @@ def _spec(**overrides):
     return spec
 
 
+_HTML_OUTPUT_CODE = '''
+def process(text: str) -> str:
+    return "<html><body><h1>Tool</h1><p>Static, ignores input</p></body></html>"
+
+''' + "\n".join(f"# padding line {i}" for i in range(50)) + '''
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+'''
+
+
 _SCOUT = {"solution": "Test Tool", "category": "Office Automation", "description": "a test tool"}
 
 def _pad(n: int) -> str:
@@ -189,6 +201,78 @@ class SelfCorrectPromiseTests(unittest.TestCase):
         finally:
             lili_pipeline.call_gemini_simple = original
         self.assertEqual(call_count[0], 2)  # both rounds actually spent
+        self.assertIn("Summary:", result)
+
+
+class SelfCorrectMode3BrowserCheckTests(unittest.TestCase):
+    """P1 fix (2026-08-03): Mode 3 tools previously got no execution feedback
+    at all in this inner loop - their real defect class (DOM not reacting to
+    clicks) only surfaced later in the expensive validate_tool() chain. This
+    was the single largest failure bucket (47% of 298 ledger attempts:
+    fake-static + browser-ground-truth combined)."""
+
+    def test_mode3_static_html_triggers_patch_when_playwright_available(self):
+        import lili_pipeline as lp
+        ran, _, detail = lp._browser_interactivity_check("<html><body>x</body></html>", "test")
+        if not ran:
+            self.skipTest(f"Real browser probe unavailable in this environment ({detail[:80]}) "
+                          "- fail-open path covered separately")
+
+        skill_dir = _make_skill_dir(_HTML_OUTPUT_CODE)
+        spec = _spec(mode="3 - interactive HTML tool")
+        seen_feedback = []
+
+        def fake_call(prompt, deepseek_prompt=None):
+            seen_feedback.append(prompt)
+            return "---CODE---\n" + _CORRECT_CODE + "\n---TEST---\nassert True\n---BUILD_END---"
+
+        original = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = fake_call
+        try:
+            self_correct_code(skill_dir, _SCOUT, spec, "2026-08-04")
+        finally:
+            lili_pipeline.call_gemini_simple = original
+        self.assertTrue(any("did NOT react" in p for p in seen_feedback))
+
+    def test_mode3_check_fails_open_when_playwright_unavailable(self):
+        # Simulate the fail-open path directly: patch the check to report
+        # ran=False (Playwright unavailable), which must NOT be treated as a
+        # defect - the loop should accept the code as clean, zero patches.
+        import lili_pipeline as lp
+        skill_dir = _make_skill_dir(_HTML_OUTPUT_CODE)
+        spec = _spec(mode="3 - interactive HTML tool")
+
+        original_check = lp._browser_interactivity_check
+        lp._browser_interactivity_check = lambda html, inp: (False, False, "playwright unavailable (ImportError)")
+        original_call = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = _RaisingClient()
+        try:
+            result = self_correct_code(skill_dir, _SCOUT, spec, "2026-08-04")
+        finally:
+            lp._browser_interactivity_check = original_check
+            lili_pipeline.call_gemini_simple = original_call
+        self.assertIn("<html>", result)
+
+    def test_mode1_tools_skip_browser_check_entirely(self):
+        # A Mode 1 tool must never be sent through the browser probe, even if
+        # its text output happens to contain HTML-like characters - only
+        # spec["mode"] starting with "3" should trigger it.
+        import lili_pipeline as lp
+        skill_dir = _make_skill_dir(_CORRECT_CODE)
+        spec = _spec(mode="1 - plain text")
+
+        def _fail_if_called(html, inp):
+            raise AssertionError("browser check must not run for Mode 1 tools")
+
+        original_check = lp._browser_interactivity_check
+        lp._browser_interactivity_check = _fail_if_called
+        original_call = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = _RaisingClient()
+        try:
+            result = self_correct_code(skill_dir, _SCOUT, spec, "2026-08-04")
+        finally:
+            lp._browser_interactivity_check = original_check
+            lili_pipeline.call_gemini_simple = original_call
         self.assertIn("Summary:", result)
 
 

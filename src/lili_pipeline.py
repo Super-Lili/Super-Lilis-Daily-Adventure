@@ -33,6 +33,7 @@ from lili_validators import (
     _strip_fences,
     _append_quality_ledger,
     run_tool_output,
+    _browser_interactivity_check,
 )
 
 try:
@@ -311,6 +312,24 @@ def self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
                         f"which the spec promised to produce (MUST_CONTAIN). Real output:\n"
                         f"{output[:500]}"
                     )
+                elif str(spec.get("mode", "")).strip().startswith("3"):
+                    # Mode 3 tools are HTML pages whose real defect class (DOM not
+                    # reacting to clicks) can't be seen by text substring checks -
+                    # this was previously invisible until the expensive validate_tool()
+                    # chain, so the model never got a chance to see and fix it itself.
+                    # Fail-open: Playwright unavailable/crash -> ran=False -> treated
+                    # as clean here, exactly like validate_tool()'s own probe.
+                    ran, changed, detail = _browser_interactivity_check(output, test_input or "a realistic test input")
+                    if ran and not changed:
+                        observed = (
+                            f"Ran successfully and produced HTML, but a real headless browser "
+                            f"click-test found the DOM did NOT react to the test input ({detail}). "
+                            f"This means the JavaScript is not actually wired to the input/controls."
+                        )
+                    else:
+                        if round_num > 1:
+                            print(f"  🔧 Self-correction: fixed in round {round_num - 1}.")
+                        return code
                 else:
                     if round_num > 1:
                         print(f"  🔧 Self-correction: fixed in round {round_num - 1}.")

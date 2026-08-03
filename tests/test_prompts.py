@@ -39,6 +39,49 @@ class ScoutPromptTests(unittest.TestCase):
         for tag in ("---TITLE---", "---DIARY---", "---SOLUTION---", "---SCOUT_END---"):
             self.assertIn(tag, p)
 
+    def test_daily_offender_concepts_injected_when_present(self):
+        # P2 fix (2026-08-03): concept-level repeat offenders should reach the
+        # SCOUT prompt every day, not just after Sunday's gate. Uses a temp
+        # ledger with a concept failing 3+ times to avoid depending on
+        # whatever's in the real repo's ledger at test time.
+        import tempfile
+        from pathlib import Path as _Path
+        import json as _json
+        import lili_evolution_gate as _geval
+
+        tmp_ledger = _Path(tempfile.mkdtemp()) / "ledger.jsonl"
+        with tmp_ledger.open("w", encoding="utf-8") as f:
+            for _ in range(4):
+                f.write(_json.dumps({
+                    "date": "2026-08-01", "tool": "Phone Screenshot Organizer",
+                    "category": "Office Automation", "format": "C",
+                    "passed": False, "reason": "no real algorithmic depth",
+                }) + "\n")
+
+        import lili_ledger_report as _report
+        original_path = _report.LEDGER_PATH
+        _report.LEDGER_PATH = tmp_ledger
+        try:
+            p = build_scout_prompt("2026-08-04")
+        finally:
+            _report.LEDGER_PATH = original_path
+        self.assertIn("Phone Screenshot Organizer", p)
+        self.assertIn("DO NOT propose a tool resembling", p)
+
+    def test_no_offender_block_when_ledger_clean(self):
+        import tempfile
+        from pathlib import Path as _Path
+        import lili_ledger_report as _report
+
+        tmp_ledger = _Path(tempfile.mkdtemp()) / "empty_ledger.jsonl"
+        original_path = _report.LEDGER_PATH
+        _report.LEDGER_PATH = tmp_ledger
+        try:
+            p = build_scout_prompt("2026-08-04")
+        finally:
+            _report.LEDGER_PATH = original_path
+        self.assertNotIn("DO NOT propose a tool resembling", p)
+
 
 class SpecPromptTests(unittest.TestCase):
     def setUp(self):

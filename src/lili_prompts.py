@@ -148,6 +148,35 @@ TOOL_PATTERNS = [
 ]
 
 
+ALL_CATEGORIES = ["Design Alchemy", "Education Evolution", "Office Automation", "Healing Inventions"]
+
+# Three independent ban sources (recent-use, recent-failure, evolution-gate) each
+# reason locally about "should THIS category be avoided" with no idea the others
+# exist - their union can silently eliminate every real choice, forcing SCOUT
+# into whatever's left regardless of fit. 2026-08-03 ledger data: with this
+# unguarded, Office Automation absorbed 56% of all attempts at a 3% pass rate -
+# consistent with it being the last category standing on most days, not a
+# genuine per-topic fit. This floor guarantees real choice survives the union.
+_MIN_CATEGORIES_AVAILABLE = 2
+
+
+def _apply_category_floor(source_lists: list[list[str]], all_categories: list[str] = ALL_CATEGORIES,
+                          min_available: int = _MIN_CATEGORIES_AVAILABLE) -> list[str]:
+    """Merge several independent ban-source lists into one, guaranteeing at
+    least `min_available` categories remain choosable. Categories flagged by
+    MORE sources (stronger evidence) are kept over single-source bans when
+    something has to give - a category that's both recently-failed AND
+    evolution-deprioritized is a safer cut than one only flagged once."""
+    from collections import Counter
+    counts = Counter(c for src in source_lists for c in src)
+    if not counts:
+        return []
+    max_bannable = max(0, len(all_categories) - min_available)
+    # Sort by (evidence count desc, name for determinism), keep the strongest.
+    ranked = sorted(counts.keys(), key=lambda c: (-counts[c], c))
+    return sorted(ranked[:max_bannable])
+
+
 def _get_recent_categories(n: int = 4) -> list[str]:
     try:
         from lili_memory import load_memory
@@ -565,7 +594,7 @@ def _build_context_block(today: str) -> dict:
         evolved_cats = load_evolution_knobs().get("deprioritized_categories", [])
     except Exception:
         evolved_cats = []
-    banned_cats = sorted(set(recent_cats) | set(failed_cats) | set(evolved_cats))
+    banned_cats = _apply_category_floor([recent_cats, failed_cats, evolved_cats])
     avoid_cats = (
         f"\nBANNED CATEGORIES TODAY: {', '.join(banned_cats)}\n"
         f"  (used in the last 2 days, OR failed BUILD 2+ times in the last 3 days, OR "
@@ -583,6 +612,31 @@ def _build_context_block(today: str) -> dict:
     overused = [p for p, n in pat_counts.items() if n >= 2]
     avoid_patterns = f"\nAVOID these solution patterns today (used too recently): {', '.join(overused)}" if overused else ""
 
+    # Daily concept-level offender check (P2, 2026-08-03): F-020's banned_concepts
+    # only takes effect after Sunday's LLM-proposed, gate-approved batch - too slow
+    # to stop a concept SCOUT keeps re-proposing between Sundays (e.g. the phone
+    # screenshot organizer failed 9x across 28 days with the ledger recording the
+    # same description verbatim each time, and no gate ever fed that back to SCOUT
+    # before the next Sunday). This check is purely mechanical (same repeat-offender
+    # definition as the gate: 3+ ledger failures, matched on the tool description's
+    # first 60 chars) so it runs every day, standalone, with no LLM proposal or
+    # backtest cycle needed. Note: exact-prefix matching means it only catches a
+    # concept re-proposed with near-identical wording, not a rephrased duplicate -
+    # a semantic-similarity upgrade is future work if this proves too narrow.
+    try:
+        from lili_evolution_gate import _repeat_offender_concepts
+        from lili_ledger_report import load_entries
+        offender_concepts = sorted(_repeat_offender_concepts(load_entries(days=28)))
+    except Exception:
+        offender_concepts = []
+    avoid_concepts = (
+        f"\nDO NOT propose a tool resembling any of these - each has failed BUILD 3+ times "
+        f"in the last 28 days under various phrasings, they are structurally not buildable "
+        f"as a single self-contained file:\n" +
+        "\n".join(f"  - {c}" for c in offender_concepts)
+        if offender_concepts else ""
+    )
+
     episodic_memory = _build_episodic_memory()
 
     return {
@@ -596,6 +650,7 @@ def _build_context_block(today: str) -> dict:
         "audience_block": audience_block,
         "editor_ctx": editor_ctx,
         "avoid_cats": avoid_cats,
+        "avoid_concepts": avoid_concepts,
         "blindspot_nudge": blindspot_nudge,
         "engineering_nudge": engineering_nudge,
         "episodic_memory": episodic_memory,
@@ -640,7 +695,7 @@ def _build_mission_section(ctx: dict) -> str:
     return f"""═══════════════════════════════════════════════════════
 YOUR 4 MISSION AREAS - PICK ONE FOR TODAY
 ═══════════════════════════════════════════════════════
-{ctx['avoid_cats']}{ctx['blindspot_nudge']}
+{ctx['avoid_cats']}{ctx['avoid_concepts']}{ctx['blindspot_nudge']}
 
 🎓 EDUCATION EVOLUTION
   Learning overwhelm, skill gaps, knowledge management, note-taking, research synthesis,
