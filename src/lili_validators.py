@@ -316,6 +316,29 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
             "(MUST_CONTAIN). This is checked against the real output, not judged by an LLM."
         )
 
+    # Check 4c (2026-08-03): universality gate. Freshness pressure (never repeat a topic,
+    # 190+ days of daily runs) has been pushing SCOUT into an increasingly narrow long tail -
+    # a real example: "label ambiguous invoice dates for accrual vs cash-basis tax treatment,"
+    # specific and never-done-before, but only a sliver of freelancers doing their own
+    # bookkeeping in that specific method would ever recognize it. FRICTION_LOCK correctly
+    # demands ONE precise person/moment, but nothing previously checked whether that moment
+    # generalizes at all - so "specific" quietly became "niche." Require the spec to name
+    # 2+ CLEARLY DISTINCT professional roles (not variations of the same persona) who would
+    # all recognize this exact friction point; if the model can only name one narrow role,
+    # the concept is too niche and should be rethought before BUILD spends a cycle on it.
+    common_roles = spec.get("common_roles", [])
+    if len(common_roles) < 2:
+        return False, (
+            f"COMMON_ROLES names fewer than 2 distinct roles ({common_roles!r}). Name at least "
+            "2 CLEARLY DIFFERENT professional roles (not variations of the same persona - e.g. "
+            "'freelance photographer' and 'freelance illustrator' are the same persona, not two) "
+            "who would all recognize this EXACT friction point. If you can only think of one "
+            "narrow role, the concept is too niche - pick a friction point with broader reach."
+        )
+    normalized = [r.lower().strip() for r in common_roles if r.strip()]
+    if len(set(normalized)) < 2:
+        return False, "COMMON_ROLES lists the same role twice (or near-duplicates) - name genuinely distinct roles."
+
     # Check 5: reject un-deliverable promises. The tool is a single self-contained file with
     # no database, no pretrained model, no internet. Specs that promise comparison against a
     # "curated corpus", "database of exemplars", "trained model", or factual knowledge lookups
@@ -471,6 +494,7 @@ def parse_spec_response(content: str) -> dict:
         "test_input":         field("TEST_INPUT"),
         "must_not_contain":   _parse_literal_list(field("MUST_NOT_CONTAIN")),
         "must_contain":       _parse_literal_list(field("MUST_CONTAIN")),
+        "common_roles":       _parse_literal_list(field("COMMON_ROLES")),
         "spec_raw":           raw,
     }
 

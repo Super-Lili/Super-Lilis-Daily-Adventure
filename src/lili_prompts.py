@@ -673,11 +673,10 @@ YOUR CURRENT SKILL INVENTORY:
 {ctx['skills_list']}
 
 ═══════════════════════════════════════════════════════
-EXISTING TOOLS - STRICT DUPLICATION BAN
+EXISTING TOOLS - NO IDENTICAL REBUILDS
 ═══════════════════════════════════════════════════════
 You have already built these tools. Study this list carefully.
-DO NOT build anything conceptually similar to any of them.
-If your proposed tool could be described with the same verb + noun as one below, reject it.
+DO NOT build the same tool again - same input, same output, same algorithm.
 
 {ctx['existing_tools_block']}
 
@@ -686,7 +685,13 @@ YOUR MEMORY - WHAT YOU'VE ALREADY DONE
 ═══════════════════════════════════════════════════════
 {ctx['memory_ctx']}
 
-Do NOT repeat a topic or tool you've already done. Find a genuinely fresh friction point.
+Do NOT rebuild an existing tool verbatim. But "never done this exact tool before" does NOT
+mean you must always hunt for an unused noun phrase - chasing pure novelty for 190+ days is
+exactly what pushes topics into niche, barely-recognizable territory (see UNIVERSALITY, Rule
+20, in the SPEC phase). It is FINE, and often better, to revisit a UNIVERSAL task category
+already covered (meeting notes, transcript cleanup, brief writing, file organising) with a
+genuinely different algorithmic angle or a sharper friction point within it - that beats
+inventing a novel-sounding but narrow scenario just to avoid repetition.
 {ctx['episodic_memory']}"""
 
 
@@ -1066,6 +1071,15 @@ SPEC DESIGN RULES:
    would be faked and rejected. Ask: can this run with ZERO external data? If no, redesign.
 3. For Mode 3 HTML: define all 3 UI states (Rule 19)
 4. Q1/Q2/Q3 must be specific and verifiable - not vague
+5. UNIVERSALITY (Rule 20, 2026-08-03): FRICTION LOCK demands ONE precise person and moment -
+   but precise must not mean niche. After 190+ days of "never repeat a topic," the easy,
+   broadly-recognized friction points are used up, and the pull toward "genuinely fresh" keeps
+   pushing choices into ever-narrower territory (real incident: "label invoice dates by accrual
+   vs cash-basis tax treatment" - specific and never done before, but only a sliver of
+   freelancers doing their own bookkeeping in that one method would recognize it). Before
+   finalizing INPUT_MODEL, ask: would at least 2 CLEARLY DIFFERENT professional roles (not two
+   flavors of the same persona) hit this exact wall? If you can only picture one narrow role,
+   the friction point itself needs to change - not just the tool design around it.
 
 FORMAT OPTIONS:
   A - Single text input -> computed output (Mode 1/2 - Python text or SVG)
@@ -1111,6 +1125,11 @@ UI_STATE_RESULT: [final state - what next action does the user take?]
 Q1_PASS: [exact moment of failure this tool addresses]
 Q2_PASS: [why the specific person recognizes it as built for them]
 Q3_PASS: [specific output - what do they do with it in 5 minutes?]
+COMMON_ROLES: [name 2+ CLEARLY DIFFERENT professional roles - not variations of the same
+  persona (e.g. "freelance photographer" and "freelance illustrator" are the same persona,
+  not two) - who would all recognize this EXACT friction point. If you can only name one
+  narrow role, the concept is too niche - go back and widen the friction point itself.
+  Comma-separated.]
 TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
 MUST_NOT_CONTAIN: [literal substrings that must be ABSENT from process(TEST_INPUT)'s output if
   your TRANSFORMATION claims to remove/strip/clean/fix something - derived directly from

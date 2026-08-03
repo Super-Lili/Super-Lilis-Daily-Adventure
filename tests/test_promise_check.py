@@ -77,6 +77,7 @@ def _good_spec(**overrides):
         "test_input": "Alice will draft the brief by Friday. Bob reviews it next week.",
         "must_not_contain": [],
         "must_contain": [],
+        "common_roles": ["Editor", "Podcast Producer"],
     }
     spec.update(overrides)
     return spec

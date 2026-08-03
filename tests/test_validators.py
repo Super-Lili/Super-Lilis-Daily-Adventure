@@ -35,6 +35,7 @@ def good_spec(**overrides):
         "test_input": "Alice will draft the brief by Friday. Bob reviews it next week.",
         "must_not_contain": [],
         "must_contain": ["Alice"],  # baseline satisfies the promise-commitment gate
+        "common_roles": ["Editor", "Podcast Producer"],  # baseline satisfies the universality gate
     }
     spec.update(overrides)
     return spec
