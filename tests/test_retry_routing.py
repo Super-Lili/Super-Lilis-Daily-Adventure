@@ -105,6 +105,20 @@ class RetryRoutingTests(unittest.TestCase):
         reason = "PROMISE BROKEN: output does not contain ['total: 42'] (MUST_CONTAIN)."
         self.assertEqual(route(reason), "promise-broken")
 
+    def test_differential_generic_result_routes_to_generic_static(self):
+        # _differential_test()'s failure message (harness plan F) contains
+        # "generic" and no other branch's keywords, so it correctly falls
+        # into the existing generic-static branch's advice - lock this in so
+        # a future edit doesn't accidentally shadow it into the wrong branch.
+        reason = (
+            "Output is generic: three unrelated inputs (a tech-layoffs paragraph, a "
+            "sourdough-starter paragraph, and the spec's own test input) produced "
+            "91-97% identical output (threshold: 85%). Longest identical stretch: "
+            "'Thank you for your submission.'. The tool is not reading the content "
+            "of its input, just filling a template around it."
+        )
+        self.assertEqual(route(reason), "generic-static")
+
 
 if __name__ == "__main__":
     unittest.main()

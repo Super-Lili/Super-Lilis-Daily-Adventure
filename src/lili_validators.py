@@ -17,6 +17,39 @@ from lili_llm import call_gemini_simple, call_qwen_critic
 
 
 # ─────────────────────────────────────────────────────────────
+# SHARED EXECUTION HELPER
+# ─────────────────────────────────────────────────────────────
+
+def run_tool_output(main_py: str, sample_input: str, timeout: int = 30) -> tuple[str, str, int]:
+    """Actually execute a tool's process() on `sample_input`, the same way the
+    browser runtime does (USER_INPUT injected as a global, code exec'd top to
+    bottom). Returns (stdout, stderr, returncode).
+
+    This is the single source of truth for "run the tool for real" - used by
+    the main output-quality check, the promise check (F-018), the self-
+    correction inner loop, and differential testing, so all four see the
+    exact same execution semantics instead of four slightly different
+    subprocess incantations drifting apart over time.
+    """
+    import subprocess
+    try:
+        result = subprocess.run(
+            [sys.executable, "-c",
+             f"import sys; sys.argv=['tool']\n"
+             f"USER_INPUT = {repr(sample_input)}\n"
+             f"exec(open({repr(main_py)}).read())"
+            ],
+            capture_output=True, text=True, timeout=timeout,
+            env={**os.environ, "USER_INPUT": sample_input},
+        )
+        return (result.stdout or "").strip(), (result.stderr or "").strip(), result.returncode
+    except subprocess.TimeoutExpired:
+        return "", f"execution timed out after {timeout}s", -1
+    except Exception as e:
+        return "", f"{type(e).__name__}: {e}", -1
+
+
+# ─────────────────────────────────────────────────────────────
 # MODE 3 BROWSER GROUND-TRUTH VALIDATION
 # ─────────────────────────────────────────────────────────────
 
@@ -598,6 +631,77 @@ def _append_quality_ledger(tool_name: str, category: str,
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
+# ─────────────────────────────────────────────────────────────
+# DIFFERENTIAL TESTING (harness plan F, 2026-08-04)
+# ─────────────────────────────────────────────────────────────
+
+# Two deliberately unrelated domains. Any tool that genuinely computes from
+# its input MUST produce different output for these - a job-market analysis
+# and a bread-starter journal share no real content. If a tool's output is
+# still >85% similar across all three, it isn't reading the input, it's
+# filling a template.
+_DIFF_SAMPLE_A = (
+    "Layoffs in the semiconductor sector accelerated this quarter as AI chip "
+    "demand shifted hiring toward fewer, more specialized roles. Three "
+    "recruiters told me remote-first postings dropped by half since January, "
+    "and candidates without a machine learning background are being filtered "
+    "out at the resume stage regardless of years of experience."
+)
+_DIFF_SAMPLE_B = (
+    "My sourdough starter split into a thin gray liquid this morning after I "
+    "forgot to feed it for five days. I poured off the hooch, stirred in "
+    "fresh flour and water at a one-to-one ratio, and I'm hoping it recovers "
+    "by tomorrow since I promised my neighbor a loaf for her birthday dinner."
+)
+
+_DIFFERENTIAL_SIMILARITY_THRESHOLD = 0.85
+
+
+def _differential_test(main_py: str, primary_output: str) -> tuple[bool, str]:
+    """Run process() on two inputs from unrelated domains and compare all
+    three outputs (primary + 2 samples) pairwise via difflib. If every pair
+    exceeds the similarity threshold, the tool is provably not computing from
+    its input - reject with the measured ratios and a concrete diff excerpt.
+
+    Fail-open on execution problems: if either sample run crashes or errors,
+    that is a DIFFERENT failure mode already caught by the primary demo_input
+    execution elsewhere in validate_tool() - this check simply skips rather
+    than piling on, since a secondary-input crash isn't evidence of genericness.
+    """
+    import difflib
+
+    out_a, err_a, rc_a = run_tool_output(main_py, _DIFF_SAMPLE_A)
+    out_b, err_b, rc_b = run_tool_output(main_py, _DIFF_SAMPLE_B)
+    if rc_a != 0 or rc_b != 0 or not out_a.strip() or not out_b.strip():
+        print(f"  · Differential test skipped (secondary run failed: "
+              f"rc_a={rc_a}, rc_b={rc_b}) - not evidence of genericness on its own.")
+        return True, "ok"
+
+    def ratio(x: str, y: str) -> float:
+        return difflib.SequenceMatcher(None, x, y).ratio()
+
+    r_primary_a = ratio(primary_output, out_a)
+    r_primary_b = ratio(primary_output, out_b)
+    r_a_b = ratio(out_a, out_b)
+
+    if all(r > _DIFFERENTIAL_SIMILARITY_THRESHOLD for r in (r_primary_a, r_primary_b, r_a_b)):
+        # Find a concrete matching block to quote as evidence, not just the ratio.
+        matcher = difflib.SequenceMatcher(None, out_a, out_b)
+        block = matcher.find_longest_match(0, len(out_a), 0, len(out_b))
+        excerpt = out_a[block.a: block.a + block.size][:120].strip()
+        return False, (
+            f"Output is generic: three unrelated inputs (a tech-layoffs paragraph, a "
+            f"sourdough-starter paragraph, and the spec's own test input) produced "
+            f"{min(r_primary_a, r_primary_b, r_a_b) * 100:.0f}-"
+            f"{max(r_primary_a, r_primary_b, r_a_b) * 100:.0f}% identical output "
+            f"(threshold: {_DIFFERENTIAL_SIMILARITY_THRESHOLD * 100:.0f}%). "
+            f"Longest identical stretch: {excerpt!r}. The tool is not reading the "
+            f"content of its input, just filling a template around it."
+        )
+    print(f"  [OK] Differential test passed - outputs diverge across unrelated inputs "
+          f"(similarity: {r_primary_a:.2f}/{r_primary_b:.2f}/{r_a_b:.2f}).")
+    return True, "ok"
+
 
 def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
                   format_type: str = "", audience: str = "",
@@ -778,16 +882,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         "don't know where to start. The weekly report is due tomorrow morning."
     )
     try:
-        result = subprocess.run(
-            [sys.executable, "-c",
-             f"import sys; sys.argv=['tool']\n"
-             f"USER_INPUT = {repr(demo_input)}\n"
-             f"exec(open({repr(main_py)}).read())"
-            ],
-            capture_output=True, text=True, timeout=30,
-            env={**os.environ, "USER_INPUT": demo_input}
-        )
-        output = (result.stdout or "").strip()
+        output, tool_stderr, _rc = run_tool_output(main_py, demo_input, timeout=30)
         output_lines = [l for l in output.splitlines() if l.strip()]
 
         # Detect Mode 3 HTML output - scoring the raw HTML is meaningless
@@ -797,7 +892,7 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
         # below (hardcoded lookup tables, pre-filled data-* nodes, unrendered templates)
         # plus the JS-source Critic review are what keep Mode 3 honest.
 
-        stderr_snippet = (result.stderr or "").strip()[:300]
+        stderr_snippet = tool_stderr[:300]
         if is_html_output:
             # Mode 3: HTML app. Check length + detect hardcoded lookup tables in JS.
             source_check = open(main_py, encoding="utf-8").read()
@@ -899,6 +994,17 @@ def validate_tool(skill_dir: str, test_input: str = "", description: str = "",
             if must_contain or must_not_contain:
                 print(f"  [OK] Promise check passed ({len(must_not_contain or [])} removed, "
                       f"{len(must_contain or [])} added, all verified in actual output).")
+
+            # 6c. DIFFERENTIAL TEST: run process() on two more inputs from
+            # deliberately unrelated domains and compare outputs pairwise. A
+            # tool whose output barely changes across wildly different inputs
+            # is not really computing from the input - it's a template. This
+            # mechanizes what used to be an LLM Critic's subjective "output is
+            # generic" judgment call (F-009/F-017) into a quantified, evidence-
+            # backed check: which lines are identical, not a vibe.
+            ok, diff_reason = _differential_test(main_py, output)
+            if not ok:
+                return False, diff_reason
 
         # 7. Two-dimension quality score.
         #    Mode 3 HTML tools: score the code structure (not the raw HTML output).

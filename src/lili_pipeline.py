@@ -32,6 +32,7 @@ from lili_validators import (
     _extract_requirements,
     _strip_fences,
     _append_quality_ledger,
+    run_tool_output,
 )
 
 try:
@@ -248,6 +249,96 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
 
     return skill_dir
 
+
+def self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
+                      max_rounds: int = 2) -> str:
+    """Harness plan A (2026-08-04): a cheap, execution-grounded inner loop that
+    runs BEFORE the full (expensive) validate_tool() chain.
+
+    The old flow made the model write 200-320 lines blind, never seeing its
+    own output before submitting - the human equivalent of writing code with
+    the editor's output pane covered. A human catches a bug like SVG Path
+    Purifier's namespace no-op (F-018) in five seconds by looking at real
+    output; the model never got that five seconds.
+
+    This loop actually runs process(test_input) for real (syntax check, then
+    execution, then the same MUST_CONTAIN/MUST_NOT_CONTAIN promise check
+    validate_tool() will run later) and, if something is provably wrong, feeds
+    the model the OBSERVED REALITY (the real traceback, the real output) and
+    asks for a targeted patch - up to max_rounds times - before the code ever
+    reaches the expensive Critic/browser-ground-truth/quality-scoring stages.
+
+    Cheap in the common case: if the first-written code already works, this
+    spends zero extra LLM calls - only a local syntax check and one local
+    subprocess run. Returns the (possibly corrected) code; the caller still
+    writes it to skill_dir and runs the full validate_tool() afterward as the
+    final authority, so a self-correction bug here can never ship anything
+    the existing validation chain wouldn't have caught anyway - this loop
+    only makes attempts more likely to arrive at BUILD already fixed.
+    """
+    import ast as _ast
+
+    main_py = f"{skill_dir}/main.py"
+    test_input = spec.get("test_input", "")
+    must_contain = spec.get("must_contain") or []
+    must_not_contain = spec.get("must_not_contain") or []
+
+    for round_num in range(1, max_rounds + 1):
+        code = Path(main_py).read_text(encoding="utf-8")
+
+        # Cheap check 1: syntax. No LLM call needed to detect this.
+        try:
+            _ast.parse(code)
+        except SyntaxError as e:
+            observed = f"SyntaxError at line {e.lineno}: {e.msg}"
+        else:
+            # Cheap check 2: actually run it, exactly as the browser would.
+            output, stderr, rc = run_tool_output(main_py, test_input or "a realistic test input")
+            if rc != 0 or (stderr and not output):
+                observed = f"Execution crashed (exit {rc}). Real stderr:\n{stderr[:500]}"
+            else:
+                still_present = [s for s in must_not_contain if s in output]
+                missing = [s for s in must_contain if s not in output]
+                if still_present:
+                    observed = (
+                        f"Ran successfully but the output still contains {still_present!r}, "
+                        f"which the spec promised to remove (MUST_NOT_CONTAIN). Real output:\n"
+                        f"{output[:500]}"
+                    )
+                elif missing:
+                    observed = (
+                        f"Ran successfully but the output is missing {missing!r}, "
+                        f"which the spec promised to produce (MUST_CONTAIN). Real output:\n"
+                        f"{output[:500]}"
+                    )
+                else:
+                    if round_num > 1:
+                        print(f"  🔧 Self-correction: fixed in round {round_num - 1}.")
+                    return code  # genuinely fine - no LLM call spent verifying it
+
+        print(f"  🔧 Self-correction round {round_num}/{max_rounds}: {observed[:120]}...")
+        feedback = (
+            f"Your code was just RUN FOR REAL and here is what actually happened - not a "
+            f"guess, the literal observed behaviour:\n\n{observed}\n\n"
+            f"Fix ONLY this specific problem. Keep everything else that already works."
+        )
+        patched = call_gemini_simple(
+            build_code_prompt(today, scout, spec, feedback, prev_code=code),
+            deepseek_prompt=build_code_prompt(today, scout, spec, feedback, slim=True, prev_code=code),
+        )
+        if not patched:
+            print("  ⚠ Self-correction: no response from any model, keeping previous code.")
+            return code
+        new_build = parse_build_response(patched)
+        new_code = new_build.get("code", "").strip()
+        if not new_code:
+            print("  ⚠ Self-correction: patch response had no ---CODE--- section, keeping previous code.")
+            return code
+        Path(main_py).write_text(_strip_fences(new_code), encoding="utf-8")
+
+    print(f"  ⚠ Self-correction: still not clean after {max_rounds} rounds, "
+          f"handing off to the full validation chain.")
+    return Path(main_py).read_text(encoding="utf-8")
 
 
 def save_rest_day(today: str, reason: str):
@@ -608,6 +699,14 @@ def evolve():
 
         skill_dir = save_tool(today, merged, source_badge)
         merged["_skill_dir"] = skill_dir
+
+        # Harness plan A: cheap execution-grounded self-correction BEFORE the
+        # expensive validation chain (Critic, browser ground-truth, quality
+        # scoring). Runs the code for real and lets the model see its own
+        # actual output/errors, the same way a human would catch a bug by
+        # glancing at the terminal instead of submitting blind.
+        prev_code = self_correct_code(skill_dir, scout, spec, today)
+        merged["code"] = prev_code  # keep merged/saved dict in sync with any self-correction
 
         print("🔬 Validating tool...")
         build_ok, build_reason = validate_tool(
