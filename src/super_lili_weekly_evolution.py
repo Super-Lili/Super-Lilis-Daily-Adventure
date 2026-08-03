@@ -516,6 +516,28 @@ EVOLUTION TASKS:
    CATEGORY: [which tool category this would feed: Design Alchemy / Office Automation /
               Education Evolution / Healing Inventions]
 
+15. EVOLUTION KNOBS — STRUCTURED, MACHINE-CHECKABLE PROPOSAL:
+   Everything above is prose fed into next week's prompt — nobody checks whether
+   it actually changes anything. This task is different: propose SPECIFIC,
+   MECHANICAL adjustments that a script will verify against the real 28-day
+   ledger data before they're allowed to take effect. If your proposal doesn't
+   match what the data shows, it gets silently dropped — so ground every item
+   in an actual number from the ledger stats above, not a vibe.
+
+   Output valid JSON with exactly these keys:
+   {{
+     "deprioritized_categories": ["Category Name", ...],  // categories whose
+        measured pass rate this week is clearly below the others — 0-2 items
+     "banned_concepts": ["specific tool concept", ...],  // concepts that have
+        now failed 3+ times per the repeat-offender data — 0-2 items
+     "format_bias": {{"A": 0.1, "D": -0.1}}  // small nudges (-0.2 to 0.2) toward
+        formats with measured above-median pass rate, away from below-median —
+        0-2 entries, format letters only (A/B/C/D/E/F)
+   }}
+
+   If nothing in this week's data supports a confident proposal, output {{}}.
+   Do not propose something just to fill the slot.
+
 ═══════════════════════════════════════════════════════
 OUTPUT FORMAT — EXACT TAGS, NO DEVIATIONS
 ═══════════════════════════════════════════════════════
@@ -550,6 +572,8 @@ E. NEXT WEEK'S ANTIDOTE: "Next week, build a tool for [specific person] dealing 
 [3-5 TOOL blocks in the format specified in task 13]
 ---SOURCE_PROPOSALS---
 [2-3 SOURCE blocks in the format specified in task 14]
+---EVOLUTION_KNOBS---
+[JSON object as specified in task 15, or {{}}]
 ---END---
 """
 
@@ -673,7 +697,8 @@ def parse_evolution(content: str) -> dict:
         "letter":              extract("---LETTER---",              "---DIARY---"),
         "diary_entry":         extract("---DIARY---",               "---DOMAIN_EXPANSION---"),
         "domain_expansion":    extract("---DOMAIN_EXPANSION---",    "---SOURCE_PROPOSALS---"),
-        "source_proposals":    extract("---SOURCE_PROPOSALS---",    "---END---"),
+        "source_proposals":    extract("---SOURCE_PROPOSALS---",    "---EVOLUTION_KNOBS---"),
+        "evolution_knobs":     extract("---EVOLUTION_KNOBS---",     "---END---"),
     }
 
     if not result["letter"] and "---LETTER---" in content:
@@ -681,6 +706,11 @@ def parse_evolution(content: str) -> dict:
 
     if not result["diary_entry"] and "---DIARY---" in content:
         result["diary_entry"] = content.split("---DIARY---")[-1].strip()
+
+    if not result["source_proposals"] and "---SOURCE_PROPOSALS---" in content:
+        # Backward-compat: older prompt outputs (before EVOLUTION_KNOBS was
+        # added) end with ---END--- right after SOURCE_PROPOSALS.
+        result["source_proposals"] = extract("---SOURCE_PROPOSALS---", "---END---")
 
     return result
 
@@ -953,6 +983,49 @@ def save_source_proposals(parsed: dict, today_str: str):
     print(f"  ✓ Source proposals saved: {proposal_path}")
 
 
+def save_evolution_knobs_gated(parsed: dict, today_str: str, week_start: str) -> str:
+    """Parse the EVOLUTION_KNOBS JSON, backtest it against the real ledger via
+    lili_evolution_gate, and persist ONLY what the data actually supports.
+
+    Unlike the prose sections above (personality, engineering lessons, etc.)
+    which are written on trust, this is the one channel from weekly evolution
+    that mechanically checks itself before taking effect - see docs/FINDINGS.md
+    for the motivating data (4 weeks of prose-only evolution, no measurable
+    pass-rate effect). Returns a human-readable summary for the evolution log.
+    """
+    import json as _json
+    raw = parsed.get("evolution_knobs", "").strip()
+    if raw.startswith("```"):
+        raw = raw.strip("`")
+        if raw.startswith("json"):
+            raw = raw[4:]
+        raw = raw.strip()
+    if not raw:
+        return "(no knobs proposed this week)"
+    try:
+        proposed = _json.loads(raw)
+    except _json.JSONDecodeError as e:
+        print(f"  ⚠ Evolution knobs: malformed JSON, skipping ({e})")
+        return f"(malformed JSON, skipped: {e})"
+    if not isinstance(proposed, dict) or not proposed:
+        return "(empty proposal - nothing to gate)"
+
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).parent))
+    from lili_evolution_gate import gate_evolution_proposal, save_evolution_knobs
+
+    accepted, log = gate_evolution_proposal(proposed, week_start)
+    if accepted is None:
+        print("  ⚠ Evolution knobs gate REFUSED (test suite not green) — no knobs applied.")
+        return "GATE REFUSED (test suite not green):\n  " + "\n  ".join(log)
+
+    save_evolution_knobs(accepted)
+    summary_lines = [f"proposed: {_json.dumps(proposed, ensure_ascii=False)}",
+                      f"accepted: {_json.dumps(accepted, ensure_ascii=False)}"] + [f"  - {l}" for l in log]
+    print(f"  ✓ Evolution knobs gated and saved ({len(log)} log lines).")
+    return "\n".join(summary_lines)
+
+
 def weekly_evolution():
     today = datetime.utcnow()
     today_str = today.strftime("%Y-%m-%d")
@@ -1003,6 +1076,10 @@ def weekly_evolution():
     save_evolution_log(parsed, today_str, week_start)
     save_evolution_diary(parsed, today_str, week_start)
     update_readme_evolution_section(today_str)
+
+    print("🔒 Gating this week's evolution knobs against the ledger...")
+    knobs_summary = save_evolution_knobs_gated(parsed, today_str, week_start)
+    print(f"  {knobs_summary}")
 
     print("🌐 Rebuilding GitHub Pages site...")
     import subprocess as _sp, sys as _sys

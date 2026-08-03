@@ -560,10 +560,16 @@ def _build_context_block(today: str) -> dict:
     # Diversity guards
     recent_cats = _get_recent_categories(2)
     failed_cats = _get_recent_failed_categories(days=3, min_failures=2)
-    banned_cats = sorted(set(recent_cats) | set(failed_cats))
+    try:
+        from lili_evolution_gate import load_evolution_knobs
+        evolved_cats = load_evolution_knobs().get("deprioritized_categories", [])
+    except Exception:
+        evolved_cats = []
+    banned_cats = sorted(set(recent_cats) | set(failed_cats) | set(evolved_cats))
     avoid_cats = (
         f"\nBANNED CATEGORIES TODAY: {', '.join(banned_cats)}\n"
-        f"  (used in the last 2 days, OR failed BUILD 2+ times in the last 3 days - "
+        f"  (used in the last 2 days, OR failed BUILD 2+ times in the last 3 days, OR "
+        f"deprioritized by last Sunday's gated self-evolution review - "
         f"pick a different category, the model keeps generating generic output for these)"
         if banned_cats else ""
     )
@@ -953,6 +959,27 @@ def build_spec_prompt(today: str, scout: dict, feedback: str = "") -> str:
 
     feedback_block = f"\n⚠ PREVIOUS SPEC FAILED - fix these issues:\n{feedback}\n" if feedback else ""
 
+    try:
+        from lili_evolution_gate import load_evolution_knobs
+        _knobs = load_evolution_knobs()
+    except Exception:
+        _knobs = {}
+    _banned_concepts = _knobs.get("banned_concepts", [])
+    _format_bias = _knobs.get("format_bias", {})
+    knobs_nudge = ""
+    if _banned_concepts:
+        knobs_nudge += (
+            f"\nDO NOT propose a tool resembling these repeat-offender concepts "
+            f"(gated by last Sunday's self-evolution review against 3+ real failures): "
+            f"{', '.join(_banned_concepts)}\n"
+        )
+    if _format_bias:
+        bias_lines = [
+            f"  {fmt}: {'favor' if bias > 0 else 'avoid'} slightly ({bias:+.2f}, backed by this week's measured pass rate)"
+            for fmt, bias in _format_bias.items()
+        ]
+        knobs_nudge += "\nFORMAT BIAS FROM GATED SELF-EVOLUTION:\n" + "\n".join(bias_lines) + "\n"
+
     return f"""Today is {today}.
 {feedback_block}
 You have found today's friction point. Now design the tool - DO NOT write code yet.
@@ -991,7 +1018,7 @@ FORMAT OPTIONS:
   D - Live canvas / real-time transformer (Mode 3 HTML)
   E - Ambient / environment, no input needed (Mode 3 HTML)
   [NO] B and F are DISABLED (43 attempts / 28 days / ZERO shipped). Never pick them.
-
+{knobs_nudge}
 FORMAT ROUTING - measured pass rates over 311 attempts in 28 days, not opinion:
     D (live canvas)      8%  <- best odds
     E (ambient object)  11%  <- best odds
