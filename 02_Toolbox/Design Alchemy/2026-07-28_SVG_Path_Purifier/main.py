@@ -35,13 +35,25 @@ def process(text: str) -> str:
     if not text.strip():
         return ""  # empty input -> empty output
 
+    # Register the SVG default namespace as unprefixed BEFORE parsing, so
+    # ET.tostring() serializes plain <svg>/<g>/<path> instead of polluting
+    # every element with an auto-generated ns0: prefix that breaks re-import
+    # into design tools (the exact opposite of this tool's promise).
+    ET.register_namespace('', 'http://www.w3.org/2000/svg')
+
     try:
         root = ET.fromstring(text)
     except ET.ParseError as e:
         raise ValueError(f"Invalid SVG XML: {e}")
 
-    # Iterate over <g> elements only (step 3 of spec)
-    for elem in root.iter('g'):
+    # Bug fix: when an SVG declares xmlns="http://www.w3.org/2000/svg" (the
+    # normal case), ElementTree gives every tag its fully-qualified name
+    # '{http://www.w3.org/2000/svg}g' - root.iter('g') silently matches
+    # nothing. Match on the local tag name regardless of namespace instead.
+    for elem in root.iter():
+        local_tag = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
+        if local_tag != 'g':
+            continue
         for attr, target_val in TARGET_ATTRS.items():
             current_val = elem.attrib.get(attr)
             if current_val is not None and current_val.lower() == target_val.lower():
