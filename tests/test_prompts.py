@@ -33,6 +33,37 @@ def spec(mode="1", fmt="A - text"):
     }
 
 
+class MissionAreaScopeTests(unittest.TestCase):
+    """P0.2 fix (2026-08-05): Office Automation's own description was written
+    as an unbounded catch-all ('ANY repetitive professional production task')
+    that also duplicated items already owned by Education Evolution
+    (transcripts) and Design Alchemy (briefs/handoff) - a real, independent
+    cause of category concentration that the category-floor ban-guard
+    (F-021) cannot fix, because SCOUT was freely CHOOSING it, not being
+    forced into it. 28-day ledger data: Office Automation absorbed 175/304
+    attempts (58%) despite the floor guard being active."""
+
+    def setUp(self):
+        from lili_prompts import _build_context_block, _build_mission_section
+        ctx = _build_context_block("2026-08-05")
+        self.mission = _build_mission_section(ctx)
+
+    def test_office_automation_is_not_an_unbounded_catchall(self):
+        self.assertNotIn("ANY repetitive", self.mission)
+
+    def test_office_automation_explicitly_excludes_transcripts(self):
+        # Transcripts/podcast workflows belong to Education Evolution only -
+        # the section may mention the word to explicitly rule it out, but
+        # must not list it as something Office Automation itself handles.
+        office_section = self.mission.split("OFFICE AUTOMATION")[1].split("HEALING")[0].lower()
+        self.assertIn("not transcripts", office_section)
+
+    def test_office_automation_explicitly_excludes_briefs(self):
+        # Briefs/spec-handoff belong to Design Alchemy only.
+        office_section = self.mission.split("OFFICE AUTOMATION")[1].split("HEALING")[0].lower()
+        self.assertIn("not briefs", office_section)
+
+
 class ScoutPromptTests(unittest.TestCase):
     def test_contains_output_tags(self):
         p = build_scout_prompt("2026-07-04")

@@ -574,6 +574,35 @@
   角色来蒙混过关（比如"独立记者"和"自由撰稿人"），这道检验就会变成走过场——这是纯文本
   匹配无法完全防住的，需要观察后续台账里 COMMON_ROLES 的实际内容是不是在应付了事。
 
+## F-023 · 类别失衡的真根因不是拦截逻辑，是 Office Automation 自己的描述文本写成了无边界兜底类
+
+- **日期**：2026-08-05 · **状态**：观察中（机制已实测验证，尚无生产运行数据）
+- **模型**：纯 prompt 文本修复，不涉及具体模型能力发现
+- **声明**：owner 怀疑"最近几天连续休息是不是新加的机制太严"，诊断台账后发现拒绝原因
+  全部是 Critic 判断的老失败类型（幻觉编造、缺少必填字段、原样照抄输入），跟 F-019~F-022
+  新加的门槛无关。但诊断过程中发现一个真实、独立的问题：28 天台账里 Office
+  Automation 占了 175/304 次尝试（58%），且**这三天（08-03~08-05）SCOUT 在完全自由选择的
+  情况下，连续三天都选了 Office Automation**——F-021 加的类别拦截下限（`_apply_category_
+  floor`）对此完全没有效果，因为它只能防止"类别被过度禁用导致被迫选剩下一个"，而这次根本
+  没有任何拦截在起作用，是 SCOUT 主动、自愿选的。查了 SCOUT 提示词里 Office Automation 的
+  类别描述文本，开头就是"ANY repetitive professional production task"——用"ANY"这个词
+  把自己写成了唯一一个无边界的兜底类，另外三个类别的描述都是限定在具体生活领域（学习/
+  创作/疗愈）。而且描述里的"transcript summarisers"跟 Education Evolution 重复，
+  "research-to-outline / brief extractors"跟 Design Alchemy 的"brief writing / spec-
+  handoff automation"重复——任何模糊的摩擦点，语义上都最容易落进这个描述最松、覆盖面
+  最广的类别，跟拦截逻辑无关，是类别定义本身在结构性地吸走流量。
+- **应对**：把 Office Automation 的描述从"ANY ... task"改写成跟另外三个一样具体、有边界
+  的定义——收窄到"行政/后勤类事务性工作"（发票合同文书、日程协调、费用记账、文件命名整理、
+  批量重命名、往来邮件模板），并显式排除跟其他类别重叠的项（"NOT transcripts... that's
+  Education Evolution"、"NOT briefs... that's Design Alchemy"）。
+- **证据**：`tests/test_prompts.py` 新增 `MissionAreaScopeTests`（3 个测试：确认不再包含
+  "ANY repetitive"这种无边界措辞、确认显式排除了 transcript/podcast、确认显式排除了
+  brief/handoff）。129 个测试全绿，本地 3.13 与真实 3.11 venv 双重验证。
+- **推论（待验证）**：如果诊断成立，接下来几天 SCOUT 的类别分布应该会更均衡，Office
+  Automation 的占比应该从 58% 明显回落。这跟 F-021 的类别下限修复是互补而非替代关系——
+  F-021 防止"被迫选剩一个"，F-023 防止"自愿选最松的那个"，两种机制解决的是不同的失衡
+  来源，此前只做了前者，后者才是这三天数据里真正在起作用的那个。
+
 ---
 
 *新发现的写入规则：编号递增，不删除旧条目；**必须写明具体模型与版本**（无模型归属的

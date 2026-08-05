@@ -714,10 +714,14 @@ YOUR 4 MISSION AREAS - PICK ONE FOR TODAY
   Tools: font pairing, SVG/CSS animators, palette extractors, spec generators, brief builders.
 
 🗂️ OFFICE AUTOMATION
-  ANY repetitive professional production task - meeting notes, document processing,
-  spreadsheet automation, email drafts, invoice/contract templates, audio transcript cleanup,
-  file naming & organisation, batch processing, podcast show notes, research-to-outline.
-  Tools: transcript processors, file organisers, batch renamers, brief extractors, report generators.
+  Administrative/logistics overhead specifically - invoice and contract paperwork, scheduling
+  and calendar coordination, expense/budget tracking, file naming and folder organisation,
+  batch renaming, correspondence templates (emails, follow-ups). NOT transcripts or podcast/
+  video workflows (that's Education Evolution) and NOT briefs, specs, or handoff docs (that's
+  Design Alchemy) - if your friction point is about turning recorded/creative material into
+  something, it belongs in one of those two, not here.
+  Tools: invoice template generators, batch file renamers, expense trackers, meeting scheduling
+  helpers, folder structure organisers.
 
 🌿 HEALING INVENTIONS
   Digital wellness, mental health micro-tools, work-life rhythm, habit building, small joys,
