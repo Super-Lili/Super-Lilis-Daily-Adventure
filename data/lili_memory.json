@@ -434,6 +434,14 @@
       "pattern": "interact",
       "path": "02_Toolbox/Healing Inventions/2026-07-31_Ungraded_Notebook",
       "description": "A minimal, offline-first HTML tool that lets teachers record raw, timestamped, sensory-rich teaching moments in plain text—and optionally export anonymized, beautifully typeset excerpts as PDFs or markdown for portfolios, mentorship, or quiet reflection."
+    },
+    {
+      "date": "2026-08-05",
+      "name": "Batch Episode Renamer",
+      "category": "Office Automation",
+      "pattern": "transform",
+      "path": "02_Toolbox/Office Automation/2026-08-05_Batch_Episode_Renamer",
+      "description": "A single‑page HTML tool that renames a batch of audio files by extracting episode numbers, guest names, and dates from a user‑defined naming pattern and the files' existing names or metadata, turning a 20‑minute chore into a 30‑second preview‑and‑apply."
     }
   ],
   "topics_covered": [
@@ -731,7 +739,12 @@
       "date": "2026-07-31",
       "title": "The Ungraded Notebook",
       "path": "01_Work_Log/2026-07-31-Diary.md"
+    },
+    {
+      "date": "2026-08-05",
+      "title": "The Quiet Collapse After Every Episode",
+      "path": "01_Work_Log/2026-08-05-Diary.md"
     }
   ],
-  "last_updated": "2026-07-31"
+  "last_updated": "2026-08-05"
 }
