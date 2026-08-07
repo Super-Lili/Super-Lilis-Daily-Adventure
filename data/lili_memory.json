@@ -442,6 +442,14 @@
       "pattern": "transform",
       "path": "02_Toolbox/Office Automation/2026-08-05_Batch_Episode_Renamer",
       "description": "A single‑page HTML tool that renames a batch of audio files by extracting episode numbers, guest names, and dates from a user‑defined naming pattern and the files' existing names or metadata, turning a 20‑minute chore into a 30‑second preview‑and‑apply."
+    },
+    {
+      "date": "2026-08-07",
+      "name": "Flyer Mosaic Finder",
+      "category": "Design Alchemy",
+      "pattern": "visualize",
+      "path": "02_Toolbox/Design Alchemy/2026-08-07_Flyer_Mosaic_Finder",
+      "description": "A single‑page visual browser that scans your messy folder of image exports and shows every flyer, poster, and card you've ever made—so you can find the right one in seconds."
     }
   ],
   "topics_covered": [
@@ -744,7 +752,12 @@
       "date": "2026-08-05",
       "title": "The Quiet Collapse After Every Episode",
       "path": "01_Work_Log/2026-08-05-Diary.md"
+    },
+    {
+      "date": "2026-08-07",
+      "title": "Flyer Mosaic Finder",
+      "path": "01_Work_Log/2026-08-07-Diary.md"
     }
   ],
-  "last_updated": "2026-08-05"
+  "last_updated": "2026-08-07"
 }
