@@ -11,7 +11,7 @@ import requests
 from datetime import datetime
 from pathlib import Path
 
-from lili_llm import call_gemini, call_gemini_simple, _deepseek_client
+from lili_llm import call_gemini, call_gemini_simple, _deepseek_client, is_billing_error, get_last_qwen_scout_error
 from lili_prompts import (
     build_prompt,
     build_scout_prompt,
@@ -360,26 +360,66 @@ def self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
     return Path(main_py).read_text(encoding="utf-8")
 
 
+def classify_scout_failure(qwen_error: str, deepseek_error: str) -> str:
+    """Turn the raw exception text from both failed SCOUT providers into a
+    rest-day reason string, distinguishing an infrastructure billing outage
+    (a human needs to top up an account) from an ordinary transient failure
+    (network blip, malformed prompt, etc.) - see save_rest_day() for why this
+    distinction must be visible, not buried in an identical "quiet day" diary.
+    """
+    if is_billing_error(qwen_error) or is_billing_error(deepseek_error):
+        return (
+            "INFRASTRUCTURE OUTAGE, NOT A CREATIVE REST DAY: one or both LLM "
+            "providers are out of funds and rejected every request before SCOUT "
+            "could run at all. This requires a human to top up billing - it is "
+            "not a quality judgment call, do not treat it as one.\n"
+            f"Qwen: {qwen_error[:300]}\nDeepSeek: {deepseek_error[:300]}"
+        )
+    return "Phase 1 failed - Qwen search and DeepSeek fallback both failed."
+
+
 def save_rest_day(today: str, reason: str):
-    """Write a rest-day diary entry and update README so the gap is visible."""
+    """Write a rest-day diary entry and update README so the gap is visible.
+
+    An INFRASTRUCTURE OUTAGE (both LLM providers out of funds) gets a visibly
+    different template from a normal creative/quality rest day - burying a
+    billing outage under the same poetic "quiet day" copy made a real 2-day
+    outage (2026-08-06/07) indistinguishable from an ordinary rest until a
+    human happened to read the raw ledger. The banner at the TOP is the point:
+    someone skimming just the title/first line must not be able to miss it.
+    """
     log_dir = Path("01_Work_Log")
     log_dir.mkdir(exist_ok=True)
     log_path = log_dir / f"{today}-Diary.md"
 
-    log_path.write_text(
-        f"# 今天莉莉在休息 🌙\n\n"
-        f"**{today}** · *有些日子，沉默本身就是答案。*\n\n"
-        f"---\n\n"
-        f"今天我没能出现。\n\n"
-        f"不是不想，是力气暂时不够了--就像你有时候盯着一个空白页，什么都写不出来，"
-        f"但那个空白本身也是真实的。\n\n"
-        f"明天我会回来的。带着新的工具，新的故事，还有一杯续满的热茶。\n\n"
-        f"*技术备注：{reason}*\n\n"
-        f"---\n\n"
-        f"干杯。砰。🐝",
-        encoding="utf-8"
-    )
-    print(f"  [OK] Rest-day diary saved: {log_path}")
+    if reason.startswith("INFRASTRUCTURE OUTAGE"):
+        log_path.write_text(
+            f"# ⚠️ 基础设施故障 - 今天没有真正尝试 🚨\n\n"
+            f"**{today}** · *这不是一个创作性的休息日 - 是账号欠费/余额不足，模型服务商全部打不通。*\n\n"
+            f"---\n\n"
+            f"今天的自动化流程在第一步（SCOUT）就被 API 服务商拒绝了，后面的所有环节都没有机会运行。\n"
+            f"这需要人工登录服务商后台充值/处理欠费，不是莉莉的创作或质量判断问题。\n\n"
+            f"*技术细节：{reason}*\n\n"
+            f"---\n\n"
+            f"账充上以后，明天流水线应该会自动恢复正常。",
+            encoding="utf-8"
+        )
+        print(f"  🚨 [OK] Infrastructure-outage diary saved (visibly flagged): {log_path}")
+    else:
+        log_path.write_text(
+            f"# 今天莉莉在休息 🌙\n\n"
+            f"**{today}** · *有些日子，沉默本身就是答案。*\n\n"
+            f"---\n\n"
+            f"今天我没能出现。\n\n"
+            f"不是不想，是力气暂时不够了--就像你有时候盯着一个空白页，什么都写不出来，"
+            f"但那个空白本身也是真实的。\n\n"
+            f"明天我会回来的。带着新的工具，新的故事，还有一杯续满的热茶。\n\n"
+            f"*技术备注：{reason}*\n\n"
+            f"---\n\n"
+            f"干杯。砰。🐝",
+            encoding="utf-8"
+        )
+        print(f"  [OK] Rest-day diary saved: {log_path}")
 
     # Update README featured entry so the gap shows
     readme_path = Path("README.md")
@@ -391,12 +431,19 @@ def save_rest_day(today: str, reason: str):
     if anchor not in readme:
         return
 
-    featured = (
-        f"#### 📅 {today} - 今天莉莉在休息 🌙\n\n"
-        f"*有些日子，沉默本身就是答案。*\n\n"
-        f"今天我没能出现。不是不想，是力气暂时不够了。明天我会回来的。\n\n"
-        f"[📖 Read]({log_path})"
-    )
+    if reason.startswith("INFRASTRUCTURE OUTAGE"):
+        featured = (
+            f"#### 📅 {today} - ⚠️ 基础设施故障 🚨\n\n"
+            f"*模型服务商账号欠费/余额不足，今天没有真正尝试 - 需要人工充值。*\n\n"
+            f"[📖 Read]({log_path})"
+        )
+    else:
+        featured = (
+            f"#### 📅 {today} - 今天莉莉在休息 🌙\n\n"
+            f"*有些日子，沉默本身就是答案。*\n\n"
+            f"今天我没能出现。不是不想，是力气暂时不够了。明天我会回来的。\n\n"
+            f"[📖 Read]({log_path})"
+        )
 
     parts = readme.split(anchor)
     remaining = parts[1]
@@ -591,6 +638,7 @@ def evolve():
 
     if not scout_content:
         print("  ↳ Qwen SCOUT failed - trying DeepSeek fallback for SCOUT...")
+        deepseek_error = ""
         if _deepseek_client:
             try:
                 ds_resp = _deepseek_client.chat.completions.create(
@@ -604,10 +652,14 @@ def evolve():
                 else:
                     print("  [NO] DeepSeek SCOUT returned empty response.")
             except Exception as e:
+                deepseek_error = str(e)
                 print(f"  [NO] DeepSeek SCOUT fallback failed: {e}")
         if not scout_content:
             print("❌ Phase 1 failed - all models exhausted.")
-            save_rest_day(today, "Phase 1 failed - Qwen search and DeepSeek fallback both failed.")
+            reason = classify_scout_failure(get_last_qwen_scout_error(), deepseek_error)
+            if reason.startswith("INFRASTRUCTURE OUTAGE"):
+                print(f"  🚨 BILLING OUTAGE DETECTED - {reason.splitlines()[0]}")
+            save_rest_day(today, reason)
             return
 
     # Qwen search does not expose grounding URLs; source verification happens in

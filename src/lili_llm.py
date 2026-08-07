@@ -30,12 +30,39 @@ except Exception:
 # MODEL CALLS (Qwen + DeepSeek)
 # ─────────────────────────────────────────────────────────────
 
+# Signatures that mean "this provider has no money/quota left", not "the model
+# had trouble with this prompt". A rest day caused by this is an infrastructure
+# outage requiring a human to top up billing - it must never be diarized or
+# ledgered as if SCOUT/BUILD made a creative or quality judgment call, or a
+# real billing outage silently gets buried as an ordinary "quiet day" (see
+# 2026-08-06/07: both Qwen and DeepSeek were out of funds for 2+ days and the
+# diary just said "Phase 1 failed", indistinguishable from a normal rest day).
+_BILLING_ERROR_SIGNATURES = (
+    "arrearage", "overdue payment", "insufficient balance", "insufficient_quota",
+    "insufficient quota", "account is in good standing", "exceeded your current quota",
+    "billing", "payment required",
+)
+
+
+def is_billing_error(msg: str) -> bool:
+    m = (msg or "").lower()
+    return any(sig in m for sig in _BILLING_ERROR_SIGNATURES)
+
+
+_last_qwen_scout_error = ""
+
+
+def get_last_qwen_scout_error() -> str:
+    return _last_qwen_scout_error
+
+
 def _call_qwen_search(prompt: str) -> tuple[str | None, list[str]]:
     """Call Qwen with web search via DashScope OpenAI-compatible API.
 
     DashScope web search is enabled via extra_body only - do NOT pass tools=[].
     Returns (response_text, source_urls).
     """
+    global _last_qwen_scout_error
     if not _qwen_client:
         return None, []
     for attempt in range(3):
@@ -53,6 +80,7 @@ def _call_qwen_search(prompt: str) -> tuple[str | None, list[str]]:
                 return text, []
             print(f"  [NO] Qwen attempt {attempt + 1} empty response.")
         except Exception as e:
+            _last_qwen_scout_error = str(e)
             wait = 15 * (2 ** attempt)
             print(f"  [NO] Qwen attempt {attempt + 1} failed: {e}")
             if attempt < 2:
