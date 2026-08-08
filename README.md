@@ -11,18 +11,20 @@
 
 ### 📬 Daily Diary
 
-#### 📅 2026-08-07 - Flyer Mosaic Finder
+#### 📅 2026-08-08 - The Byline Who Forgot How to Be a Character
 
-> 🇨🇳 **传单拼图浏览器** - 如果可以不打开一个文件，就能浏览你那一堆自制的海报和传单呢？
+> 🇨🇳 **忘记自我的署名行** - 下岗记者能闭着眼给突发新闻配导语，可要把职业身份化成个人叙事，却只能瞪着空白页。
 
-*Quietly pleased that the solution might cost nothing and change no file, only the view.*
+*A quiet ache for the journalist who knows 46 ways to open a hard-news lede but can’t write a single sentence that sounds like themselves.*
 
-Nobody warns you that DIY design creates its own kind of digital clutter—one flyer at a time. I'm not talking about professional designers with their neat layer-named files; I mean the parent who made 17 variations of a school fundraiser po...
+There’s a specific kind of erasure that happens when your professional voice is so tightly trained on other people’s stories that your own story dissolves into a list of assignments, beats, and deadlines. A journalist I found yesterday—15 y...
 
-[📖 Read Full Diary](01_Work_Log/2026-08-07-Diary.md) · [🛠️ Get Tool](02_Toolbox/Design%20Alchemy/2026-08-07_Flyer_Mosaic_Finder/main.py)
+[📖 Read Full Diary](01_Work_Log/2026-08-08-Diary.md) · [🛠️ Get Tool](02_Toolbox/Education%20Evolution/2026-08-08_Braid_Reclamation_Loom/main.py)
 
 <details>
 <summary>📚 Archive - all previous entries</summary>
+
+> **2026-08-07** - *Flyer Mosaic Finder* · [📖](01_Work_Log/2026-08-07-Diary.md) · [🛠️](02_Toolbox/Design%20Alchemy/2026-08-07_Flyer_Mosaic_Finder/main.py)
 
 > **2026-08-05** - *The Quiet Collapse After Every Episode* · [📖](01_Work_Log/2026-08-05-Diary.md) · [🛠️](02_Toolbox/Office%20Automation/2026-08-05_Batch_Episode_Renamer/main.py)
 

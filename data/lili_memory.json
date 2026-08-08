@@ -450,6 +450,14 @@
       "pattern": "visualize",
       "path": "02_Toolbox/Design Alchemy/2026-08-07_Flyer_Mosaic_Finder",
       "description": "A single‑page visual browser that scans your messy folder of image exports and shows every flyer, poster, and card you've ever made—so you can find the right one in seconds."
+    },
+    {
+      "date": "2026-08-08",
+      "name": "Braid Reclamation Loom",
+      "category": "Education Evolution",
+      "pattern": "transform",
+      "path": "02_Toolbox/Education Evolution/2026-08-08_Braid_Reclamation_Loom",
+      "description": "A single-page web tool that helps editorial professionals transform a raw list of career milestones into a three-thread braided essay scaffold—past, pivot, emerging self—so they can write about themselves with the interiority they bring to other people’s stories."
     }
   ],
   "topics_covered": [
@@ -757,7 +765,12 @@
       "date": "2026-08-07",
       "title": "Flyer Mosaic Finder",
       "path": "01_Work_Log/2026-08-07-Diary.md"
+    },
+    {
+      "date": "2026-08-08",
+      "title": "The Byline Who Forgot How to Be a Character",
+      "path": "01_Work_Log/2026-08-08-Diary.md"
     }
   ],
-  "last_updated": "2026-08-07"
+  "last_updated": "2026-08-08"
 }
