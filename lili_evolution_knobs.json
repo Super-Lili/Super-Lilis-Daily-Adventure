@@ -1,0 +1,10 @@
+{
+  "deprioritized_categories": [],
+  "banned_concepts": [
+    "A minimal CLI tool that transforms a raw client mandate"
+  ],
+  "format_bias": {
+    "D": 0.1
+  },
+  "week_start": "2026-08-02"
+}

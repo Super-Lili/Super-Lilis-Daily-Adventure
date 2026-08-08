@@ -854,27 +854,23 @@ programmer implements verbatim, and every step must run:
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-08-02
+# Last updated: 2026-08-08
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: EMBED_CONCRETE_EXAMPLE
-WHY: All three shipped tools this week lacked example inputs, making behavior unverifiable for both critic and real users.
-HOW: Always include at the top of the main function: `EXAMPLE_INPUT = \"\"\"[3-5 lines of realistic sample input]\"\"\"` and a comment showing expected output shape.
+RULE: Every process() function must include inline example input and expected output as comments
+WHY: Tools without embedded examples fail ground-truth checks because the function has no self-test mechanism — this week's Braid Reclamation Loom produced static DOM with no reactive processing.
+HOW: # Example: process("Zoom_Recording_2026-08-03_14.22.34_participant_1.mp4") → "2026-08-03_GuestName_Episode45.mp4"
 
-RULE: BEFORE_AFTER_OUTPUT
-WHY: Tools defaulted to displaying user input back in a new layout without actually transforming it — the critic's "identical output" failure appeared 15 times in 28 days.
-HOW: Output must include at minimum two labeled sections: `## Input Summary` and `## Transformed Result` where the second section contains data not present in the first.
+RULE: Check input length before processing and return structured error for empty/short input
+WHY: Flyer Mosaic Finder had no empty-input guard; tools that receive 0 filenames or 2-word career lists should explain what they need, not produce broken output.
+HOW: if len(user_input.strip()) < 20: return {"error": "Please paste at least one complete filename or 3-5 career milestones.", "example": "..."}
 
-RULE: EMPTY_INPUT_GUARD
-WHY: Two of three tools this week had no guard for empty or very short input, causing silent failures.
-HOW: First line of process() should be: `if not user_input or len(user_input.strip()) < 20: return "⚠️ Please paste at least 20 words of text to process."`
+RULE: Output must have at least three distinct labeled sections using ## Markdown headers
+WHY: The Batch Episode Renamer flagged "output likely unstructured" — single-blob output is unreadable in the moment someone needs it most.
+HOW: Always structure output as ## Summary, ## Transformed Output, ## Next Steps — even for simple tools.
 
-RULE: STRUCTURED_SECTIONS
-WHY: Engineering review flagged "output likely unstructured" on two tools — output was a wall of text with no navigation.
-HOW: Every output must use at minimum three `## Markdown Headers` with distinct named sections.
-
-RULE: NO_STATIC_TEMPLATE
-WHY: The dominant failure mode this month was fake-static code (75 occurrences) — tools that return the same HTML regardless of user input.
-HOW: Before shipping, run `diff <(echo "input A" | tool) <(echo "different input B" | tool)` — the outputs must differ.
+RULE: Verify DOM reactivity in browser context by checking fields_filled > 0 and selections_made > 0
+WHY: Two versions of Braid Reclamation Loom failed ground-truth with "DOM did not react to input" — the HTML looked complete but JavaScript event bindings were missing or broken.
+HOW: Add console.log('fields filled:', document.querySelectorAll('input:not([value=""])').length) in any interactive tool's JS init block.
 """
