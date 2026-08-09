@@ -56,6 +56,44 @@ def get_last_qwen_scout_error() -> str:
     return _last_qwen_scout_error
 
 
+def check_provider_health() -> dict:
+    """Cheap (~1 token) probe of both providers BEFORE spending a real
+    SCOUT->SPEC->BUILD cycle. A billing outage previously cost 2+ full days of
+    wasted attempts (2026-08-06/07) because the pipeline only discovered "no
+    money" after already burning SCOUT/SPEC/BUILD calls on a doomed run - this
+    check is a single minimal call per provider (max_tokens=1) so a bad day
+    costs almost nothing to detect instead of a full cycle's worth of tokens.
+
+    Returns {"qwen": (ok, detail), "deepseek": (ok, detail)}. Never raises -
+    an unexpected error is treated as "not ok" with the exception as detail,
+    so a probe bug can never crash the pipeline, only skip unnecessarily.
+    """
+    result = {}
+    if _qwen_client:
+        try:
+            _qwen_client.chat.completions.create(
+                model="qwen-plus", messages=[{"role": "user", "content": "hi"}], max_tokens=1,
+            )
+            result["qwen"] = (True, "")
+        except Exception as e:
+            result["qwen"] = (False, str(e))
+    else:
+        result["qwen"] = (False, "no client configured")
+
+    if _deepseek_client:
+        try:
+            _deepseek_client.chat.completions.create(
+                model="deepseek-v4-pro", messages=[{"role": "user", "content": "hi"}], max_tokens=1,
+            )
+            result["deepseek"] = (True, "")
+        except Exception as e:
+            result["deepseek"] = (False, str(e))
+    else:
+        result["deepseek"] = (False, "no client configured")
+
+    return result
+
+
 def _call_qwen_search(prompt: str) -> tuple[str | None, list[str]]:
     """Call Qwen with web search via DashScope OpenAI-compatible API.
 

@@ -17,7 +17,8 @@ from pathlib import Path
 import _bootstrap  # noqa: F401
 
 from lili_llm import is_billing_error
-from lili_pipeline import classify_scout_failure, save_rest_day
+from lili_pipeline import classify_scout_failure, save_rest_day, check_billing_outage_preflight
+import lili_pipeline as _pipeline_mod
 
 
 class IsBillingErrorTests(unittest.TestCase):
@@ -89,6 +90,64 @@ class SaveRestDayVisibilityTests(unittest.TestCase):
         content = Path("01_Work_Log/2026-08-07-Diary.md").read_text(encoding="utf-8")
         self.assertIn("今天莉莉在休息", content)
         self.assertNotIn("基础设施故障", content)
+
+
+class PreflightHealthCheckTests(unittest.TestCase):
+    """Harness plan #4 (2026-08-07): a cheap pre-flight probe should skip the
+    full SCOUT->SPEC->BUILD cycle ONLY when NEITHER provider can work - a
+    single healthy provider must be allowed through, since the fallback
+    chains can carry the whole pipeline alone (proven 2026-08-07: Qwen in
+    arrears, DeepSeek alone shipped a real tool)."""
+
+    def _patch_health(self, health: dict):
+        original = _pipeline_mod.check_provider_health
+        _pipeline_mod.check_provider_health = lambda: health
+        return original
+
+    def test_both_billing_dead_returns_outage_reason(self):
+        original = self._patch_health({
+            "qwen": (False, "Arrearage: overdue payment"),
+            "deepseek": (False, "Insufficient Balance"),
+        })
+        try:
+            reason = check_billing_outage_preflight()
+        finally:
+            _pipeline_mod.check_provider_health = original
+        self.assertIsNotNone(reason)
+        self.assertTrue(reason.startswith("INFRASTRUCTURE OUTAGE"))
+
+    def test_one_healthy_provider_does_not_skip(self):
+        original = self._patch_health({
+            "qwen": (False, "Arrearage: overdue payment"),
+            "deepseek": (True, ""),
+        })
+        try:
+            reason = check_billing_outage_preflight()
+        finally:
+            _pipeline_mod.check_provider_health = original
+        self.assertIsNone(reason)
+
+    def test_both_healthy_does_not_skip(self):
+        original = self._patch_health({"qwen": (True, ""), "deepseek": (True, "")})
+        try:
+            reason = check_billing_outage_preflight()
+        finally:
+            _pipeline_mod.check_provider_health = original
+        self.assertIsNone(reason)
+
+    def test_both_down_for_non_billing_reason_does_not_skip(self):
+        # A transient network blip on both providers simultaneously is not
+        # evidence of a billing outage - let the real SCOUT/BUILD calls
+        # retry normally instead of prematurely declaring a rest day.
+        original = self._patch_health({
+            "qwen": (False, "Connection timed out"),
+            "deepseek": (False, "Connection timed out"),
+        })
+        try:
+            reason = check_billing_outage_preflight()
+        finally:
+            _pipeline_mod.check_provider_health = original
+        self.assertIsNone(reason)
 
 
 if __name__ == "__main__":

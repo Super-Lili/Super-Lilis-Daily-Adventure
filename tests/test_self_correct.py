@@ -204,6 +204,35 @@ class SelfCorrectPromiseTests(unittest.TestCase):
         self.assertIn("Summary:", result)
 
 
+class SelfCorrectDefaultRoundsTests(unittest.TestCase):
+    """Harness plan #1, scoped increment (2026-08-07): raised the default
+    self-correction budget from 2 to 4 rounds - still a hard cap (cost
+    discussion with owner: uncapped agentic loops risk runaway spend), just
+    more room for the model to converge on real observed feedback before
+    handing off to the expensive outer validate_tool() chain."""
+
+    def test_default_max_rounds_is_four(self):
+        import inspect
+        sig = inspect.signature(self_correct_code)
+        self.assertEqual(sig.parameters["max_rounds"].default, 4)
+
+    def test_uses_all_four_rounds_when_never_fixed(self):
+        skill_dir = _make_skill_dir(_SYNTAX_BROKEN_CODE)
+        call_count = [0]
+
+        def fake_call(prompt, deepseek_prompt=None):
+            call_count[0] += 1
+            return "---CODE---\n" + _SYNTAX_BROKEN_CODE + "\n---TEST---\nassert True\n---BUILD_END---"
+
+        original = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = fake_call
+        try:
+            self_correct_code(skill_dir, _SCOUT, _spec(), "2026-08-04")  # default rounds
+        finally:
+            lili_pipeline.call_gemini_simple = original
+        self.assertEqual(call_count[0], 4)
+
+
 class SelfCorrectMode3BrowserCheckTests(unittest.TestCase):
     """P1 fix (2026-08-03): Mode 3 tools previously got no execution feedback
     at all in this inner loop - their real defect class (DOM not reacting to

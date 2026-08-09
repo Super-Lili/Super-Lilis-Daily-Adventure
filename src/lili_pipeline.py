@@ -11,7 +11,10 @@ import requests
 from datetime import datetime
 from pathlib import Path
 
-from lili_llm import call_gemini, call_gemini_simple, _deepseek_client, is_billing_error, get_last_qwen_scout_error
+from lili_llm import (
+    call_gemini, call_gemini_simple, _deepseek_client, is_billing_error,
+    get_last_qwen_scout_error, check_provider_health,
+)
 from lili_prompts import (
     build_prompt,
     build_scout_prompt,
@@ -252,7 +255,7 @@ def save_tool(today: str, parsed: dict, source_badge: str) -> str:
 
 
 def self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
-                      max_rounds: int = 2) -> str:
+                      max_rounds: int = 4) -> str:
     """Harness plan A (2026-08-04): a cheap, execution-grounded inner loop that
     runs BEFORE the full (expensive) validate_tool() chain.
 
@@ -358,6 +361,25 @@ def self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
     print(f"  ⚠ Self-correction: still not clean after {max_rounds} rounds, "
           f"handing off to the full validation chain.")
     return Path(main_py).read_text(encoding="utf-8")
+
+
+def check_billing_outage_preflight() -> str | None:
+    """Cheap pre-flight probe (harness plan #4, 2026-08-07): if BOTH providers
+    are dead on a billing/quota basis, return the rest-day reason string
+    immediately, before spending a real SCOUT->SPEC->BUILD cycle. Returns None
+    if at least one provider is healthy - a single healthy provider can carry
+    the whole pipeline via the existing fallback chains (proven 2026-08-07:
+    Qwen in arrears, DeepSeek alone carried SCOUT/SPEC/BUILD/Critic fallback
+    to a real shipped tool), so this only skips when NEITHER can possibly work.
+    """
+    health = check_provider_health()
+    qwen_ok, qwen_detail = health.get("qwen", (False, "no client"))
+    ds_ok, ds_detail = health.get("deepseek", (False, "no client"))
+    if qwen_ok or ds_ok:
+        return None
+    if is_billing_error(qwen_detail) or is_billing_error(ds_detail):
+        return classify_scout_failure(qwen_detail, ds_detail)
+    return None  # both down for a NON-billing reason - let the real calls retry normally
 
 
 def classify_scout_failure(qwen_error: str, deepseek_error: str) -> str:
@@ -606,6 +628,14 @@ def evolve():
     if tool_built_today:
         print(f"[OK] Already built a tool today ({today}) - skipping.")
         return
+
+    print("🩺 Pre-flight: checking provider health (cheap, before spending a real cycle)...")
+    outage_reason = check_billing_outage_preflight()
+    if outage_reason:
+        print(f"  🚨 Both providers unreachable on a billing basis - skipping the full cycle.")
+        save_rest_day(today, outage_reason)
+        return
+    print("  [OK] At least one provider is healthy - proceeding.")
 
     # ── Check for commissions ──────────────────────────────────────────────────
     print("📋 Checking for tool-request commissions...")
