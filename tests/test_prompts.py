@@ -151,6 +151,14 @@ class ScoutPromptTests(unittest.TestCase):
         for tag in ("---TITLE---", "---DIARY---", "---SOLUTION---", "---SCOUT_END---"):
             self.assertIn(tag, p)
 
+    def test_mechanical_fit_check_present(self):
+        # Rule 22 (2026-08-09): a SELECTION filter applied before DESCRIPTION/
+        # SOLUTION - is this friction point measurable/countable, or does it
+        # need real judgment a mechanical single-file tool can't fake?
+        p = build_scout_prompt("2026-08-09")
+        self.assertIn("MECHANICAL FIT CHECK", p)
+        self.assertIn("Hemingway App", p)
+
     def test_daily_offender_concepts_injected_when_present(self):
         # P2 fix (2026-08-03): concept-level repeat offenders should reach the
         # SCOUT prompt every day, not just after Sunday's gate. Uses a temp

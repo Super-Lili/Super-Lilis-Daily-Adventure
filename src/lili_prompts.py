@@ -1015,6 +1015,21 @@ PHASE 1 - SCOUT: FIND THE FRICTION POINT
 
 {source_block}
 
+MECHANICAL FIT CHECK (Rule 22, 2026-08-09) - apply BEFORE settling on DESCRIPTION/SOLUTION:
+  This tool will be a single self-contained file with no external data, no pretrained model,
+  no real language understanding - it can only compute what's OBJECTIVELY, STRUCTURALLY
+  present in the input (counts, patterns, positions, ratios, timestamps, repetitions). It
+  cannot exercise TASTE or JUDGMENT (is this good writing? is this brand voice right? is this
+  design balanced?) - those need real understanding a mechanical tool can only fake.
+  Ask: is this friction point one a careful person could diagnose by COUNTING or MEASURING
+  something in the material itself (like "this paragraph has 6 sentences over 40 words" or
+  "these 3 files were renamed 20 minutes apart"), or does it need someone to actually READ
+  and JUDGE (like "does this sound like our brand")? Hemingway App works because writing
+  clarity IS measurable (sentence length, passive voice) - it doesn't try to judge whether the
+  writing is GOOD. If the friction point you found needs real judgment, don't force it into a
+  mechanical solution - find a different friction point where measurement genuinely is the
+  right kind of help. This is a SELECTION filter, not a design constraint to route around.
+
 PAIN PORTRAIT (output after finding the source):
   WHO - specific person, situation, context
   MOMENT OF FAILURE - the exact moment the source describes
