@@ -1126,6 +1126,14 @@ SPEC DESIGN RULES:
    finalizing INPUT_MODEL, ask: would at least 2 CLEARLY DIFFERENT professional roles (not two
    flavors of the same persona) hit this exact wall? If you can only picture one narrow role,
    the friction point itself needs to change - not just the tool design around it.
+6. PORTABLE TAKEAWAY (Rule 21, 2026-08-09): passing every mechanical gate proves a tool isn't
+   broken - it proves NOTHING about whether it's worth opening twice. The owner's own reaction
+   to recently-shipped tools was the signal: technically valid, still not something she wanted
+   to try. A tool must leave the user with something concrete they can copy, download, paste,
+   or export - not just a nice screen they close and forget. Scaffolding, visualizations,
+   timelines, and card-walls are fine as the INTERACTION, never as the entire deliverable -
+   unless they produce an exportable result alongside the experience, they don't count. If you
+   can't name the specific portable object in Q3_PASS, the concept needs to change, not the words.
 
 FORMAT OPTIONS:
   A - Single text input -> computed output (Mode 1/2 - Python text or SVG)
@@ -1156,6 +1164,12 @@ FORMAT ROUTING - measured pass rates over 311 attempts in 28 days, not opinion:
   >> Litmus test: "would this friction point be solved better by a well-made OBJECT
      than by a paragraph of analysis?" If yes -> D or E. If the user really must
      paste text and get computed output -> A, with a genuinely mechanical algorithm.
+  >> IMPORTANT (Rule 21 interaction): these historical pass rates measure "did it work,"
+     not "was it worth using" - E's high pass rate came partly from ambient tools with no
+     portable takeaway, which now fail Q3_PASS's requirement (Rule 21) regardless of how
+     well the ambient experience itself works. Picking D or E still gets you better technical
+     odds, but ONLY if you can also name the concrete thing that leaves with the user -
+     don't pick E just for the pass-rate boost if the concept has no exportable result.
 
 OUTPUT FORMAT - YOU MUST OUTPUT THESE EXACT TAGS OR THE SPEC WILL BE REJECTED:
 ---SPEC_START---
@@ -1170,7 +1184,11 @@ UI_STATE_ACTIVE: [what changes during interaction - real-time feedback]
 UI_STATE_RESULT: [final state - what next action does the user take?]
 Q1_PASS: [exact moment of failure this tool addresses]
 Q2_PASS: [why the specific person recognizes it as built for them]
-Q3_PASS: [specific output - what do they do with it in 5 minutes?]
+Q3_PASS: [must name a PORTABLE TAKEAWAY - a specific thing the user copies, downloads, pastes,
+  exports, or saves after using this. NOT "gains insight" or "feels more aware" - name the
+  concrete object that leaves with them (a text block, a filename list, a downloadable script,
+  a table they paste into a doc). If you can't name one, the concept itself needs to change -
+  a tool with no portable output saves the user zero real minutes no matter how good it looks.]
 COMMON_ROLES: [name 2+ CLEARLY DIFFERENT professional roles - not variations of the same
   persona (e.g. "freelance photographer" and "freelance illustrator" are the same persona,
   not two) - who would all recognize this EXACT friction point. If you can only name one

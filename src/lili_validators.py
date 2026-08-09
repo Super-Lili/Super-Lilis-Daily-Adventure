@@ -294,6 +294,41 @@ def validate_spec(spec: dict) -> tuple[bool, str]:
         if len(val) < 10:
             return False, f"{label} is too vague or missing: '{val}'"
 
+    # Check 3b (2026-08-09, Rule 21): Q3_PASS must describe a PORTABLE TAKEAWAY,
+    # not just a nice screen. Owner's own reaction was the signal: validated
+    # tools that pass every mechanical gate can still be things nobody wants to
+    # open twice, because passing validation only proves "not broken," never
+    # "worth using." A tool the user can't copy, download, or paste anywhere
+    # saved them zero real minutes, no matter how polished the interface.
+    # This does not ban ambient/atmospheric tools outright - it bans them
+    # SILENTLY having no takeaway. If Q3_PASS can name what leaves with the
+    # user, any format (including E) can still pass; if it can't, the
+    # underlying concept needs to change, not just the wording of this field.
+    _PORTABLE_ARTIFACT_TERMS = (
+        "copy", "paste", "download", "export", "file", "script", "text", "paragraph",
+        "template", "checklist", "list", "table", "code", "snippet", "document",
+        "csv", "json", "image", "save", "print", "share", "screenshot", "link",
+        "filename", "clipboard",
+    )
+    _VAGUE_TAKEAWAY_TERMS = (
+        "insight", "understanding", "feeling", "awareness", "mindset", "perspective",
+        "inspiration", "atmosphere", "ambiance", "experience", "vibe", "sense of",
+        "appreciation", "mindfulness",
+    )
+    q3_lower = q3.lower()
+    has_artifact = any(t in q3_lower for t in _PORTABLE_ARTIFACT_TERMS)
+    only_vague = (not has_artifact) and any(t in q3_lower for t in _VAGUE_TAKEAWAY_TERMS)
+    if not has_artifact:
+        return False, (
+            f"Q3_PASS does not name a portable takeaway - what specific thing does the user "
+            f"copy, download, paste, or export after using this? '{q3[:150]}'"
+            + (" This reads as an experience/feeling, not something that leaves with the user."
+               if only_vague else "")
+            + " A tool that produces no portable artifact saves the user zero real minutes, "
+            "regardless of how good the interface looks - redesign either the output or the "
+            "underlying concept so something concrete leaves with the user."
+        )
+
     # Check 4: test input must exist
     if len(test_input) < 15:
         return False, f"TEST_INPUT is missing or too short. Got: '{test_input[:50]}'"

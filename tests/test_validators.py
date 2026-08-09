@@ -124,6 +124,43 @@ class ValidateSpecTests(unittest.TestCase):
         self.assertFalse(ok)
 
 
+class PortableTakeawayGateTests(unittest.TestCase):
+    """Rule 21 (2026-08-09): a tool that passes every mechanical gate can
+    still be something nobody wants to open twice - passing validation only
+    proves "not broken," never "worth using." Q3_PASS must name a concrete
+    portable object, not an experience or feeling."""
+
+    def test_concrete_artifact_terms_pass(self):
+        for phrase in [
+            "they copy the cleaned text into their editor",
+            "a downloadable CSV file with the ranked rows",
+            "a filename list they paste into their renaming script",
+            "an exported script ready to run",
+        ]:
+            with self.subTest(phrase=phrase):
+                ok, reason = validate_spec(good_spec(q3_pass=phrase))
+                self.assertTrue(ok, reason)
+
+    def test_vague_experience_only_rejected(self):
+        ok, reason = validate_spec(good_spec(
+            q3_pass="they gain a sense of calm awareness and a fresh perspective on their week"))
+        self.assertFalse(ok)
+        self.assertIn("Q3_PASS", reason)
+
+    def test_vague_answer_gets_experience_hint_in_rejection(self):
+        ok, reason = validate_spec(good_spec(
+            q3_pass="a feeling of insight and inspiration washes over them"))
+        self.assertFalse(ok)
+        self.assertIn("experience/feeling", reason)
+
+    def test_generic_vague_answer_without_experience_words_still_rejected(self):
+        # No artifact term and no recognized vague-experience term either -
+        # must still fail (the artifact check is the primary gate).
+        ok, reason = validate_spec(good_spec(q3_pass="it just works great for them honestly"))
+        self.assertFalse(ok)
+        self.assertIn("portable takeaway", reason)
+
+
 class ParserTests(unittest.TestCase):
     SCOUT = (
         "---TITLE---\nT\n---TITLE_ZH---\nTZ\n---MOOD---\nm\n---MOOD_ZH---\nmz\n"
