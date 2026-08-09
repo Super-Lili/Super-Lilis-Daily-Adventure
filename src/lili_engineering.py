@@ -854,23 +854,27 @@ programmer implements verbatim, and every step must run:
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-08-08
+# Last updated: 2026-08-09
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: Every process() function must include inline example input and expected output as comments
-WHY: Tools without embedded examples fail ground-truth checks because the function has no self-test mechanism — this week's Braid Reclamation Loom produced static DOM with no reactive processing.
-HOW: # Example: process("Zoom_Recording_2026-08-03_14.22.34_participant_1.mp4") → "2026-08-03_GuestName_Episode45.mp4"
+RULE: Input‑too‑short‑guard
+WHY: The Flyer Mosaic Finder had no empty‑input guard; blank filenames would crash or produce nonsense.
+HOW: if len(user_input.strip()) < 20: return "⚠️ Please paste at least one filename (20+ characters)."
 
-RULE: Check input length before processing and return structured error for empty/short input
-WHY: Flyer Mosaic Finder had no empty-input guard; tools that receive 0 filenames or 2-word career lists should explain what they need, not produce broken output.
-HOW: if len(user_input.strip()) < 20: return {"error": "Please paste at least one complete filename or 3-5 career milestones.", "example": "..."}
+RULE: One‑visible‑reaction
+WHY: The Batch Episode Renamer failed browser ground‑truth because DOM elements never reacted to user action.
+HOW: document.getElementById('result').innerText = `Renamed ${count} files.`;
 
-RULE: Output must have at least three distinct labeled sections using ## Markdown headers
-WHY: The Batch Episode Renamer flagged "output likely unstructured" — single-blob output is unreadable in the moment someone needs it most.
-HOW: Always structure output as ## Summary, ## Transformed Output, ## Next Steps — even for simple tools.
+RULE: Example‑input‑populated‑UI
+WHY: Tools without pre‑loaded examples don’t pass the automated “select and fill” check.
+HOW: <textarea id="input">Zoom_Recording_2026-08-03_14.22.34_participant_1.mp4</textarea>
 
-RULE: Verify DOM reactivity in browser context by checking fields_filled > 0 and selections_made > 0
-WHY: Two versions of Braid Reclamation Loom failed ground-truth with "DOM did not react to input" — the HTML looked complete but JavaScript event bindings were missing or broken.
-HOW: Add console.log('fields filled:', document.querySelectorAll('input:not([value=""])').length) in any interactive tool's JS init block.
+RULE: No‑Jinja‑only‑interaction
+WHY: Jinja templates render static HTML that looks interactive but cannot process user input, leading to fake‑static scores.
+HOW: Remove all Jinja logic from deliverable HTML; use plain JavaScript or Pyodide’s runPython in the browser instead.
+
+RULE: Structured‑output‑sections
+WHY: Many raw‑text blobs were rejected because they lacked visual hierarchy and parsable sections.
+HOW: output = "## Merged Timeline\n" + timeline + "\n\n## Medication List\n" + meds
 """

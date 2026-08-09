@@ -1,10 +1,8 @@
 {
-  "deprioritized_categories": [],
-  "banned_concepts": [
-    "A minimal CLI tool that transforms a raw client mandate"
+  "deprioritized_categories": [
+    "Office Automation"
   ],
-  "format_bias": {
-    "D": 0.1
-  },
-  "week_start": "2026-08-02"
+  "banned_concepts": [],
+  "format_bias": {},
+  "week_start": "2026-08-03"
 }
