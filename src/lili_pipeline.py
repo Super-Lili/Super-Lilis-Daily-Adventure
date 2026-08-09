@@ -286,6 +286,23 @@ def self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
     test_input = spec.get("test_input", "")
     must_contain = spec.get("must_contain") or []
     must_not_contain = spec.get("must_not_contain") or []
+    edge_case_input = (spec.get("edge_case_input") or "").strip()
+
+    def _check_promise(sample_input: str) -> str:
+        """Run main.py against sample_input and return an observed-problem
+        string, or "" if the MUST_CONTAIN/MUST_NOT_CONTAIN promise holds."""
+        out, err, rc = run_tool_output(main_py, sample_input)
+        if rc != 0 or (err and not out):
+            return f"Execution crashed (exit {rc}). Real stderr:\n{err[:500]}"
+        still_present = [s for s in must_not_contain if s in out]
+        missing = [s for s in must_contain if s not in out]
+        if still_present:
+            return (f"Ran successfully but the output still contains {still_present!r}, "
+                    f"which the spec promised to remove (MUST_NOT_CONTAIN). Real output:\n{out[:500]}")
+        if missing:
+            return (f"Ran successfully but the output is missing {missing!r}, "
+                    f"which the spec promised to produce (MUST_CONTAIN). Real output:\n{out[:500]}")
+        return ""
 
     for round_num in range(1, max_rounds + 1):
         code = Path(main_py).read_text(encoding="utf-8")
@@ -297,46 +314,36 @@ def self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
             observed = f"SyntaxError at line {e.lineno}: {e.msg}"
         else:
             # Cheap check 2: actually run it, exactly as the browser would.
-            output, stderr, rc = run_tool_output(main_py, test_input or "a realistic test input")
-            if rc != 0 or (stderr and not output):
-                observed = f"Execution crashed (exit {rc}). Real stderr:\n{stderr[:500]}"
-            else:
-                still_present = [s for s in must_not_contain if s in output]
-                missing = [s for s in must_contain if s not in output]
-                if still_present:
+            observed = _check_promise(test_input or "a realistic test input")
+            if not observed and edge_case_input:
+                # Harness plan #2 (2026-08-09): a tool that only works on the
+                # clean TEST_INPUT but breaks on messier, more realistic input
+                # is a happy-path illusion - this is the same MUST_CONTAIN/
+                # MUST_NOT_CONTAIN promise, just checked against a second,
+                # adversarial sample SPEC was asked to design specifically to
+                # exercise what TEST_INPUT's clean version doesn't.
+                edge_observed = _check_promise(edge_case_input)
+                if edge_observed:
+                    observed = f"[EDGE CASE INPUT] {edge_observed}"
+            if not observed and str(spec.get("mode", "")).strip().startswith("3"):
+                # Mode 3 tools are HTML pages whose real defect class (DOM not
+                # reacting to clicks) can't be seen by text substring checks -
+                # this was previously invisible until the expensive validate_tool()
+                # chain, so the model never got a chance to see and fix it itself.
+                # Fail-open: Playwright unavailable/crash -> ran=False -> treated
+                # as clean here, exactly like validate_tool()'s own probe.
+                output, _stderr, _rc = run_tool_output(main_py, test_input or "a realistic test input")
+                ran, changed, detail = _browser_interactivity_check(output, test_input or "a realistic test input")
+                if ran and not changed:
                     observed = (
-                        f"Ran successfully but the output still contains {still_present!r}, "
-                        f"which the spec promised to remove (MUST_NOT_CONTAIN). Real output:\n"
-                        f"{output[:500]}"
+                        f"Ran successfully and produced HTML, but a real headless browser "
+                        f"click-test found the DOM did NOT react to the test input ({detail}). "
+                        f"This means the JavaScript is not actually wired to the input/controls."
                     )
-                elif missing:
-                    observed = (
-                        f"Ran successfully but the output is missing {missing!r}, "
-                        f"which the spec promised to produce (MUST_CONTAIN). Real output:\n"
-                        f"{output[:500]}"
-                    )
-                elif str(spec.get("mode", "")).strip().startswith("3"):
-                    # Mode 3 tools are HTML pages whose real defect class (DOM not
-                    # reacting to clicks) can't be seen by text substring checks -
-                    # this was previously invisible until the expensive validate_tool()
-                    # chain, so the model never got a chance to see and fix it itself.
-                    # Fail-open: Playwright unavailable/crash -> ran=False -> treated
-                    # as clean here, exactly like validate_tool()'s own probe.
-                    ran, changed, detail = _browser_interactivity_check(output, test_input or "a realistic test input")
-                    if ran and not changed:
-                        observed = (
-                            f"Ran successfully and produced HTML, but a real headless browser "
-                            f"click-test found the DOM did NOT react to the test input ({detail}). "
-                            f"This means the JavaScript is not actually wired to the input/controls."
-                        )
-                    else:
-                        if round_num > 1:
-                            print(f"  🔧 Self-correction: fixed in round {round_num - 1}.")
-                        return code
-                else:
-                    if round_num > 1:
-                        print(f"  🔧 Self-correction: fixed in round {round_num - 1}.")
-                    return code  # genuinely fine - no LLM call spent verifying it
+            if not observed:
+                if round_num > 1:
+                    print(f"  🔧 Self-correction: fixed in round {round_num - 1}.")
+                return code  # genuinely fine - no LLM call spent verifying it
 
         print(f"  🔧 Self-correction round {round_num}/{max_rounds}: {observed[:120]}...")
         feedback = (
@@ -344,6 +351,15 @@ def self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
             f"guess, the literal observed behaviour:\n\n{observed}\n\n"
             f"Fix ONLY this specific problem. Keep everything else that already works."
         )
+        if round_num >= 2:
+            # Still broken after one real-feedback round - a concrete working
+            # example is worth its token cost here specifically (see
+            # get_reference_tool_snippet's docstring for why this isn't
+            # unconditional).
+            from lili_prompts import get_reference_tool_snippet
+            reference = get_reference_tool_snippet(scout.get("category", ""))
+            if reference:
+                feedback += f"\n\n{reference}"
         patched = call_gemini_simple(
             build_code_prompt(today, scout, spec, feedback, prev_code=code),
             deepseek_prompt=build_code_prompt(today, scout, spec, feedback, slim=True, prev_code=code),

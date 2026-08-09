@@ -495,6 +495,7 @@ def parse_spec_response(content: str) -> dict:
         "must_not_contain":   _parse_literal_list(field("MUST_NOT_CONTAIN")),
         "must_contain":       _parse_literal_list(field("MUST_CONTAIN")),
         "common_roles":       _parse_literal_list(field("COMMON_ROLES")),
+        "edge_case_input":    "" if field("EDGE_CASE_INPUT").strip().lower() in ("", "none") else field("EDGE_CASE_INPUT"),
         "spec_raw":           raw,
     }
 

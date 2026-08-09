@@ -5,7 +5,7 @@ import unittest
 
 import _bootstrap  # noqa: F401
 
-from lili_prompts import build_scout_prompt, build_spec_prompt, build_code_prompt
+from lili_prompts import build_scout_prompt, build_spec_prompt, build_code_prompt, get_reference_tool_snippet
 
 
 SCOUT = {
@@ -31,6 +31,87 @@ def spec(mode="1", fmt="A - text"):
         "ui_state_result": "ranked list",
         "test_input": "v1 text ... v2 text ...",
     }
+
+
+class ReferenceToolSnippetTests(unittest.TestCase):
+    """Harness plan #3 (2026-08-09): a concrete shipped tool as grounding,
+    on-demand only (see self_correct_code, called starting round 2+)."""
+
+    def test_empty_memory_returns_empty_string(self):
+        import lili_prompts
+        original = lili_prompts.load_memory if hasattr(lili_prompts, "load_memory") else None
+        import lili_memory
+        original_load = lili_memory.load_memory
+        lili_memory.load_memory = lambda: {"tools": []}
+        try:
+            self.assertEqual(get_reference_tool_snippet(), "")
+        finally:
+            lili_memory.load_memory = original_load
+
+    def test_unreadable_memory_returns_empty_string_not_raise(self):
+        import lili_memory
+        original_load = lili_memory.load_memory
+        lili_memory.load_memory = lambda: (_ for _ in ()).throw(Exception("broken"))
+        try:
+            self.assertEqual(get_reference_tool_snippet(), "")
+        finally:
+            lili_memory.load_memory = original_load
+
+    def test_prefers_same_category_tool(self):
+        import tempfile
+        from pathlib import Path as _P
+        d1 = tempfile.mkdtemp()
+        (_P(d1) / "main.py").write_text("def process(t): return 'A'\n", encoding="utf-8")
+        d2 = tempfile.mkdtemp()
+        (_P(d2) / "main.py").write_text("def process(t): return 'B'\n", encoding="utf-8")
+
+        import lili_memory
+        original_load = lili_memory.load_memory
+        lili_memory.load_memory = lambda: {"tools": [
+            {"name": "Older Different Category", "category": "Healing Inventions", "path": d1},
+            {"name": "Newer Same Category", "category": "Design Alchemy", "path": d2},
+        ]}
+        try:
+            snippet = get_reference_tool_snippet(category="Design Alchemy")
+        finally:
+            lili_memory.load_memory = original_load
+        self.assertIn("Newer Same Category", snippet)
+        self.assertIn("def process(t): return 'B'", snippet)
+
+    def test_falls_back_to_most_recent_when_no_category_match(self):
+        import tempfile
+        from pathlib import Path as _P
+        d1 = tempfile.mkdtemp()
+        (_P(d1) / "main.py").write_text("def process(t): return 'first'\n", encoding="utf-8")
+        d2 = tempfile.mkdtemp()
+        (_P(d2) / "main.py").write_text("def process(t): return 'second'\n", encoding="utf-8")
+
+        import lili_memory
+        original_load = lili_memory.load_memory
+        lili_memory.load_memory = lambda: {"tools": [
+            {"name": "First", "category": "Healing Inventions", "path": d1},
+            {"name": "Second", "category": "Healing Inventions", "path": d2},
+        ]}
+        try:
+            snippet = get_reference_tool_snippet(category="Office Automation")
+        finally:
+            lili_memory.load_memory = original_load
+        self.assertIn("Second", snippet)  # most recent overall
+
+    def test_truncates_to_max_chars(self):
+        import tempfile
+        from pathlib import Path as _P
+        d1 = tempfile.mkdtemp()
+        (_P(d1) / "main.py").write_text("x = 1\n" * 2000, encoding="utf-8")
+
+        import lili_memory
+        original_load = lili_memory.load_memory
+        lili_memory.load_memory = lambda: {"tools": [{"name": "Big", "category": "", "path": d1}]}
+        try:
+            snippet = get_reference_tool_snippet(max_chars=100)
+        finally:
+            lili_memory.load_memory = original_load
+        self.assertLess(len(snippet), 300)  # header text + 100-char code snippet
 
 
 class MissionAreaScopeTests(unittest.TestCase):

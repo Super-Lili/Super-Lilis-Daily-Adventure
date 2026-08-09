@@ -224,6 +224,48 @@ def _get_recent_patterns(n: int = 4) -> list[str]:
         return []
 
 
+def get_reference_tool_snippet(category: str = "", max_chars: int = 1800) -> str:
+    """Harness plan #3 (2026-08-09): a concrete, real shipped tool as grounding
+    is stronger evidence than abstract prose rules - "this pattern shipped and
+    passed" beats "here is a rule describing what should work." Deliberately
+    on-demand only (called from self_correct_code starting round 2+, not every
+    BUILD call) to control token cost, per the owner's explicit cost concern -
+    most attempts never need this at all (self_correct_code's zero-LLM-call
+    fast path for already-correct code is unaffected).
+
+    Picks the MOST RECENT successfully shipped tool, preferring one in the
+    same category if available, and returns a truncated snippet of its
+    main.py. Returns "" if no shipped tools exist yet or memory is unreadable
+    - never raises, a broken reference lookup must not block self-correction.
+    """
+    try:
+        from lili_memory import load_memory
+        tools = load_memory().get("tools", [])
+    except Exception:
+        return ""
+    if not tools:
+        return ""
+    same_cat = [t for t in tools if t.get("category") == category] if category else []
+    candidates = list(reversed(same_cat)) + list(reversed(tools))
+    for t in candidates:
+        path = t.get("path", "")
+        if not path:
+            continue
+        main_py = Path(path) / "main.py"
+        try:
+            code = main_py.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        snippet = code[:max_chars]
+        return (
+            f"Reference (real shipped tool, '{t.get('name', 'untitled')}', "
+            f"category: {t.get('category', '')}) - study the STRUCTURE, not a "
+            f"template to copy verbatim, your spec is different:\n"
+            f"```python\n{snippet}\n```"
+        )
+    return ""
+
+
 def _get_existing_tools() -> str:
     """Return a formatted list of all existing tool names + one-line descriptions."""
     toolbox = Path("02_Toolbox")
@@ -1135,6 +1177,12 @@ COMMON_ROLES: [name 2+ CLEARLY DIFFERENT professional roles - not variations of 
   narrow role, the concept is too niche - go back and widen the friction point itself.
   Comma-separated.]
 TEST_INPUT: [3-6 sentences of realistic domain-specific input for validation]
+EDGE_CASE_INPUT: [optional - a MESSIER, more adversarial input than TEST_INPUT: missing fields,
+  unusual formatting, edge-of-range values, or whatever real users of this exact tool would
+  realistically send that TEST_INPUT's clean version doesn't exercise. Reuses the same
+  MUST_CONTAIN/MUST_NOT_CONTAIN promises - if those claims don't hold on messier input too, the
+  tool only works on the happy path. Write "none" if TEST_INPUT already covers the realistic
+  range of inputs for this tool.]
 MUST_NOT_CONTAIN: [literal substrings that must be ABSENT from process(TEST_INPUT)'s output if
   your TRANSFORMATION claims to remove/strip/clean/fix something - derived directly from
   TEST_INPUT. Write "none" only if your transformation genuinely adds/computes rather than

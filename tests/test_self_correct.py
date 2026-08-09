@@ -204,6 +204,127 @@ class SelfCorrectPromiseTests(unittest.TestCase):
         self.assertIn("Summary:", result)
 
 
+_EDGE_CASE_FRAGILE_CODE = '''
+def process(text: str) -> str:
+    parts = text.split(",")
+    return "Owner: " + parts[1].strip()
+
+''' + _pad(50) + '''
+
+_browser_input = globals().get('USER_INPUT', None)
+if _browser_input is not None:
+    print(process(_browser_input))
+'''
+
+
+class SelfCorrectEdgeCaseInputTests(unittest.TestCase):
+    """Harness plan #2 (2026-08-09): a tool that only satisfies its promise
+    on the clean TEST_INPUT but breaks on a messier, more realistic input is
+    a happy-path illusion. EDGE_CASE_INPUT reuses the same MUST_CONTAIN/
+    MUST_NOT_CONTAIN promise, checked against a second adversarial sample."""
+
+    def test_edge_case_failure_triggers_patch_after_primary_passes(self):
+        # Primary test_input has a comma (works); edge case input has none
+        # (IndexError) - the tool must be patched, not declared clean just
+        # because the happy-path input worked.
+        skill_dir = _make_skill_dir(_EDGE_CASE_FRAGILE_CODE)
+        spec = _spec(
+            test_input="Alice, Marketing Lead",
+            must_contain=["Owner:"],
+            edge_case_input="Bob Solo Freelancer no comma here",
+        )
+        seen_feedback = []
+
+        def fake_call(prompt, deepseek_prompt=None):
+            seen_feedback.append(prompt)
+            return "---CODE---\n" + _CORRECT_CODE + "\n---TEST---\nassert True\n---BUILD_END---"
+
+        original = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = fake_call
+        try:
+            result = self_correct_code(skill_dir, _SCOUT, spec, "2026-08-09")
+        finally:
+            lili_pipeline.call_gemini_simple = original
+        self.assertTrue(any("EDGE CASE INPUT" in p for p in seen_feedback))
+        self.assertIn("Summary:", result)
+
+    def test_no_edge_case_input_skips_the_extra_check(self):
+        # _spec() default has no edge_case_input - primary-clean code must
+        # still be declared clean with zero LLM calls (backward compatible).
+        skill_dir = _make_skill_dir(_CORRECT_CODE)
+        original = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = _RaisingClient()
+        try:
+            result = self_correct_code(skill_dir, _SCOUT, _spec(), "2026-08-09")
+        finally:
+            lili_pipeline.call_gemini_simple = original
+        self.assertIn("def process", result)
+
+    def test_none_edge_case_input_treated_as_absent(self):
+        skill_dir = _make_skill_dir(_CORRECT_CODE)
+        spec = _spec(edge_case_input="none")
+        original = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = _RaisingClient()
+        try:
+            result = self_correct_code(skill_dir, _SCOUT, spec, "2026-08-09")
+        finally:
+            lili_pipeline.call_gemini_simple = original
+        self.assertIn("def process", result)
+
+
+class SelfCorrectReferenceRetrievalTests(unittest.TestCase):
+    """Harness plan #3 (2026-08-09): from round 2+ (still broken after one
+    real-feedback round), include a concrete shipped-tool reference in the
+    patch prompt - on-demand only, to control token cost per the owner's
+    explicit cost discussion."""
+
+    def test_round_one_does_not_fetch_reference(self):
+        skill_dir = _make_skill_dir(_SYNTAX_BROKEN_CODE)
+        calls = []
+
+        def fake_call(prompt, deepseek_prompt=None):
+            calls.append(prompt)
+            return "---CODE---\n" + _CORRECT_CODE + "\n---TEST---\nassert True\n---BUILD_END---"
+
+        def _fail_if_called(category=""):
+            raise AssertionError("reference lookup must not run on round 1")
+
+        import lili_prompts
+        original_ref = lili_prompts.get_reference_tool_snippet
+        lili_prompts.get_reference_tool_snippet = _fail_if_called
+        original_call = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = fake_call
+        try:
+            self_correct_code(skill_dir, _SCOUT, _spec(), "2026-08-09", max_rounds=1)
+        finally:
+            lili_prompts.get_reference_tool_snippet = original_ref
+            lili_pipeline.call_gemini_simple = original_call
+        self.assertEqual(len(calls), 1)
+
+    def test_round_two_includes_reference_when_available(self):
+        skill_dir = _make_skill_dir(_SYNTAX_BROKEN_CODE)
+        seen_feedback = []
+
+        def fake_call(prompt, deepseek_prompt=None):
+            seen_feedback.append(prompt)
+            # Keep returning broken code so round 2 is reached.
+            return "---CODE---\n" + _SYNTAX_BROKEN_CODE + "\n---TEST---\nassert True\n---BUILD_END---"
+
+        import lili_prompts
+        original_ref = lili_prompts.get_reference_tool_snippet
+        lili_prompts.get_reference_tool_snippet = lambda category="": "Reference (real shipped tool, 'Example') - study the STRUCTURE"
+        original_call = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = fake_call
+        try:
+            self_correct_code(skill_dir, _SCOUT, _spec(), "2026-08-09", max_rounds=2)
+        finally:
+            lili_prompts.get_reference_tool_snippet = original_ref
+            lili_pipeline.call_gemini_simple = original_call
+        self.assertEqual(len(seen_feedback), 2)
+        self.assertNotIn("Reference (real shipped tool", seen_feedback[0])
+        self.assertIn("Reference (real shipped tool", seen_feedback[1])
+
+
 class SelfCorrectDefaultRoundsTests(unittest.TestCase):
     """Harness plan #1, scoped increment (2026-08-07): raised the default
     self-correction budget from 2 to 4 rounds - still a hard cap (cost
