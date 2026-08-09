@@ -1026,6 +1026,30 @@ def save_evolution_knobs_gated(parsed: dict, today_str: str, week_start: str) ->
     return "\n".join(summary_lines)
 
 
+def run_retrospective_review(today_str: str) -> str:
+    """Close the loop the gate itself doesn't (F-029): before this week's
+    NEW proposal replaces the currently-active knobs, check whether LAST
+    week's knobs actually did anything - the gate only ever validated a
+    proposal against PAST data before applying it, nothing checked whether
+    an applied knob's real-world effect matched its stated intent. Purely
+    for transparency/audit trail here; lili_evolution_gate.retrospective_check_knobs
+    does the actual comparison against ledger data.
+    """
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).parent))
+    from lili_evolution_gate import load_evolution_knobs, retrospective_check_knobs
+
+    current = load_evolution_knobs()
+    if not current.get("week_start"):
+        return "(no active knobs from a prior week to review)"
+
+    surviving, log = retrospective_check_knobs(current, today_str)
+    print(f"  🔎 Retrospective review of {current.get('week_start')}'s knobs: {len(log)} findings.")
+    for line in log:
+        print(f"    - {line}")
+    return f"reviewed knobs from {current.get('week_start')}:\n  " + "\n  ".join(log)
+
+
 def weekly_evolution():
     today = datetime.utcnow()
     today_str = today.strftime("%Y-%m-%d")
@@ -1076,6 +1100,10 @@ def weekly_evolution():
     save_evolution_log(parsed, today_str, week_start)
     save_evolution_diary(parsed, today_str, week_start)
     update_readme_evolution_section(today_str)
+
+    print("🔎 Reviewing last week's applied knobs before replacing them...")
+    retrospective_summary = run_retrospective_review(today_str)
+    print(f"  {retrospective_summary}")
 
     print("🔒 Gating this week's evolution knobs against the ledger...")
     knobs_summary = save_evolution_knobs_gated(parsed, today_str, week_start)

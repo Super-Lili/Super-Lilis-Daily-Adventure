@@ -56,6 +56,29 @@ def load_entries(days: int = 28, ledger_path: Path | None = None) -> list[dict]:
     return entries
 
 
+def load_entries_range(start_date: str, end_date: str, ledger_path: Path | None = None) -> list[dict]:
+    """Entries with start_date <= date < end_date (both YYYY-MM-DD). Used by
+    the retrospective knobs check (F-029) to compare a pre/post window around
+    a knob's application date - load_entries() only supports a single
+    days-back cutoff from now, not an arbitrary historical range."""
+    path = ledger_path or LEDGER_PATH
+    if not path.exists():
+        return []
+    entries = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            e = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        d = e.get("date", "")
+        if start_date <= d < end_date:
+            entries.append(e)
+    return entries
+
+
 def build_ledger_report(days: int = 28, ledger_path: Path | None = None) -> str:
     """One-page statistical report: pass rate by week, failure buckets,
     category performance, repeat-offender concepts."""

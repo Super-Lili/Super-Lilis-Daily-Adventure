@@ -32,7 +32,9 @@ import json
 from pathlib import Path
 from statistics import median
 
-from lili_ledger_report import load_entries
+from datetime import datetime, timedelta
+
+from lili_ledger_report import load_entries, load_entries_range
 
 KNOBS_PATH = Path("lili_evolution_knobs.json")
 
@@ -198,3 +200,115 @@ def gate_evolution_proposal(proposed: dict, week_start: str, ledger_days: int = 
     if not log:
         log.append("all proposed knobs backed by ledger data - accepted in full")
     return accepted, log
+
+
+_MIN_DAYS_BEFORE_RETROSPECTIVE = 3
+
+
+def retrospective_check_knobs(knobs: dict, today: str, window_days: int = 7) -> tuple[dict, list[str]]:
+    """Close the loop the gate itself doesn't: gate_evolution_proposal only
+    checks a proposal AGAINST PAST DATA before applying it - nothing
+    previously checked whether an applied knob actually did anything once it
+    was live. Knobs accumulated forever with no mechanism to notice one
+    wasn't working and drop it.
+
+    Compares the `window_days` BEFORE a knob's week_start against the
+    `window_days` (or however many have elapsed) AFTER it, using the same
+    ledger data the gate itself trusts, and drops any knob whose real-world
+    effect didn't match its stated intent:
+      - deprioritized_categories should show a DROP in that category's share
+        of total attempts after application (the knob's whole point is fewer
+        attempts land there) - a category still or MORE picked than before is
+        proof the knob isn't being respected/effective.
+      - banned_concepts should stop recurring as a repeat offender after
+        application - still recurring 2+ times means the ban isn't working.
+      - format_bias should see the format's pass rate move in the direction
+        the bias intended (positive bias -> rate up, negative -> rate down) -
+        a delta in the wrong direction contradicts the bias's own premise.
+
+    Returns (surviving_knobs, log) - surviving_knobs keeps only what the
+    retrospective check actually supports; log explains every keep/drop
+    decision for transparency in the evolution report, same principle as
+    backtest_knobs' rejection log.
+    """
+    week_start = knobs.get("week_start", "")
+    if not week_start:
+        return knobs, ["no active knobs with a week_start - nothing to review"]
+
+    try:
+        start_dt = datetime.strptime(week_start, "%Y-%m-%d")
+        today_dt = datetime.strptime(today, "%Y-%m-%d")
+    except ValueError:
+        return knobs, [f"unparseable week_start '{week_start}' - skipping retrospective"]
+
+    days_elapsed = (today_dt - start_dt).days
+    if days_elapsed < _MIN_DAYS_BEFORE_RETROSPECTIVE:
+        return knobs, [f"only {days_elapsed} day(s) since {week_start} - too soon to judge, keeping as-is"]
+
+    pre_start = (start_dt - timedelta(days=window_days)).strftime("%Y-%m-%d")
+    post_end = today
+    pre_entries = load_entries_range(pre_start, week_start)
+    post_entries = load_entries_range(week_start, post_end)
+
+    surviving = {"deprioritized_categories": [], "banned_concepts": [], "format_bias": {}}
+    log: list[str] = []
+
+    if pre_entries and post_entries:
+        pre_total, post_total = len(pre_entries), len(post_entries)
+        for cat in knobs.get("deprioritized_categories", []):
+            pre_share = sum(1 for e in pre_entries if e.get("category") == cat) / pre_total
+            post_share = sum(1 for e in post_entries if e.get("category") == cat) / post_total
+            if post_share < pre_share:
+                surviving["deprioritized_categories"].append(cat)
+                log.append(f"deprioritized_categories: kept '{cat}' - attempt share dropped "
+                          f"{pre_share:.2f} -> {post_share:.2f} since {week_start}")
+            else:
+                log.append(f"deprioritized_categories: DROPPED '{cat}' - attempt share did not "
+                          f"decrease ({pre_share:.2f} -> {post_share:.2f}), knob had no measurable effect")
+    else:
+        surviving["deprioritized_categories"] = list(knobs.get("deprioritized_categories", []))
+        log.append("deprioritized_categories: insufficient pre/post data to judge - keeping as-is")
+
+    if post_entries:
+        from collections import Counter
+        post_fail_counts = Counter(e.get("tool", "")[:60] for e in post_entries if not e.get("passed"))
+        for concept in knobs.get("banned_concepts", []):
+            recurrence = sum(n for name, n in post_fail_counts.items()
+                            if concept.lower() in name.lower() or name.lower() in concept.lower())
+            if recurrence < 2:
+                surviving["banned_concepts"].append(concept)
+                log.append(f"banned_concepts: kept '{concept[:50]}' - not recurring since {week_start}")
+            else:
+                log.append(f"banned_concepts: DROPPED '{concept[:50]}' - still recurred {recurrence}x "
+                          f"since {week_start}, ban had no measurable effect")
+    else:
+        surviving["banned_concepts"] = list(knobs.get("banned_concepts", []))
+        log.append("banned_concepts: insufficient post-application data to judge - keeping as-is")
+
+    if pre_entries and post_entries:
+        def _fmt_rate(entries, fmt):
+            matching = [e for e in entries if (e.get("format") or "").strip()[:1].upper() == fmt]
+            return (sum(1 for e in matching if e.get("passed")) / len(matching)) if matching else None
+
+        for fmt, bias in (knobs.get("format_bias") or {}).items():
+            pre_rate = _fmt_rate(pre_entries, fmt)
+            post_rate = _fmt_rate(post_entries, fmt)
+            if pre_rate is None or post_rate is None:
+                log.append(f"format_bias: insufficient data for '{fmt}' - keeping as-is")
+                surviving["format_bias"][fmt] = bias
+                continue
+            moved_as_intended = (post_rate >= pre_rate) if bias > 0 else (post_rate <= pre_rate)
+            if moved_as_intended:
+                surviving["format_bias"][fmt] = bias
+                log.append(f"format_bias: kept '{fmt}' - pass rate moved as intended "
+                          f"({pre_rate:.2f} -> {post_rate:.2f})")
+            else:
+                log.append(f"format_bias: DROPPED '{fmt}' - pass rate moved opposite to the "
+                          f"bias direction ({pre_rate:.2f} -> {post_rate:.2f})")
+    else:
+        surviving["format_bias"] = dict(knobs.get("format_bias") or {})
+        log.append("format_bias: insufficient pre/post data to judge - keeping as-is")
+
+    if not log:
+        log.append("no active knobs to review")
+    return surviving, log
