@@ -603,6 +603,34 @@
   F-021 防止"被迫选剩一个"，F-023 防止"自愿选最松的那个"，两种机制解决的是不同的失衡
   来源，此前只做了前者，后者才是这三天数据里真正在起作用的那个。
 
+## F-024 · 账单故障和创造性 rest day 长得一模一样——诊断信号被自己的诗意文案盖住了
+
+- **日期**：2026-08-07 · **状态**：确认（真实事故 + 机械可复现的分类逻辑，非单纯推测）
+- **模型**：纯 harness 结构改动，不涉及具体模型能力发现——事故本身是 Qwen（DashScope）
+  账户欠费、DeepSeek 余额同时耗尽，跟任一模型的推理能力无关
+- **声明**：2026-08-06 和 2026-08-07 两天，Qwen 因欠费、DeepSeek 因余额不足同时不可用，
+  SCOUT 阶段的第一次调用就失败，F-019~F-023 加的所有下游机制（类别下限、自纠正、
+  ground-truth 探针……）根本没有机会运行。但当天的日记只写了"Phase 1 failed - Qwen
+  search and DeepSeek fallback both failed"，跟一次普通的"今天没有力气"式创造性 rest day
+  用的是同一套诗意文案模板，肉眼完全无法区分。事故直到有人手动翻 GitHub Actions 原始日志
+  才被发现——**诊断信息在系统里，但被展示层的一致性抹平了**。
+- **应对**：`is_billing_error()`（`lili_llm.py`）识别已知的账单/欠费错误签名（Arrearage、
+  Insufficient Balance、quota exceeded 等），`_call_qwen_search` 保存最近一次原始错误
+  供调用方检查；`classify_scout_failure()`（`lili_pipeline.py`）区分"基础设施账单故障"
+  和普通瞬时失败，`save_rest_day()` 对账单故障渲染明显不同的横幅（"基础设施故障 - 今天
+  没有真正尝试"），日记文件和 README 精选条目都同步区分，不再跟真正的创造性/质量类
+  rest day 共用同一套文案。
+- **证据**：`tests/test_billing_outage.py` 新增 12 个测试（141 个测试全绿，本地 3.13 与
+  真实 3.11 venv 双重验证）——`IsBillingErrorTests`（6 个：Qwen 欠费、DeepSeek 余额不足、
+  OpenAI 风格 quota exceeded 均识别为账单错误，普通网络错误/普通 5xx/空字符串均不误判）；
+  `ClassifyScoutFailureTests`（4 个：Qwen 单独账单错误触发分类、DeepSeek 单独账单错误
+  触发分类、双方账单错误都写进原因说明、普通失败不触发账单分类）；`SaveRestDayVisibilityTests`
+  （2 个：基础设施故障拿到不同横幅、普通 rest day 保留原有文案）。
+- **推论**：这条修的是"事故发生后怎么被看见"，没有解决"事故发生前要先烧完一整轮
+  SCOUT→SPEC→BUILD→Critic 才被发现"的问题——后者由两天后的 F-025 补上（pre-flight
+  健康探测，在花任何真实 token 之前先用近乎零成本的探针确认 provider 可用）。两条
+  是同一次账单事故催生的连续两步修复，分别对应"可见性"和"提前拦截"两个不同问题。
+
 ## F-025 · 低成本 pre-flight 探测 + 自纠正轮次上限提高（harness 架构讨论落地的第一步）
 
 - **日期**：2026-08-07 · **状态**：观察中（机制已实测验证，尚无生产运行数据）
