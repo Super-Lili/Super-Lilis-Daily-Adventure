@@ -379,6 +379,191 @@ def self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
     return Path(main_py).read_text(encoding="utf-8")
 
 
+_AGENTIC_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "run_and_check",
+            "description": (
+                "Run a candidate version of the code against a specific input and see the "
+                "REAL stdout/stderr/exit code, plus whether it satisfies the spec's "
+                "MUST_CONTAIN/MUST_NOT_CONTAIN promise. Use this to test a hypothesis (a "
+                "specific fix, an edge case) before committing to it as your final answer. "
+                "You can call this as many times as you need."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {"type": "string", "description": "The full Python source to test."},
+                    "input_text": {"type": "string", "description": "The input text to run it against."},
+                },
+                "required": ["code", "input_text"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "submit_final_code",
+            "description": (
+                "Declare this code as your final answer. It will be mechanically re-verified "
+                "against the spec's promise (and, for Mode 3 tools, a real browser click-test) "
+                "before being accepted - only call this once you believe it is actually correct, "
+                "ideally after confirming with run_and_check first."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {"code": {"type": "string", "description": "The final Python source."}},
+                "required": ["code"],
+            },
+        },
+    },
+]
+
+
+def _execute_candidate(code: str, input_text: str, spec: dict, tmp_dir: str) -> dict:
+    """Run `code` against `input_text` and report REAL, mechanically-checked
+    results - reuses the exact same ground-truth primitives as validate_tool()
+    (run_tool_output, promise check, browser interactivity) so a candidate the
+    model believes is correct is never taken on faith."""
+    candidate_path = Path(tmp_dir) / "candidate.py"
+    candidate_path.write_text(code, encoding="utf-8")
+    must_contain = spec.get("must_contain") or []
+    must_not_contain = spec.get("must_not_contain") or []
+
+    out, err, rc = run_tool_output(str(candidate_path), input_text)
+    if rc != 0 or (err and not out):
+        return {"ok": False, "detail": f"Execution crashed (exit {rc}). stderr:\n{err[:500]}"}
+
+    still_present = [s for s in must_not_contain if s in out]
+    missing = [s for s in must_contain if s not in out]
+    if still_present:
+        return {"ok": False, "detail": f"Output still contains {still_present!r} (should have been removed). Output:\n{out[:500]}"}
+    if missing:
+        return {"ok": False, "detail": f"Output is missing {missing!r} (should have been produced). Output:\n{out[:500]}"}
+
+    if str(spec.get("mode", "")).strip().startswith("3"):
+        ran, changed, detail = _browser_interactivity_check(out, input_text)
+        if ran and not changed:
+            return {"ok": False, "detail": f"Browser ground-truth: DOM did NOT react to input ({detail})."}
+
+    return {"ok": True, "detail": f"Promise holds, output looks correct ({len(out)} chars).", "output_preview": out[:300]}
+
+
+def agentic_self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
+                              max_rounds: int = 6) -> str:
+    """Harness plan #1 (2026-08-09): give BUILD a real debug-execute-decide
+    loop via native tool-calling, instead of the engine hard-sequencing a
+    fixed number of write-then-patch rounds (self_correct_code). The model
+    decides when to test a hypothesis (run_and_check) and when it believes
+    it's done (submit_final_code) - but "believes" is never trusted blindly:
+    every submission is mechanically re-verified with the same ground-truth
+    checks validate_tool() uses, exactly like self_correct_code's philosophy.
+
+    Falls back to the proven, fixed-round self_correct_code on ANY error from
+    the tool-calling call itself (provider doesn't support `tools`, transient
+    API failure, etc.) - this path must never make things WORSE than the
+    existing mechanism, only better when it works.
+    """
+    main_py = f"{skill_dir}/main.py"
+    code = Path(main_py).read_text(encoding="utf-8")
+    test_input = spec.get("test_input", "") or "a realistic test input"
+
+    import tempfile
+    tmp_dir = tempfile.mkdtemp()
+
+    # Zero-LLM-call fast path, same as self_correct_code: if the code already
+    # works, don't spend a single tool-calling round confirming the obvious.
+    import ast as _ast2
+    try:
+        _ast2.parse(code)
+        quick = _execute_candidate(code, test_input, spec, tmp_dir)
+        if quick["ok"]:
+            edge_case_input = (spec.get("edge_case_input") or "").strip()
+            if not edge_case_input or _execute_candidate(code, edge_case_input, spec, tmp_dir)["ok"]:
+                return code
+    except SyntaxError:
+        pass  # fall through - the loop below will see and fix the syntax error
+
+    system_prompt = (
+        f"You are debugging a Python tool that failed validation. Your job: use run_and_check "
+        f"to test candidate fixes against real execution, then call submit_final_code once you "
+        f"have a version that actually works. Do not guess blind - verify with run_and_check "
+        f"before submitting.\n\n"
+        f"SPEC TRANSFORMATION: {spec.get('transformation', '')}\n"
+        f"MUST_CONTAIN: {spec.get('must_contain') or 'none'}\n"
+        f"MUST_NOT_CONTAIN: {spec.get('must_not_contain') or 'none'}\n"
+        f"PRIMARY TEST INPUT: {test_input}\n\n"
+        f"CURRENT CODE (broken - needs a fix):\n```python\n{code}\n```"
+    )
+    messages = [{"role": "user", "content": system_prompt}]
+
+    try:
+        from lili_llm import _deepseek_client as _client
+        if not _client:
+            raise RuntimeError("no deepseek client configured")
+
+        for round_num in range(1, max_rounds + 1):
+            resp = _client.chat.completions.create(
+                model="deepseek-v4-pro", messages=messages, tools=_AGENTIC_TOOLS,
+                tool_choice="auto", max_tokens=16384,
+            )
+            msg = resp.choices[0].message
+            tool_calls = getattr(msg, "tool_calls", None)
+
+            if not tool_calls:
+                print(f"  🤖 Agentic self-correct round {round_num}/{max_rounds}: model stopped without submitting.")
+                break
+
+            messages.append({
+                "role": "assistant", "content": msg.content or "",
+                "tool_calls": [{"id": tc.id, "type": "function",
+                                "function": {"name": tc.function.name, "arguments": tc.function.arguments}}
+                              for tc in tool_calls],
+            })
+
+            submitted_and_clean = False
+            for tc in tool_calls:
+                args = json.loads(tc.function.arguments)
+                if tc.function.name == "run_and_check":
+                    result = _execute_candidate(args["code"], args.get("input_text", test_input), spec, tmp_dir)
+                    code = args["code"]
+                    print(f"  🤖 Round {round_num}: run_and_check -> {'OK' if result['ok'] else 'FAIL'}: {result['detail'][:100]}")
+                    messages.append({"role": "tool", "tool_call_id": tc.id, "content": json.dumps(result)})
+                elif tc.function.name == "submit_final_code":
+                    candidate = args["code"]
+                    result = _execute_candidate(candidate, test_input, spec, tmp_dir)
+                    edge_case_input = (spec.get("edge_case_input") or "").strip()
+                    if result["ok"] and edge_case_input:
+                        edge_result = _execute_candidate(candidate, edge_case_input, spec, tmp_dir)
+                        if not edge_result["ok"]:
+                            result = {"ok": False, "detail": f"[EDGE CASE INPUT] {edge_result['detail']}"}
+                    code = candidate
+                    print(f"  🤖 Round {round_num}: submit_final_code -> {'ACCEPTED' if result['ok'] else 'REJECTED'}: {result['detail'][:100]}")
+                    messages.append({"role": "tool", "tool_call_id": tc.id, "content": json.dumps(result)})
+                    if result["ok"]:
+                        submitted_and_clean = True
+                else:
+                    messages.append({"role": "tool", "tool_call_id": tc.id,
+                                     "content": json.dumps({"ok": False, "detail": "unknown tool"})})
+
+            if submitted_and_clean:
+                Path(main_py).write_text(code, encoding="utf-8")
+                print(f"  ✓ Agentic self-correct: verified clean, accepted after round {round_num}.")
+                return code
+
+        print(f"  ⚠ Agentic self-correct: no verified-clean submission after {max_rounds} rounds, "
+              f"handing off to the full validation chain.")
+        Path(main_py).write_text(code, encoding="utf-8")
+        return code
+
+    except Exception as e:
+        print(f"  ⚠ Agentic self-correct unavailable ({type(e).__name__}: {e}), "
+              f"falling back to fixed-round self-correction.")
+        Path(main_py).write_text(code, encoding="utf-8")
+        return self_correct_code(skill_dir, scout, spec, today)
+
+
 def check_billing_outage_preflight() -> str | None:
     """Cheap pre-flight probe (harness plan #4, 2026-08-07): if BOTH providers
     are dead on a billing/quota basis, return the rest-day reason string
@@ -822,7 +1007,7 @@ def evolve():
         # scoring). Runs the code for real and lets the model see its own
         # actual output/errors, the same way a human would catch a bug by
         # glancing at the terminal instead of submitting blind.
-        prev_code = self_correct_code(skill_dir, scout, spec, today)
+        prev_code = agentic_self_correct_code(skill_dir, scout, spec, today)
         merged["code"] = prev_code  # keep merged/saved dict in sync with any self-correction
 
         print("🔬 Validating tool...")
