@@ -1051,8 +1051,8 @@ def run_retrospective_review(today_str: str) -> str:
 
 
 def weekly_evolution():
-    today = datetime.utcnow()
-    today_str = today.strftime("%Y-%m-%d")
+    today_str = os.environ.get("LILI_DATE") or datetime.utcnow().strftime("%Y-%m-%d")
+    today = datetime.strptime(today_str, "%Y-%m-%d")
     week_start = (today - timedelta(days=6)).strftime("%Y-%m-%d")
 
     print(f"\n🌸 Super-Lili begins weekly evolution — {week_start} → {today_str}")

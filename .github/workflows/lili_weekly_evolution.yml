@@ -33,6 +33,7 @@ jobs:
         id: check
         run: |
           TODAY=$(TZ='Asia/Shanghai' date +'%Y-%m-%d')
+          echo "date=$TODAY" >> $GITHUB_OUTPUT
           if [ -f "03_Evolution_Log/${TODAY}_Weekly_Evolution.md" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
           else
@@ -45,6 +46,16 @@ jobs:
           QWEN_API_KEY: ${{ secrets.QWEN_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           PYTHONPATH: src
+          # Same fix as lili_daily.yml: pin the pipeline's date to the
+          # Beijing date the Check step already used to decide whether to
+          # run, so the two can never disagree. Without this, the skip
+          # guard (TODAY, Beijing) and the report filename it's guarding
+          # (datetime.utcnow() in Python) can be one day apart near the
+          # UTC 16:00-23:59 window, so the guard fails to recognize a report
+          # already ran and fires a redundant second run - this is the
+          # confirmed root cause of the back-to-back 08-08/08-09 duplicate
+          # Weekly Evolution runs. See CLAUDE.md Pitfalls Logged.
+          LILI_DATE: ${{ steps.check.outputs.date }}
         run: python src/super_lili_weekly_evolution.py
 
       - name: Commit
@@ -53,6 +64,6 @@ jobs:
           git config user.name "Super-Lili (Evolution)"
           git config user.email "lili-bot@users.noreply.github.com"
           git add .
-          git diff --cached --quiet || git commit -m "🌸 $(TZ='Asia/Shanghai' date +'%Y-%m-%d') Weekly Evolution"
+          git diff --cached --quiet || git commit -m "🌸 ${{ steps.check.outputs.date }} Weekly Evolution"
           git pull --rebase origin main
           git push
