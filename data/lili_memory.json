@@ -458,6 +458,14 @@
       "pattern": "transform",
       "path": "02_Toolbox/Education Evolution/2026-08-08_Braid_Reclamation_Loom",
       "description": "A single-page web tool that helps editorial professionals transform a raw list of career milestones into a three-thread braided essay scaffold—past, pivot, emerging self—so they can write about themselves with the interiority they bring to other people’s stories."
+    },
+    {
+      "date": "2026-08-10",
+      "name": "Asset Naming Spec Validator",
+      "category": "Office Automation",
+      "pattern": "extract",
+      "path": "02_Toolbox/Office Automation/2026-08-10_Asset_Naming_Spec_Validator",
+      "description": "A single‑page tool that lets a designer paste an expected naming convention pattern (e.g., “Button/Primary/Hover@2x”) and drag in a zip of exported assets, then instantly lists every mismatch and missing variant."
     }
   ],
   "topics_covered": [
@@ -770,7 +778,12 @@
       "date": "2026-08-08",
       "title": "The Byline Who Forgot How to Be a Character",
       "path": "01_Work_Log/2026-08-08-Diary.md"
+    },
+    {
+      "date": "2026-08-10",
+      "title": "The Name That Should Not Be",
+      "path": "01_Work_Log/2026-08-10-Diary.md"
     }
   ],
-  "last_updated": "2026-08-08"
+  "last_updated": "2026-08-10"
 }
