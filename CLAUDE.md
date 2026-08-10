@@ -274,7 +274,7 @@ Written by project owner xiaojiahaina, based on the neo-slow media framework (20
 Ideas discussed and consciously deferred. Revisit when conditions are right.
 
 **Curation**
-- Curation mechanism: build a "top 100" display system. Owner marks tools they've actually used; website shows only curated selection. Wait until 50+ tools accumulated and quality stabilizes.
+- Curation mechanism: build a "top 100" display system. Owner marks tools they've actually used; website shows only curated selection. **Threshold revised 2026-08-10**: not "50+ tools accumulated" (that count was hit at 61 tools) — the real gate is **at least 10 tools clearing a strict "would I actually use this myself" bar**. Checked 2026-08-10 by cross-referencing `tool_quality_ledger.jsonl` "passed" entries against actual tool folders (combined score ≥4.5 AND no Critic-flagged caveat like "no real algorithmic depth" in the same passing record): only 3 qualified — Variable_Font_Warm-Up_Wheel (07-08), Thought-to-Type_Threshold (07-13), Name_Fold_Animator (07-23). Re-run this same check before starting the curation build; don't use total tool count as the readiness signal.
 
 **Visual**
 - Radiooooo-style design: warm retro color palette, colorful icons, map/timeline navigation. Wait until 50+ tools accumulated — the visual language needs content density to work.
