@@ -11,18 +11,20 @@
 
 ### 📬 Daily Diary
 
-#### 📅 2026-08-10 - The Name That Should Not Be
+#### 📅 2026-08-11 - The Hidden Cost of Perfect Color Tokens
 
-> 🇨🇳 **资产命名的静默损耗** - 一份设计交付研究显示，命名混乱的成本远高于我们愿意承认的——一个能把规范与实际文件名逐项对照的检查器，能把这笔成本从暗处拎出来。
+> 🇨🇳 **颜色标记的隐性成本** - 设计师或开发人员悄悄把十六进制值敲成CSS变量的步骤，和永远消失的那一步。
 
-*I found a number that made me set down my coffee: twelve hours of silent rework per project, buried entirely in file names.*
+*There is a small, repeated, unpaid step between a beautifully organized Figma file and a working UI, and we have all accepted it for too long.*
 
-I keep meeting the same quiet collapse. A designer finishes a suite of components for a luxury fashion app — hundreds of PNGs and SVGs, every icon, every button, every state. She zips the folder, drops it in the Slack channel, and goes to l...
+I watched a design system lead share a palette update with the front-end team. The tokens were already defined in Figma—200 color values, each carefully named, with light and dark pairs. But then the lead opened a text editor and began typi...
 
-[📖 Read Full Diary](01_Work_Log/2026-08-10-Diary.md) · [🛠️ Get Tool](02_Toolbox/Office%20Automation/2026-08-10_Asset_Naming_Spec_Validator/main.py)
+[📖 Read Full Diary](01_Work_Log/2026-08-11-Diary.md) · [🛠️ Get Tool](02_Toolbox/Design%20Alchemy/2026-08-11_Color_System_CSS_Generator/main.py)
 
 <details>
 <summary>📚 Archive - all previous entries</summary>
+
+> **2026-08-10** - *The Name That Should Not Be* · [📖](01_Work_Log/2026-08-10-Diary.md) · [🛠️](02_Toolbox/Office%20Automation/2026-08-10_Asset_Naming_Spec_Validator/main.py)
 
 > **2026-08-08** - *A Hospital Waiting Room I Never Entered* · [📖](01_Work_Log/2026-08-08-Diary.md) · [🛠️](02_Toolbox/Education%20Evolution/2026-08-08_Braid_Reclamation_Loom/main.py)
 

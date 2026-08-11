@@ -466,6 +466,14 @@
       "pattern": "extract",
       "path": "02_Toolbox/Office Automation/2026-08-10_Asset_Naming_Spec_Validator",
       "description": "A single‑page tool that lets a designer paste an expected naming convention pattern (e.g., “Button/Primary/Hover@2x”) and drag in a zip of exported assets, then instantly lists every mismatch and missing variant."
+    },
+    {
+      "date": "2026-08-11",
+      "name": "Color System CSS Generator",
+      "category": "Design Alchemy",
+      "pattern": "generate",
+      "path": "02_Toolbox/Design Alchemy/2026-08-11_Color_System_CSS_Generator",
+      "description": "A single-page tool that converts a plain-text list of color names and hex values into a complete CSS custom properties file, with light and dark mode variants clearly commented, ready to drop into any project."
     }
   ],
   "topics_covered": [
@@ -783,7 +791,12 @@
       "date": "2026-08-10",
       "title": "The Name That Should Not Be",
       "path": "01_Work_Log/2026-08-10-Diary.md"
+    },
+    {
+      "date": "2026-08-11",
+      "title": "The Hidden Cost of Perfect Color Tokens",
+      "path": "01_Work_Log/2026-08-11-Diary.md"
     }
   ],
-  "last_updated": "2026-08-10"
+  "last_updated": "2026-08-11"
 }
