@@ -474,6 +474,14 @@
       "pattern": "generate",
       "path": "02_Toolbox/Design Alchemy/2026-08-11_Color_System_CSS_Generator",
       "description": "A single-page tool that converts a plain-text list of color names and hex values into a complete CSS custom properties file, with light and dark mode variants clearly commented, ready to drop into any project."
+    },
+    {
+      "date": "2026-08-12",
+      "name": "Portal‑Bag‑Post‑It Merger",
+      "category": "Education Evolution",
+      "pattern": "transform",
+      "path": "02_Toolbox/Education Evolution/2026-08-12_PortalBagPostIt_Merger",
+      "description": "A single‑page tool that accepts pasted text from multiple sources (portal, pharmacy bag, nurse notes) and extracts a unified, contradiction‑flagged medication schedule with times, warnings, and special instructions."
     }
   ],
   "topics_covered": [
@@ -796,7 +804,12 @@
       "date": "2026-08-11",
       "title": "The Hidden Cost of Perfect Color Tokens",
       "path": "01_Work_Log/2026-08-11-Diary.md"
+    },
+    {
+      "date": "2026-08-12",
+      "title": "The Bag, The Portal, The Post‑It",
+      "path": "01_Work_Log/2026-08-12-Diary.md"
     }
   ],
-  "last_updated": "2026-08-11"
+  "last_updated": "2026-08-12"
 }
