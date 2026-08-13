@@ -4,6 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Identity Anchor Notebook · Super-Lili</title>
+  <meta name="description" content="A minimal digital notebook that helps people navigating major life transitions gently collect and reaffirm emergent identity fragments—not through prompts or analysis, but through constrained, sensory-grounded entries anchored to real-world objects, actions, or moments. r/GriefSupport | QUOTE: &quot;My therapist asked what I liked to do before my mom died. I stared. I couldn’t remember. Not because I forgot—I just… stopped being that person the day she got sick.&quot;">
+  <meta property="og:title" content="Identity Anchor Notebook · Super-Lili">
+  <meta property="og:description" content="A minimal digital notebook that helps people navigating major life transitions gently collect and reaffirm emergent identity fragments—not through prompts or analysis, but through constrained, sensory-grounded entries anchored to real-world objects, actions, or moments. r/GriefSupport | QUOTE: &quot;My therapist asked what I liked to do before my mom died. I stared. I couldn’t remember. Not because I forgot—I just… stopped being that person the day she got sick.&quot;">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Identity Anchor Notebook · Super-Lili">
+  <meta name="twitter:description" content="A minimal digital notebook that helps people navigating major life transitions gently collect and reaffirm emergent identity fragments—not through prompts or analysis, but through constrained, sensory-grounded entries anchored to real-world objects, actions, or moments. r/GriefSupport | QUOTE: &quot;My therapist asked what I liked to do before my mom died. I stared. I couldn’t remember. Not because I forgot—I just… stopped being that person the day she got sick.&quot;">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Identity Anchor Notebook · Super-Lili",
+  "description": "A minimal digital notebook that helps people navigating major life transitions gently collect and reaffirm emergent identity fragments—not through prompts or analysis, but through constrained, sensory-grounded entries anchored to real-world objects, actions, or moments. r/GriefSupport | QUOTE: \"My therapist asked what I liked to do before my mom died. I stared. I couldn’t remember. Not because I forgot—I just… stopped being that person the day she got sick.\"",
+  "url": "https://github.com/Super-Lili/Super-Lilis-Daily-Adventure",
+  "applicationCategory": "DeveloperApplication"
+}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -698,26 +715,101 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div class="prerendered-app" style="margin-top:8px">
-  <iframe id="app-frame"
-          sandbox="allow-scripts allow-same-origin"
-          style="width:100%;min-height:540px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block"
-          title="Interactive tool"></iframe>
-  <p style="margin-top:10px;font-size:0.8rem;color:#aaa;text-align:center">
-    ✨ Interactive app — runs entirely in your browser
-  </p>
+<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste a few sentences about how you're feeling or what's on your mind…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 <script>
-  (function() {
-    const frame = document.getElementById('app-frame');
-    frame.srcdoc = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Identity Anchor Notebook</title>\n<style>\nbody{background:#fdfcf8;font-family:Georgia,'Times New Roman',serif;margin:0;padding:0;display:flex;flex-direction:column;align-items:center;min-height:100vh}\n.container{width:100%;max-width:600px;padding:2rem 1rem;display:flex;flex-direction:column;align-items:center}\n.input-area{width:100%;margin-bottom:2rem;display:flex;flex-direction:column;align-items:center}\n.input-row{display:flex;width:100%;max-width:500px;gap:0.5rem}\ninput[type=\"text\"]{flex:1;padding:0.75rem 1rem;font-size:1.1rem;border:1px solid #ccc;border-radius:0.5rem;background:white;font-family:Georgia,serif}\nbutton{background:#e0d7c6;border:1px solid #b8a997;border-radius:0.5rem;padding:0.75rem 1rem;font-size:1.2rem;cursor:pointer;color:#3e3226;transition:background 0.2s}\nbutton:hover{background:#d1c6b0}\n.hint{font-size:0.9rem;color:#8c8279;margin-top:0.25rem}\n.gallery{width:100%;max-width:500px;display:flex;flex-direction:column;gap:1rem;min-height:100px;margin-bottom:2rem}\n.empty-message{color:#aaa9a6;text-align:center;font-style:italic;padding:2rem}\n.card{position:relative;border-radius:1rem;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow:hidden;animation:slideUp 0.4s ease-out;color:#1a1a1a;display:flex;flex-direction:column;gap:0.5rem}\n@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}\n.card-text{font-family:Georgia,serif;font-size:1.1rem;line-height:1.5;word-wrap:break-word;position:relative;z-index:2}\n.card-time{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.8rem;color:#4a4242;opacity:0.8;position:relative;z-index:2}\n.shape-container{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1}\n.diagonal-line{position:absolute;width:1px;background:rgba(255,255,255,0.5);transform-origin:top left}\n.circle{position:absolute;border-radius:50%;background:rgba(255,255,255,0.3)}\n.export-btn{margin-top:1rem;font-size:0.9rem;background:#f3efe9;border:1px solid #ccc;padding:0.5rem 1rem}\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <div class=\"input-area\">\n    <div class=\"input-row\">\n      <input type=\"text\" id=\"anchorInput\" placeholder=\"What did you notice today?\" aria-label=\"Describe a small sensory moment that felt like you\">\n      <button id=\"addBtn\" title=\"Add anchor\">+</button>\n    </div>\n    <p class=\"hint\">Describe a small sensory moment that felt like you.</p>\n  </div>\n  <div class=\"gallery\" id=\"gallery\">\n    <p class=\"empty-message\" id=\"emptyMsg\">Your anchors will appear here.</p>\n  </div>\n  <button class=\"export-btn\" id=\"copyAllBtn\">Copy All Anchors</button>\n</div>\n<script>\n(function(){\n  var input = document.getElementById('anchorInput');\n  var addBtn = document.getElementById('addBtn');\n  var gallery = document.getElementById('gallery');\n  var emptyMsg = document.getElementById('emptyMsg');\n  var copyAllBtn = document.getElementById('copyAllBtn');\n\n  function hashString(s) {\n    var h = 0;\n    for (var i = 0; i < s.length; i++) {\n      h = (h * 31 + s.charCodeAt(i)) & 0xFFFFFF;\n    }\n    return h;\n  }\n\n  function addAnchor() {\n    var text = input.value.trim();\n    if (!text) return;\n\n    /* Step 1: capture current Date */\n    var now = new Date();\n    /* Step 2: hue from hour */\n    var hue = (now.getHours() * 360 / 24) % 360;\n    var bg = 'hsl(' + hue + ', 70%, 60%)';\n\n    /* Step 3: hash of text */\n    var hash = hashString(text);\n\n    /* Step 4: shape parameters with position derived from hash */\n    var angle = hash % 360;\n    var radiusPct = 20 + (hash % 60);\n\n    /* Additional position offsets from hash bits (lightweight but adds variation) */\n    var offsetX = (hash & 0x7F) * 0.2;          /* 0..25.4 % from left */\n    var offsetY = ((hash >> 7) & 0x7F) * 0.2;   /* 0..25.4 % from top */\n    var circleRight = -5 + ((hash >> 14) & 0x1F) * 0.3;  /* right offset in % */\n    var circleBottom = -5 + ((hash >> 9) & 0x1F) * 0.3;\n\n    createCard(text, now, bg, angle, radiusPct, offsetX, offsetY, circleRight, circleBottom);\n    input.value = '';\n    if (emptyMsg) emptyMsg.style.display = 'none';\n  }\n\n  function createCard(text, ts, bg, angle, radiusPct, offX, offY, circR, circB) {\n    var card = document.createElement('div');\n    card.className = 'card';\n    card.style.backgroundColor = bg;\n\n    var sh = document.createElement('div');\n    sh.className = 'shape-container';\n\n    var line = document.createElement('div');\n    line.className = 'diagonal-line';\n\n    var circ = document.createElement('div');\n    circ.className = 'circle';\n\n    sh.appendChild(line);\n    sh.appendChild(circ);\n\n    var txtDiv = document.createElement('div');\n    txtDiv.className = 'card-text';\n    txtDiv.textContent = text;\n\n    var timeDiv = document.createElement('div');\n    timeDiv.className = 'card-time';\n    var opts = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' };\n    timeDiv.textContent = ts.toLocaleString(undefined, opts);\n\n    card.appendChild(sh);\n    card.appendChild(txtDiv);\n    card.appendChild(timeDiv);\n\n    /* Step 6: append to gallery preserving insertion order */\n    gallery.appendChild(card);\n\n    /* Set sizes after DOM layout */\n    var cardHeight = card.offsetHeight;\n    var cardWidth = card.offsetWidth;\n    if (cardHeight > 0 && cardWidth > 0) {\n      var lineLen = cardHeight * 0.4;\n      line.style.height = lineLen + 'px';\n      line.style.left = (offX / 100 * cardWidth) + 'px';\n      line.style.top = (offY / 100 * cardHeight) + 'px';\n      line.style.transform = 'rotate(' + angle + 'deg)';\n\n      var radiusPx = (cardHeight * radiusPct) / 100;\n      var diam = radiusPx * 2;\n      circ.style.width = diam + 'px';\n      circ.style.height = diam + 'px';\n      circ.style.right = (circR / 100 * cardWidth) + 'px';\n      circ.style.bottom = (circB / 100 * cardHeight) + 'px';\n    } else {\n      /* Fallback if layout not yet available */\n      line.style.height = '40px';\n      line.style.transform = 'rotate(' + angle + 'deg)';\n      circ.style.width = '40px';\n      circ.style.height = '40px';\n    }\n\n    card.addEventListener('click', function() {\n      if (card.classList.contains('expanded')) {\n        var pr = card.querySelector('.still-you-prompt');\n        if (pr) pr.remove();\n        card.classList.remove('expanded');\n      } else {\n        var pr = document.createElement('div');\n        pr.className = 'still-you-prompt';\n        pr.style.cssText = 'font-size:0.85rem;font-style:italic;margin-top:0.5rem;opacity:0.7;position:relative;z-index:2;';\n        pr.textContent = 'Still you?';\n        card.appendChild(pr);\n        card.classList.add('expanded');\n      }\n    });\n  }\n\n  addBtn.addEventListener('click', addAnchor);\n  input.addEventListener('keypress', function(e) {\n    if (e.key === 'Enter') addAnchor();\n  });\n\n  copyAllBtn.addEventListener('click', function() {\n    var cards = gallery.querySelectorAll('.card');\n    var texts = [];\n    cards.forEach(function(c) {\n      var t = c.querySelector('.card-text');\n      if (t) texts.push(t.textContent);\n    });\n    if (texts.length === 0) { alert('No anchors yet.'); return; }\n    navigator.clipboard.writeText(texts.join('\\n')).then(function() {\n      var orig = copyAllBtn.textContent;\n      copyAllBtn.textContent = 'Copied!';\n      setTimeout(function() { copyAllBtn.textContent = orig; }, 1500);\n    }).catch(function() { alert('Could not copy.'); });\n  });\n})();\n<\/script>\n</body>\n</html>";
-    frame.addEventListener('load', function() {
-      try {
-        const h = frame.contentDocument.body.scrollHeight;
-        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
-      } catch(e) {}
-    });
-  })();
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n\"\"\"\nTool: Identity Anchor Notebook\nCategory: Healing Inventions\nFormat: D \u2013 Live canvas / real-time transformer\nMode: 3 \u2013 Interactive HTML (Rule 8)\n\nAlgorithmic depth (Steps 1\u20136 exactly per spec):\n  1) Capture current Date on submission.\n  2) Compute hue = (hour * 360 / 24) % 360, saturation 70%, lightness 60% for card background.\n  3) Compute polynomial hash: hash = 0; for each char: hash = (hash * 31 + ord(char)) & 0xFFFFFF.\n  4) Derive shape parameters:\n       - angle = hash % 360 for a thin diagonal line, positioned near top-left with offset derived from hash.\n       - radius = (20 + (hash % 60))% of card height for a faint circle at bottom-right with hash-derived position.\n  5) Construct card DOM element with these computed CSS values.\n  6) Append to gallery container preserving insertion order.\n\"\"\"\nfrom jinja2 import Template\nfrom typing import Optional\n\nTEMPLATE_STR = r'''<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Identity Anchor Notebook</title>\n<style>\nbody{background:#fdfcf8;font-family:Georgia,'Times New Roman',serif;margin:0;padding:0;display:flex;flex-direction:column;align-items:center;min-height:100vh}\n.container{width:100%;max-width:600px;padding:2rem 1rem;display:flex;flex-direction:column;align-items:center}\n.input-area{width:100%;margin-bottom:2rem;display:flex;flex-direction:column;align-items:center}\n.input-row{display:flex;width:100%;max-width:500px;gap:0.5rem}\ninput[type=\"text\"]{flex:1;padding:0.75rem 1rem;font-size:1.1rem;border:1px solid #ccc;border-radius:0.5rem;background:white;font-family:Georgia,serif}\nbutton{background:#e0d7c6;border:1px solid #b8a997;border-radius:0.5rem;padding:0.75rem 1rem;font-size:1.2rem;cursor:pointer;color:#3e3226;transition:background 0.2s}\nbutton:hover{background:#d1c6b0}\n.hint{font-size:0.9rem;color:#8c8279;margin-top:0.25rem}\n.gallery{width:100%;max-width:500px;display:flex;flex-direction:column;gap:1rem;min-height:100px;margin-bottom:2rem}\n.empty-message{color:#aaa9a6;text-align:center;font-style:italic;padding:2rem}\n.card{position:relative;border-radius:1rem;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow:hidden;animation:slideUp 0.4s ease-out;color:#1a1a1a;display:flex;flex-direction:column;gap:0.5rem}\n@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}\n.card-text{font-family:Georgia,serif;font-size:1.1rem;line-height:1.5;word-wrap:break-word;position:relative;z-index:2}\n.card-time{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.8rem;color:#4a4242;opacity:0.8;position:relative;z-index:2}\n.shape-container{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1}\n.diagonal-line{position:absolute;width:1px;background:rgba(255,255,255,0.5);transform-origin:top left}\n.circle{position:absolute;border-radius:50%;background:rgba(255,255,255,0.3)}\n.export-btn{margin-top:1rem;font-size:0.9rem;background:#f3efe9;border:1px solid #ccc;padding:0.5rem 1rem}\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <div class=\"input-area\">\n    <div class=\"input-row\">\n      <input type=\"text\" id=\"anchorInput\" placeholder=\"What did you notice today?\" aria-label=\"Describe a small sensory moment that felt like you\">\n      <button id=\"addBtn\" title=\"Add anchor\">+</button>\n    </div>\n    <p class=\"hint\">Describe a small sensory moment that felt like you.</p>\n  </div>\n  <div class=\"gallery\" id=\"gallery\">\n    <p class=\"empty-message\" id=\"emptyMsg\">Your anchors will appear here.</p>\n  </div>\n  <button class=\"export-btn\" id=\"copyAllBtn\">Copy All Anchors</button>\n</div>\n<script>\n(function(){\n  var input = document.getElementById('anchorInput');\n  var addBtn = document.getElementById('addBtn');\n  var gallery = document.getElementById('gallery');\n  var emptyMsg = document.getElementById('emptyMsg');\n  var copyAllBtn = document.getElementById('copyAllBtn');\n\n  function hashString(s) {\n    var h = 0;\n    for (var i = 0; i < s.length; i++) {\n      h = (h * 31 + s.charCodeAt(i)) & 0xFFFFFF;\n    }\n    return h;\n  }\n\n  function addAnchor() {\n    var text = input.value.trim();\n    if (!text) return;\n\n    /* Step 1: capture current Date */\n    var now = new Date();\n    /* Step 2: hue from hour */\n    var hue = (now.getHours() * 360 / 24) % 360;\n    var bg = 'hsl(' + hue + ', 70%, 60%)';\n\n    /* Step 3: hash of text */\n    var hash = hashString(text);\n\n    /* Step 4: shape parameters with position derived from hash */\n    var angle = hash % 360;\n    var radiusPct = 20 + (hash % 60);\n\n    /* Additional position offsets from hash bits (lightweight but adds variation) */\n    var offsetX = (hash & 0x7F) * 0.2;          /* 0..25.4 % from left */\n    var offsetY = ((hash >> 7) & 0x7F) * 0.2;   /* 0..25.4 % from top */\n    var circleRight = -5 + ((hash >> 14) & 0x1F) * 0.3;  /* right offset in % */\n    var circleBottom = -5 + ((hash >> 9) & 0x1F) * 0.3;\n\n    createCard(text, now, bg, angle, radiusPct, offsetX, offsetY, circleRight, circleBottom);\n    input.value = '';\n    if (emptyMsg) emptyMsg.style.display = 'none';\n  }\n\n  function createCard(text, ts, bg, angle, radiusPct, offX, offY, circR, circB) {\n    var card = document.createElement('div');\n    card.className = 'card';\n    card.style.backgroundColor = bg;\n\n    var sh = document.createElement('div');\n    sh.className = 'shape-container';\n\n    var line = document.createElement('div');\n    line.className = 'diagonal-line';\n\n    var circ = document.createElement('div');\n    circ.className = 'circle';\n\n    sh.appendChild(line);\n    sh.appendChild(circ);\n\n    var txtDiv = document.createElement('div');\n    txtDiv.className = 'card-text';\n    txtDiv.textContent = text;\n\n    var timeDiv = document.createElement('div');\n    timeDiv.className = 'card-time';\n    var opts = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' };\n    timeDiv.textContent = ts.toLocaleString(undefined, opts);\n\n    card.appendChild(sh);\n    card.appendChild(txtDiv);\n    card.appendChild(timeDiv);\n\n    /* Step 6: append to gallery preserving insertion order */\n    gallery.appendChild(card);\n\n    /* Set sizes after DOM layout */\n    var cardHeight = card.offsetHeight;\n    var cardWidth = card.offsetWidth;\n    if (cardHeight > 0 && cardWidth > 0) {\n      var lineLen = cardHeight * 0.4;\n      line.style.height = lineLen + 'px';\n      line.style.left = (offX / 100 * cardWidth) + 'px';\n      line.style.top = (offY / 100 * cardHeight) + 'px';\n      line.style.transform = 'rotate(' + angle + 'deg)';\n\n      var radiusPx = (cardHeight * radiusPct) / 100;\n      var diam = radiusPx * 2;\n      circ.style.width = diam + 'px';\n      circ.style.height = diam + 'px';\n      circ.style.right = (circR / 100 * cardWidth) + 'px';\n      circ.style.bottom = (circB / 100 * cardHeight) + 'px';\n    } else {\n      /* Fallback if layout not yet available */\n      line.style.height = '40px';\n      line.style.transform = 'rotate(' + angle + 'deg)';\n      circ.style.width = '40px';\n      circ.style.height = '40px';\n    }\n\n    card.addEventListener('click', function() {\n      if (card.classList.contains('expanded')) {\n        var pr = card.querySelector('.still-you-prompt');\n        if (pr) pr.remove();\n        card.classList.remove('expanded');\n      } else {\n        var pr = document.createElement('div');\n        pr.className = 'still-you-prompt';\n        pr.style.cssText = 'font-size:0.85rem;font-style:italic;margin-top:0.5rem;opacity:0.7;position:relative;z-index:2;';\n        pr.textContent = 'Still you?';\n        card.appendChild(pr);\n        card.classList.add('expanded');\n      }\n    });\n  }\n\n  addBtn.addEventListener('click', addAnchor);\n  input.addEventListener('keypress', function(e) {\n    if (e.key === 'Enter') addAnchor();\n  });\n\n  copyAllBtn.addEventListener('click', function() {\n    var cards = gallery.querySelectorAll('.card');\n    var texts = [];\n    cards.forEach(function(c) {\n      var t = c.querySelector('.card-text');\n      if (t) texts.push(t.textContent);\n    });\n    if (texts.length === 0) { alert('No anchors yet.'); return; }\n    navigator.clipboard.writeText(texts.join('\\\\n')).then(function() {\n      var orig = copyAllBtn.textContent;\n      copyAllBtn.textContent = 'Copied!';\n      setTimeout(function() { copyAllBtn.textContent = orig; }, 1500);\n    }).catch(function() { alert('Could not copy.'); });\n  });\n})();\n<\/script>\n</body>\n</html>'''\n\nTEMPLATE = Template(TEMPLATE_STR)\n\ndef process(text: str) -> str:\n    \"\"\"Return the interactive Identity Anchor Notebook HTML page.\"\"\"\n    # The page is static; all logic runs client-side.\n    # The text argument is not used beyond providing a consistent entry point.\n    return TEMPLATE.render()\n\ndef _cli_main() -> None:\n    import sys\n    print(process(sys.argv[1] if len(sys.argv) > 1 else \"\"))\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    _cli_main()";
+const DEMO_INPUT = "";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      const demoNote = document.createElement('p');
+      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
+      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
+      document.getElementById('output').before(demoNote);
+      await runTool(true);
+    }
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool(isDemo) {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
+      outEl.textContent = '';
+      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
+      const iframe = document.createElement('iframe');
+      iframe.sandbox = 'allow-scripts allow-same-origin';
+      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
+      iframe.srcdoc = output;
+      outEl.appendChild(iframe);
+      iframe.addEventListener('load', () => {
+        try {
+          const h = iframe.contentDocument.body.scrollHeight;
+          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
+        } catch(e) {}
+      });
+    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
 </script>
       </div>
     </section>

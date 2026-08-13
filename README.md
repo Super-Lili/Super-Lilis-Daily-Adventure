@@ -7,6 +7,12 @@
 
 > *One friction point. One tool. Every day.*
 
+**For engineers & AI agents:** this is a self-evolving AI agent pipeline, built and documented
+in the open — [🔬 FINDINGS.md](docs/FINDINGS.md) (evidence-backed findings on AI capability
+boundaries, one per discovery, with model attribution and dates) · [🏗️ ARCHITECTURE.md](docs/ARCHITECTURE.md)
+(the full ReAct pipeline, validation chain, and model routing) · [🤖 llms.txt](docs/llms.txt)
+(curated index for AI agents/crawlers).
+
 ---
 
 ### 📬 Daily Diary

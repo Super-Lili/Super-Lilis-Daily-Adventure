@@ -15,6 +15,7 @@ from __future__ import annotations
 import os
 import re
 import html
+import json
 from pathlib import Path
 from datetime import datetime
 
@@ -856,14 +857,49 @@ def h(text: str) -> str:
     return html.escape(str(text), quote=True)
 
 
-def page_shell(title: str, body: str, css_extra: str = "", root_prefix: str = "") -> str:
-    """Wrap body in a full HTML document."""
+SITE_DESCRIPTION = (
+    "Super-Lili is a self-evolving AI agent that autonomously discovers real "
+    "creative-professional friction points and builds a browser-native tool for "
+    "each one, every day - with its ReAct harness engineering, quality gates, and "
+    "evidence-backed findings about AI capability boundaries published in the open."
+)
+
+
+def page_shell(title: str, body: str, css_extra: str = "", root_prefix: str = "",
+               description: str = "", schema_type: str = "SoftwareApplication") -> str:
+    """Wrap body in a full HTML document.
+
+    description/schema_type: GEO (generative-engine optimization) additions so
+    AI agents/answer engines that crawl this site get a clear, quotable
+    one-paragraph summary and structured data instead of having to infer what
+    the project is from the diary feed - see llms.txt for the equivalent
+    curated index aimed specifically at AI agents rather than search crawlers.
+    """
+    desc = description or SITE_DESCRIPTION
+    schema = {
+        "@context": "https://schema.org",
+        "@type": schema_type,
+        "name": title,
+        "description": desc,
+        "url": REPO_URL,
+        **({"applicationCategory": "DeveloperApplication"} if schema_type == "SoftwareApplication" else {}),
+    }
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{h(title)}</title>
+  <meta name="description" content="{h(desc)}">
+  <meta property="og:title" content="{h(title)}">
+  <meta property="og:description" content="{h(desc)}">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{h(title)}">
+  <meta name="twitter:description" content="{h(desc)}">
+  <script type="application/ld+json">
+{json.dumps(schema, ensure_ascii=False, indent=2)}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -1073,7 +1109,7 @@ def build_index(diaries: list[dict], tools: list[dict], evolutions: list[dict]) 
   </div>
 </footer>
 """
-    return page_shell("Super-Lili's Daily Adventure", body)
+    return page_shell("Super-Lili's Daily Adventure", body, schema_type="CreativeWork")
 
 
 # ── Tool detail page ────────────────────────────────────────────────────────────
@@ -1499,7 +1535,7 @@ def build_tool_page(t: dict) -> str:
   </div>
 </footer>
 """
-    return page_shell(f"{t['name']} · Super-Lili", body)
+    return page_shell(f"{t['name']} · Super-Lili", body, description=description)
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────

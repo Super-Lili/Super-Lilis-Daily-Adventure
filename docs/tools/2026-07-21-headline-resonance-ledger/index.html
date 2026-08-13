@@ -4,6 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Headline Resonance Ledger · Super-Lili</title>
+  <meta name="description" content="A tool that imports your past headline drafts (plain text or CSV), tags them by campaign, audience mood, and send date, then renders them as a navigable, chronologically anchored visual ledger—with no scoring, only contextual resonance. r/Newsletters | QUOTE: “My ‘headline graveyard’ folder has 212 entries. I reuse old ones when I’m tired, and clients always say ‘this feels familiar’—but I don’t know *which* version they remember, or why.”">
+  <meta property="og:title" content="Headline Resonance Ledger · Super-Lili">
+  <meta property="og:description" content="A tool that imports your past headline drafts (plain text or CSV), tags them by campaign, audience mood, and send date, then renders them as a navigable, chronologically anchored visual ledger—with no scoring, only contextual resonance. r/Newsletters | QUOTE: “My ‘headline graveyard’ folder has 212 entries. I reuse old ones when I’m tired, and clients always say ‘this feels familiar’—but I don’t know *which* version they remember, or why.”">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Headline Resonance Ledger · Super-Lili">
+  <meta name="twitter:description" content="A tool that imports your past headline drafts (plain text or CSV), tags them by campaign, audience mood, and send date, then renders them as a navigable, chronologically anchored visual ledger—with no scoring, only contextual resonance. r/Newsletters | QUOTE: “My ‘headline graveyard’ folder has 212 entries. I reuse old ones when I’m tired, and clients always say ‘this feels familiar’—but I don’t know *which* version they remember, or why.”">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Headline Resonance Ledger · Super-Lili",
+  "description": "A tool that imports your past headline drafts (plain text or CSV), tags them by campaign, audience mood, and send date, then renders them as a navigable, chronologically anchored visual ledger—with no scoring, only contextual resonance. r/Newsletters | QUOTE: “My ‘headline graveyard’ folder has 212 entries. I reuse old ones when I’m tired, and clients always say ‘this feels familiar’—but I don’t know *which* version they remember, or why.”",
+  "url": "https://github.com/Super-Lili/Super-Lilis-Daily-Adventure",
+  "applicationCategory": "DeveloperApplication"
+}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -698,26 +715,101 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div class="prerendered-app" style="margin-top:8px">
-  <iframe id="app-frame"
-          sandbox="allow-scripts allow-same-origin"
-          style="width:100%;min-height:540px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block"
-          title="Interactive tool"></iframe>
-  <p style="margin-top:10px;font-size:0.8rem;color:#aaa;text-align:center">
-    ✨ Interactive app — runs entirely in your browser
-  </p>
+<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste your meeting notes, task list, or work text here…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 <script>
-  (function() {
-    const frame = document.getElementById('app-frame');
-    frame.srcdoc = "<html><body><p style='padding:20px'>No data provided. Please paste your headline drafts.</p></body></html>";
-    frame.addEventListener('load', function() {
-      try {
-        const h = frame.contentDocument.body.scrollHeight;
-        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
-      } catch(e) {}
-    });
-  })();
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n# Requirements: python-dateutil, jinja2\nimport csv\nimport io\nimport json\nimport re\nfrom dateutil import parser as dtparser\nfrom jinja2 import Template\nfrom collections import OrderedDict\n\nTEMPLATE_HTML = r'''<!DOCTYPE html>\n<html><head><meta charset=\"UTF-8\"><title>Headline Resonance Ledger</title>\n<style>\n*{box-sizing:border-box;font-family:system-ui,sans-serif}\nbody{margin:0;padding:20px;background:#f5f5f5}\n#controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:15px;background:white;padding:12px 16px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}\n#controls label{font-size:14px;display:flex;align-items:center;gap:4px}\n#controls select{padding:4px 8px;border-radius:4px;border:1px solid #ccc}\nbutton{padding:6px 14px;border:none;border-radius:4px;cursor:pointer;background:#4d90fe;color:white;font-weight:500}\nbutton:hover{background:#357ae8}\n#range-slider{position:relative;width:200px;height:24px;margin:0 8px}\n#range-slider input[type=range]{position:absolute;width:100%;pointer-events:none;appearance:none;height:6px;background:transparent;top:9px;left:0}\n#range-slider input[type=range]::-webkit-slider-thumb{pointer-events:auto;width:14px;height:14px;border-radius:50%;background:#4d90fe;cursor:pointer;appearance:none;margin-top:-4px}\n#range-slider input[type=range]::-moz-range-thumb{pointer-events:auto;width:14px;height:14px;border-radius:50%;background:#4d90fe;cursor:pointer}\n#range-slider::before{content:'';position:absolute;top:9px;left:0;width:100%;height:6px;background:#ccc;border-radius:3px;z-index:0}\n#timeline-container{width:100%;height:75vh;overflow-y:auto;overflow-x:auto;background:white;border-radius:8px;padding:10px;box-shadow:0 2px 4px rgba(0,0,0,0.1);position:relative}\n#timeline-svg{display:block;min-width:600px}\n#tooltip{position:fixed;background:white;border:1px solid #aaa;padding:6px 10px;border-radius:4px;font-size:14px;max-width:300px;word-wrap:break-word;box-shadow:0 2px 6px rgba(0,0,0,0.15);pointer-events:none;z-index:1000;transition:opacity 0.15s}\n#export-modal{display:none;position:fixed;top:20%;left:10%;width:80%;max-height:70vh;background:white;border:2px solid #aaa;border-radius:8px;z-index:2000;padding:16px;flex-direction:column}\n#export-modal textarea{width:100%;height:200px;margin-top:8px;font-family:monospace}\n#export-modal button{margin-top:8px;align-self:flex-end}\n</style></head><body>\n<div id=\"controls\">\n  <label>Group by: <select id=\"groupBy\"><option value=\"mood\">Mood</option><option value=\"campaign\">Campaign</option></select></label>\n  <label>Mood: <select id=\"filterMood\"><option value=\"all\">All</option></select></label>\n  <label>Campaign: <select id=\"filterCampaign\"><option value=\"all\">All</option></select></label>\n  <label>Date: <div id=\"range-slider\"><input type=\"range\" id=\"rangeMin\" min=\"0\" max=\"100\" value=\"0\" step=\"1\"><input type=\"range\" id=\"rangeMax\" min=\"0\" max=\"100\" value=\"100\" step=\"1\"></div></label>\n  <button id=\"resetBtn\">Reset</button>\n  <button id=\"exportBtn\">Export visible</button>\n</div>\n<div id=\"timeline-container\"><svg id=\"timeline-svg\"></svg></div>\n<div id=\"tooltip\" style=\"opacity:0\"></div>\n<div id=\"export-modal\"><h3>Visible headlines</h3><textarea readonly></textarea><button id=\"closeExport\">Close</button></div>\n<script>\nconst ENTRIES = {{ data|safe }};\nconst COLORS = [\"#e41a1c\",\"#377eb8\",\"#4daf4a\",\"#984ea3\",\"#ff7f00\",\"#a65628\",\"#f781bf\",\"#999999\",\"#66c2a5\",\"#8dd3c7\"];\nlet minDate, maxDate, totalWidth, groupField = 'mood';\nlet moodColorMap = {};\nfunction initData(){\n  if(ENTRIES.length===0) return;\n  const dates = ENTRIES.map(e=>new Date(e.date));\n  minDate = new Date(Math.min(...dates));\n  maxDate = new Date(Math.max(...dates));\n  if(maxDate - minDate === 0){maxDate = new Date(minDate.getTime()+86400000);}\n  const daysDiff = (maxDate - minDate)/86400000;\n  totalWidth = Math.max(800, daysDiff*6 + 200);\n  // assign colors to moods\n  const moods = [...new Set(ENTRIES.map(e=>e.mood))];\n  moods.forEach((m,i)=>moodColorMap[m]=COLORS[i%COLORS.length]);\n  populateDropdowns();\n  buildTimeline();\n}\nfunction populateDropdowns(){\n  const moods = [...new Set(ENTRIES.map(e=>e.mood))];\n  const campaigns = [...new Set(ENTRIES.map(e=>e.campaign))];\n  const moodSel = document.getElementById('filterMood');\n  const campSel = document.getElementById('filterCampaign');\n  [moodSel, campSel].forEach(s=>{while(s.options.length>1)s.remove(1);});\n  moods.forEach(m=>{const o=document.createElement('option');o.value=m;o.text=m;moodSel.add(o);});\n  campaigns.forEach(c=>{const o=document.createElement('option');o.value=c;o.text=c;campSel.add(o);});\n}\nfunction getFilteredEntries(){\n  const moodFilter = document.getElementById('filterMood').value;\n  const campFilter = document.getElementById('filterCampaign').value;\n  const minP = parseInt(document.getElementById('rangeMin').value);\n  const maxP = parseInt(document.getElementById('rangeMax').value);\n  const totalMs = maxDate - minDate;\n  return ENTRIES.filter(e=>{\n    if(moodFilter!=='all' && e.mood!==moodFilter) return false;\n    if(campFilter!=='all' && e.campaign!==campFilter) return false;\n    const d = new Date(e.date);\n    const p = totalMs>0 ? (d-minDate)/totalMs*100 : 50;\n    return p>=minP && p<=maxP;\n  });\n}\nfunction buildTimeline(){\n  const svg = document.getElementById('timeline-svg');\n  const container = document.getElementById('timeline-container');\n  groupField = document.getElementById('groupBy').value;\n  const filtered = getFilteredEntries();\n  if(filtered.length===0){\n    svg.innerHTML='<text x=\"20\" y=\"30\" font-size=\"14\">No headlines match filters.</text>';\n    svg.setAttribute('width',400);\n    svg.setAttribute('height',80);\n    return;\n  }\n  const groups = {};\n  filtered.forEach(e=>{\n    const key = e[groupField] || 'undefined';\n    if(!groups[key]) groups[key]=[];\n    groups[key].push(e);\n  });\n  const groupKeys = Object.keys(groups).sort();\n  const groupHeight = 50;\n  const paddingTop = 30;\n  const svgHeight = groupKeys.length * groupHeight + paddingTop + 20;\n  svg.setAttribute('width', totalWidth);\n  svg.setAttribute('height', svgHeight);\n  let html = '<g>';\n  // y-axis labels, group bands\n  groupKeys.forEach((key, i)=>{\n    const y = paddingTop + i*groupHeight + groupHeight/2;\n    html += \\`<text x=\"10\" y=\"\\${y}\" alignment-baseline=\"middle\" font-size=\"12\" fill=\"#333\">\\${key}</text>\\`;\n    html += \\`<line x1=\"80\" y1=\"\\${y+6}\" x2=\"\\${totalWidth}\" y2=\"\\${y+6}\" stroke=\"#eee\" stroke-dasharray=\"4\"/>\\`;\n  });\n  // draw circles\n  filtered.forEach(e=>{\n    const key = e[groupField]||'undefined';\n    const i = groupKeys.indexOf(key);\n    if(i<0) return;\n    const y = paddingTop + i*groupHeight + groupHeight/2 + 6;\n    const d = new Date(e.date);\n    const totalMs = maxDate - minDate;\n    const x = totalMs>0 ? ((d-minDate)/totalMs * totalWidth) : totalWidth/2;\n    const color = moodColorMap[e.mood] || '#ccc';\n    const title = e.headline.replace(/</g,'&lt;').replace(/>/g,'&gt;');\n    html += \\`<circle cx=\"\\${x}\" cy=\"\\${y}\" r=\"6\" fill=\"\\${color}\" stroke=\"#fff\" stroke-width=\"1\" data-headline=\"\\${title}\" data-campaign=\"\\${e.campaign}\" data-date=\"\\${e.date}\" data-mood=\"\\${e.mood}\" class=\"dot\" style=\"cursor:pointer\"/>\\`;\n  });\n  html += '</g>';\n  // axis\n  const axisY = svgHeight - 15;\n  html += \\`<line x1=\"80\" y1=\"\\${axisY}\" x2=\"\\${totalWidth}\" y2=\"\\${axisY}\" stroke=\"#999\"/>\\`;\n  // date ticks\n  const tickCount = Math.min(10, Math.floor(totalWidth/100));\n  for(let i=0;i<=tickCount;i++){\n    const fraction = i/tickCount;\n    const x = 80 + (totalWidth-80)*fraction;\n    const t = new Date(minDate.getTime() + fraction*(maxDate-minDate));\n    const label = t.toISOString().slice(0,10);\n    html += \\`<line x1=\"\\${x}\" y1=\"\\${axisY-4}\" x2=\"\\${x}\" y2=\"\\${axisY+4}\" stroke=\"#999\"/><text x=\"\\${x}\" y=\"\\${axisY+14}\" text-anchor=\"middle\" font-size=\"10\">\\${label}</text>\\`;\n  }\n  svg.innerHTML = html;\n  attachTooltips();\n}\nfunction attachTooltips(){\n  const tooltip = document.getElementById('tooltip');\n  document.querySelectorAll('#timeline-svg .dot').forEach(circle=>{\n    circle.addEventListener('mouseenter',(e)=>{\n      const headline = circle.getAttribute('data-headline');\n      tooltip.textContent = headline;\n      tooltip.style.opacity='1';\n    });\n    circle.addEventListener('mousemove',(e)=>{\n      tooltip.style.left=(e.clientX+12)+'px';\n      tooltip.style.top=(e.clientY-30)+'px';\n    });\n    circle.addEventListener('mouseleave',()=>{tooltip.style.opacity='0';});\n  });\n}\nfunction exportVisible(){\n  const filtered = getFilteredEntries();\n  const text = filtered.map(e=>\\`\\${e.date} | \\${e.campaign} | \\${e.mood} | \\${e.headline}\\`).join('\\\\n');\n  const modal = document.getElementById('export-modal');\n  modal.querySelector('textarea').value = text;\n  modal.style.display='flex';\n}\ndocument.getElementById('resetBtn').addEventListener('click',()=>{\n  document.getElementById('filterMood').value='all';\n  document.getElementById('filterCampaign').value='all';\n  document.getElementById('rangeMin').value=0;\n  document.getElementById('rangeMax').value=100;\n  buildTimeline();\n});\ndocument.getElementById('exportBtn').addEventListener('click',exportVisible);\ndocument.getElementById('closeExport').addEventListener('click',()=>{\n  document.getElementById('export-modal').style.display='none';\n});\ndocument.getElementById('filterMood').addEventListener('change',buildTimeline);\ndocument.getElementById('filterCampaign').addEventListener('change',buildTimeline);\ndocument.getElementById('groupBy').addEventListener('change',buildTimeline);\ndocument.getElementById('rangeMin').addEventListener('input',function(){\n  if(parseInt(this.value)>parseInt(document.getElementById('rangeMax').value))\n    this.value = document.getElementById('rangeMax').value;\n  buildTimeline();\n});\ndocument.getElementById('rangeMax').addEventListener('input',function(){\n  if(parseInt(this.value)<parseInt(document.getElementById('rangeMin').value))\n    this.value = document.getElementById('rangeMin').value;\n  buildTimeline();\n});\nwindow.addEventListener('load',initData);\n<\/script></body></html>'''\n\ndef parse_csv(text: str):\n    \"\"\"Parse CSV with columns: date, headline, campaign, mood (any order).\"\"\"\n    lines = [l.strip() for l in text.split('\\\\n') if l.strip()]\n    if len(lines) < 2:\n        return []\n    header = lines[0].split(',')\n    idx = [h.strip().lower() for h in header]\n    date_idx = next((i for i, h in enumerate(idx) if 'date' in h), None)\n    headline_idx = next((i for i, h in enumerate(idx) if 'headline' in h), None)\n    campaign_idx = next((i for i, h in enumerate(idx) if 'campaign' in h), None)\n    mood_idx = next((i for i, h in enumerate(idx) if 'mood' in h), None)\n    # fallback positions\n    if date_idx is None:\n        date_idx = 0\n    if headline_idx is None:\n        headline_idx = 1\n    if campaign_idx is None:\n        campaign_idx = 2 if len(idx) > 2 else None\n    if mood_idx is None:\n        mood_idx = 3 if len(idx) > 3 else None\n    entries = []\n    for line in lines[1:]:\n        parts = [p.strip() for p in line.split(',')]\n        if len(parts) <= max(filter(None, [date_idx, headline_idx])):  # type: ignore\n            continue\n        date_str = parts[date_idx]\n        headline = parts[headline_idx]\n        campaign = parts[campaign_idx] if campaign_idx is not None else ''\n        mood = parts[mood_idx] if mood_idx is not None else ''\n        try:\n            date = dtparser.parse(date_str).strftime('%Y-%m-%d')\n        except Exception:\n            continue\n        entries.append({'date': date, 'headline': headline, 'campaign': campaign, 'mood': mood})\n    return entries\n\ndef parse_piped(text: str):\n    \"\"\"Parse pipe-delimited lines: date | campaign | mood | headline.\"\"\"\n    entries = []\n    for line in text.strip().split('\\\\n'):\n        line = line.strip()\n        if not line:\n            continue\n        parts = [p.strip() for p in line.split('|')]\n        if len(parts) != 4:\n            continue\n        date_str, campaign, mood, headline = parts\n        try:\n            date = dtparser.parse(date_str).strftime('%Y-%m-%d')\n        except Exception:\n            continue\n        entries.append({'date': date, 'headline': headline, 'campaign': campaign, 'mood': mood})\n    return entries\n\ndef parse_input(text: str):\n    \"\"\"Detect format and parse into list of dicts.\"\"\"\n    if not text.strip():\n        return []\n    first_line = text.strip().split('\\\\n')[0].strip()\n    if ',' in first_line and (re.search(r'\\\\bdate\\\\b', first_line, re.IGNORECASE) or re.search(r'\\\\bheadline\\\\b', first_line, re.IGNORECASE)):\n        return parse_csv(text)\n    else:\n        return parse_piped(text)\n\ndef process(text: str) -> str:\n    \"\"\"Build an interactive timeline HTML from headline data.\"\"\"\n    if not text.strip():\n        return \"<html><body><p style='padding:20px'>No data provided. Please paste your headline drafts.</p></body></html>\"\n    entries = parse_input(text)\n    entries.sort(key=lambda e: e['date'])\n    data_json = json.dumps(entries)\n    template = Template(TEMPLATE_HTML)\n    return template.render(data=data_json)\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    import sys\n    txt = sys.stdin.read()\n    print(process(txt))";
+const DEMO_INPUT = "Meeting notes 14:00 Mon: Q3 review. Revenue down 8% vs plan. Sarah: push launch to Oct. Tom: disagree, delay costs more. Action items: Sarah sends revised forecast by Wed, Tom prepares risk analysis, sync again Friday 10am.";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      const demoNote = document.createElement('p');
+      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
+      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
+      document.getElementById('output').before(demoNote);
+      await runTool(true);
+    }
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool(isDemo) {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
+      outEl.textContent = '';
+      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
+      const iframe = document.createElement('iframe');
+      iframe.sandbox = 'allow-scripts allow-same-origin';
+      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
+      iframe.srcdoc = output;
+      outEl.appendChild(iframe);
+      iframe.addEventListener('load', () => {
+        try {
+          const h = iframe.contentDocument.body.scrollHeight;
+          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
+        } catch(e) {}
+      });
+    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
 </script>
       </div>
     </section>

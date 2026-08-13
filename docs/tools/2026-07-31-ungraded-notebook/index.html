@@ -4,6 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ungraded Notebook · Super-Lili</title>
+  <meta name="description" content="A minimal, offline-first HTML tool that lets teachers record raw, timestamped, sensory-rich teaching moments in plain text—and optionally export anonymized, beautifully typeset excerpts as PDFs or markdown for portfolios, mentorship, or quiet reflection. r/OnlineEducators | QUOTE: “My ‘Ungraded Notebook’ is where I log moments that had zero learning objectives but massive retention: the 90-second doodle break before synthesis, the time I mispronounced ‘photosynthesis’ and we spent 12 minutes laughing *and then diagramming it correctly.* This doc has never been opened by anyone but me. And it’s the only thing keeping me from quitting.”">
+  <meta property="og:title" content="Ungraded Notebook · Super-Lili">
+  <meta property="og:description" content="A minimal, offline-first HTML tool that lets teachers record raw, timestamped, sensory-rich teaching moments in plain text—and optionally export anonymized, beautifully typeset excerpts as PDFs or markdown for portfolios, mentorship, or quiet reflection. r/OnlineEducators | QUOTE: “My ‘Ungraded Notebook’ is where I log moments that had zero learning objectives but massive retention: the 90-second doodle break before synthesis, the time I mispronounced ‘photosynthesis’ and we spent 12 minutes laughing *and then diagramming it correctly.* This doc has never been opened by anyone but me. And it’s the only thing keeping me from quitting.”">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Ungraded Notebook · Super-Lili">
+  <meta name="twitter:description" content="A minimal, offline-first HTML tool that lets teachers record raw, timestamped, sensory-rich teaching moments in plain text—and optionally export anonymized, beautifully typeset excerpts as PDFs or markdown for portfolios, mentorship, or quiet reflection. r/OnlineEducators | QUOTE: “My ‘Ungraded Notebook’ is where I log moments that had zero learning objectives but massive retention: the 90-second doodle break before synthesis, the time I mispronounced ‘photosynthesis’ and we spent 12 minutes laughing *and then diagramming it correctly.* This doc has never been opened by anyone but me. And it’s the only thing keeping me from quitting.”">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Ungraded Notebook · Super-Lili",
+  "description": "A minimal, offline-first HTML tool that lets teachers record raw, timestamped, sensory-rich teaching moments in plain text—and optionally export anonymized, beautifully typeset excerpts as PDFs or markdown for portfolios, mentorship, or quiet reflection. r/OnlineEducators | QUOTE: “My ‘Ungraded Notebook’ is where I log moments that had zero learning objectives but massive retention: the 90-second doodle break before synthesis, the time I mispronounced ‘photosynthesis’ and we spent 12 minutes laughing *and then diagramming it correctly.* This doc has never been opened by anyone but me. And it’s the only thing keeping me from quitting.”",
+  "url": "https://github.com/Super-Lili/Super-Lilis-Daily-Adventure",
+  "applicationCategory": "DeveloperApplication"
+}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -698,26 +715,101 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div class="prerendered-app" style="margin-top:8px">
-  <iframe id="app-frame"
-          sandbox="allow-scripts allow-same-origin"
-          style="width:100%;min-height:540px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block"
-          title="Interactive tool"></iframe>
-  <p style="margin-top:10px;font-size:0.8rem;color:#aaa;text-align:center">
-    ✨ Interactive app — runs entirely in your browser
-  </p>
+<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
+<div id="pyodide-ui" style="display:none">
+  <span class="runner-label">Input</span>
+  <textarea id="user-input" rows="6" placeholder="Paste a few sentences about how you're feeling or what's on your mind…"></textarea>
+  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
+  <span class="runner-label">Output</span>
+  <pre id="output"></pre>
 </div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 <script>
-  (function() {
-    const frame = document.getElementById('app-frame');
-    frame.srcdoc = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<title>Ungraded Notebook</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;}\nbody{background:#fefaf3;font-family:Georgia,serif;display:flex;justify-content:center;align-items:center;min-height:100vh;flex-direction:column;}\n.container{max-width:640px;width:100%;padding:2rem;}\n.notebook{position:relative;}\ntextarea{width:100%;min-height:200px;padding:2rem;font-family:Georgia,serif;font-size:1.4rem;line-height:1.5;border:none;outline:none;resize:none;background:rgba(255,255,255,0.6);box-shadow:0 2px 12px rgba(0,0,0,0.08);border-radius:4px;transition:box-shadow 0.5s;}\ntextarea:focus{box-shadow:0 0 20px 5px rgba(210,180,140,0.5);}\ntextarea::placeholder{color:#b8a99c;}\n#logBtn{position:absolute;right:1rem;bottom:1rem;background:#c8a882;border:none;color:#fff;padding:0.4rem 1.2rem;font-size:0.9rem;border-radius:20px;cursor:pointer;transition:opacity 0.3s;display:none;}\n#logBtn.show{display:block;}\n.checkmark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);font-size:2.5rem;color:#6e8b5e;opacity:0;transition:all 0.4s ease;pointer-events:none;}\n.checkmark.flash{opacity:1;transform:translate(-50%,-50%) scale(1);}\n.counter{text-align:center;margin-top:1rem;color:#a08c7a;font-size:0.9rem;display:none;}\n#seeAllLink{display:none;font-size:0.85rem;text-align:center;margin-top:1rem;color:#b0967c;cursor:pointer;text-decoration:underline;}\n#entriesContainer{display:none;margin-top:2rem;border-top:1px solid #e8d9c8;padding-top:1.5rem;}\n#exportBtn{background:#c8a882;border:none;color:#fff;padding:0.5rem 1.5rem;font-size:0.9rem;border-radius:20px;cursor:pointer;margin-bottom:1rem;}\n.entry-card{background:rgba(255,255,255,0.7);padding:1rem;margin-bottom:0.8rem;box-shadow:0 1px 6px rgba(0,0,0,0.05);border-radius:3px;font-size:0.95rem;transform:rotate(0.5deg);transition:transform 0.2s;}\n.entry-card:nth-child(even){transform:rotate(-0.5deg);}\n.entry-card:hover{transform:rotate(0);}\n.entry-date{font-weight:bold;color:#7b6b5a;margin-bottom:0.4rem;font-size:0.85rem;}\n.entry-text{color:#4a3b32;white-space:pre-wrap;overflow:hidden;text-overflow:ellipsis;}\n.title{position:fixed;bottom:1.5rem;right:2rem;font-size:0.65rem;color:#cbbeb0;opacity:0.7;}\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <div class=\"notebook\">\n    <textarea id=\"entry\" placeholder=\"Today, \u2026\"></textarea>\n    <button id=\"logBtn\">Log</button>\n    <div class=\"checkmark\" id=\"checkmark\">&#10003;</div>\n    <div class=\"counter\" id=\"counter\">0 moments saved</div>\n    <a href=\"#\" id=\"seeAllLink\">see all</a>\n  </div>\n  <div id=\"entriesContainer\">\n    <button id=\"exportBtn\">Export as Markdown</button>\n    <div id=\"entriesList\"></div>\n  </div>\n</div>\n<div class=\"title\">Ungraded Notebook</div>\n<script>\n(function() {\n  const STORAGE_KEY = 'ungraded_notebook_entries';\n  const entryArea = document.getElementById('entry');\n  const logBtn = document.getElementById('logBtn');\n  const checkmark = document.getElementById('checkmark');\n  const counterDiv = document.getElementById('counter');\n  const seeAllLink = document.getElementById('seeAllLink');\n  const entriesContainer = document.getElementById('entriesContainer');\n  const entriesListDiv = document.getElementById('entriesList');\n  const exportBtn = document.getElementById('exportBtn');\n\n  let entries = [];\n\n  function loadEntries() {\n    try {\n      const raw = localStorage.getItem(STORAGE_KEY);\n      entries = raw ? JSON.parse(raw) : [];\n    } catch(e) {\n      entries = [];\n    }\n  }\n\n  function saveEntries() {\n    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));\n  }\n\n  function updateUI() {\n    const count = entries.length;\n    if (count > 0) {\n      counterDiv.style.display = 'block';\n      counterDiv.textContent = count + ' moment' + (count === 1 ? '' : 's') + ' saved';\n      seeAllLink.style.display = 'block';\n    } else {\n      counterDiv.style.display = 'none';\n      seeAllLink.style.display = 'none';\n      entriesContainer.style.display = 'none';\n    }\n\n    if (entryArea.value.trim().length > 0) {\n      logBtn.classList.add('show');\n    } else {\n      logBtn.classList.remove('show');\n    }\n  }\n\n  function logEntry() {\n    const text = entryArea.value.trim();\n    if (!text) return;\n    const now = new Date();\n    const timestamp = now.toISOString();\n    const newEntry = { timestamp, text };\n    entries.push(newEntry);\n    saveEntries();\n\n    // clear & animate\n    entryArea.value = '';\n    // flash checkmark\n    checkmark.classList.add('flash');\n    setTimeout(() => checkmark.classList.remove('flash'), 1500);\n\n    updateUI();\n    if (entriesContainer.style.display === 'block') {\n      renderEntriesList();\n    }\n  }\n\n  function renderEntriesList() {\n    if (entries.length === 0) return;\n    // reverse chronological (latest first)\n    const sorted = [...entries].sort((a, b) => b.timestamp.localeCompare(a.timestamp));\n    let html = '';\n    sorted.forEach(function(entry) {\n      const dateStr = entry.timestamp.split('T')[0] + ' ' + entry.timestamp.split('T')[1].substring(0,5);\n      const truncated = entry.text.length > 80 ? entry.text.substring(0,80) + '...' : entry.text;\n      html += '<div class=\"entry-card\">' +\n              '<div class=\"entry-date\">' + dateStr + '</div>' +\n              '<div class=\"entry-text\">' + truncated + '</div>' +\n              '</div>';\n    });\n    entriesListDiv.innerHTML = html;\n  }\n\n  function exportMarkdown() {\n    if (entries.length === 0) return;\n    const sorted = [...entries].sort((a, b) => b.timestamp.localeCompare(a.timestamp));\n    const firstDate = sorted[sorted.length-1].timestamp;\n    const lastDate = sorted[0].timestamp;\n    const frontmatter = '---\\ntotal: ' + entries.length + '\\nfirst_date: \"' + firstDate + '\"\\nlast_date: \"' + lastDate + '\"\\n---\\n\\n';\n    let md = frontmatter;\n    sorted.forEach(function(entry) {\n      md += '## ' + entry.timestamp + '\\n' + entry.text + '\\n\\n';\n    });\n    const blob = new Blob([md], {type: 'text/markdown'});\n    const url = URL.createObjectURL(blob);\n    const a = document.createElement('a');\n    a.href = url;\n    a.download = 'ungraded-notebook-' + new Date().toISOString().slice(0,10) + '.md';\n    document.body.appendChild(a);\n    a.click();\n    document.body.removeChild(a);\n    URL.revokeObjectURL(url);\n  }\n\n  function toggleEntries() {\n    if (entriesContainer.style.display === 'block') {\n      entriesContainer.style.display = 'none';\n      seeAllLink.textContent = 'see all';\n    } else {\n      entriesContainer.style.display = 'block';\n      seeAllLink.textContent = 'hide all';\n      renderEntriesList();\n    }\n  }\n\n  // Event listeners\n  entryArea.addEventListener('input', function() {\n    updateUI();\n  });\n\n  entryArea.addEventListener('keydown', function(e) {\n    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {\n      e.preventDefault();\n      logEntry();\n    }\n  });\n\n  logBtn.addEventListener('click', function(e) {\n    e.preventDefault();\n    logEntry();\n  });\n\n  seeAllLink.addEventListener('click', function(e) {\n    e.preventDefault();\n    toggleEntries();\n  });\n\n  exportBtn.addEventListener('click', function(e) {\n    e.preventDefault();\n    exportMarkdown();\n  });\n\n  // initial load\n  loadEntries();\n  updateUI();\n  // if initial text present, log button shows\n  if (entryArea.value.trim().length > 0) {\n    logBtn.classList.add('show');\n  }\n\n  // auto-resize textarea\n  function autoResize() {\n    entryArea.style.height = 'auto';\n    entryArea.style.height = entryArea.scrollHeight + 'px';\n  }\n  entryArea.addEventListener('input', autoResize);\n  autoResize();\n\n})();\n<\/script>\n</body>\n</html>";
-    frame.addEventListener('load', function() {
-      try {
-        const h = frame.contentDocument.body.scrollHeight;
-        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
-      } catch(e) {}
-    });
-  })();
+let pyodide = null;
+const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n\"\"\"\nrequirements:\n  - jinja2 (built-in)\n  - browser with localStorage, Blob, URL.createObjectURL\n  - input: freeform text string (1-500 words), output: full HTML page\n  - behavior: interactive notebook, saves entries to localStorage, exports .md\n  - algorithmic depth: timestamp on save, markdown export with YAML front-matter\n\"\"\"\n\nfrom jinja2 import Template\n\nTEMPLATE = Template(r'''<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<title>Ungraded Notebook</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;}\nbody{background:#fefaf3;font-family:Georgia,serif;display:flex;justify-content:center;align-items:center;min-height:100vh;flex-direction:column;}\n.container{max-width:640px;width:100%;padding:2rem;}\n.notebook{position:relative;}\ntextarea{width:100%;min-height:200px;padding:2rem;font-family:Georgia,serif;font-size:1.4rem;line-height:1.5;border:none;outline:none;resize:none;background:rgba(255,255,255,0.6);box-shadow:0 2px 12px rgba(0,0,0,0.08);border-radius:4px;transition:box-shadow 0.5s;}\ntextarea:focus{box-shadow:0 0 20px 5px rgba(210,180,140,0.5);}\ntextarea::placeholder{color:#b8a99c;}\n#logBtn{position:absolute;right:1rem;bottom:1rem;background:#c8a882;border:none;color:#fff;padding:0.4rem 1.2rem;font-size:0.9rem;border-radius:20px;cursor:pointer;transition:opacity 0.3s;display:none;}\n#logBtn.show{display:block;}\n.checkmark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);font-size:2.5rem;color:#6e8b5e;opacity:0;transition:all 0.4s ease;pointer-events:none;}\n.checkmark.flash{opacity:1;transform:translate(-50%,-50%) scale(1);}\n.counter{text-align:center;margin-top:1rem;color:#a08c7a;font-size:0.9rem;display:none;}\n#seeAllLink{display:none;font-size:0.85rem;text-align:center;margin-top:1rem;color:#b0967c;cursor:pointer;text-decoration:underline;}\n#entriesContainer{display:none;margin-top:2rem;border-top:1px solid #e8d9c8;padding-top:1.5rem;}\n#exportBtn{background:#c8a882;border:none;color:#fff;padding:0.5rem 1.5rem;font-size:0.9rem;border-radius:20px;cursor:pointer;margin-bottom:1rem;}\n.entry-card{background:rgba(255,255,255,0.7);padding:1rem;margin-bottom:0.8rem;box-shadow:0 1px 6px rgba(0,0,0,0.05);border-radius:3px;font-size:0.95rem;transform:rotate(0.5deg);transition:transform 0.2s;}\n.entry-card:nth-child(even){transform:rotate(-0.5deg);}\n.entry-card:hover{transform:rotate(0);}\n.entry-date{font-weight:bold;color:#7b6b5a;margin-bottom:0.4rem;font-size:0.85rem;}\n.entry-text{color:#4a3b32;white-space:pre-wrap;overflow:hidden;text-overflow:ellipsis;}\n.title{position:fixed;bottom:1.5rem;right:2rem;font-size:0.65rem;color:#cbbeb0;opacity:0.7;}\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <div class=\"notebook\">\n    <textarea id=\"entry\" placeholder=\"Today, \u2026\">{{ initial_text }}</textarea>\n    <button id=\"logBtn\">Log</button>\n    <div class=\"checkmark\" id=\"checkmark\">&#10003;</div>\n    <div class=\"counter\" id=\"counter\">0 moments saved</div>\n    <a href=\"#\" id=\"seeAllLink\">see all</a>\n  </div>\n  <div id=\"entriesContainer\">\n    <button id=\"exportBtn\">Export as Markdown</button>\n    <div id=\"entriesList\"></div>\n  </div>\n</div>\n<div class=\"title\">Ungraded Notebook</div>\n<script>\n(function() {\n  const STORAGE_KEY = 'ungraded_notebook_entries';\n  const entryArea = document.getElementById('entry');\n  const logBtn = document.getElementById('logBtn');\n  const checkmark = document.getElementById('checkmark');\n  const counterDiv = document.getElementById('counter');\n  const seeAllLink = document.getElementById('seeAllLink');\n  const entriesContainer = document.getElementById('entriesContainer');\n  const entriesListDiv = document.getElementById('entriesList');\n  const exportBtn = document.getElementById('exportBtn');\n\n  let entries = [];\n\n  function loadEntries() {\n    try {\n      const raw = localStorage.getItem(STORAGE_KEY);\n      entries = raw ? JSON.parse(raw) : [];\n    } catch(e) {\n      entries = [];\n    }\n  }\n\n  function saveEntries() {\n    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));\n  }\n\n  function updateUI() {\n    const count = entries.length;\n    if (count > 0) {\n      counterDiv.style.display = 'block';\n      counterDiv.textContent = count + ' moment' + (count === 1 ? '' : 's') + ' saved';\n      seeAllLink.style.display = 'block';\n    } else {\n      counterDiv.style.display = 'none';\n      seeAllLink.style.display = 'none';\n      entriesContainer.style.display = 'none';\n    }\n\n    if (entryArea.value.trim().length > 0) {\n      logBtn.classList.add('show');\n    } else {\n      logBtn.classList.remove('show');\n    }\n  }\n\n  function logEntry() {\n    const text = entryArea.value.trim();\n    if (!text) return;\n    const now = new Date();\n    const timestamp = now.toISOString();\n    const newEntry = { timestamp, text };\n    entries.push(newEntry);\n    saveEntries();\n\n    // clear & animate\n    entryArea.value = '';\n    // flash checkmark\n    checkmark.classList.add('flash');\n    setTimeout(() => checkmark.classList.remove('flash'), 1500);\n\n    updateUI();\n    if (entriesContainer.style.display === 'block') {\n      renderEntriesList();\n    }\n  }\n\n  function renderEntriesList() {\n    if (entries.length === 0) return;\n    // reverse chronological (latest first)\n    const sorted = [...entries].sort((a, b) => b.timestamp.localeCompare(a.timestamp));\n    let html = '';\n    sorted.forEach(function(entry) {\n      const dateStr = entry.timestamp.split('T')[0] + ' ' + entry.timestamp.split('T')[1].substring(0,5);\n      const truncated = entry.text.length > 80 ? entry.text.substring(0,80) + '...' : entry.text;\n      html += '<div class=\"entry-card\">' +\n              '<div class=\"entry-date\">' + dateStr + '</div>' +\n              '<div class=\"entry-text\">' + truncated + '</div>' +\n              '</div>';\n    });\n    entriesListDiv.innerHTML = html;\n  }\n\n  function exportMarkdown() {\n    if (entries.length === 0) return;\n    const sorted = [...entries].sort((a, b) => b.timestamp.localeCompare(a.timestamp));\n    const firstDate = sorted[sorted.length-1].timestamp;\n    const lastDate = sorted[0].timestamp;\n    const frontmatter = '---\\\\ntotal: ' + entries.length + '\\\\nfirst_date: \"' + firstDate + '\"\\\\nlast_date: \"' + lastDate + '\"\\\\n---\\\\n\\\\n';\n    let md = frontmatter;\n    sorted.forEach(function(entry) {\n      md += '## ' + entry.timestamp + '\\\\n' + entry.text + '\\\\n\\\\n';\n    });\n    const blob = new Blob([md], {type: 'text/markdown'});\n    const url = URL.createObjectURL(blob);\n    const a = document.createElement('a');\n    a.href = url;\n    a.download = 'ungraded-notebook-' + new Date().toISOString().slice(0,10) + '.md';\n    document.body.appendChild(a);\n    a.click();\n    document.body.removeChild(a);\n    URL.revokeObjectURL(url);\n  }\n\n  function toggleEntries() {\n    if (entriesContainer.style.display === 'block') {\n      entriesContainer.style.display = 'none';\n      seeAllLink.textContent = 'see all';\n    } else {\n      entriesContainer.style.display = 'block';\n      seeAllLink.textContent = 'hide all';\n      renderEntriesList();\n    }\n  }\n\n  // Event listeners\n  entryArea.addEventListener('input', function() {\n    updateUI();\n  });\n\n  entryArea.addEventListener('keydown', function(e) {\n    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {\n      e.preventDefault();\n      logEntry();\n    }\n  });\n\n  logBtn.addEventListener('click', function(e) {\n    e.preventDefault();\n    logEntry();\n  });\n\n  seeAllLink.addEventListener('click', function(e) {\n    e.preventDefault();\n    toggleEntries();\n  });\n\n  exportBtn.addEventListener('click', function(e) {\n    e.preventDefault();\n    exportMarkdown();\n  });\n\n  // initial load\n  loadEntries();\n  updateUI();\n  // if initial text present, log button shows\n  if (entryArea.value.trim().length > 0) {\n    logBtn.classList.add('show');\n  }\n\n  // auto-resize textarea\n  function autoResize() {\n    entryArea.style.height = 'auto';\n    entryArea.style.height = entryArea.scrollHeight + 'px';\n  }\n  entryArea.addEventListener('input', autoResize);\n  autoResize();\n\n})();\n<\/script>\n</body>\n</html>''')\n\n\ndef process(text: str) -> str:\n    \"\"\"Return an interactive ungraded notebook HTML page for the given moment.\"\"\"\n    initial_text = text.strip()\n    html = TEMPLATE.render(initial_text=initial_text)\n    return html\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    _cli_main()";
+const DEMO_INPUT = "";
+
+async function loadPyodide_() {
+  try {
+    pyodide = await loadPyodide();
+    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
+    document.getElementById('pyodide-status').style.display = 'none';
+    document.getElementById('pyodide-ui').style.display = 'block';
+    // Auto-run with demo input so user sees real output immediately
+    if (DEMO_INPUT) {
+      document.getElementById('user-input').value = DEMO_INPUT;
+      const demoNote = document.createElement('p');
+      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
+      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
+      document.getElementById('output').before(demoNote);
+      await runTool(true);
+    }
+  } catch(e) {
+    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
+  }
+}
+
+async function runTool(isDemo) {
+  if (!pyodide) return;
+  const userInput = document.getElementById('user-input').value.trim();
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  try {
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.globals.set('USER_INPUT', userInput);
+    pyodide.runPython(TOOL_CODE);
+    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
+    const outEl = document.getElementById('output');
+    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
+      outEl.textContent = '';
+      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
+      const iframe = document.createElement('iframe');
+      iframe.sandbox = 'allow-scripts allow-same-origin';
+      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
+      iframe.srcdoc = output;
+      outEl.appendChild(iframe);
+      iframe.addEventListener('load', () => {
+        try {
+          const h = iframe.contentDocument.body.scrollHeight;
+          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
+        } catch(e) {}
+      });
+    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
+      outEl.textContent = '';
+      outEl.style.background = '#f8f8f8';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
+      const img = document.createElement('div');
+      img.innerHTML = output;
+      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
+      wrapper.appendChild(img);
+      const hint = document.createElement('small');
+      hint.textContent = '⬇ Right-click the image to save as SVG';
+      hint.style.color = '#aaa';
+      wrapper.appendChild(hint);
+      outEl.appendChild(wrapper);
+    } else {
+      outEl.textContent = output || '(no output — tool may write to a file instead)';
+    }
+    // If this was an auto-run, add a subtle hint
+    if (isDemo && output) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
+      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
+      document.getElementById('output').after(hint);
+    }
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run';
+}
+
+loadPyodide_();
 </script>
       </div>
     </section>
