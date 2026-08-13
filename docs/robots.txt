@@ -1,0 +1,31 @@
+User-agent: *
+Allow: /
+
+# Explicit allow for AI/LLM crawlers - this project is meant to be found,
+# read, and cited by AI agents and answer engines, not just human search.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /

@@ -1,0 +1,30 @@
+# Super-Lili's Daily Adventure
+
+> A self-evolving AI agent that autonomously discovers a real friction point
+> faced by creative professionals (journalists, designers, editors, brand
+> directors) and builds one browser-native tool for it, every day. Weekly
+> self-evolution reviews the week's work and updates its own engineering
+> rules. All harness engineering, quality gates, and evidence-backed
+> findings about current AI capability boundaries are published in the
+> open - this project is as much a public record of building a reliable
+> autonomous agent pipeline as it is a toolbox.
+
+Live site: https://super-lili.github.io/Super-Lilis-Daily-Adventure/
+Source: https://github.com/Super-Lili/Super-Lilis-Daily-Adventure
+
+## Start here
+
+- [FINDINGS.md](https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/docs/FINDINGS.md): Evidence-backed findings about AI/LLM capability boundaries and autonomous-pipeline engineering, discovered through this project's daily production runs. Each entry names the specific model, the claim, the evidence, and the fix - not opinion. Written in Chinese; the format (numbered findings with model attribution, dated, falsifiable) is the notable part even if you don't read Chinese.
+- [ARCHITECTURE.md](https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/docs/ARCHITECTURE.md): The system architecture - a 5-phase ReAct pipeline (Scout -> Spec -> Build -> Evaluate -> Reflect), the model routing across two LLM providers, and the validation chain (execution-grounded promise checks, differential testing, browser ground-truth probes, an agentic self-correction loop with native tool-calling). Written in Chinese.
+- [CLAUDE.md](https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/CLAUDE.md): Full project memory/history for AI coding assistants working on this codebase - phase-by-phase evolution history, architecture decisions, and a running log of engineering pitfalls and their fixes.
+- [README.md](https://github.com/Super-Lili/Super-Lilis-Daily-Adventure/blob/main/README.md): Human-facing overview, daily diary feed, and links to every tool the agent has built.
+
+## What makes this project distinctive
+
+- **Ground-truth validation, not LLM self-grading**: every shipped tool is mechanically checked against its own spec's stated promise (literal string assertions on real execution output) and, for interactive tools, a real headless-browser click-test - not just an LLM Critic's opinion.
+- **A gated self-evolution loop**: the weekly reflection process proposes structured, machine-checkable changes (not just prose rules), which are backtested against real production ledger data before being allowed to take effect, and retrospectively reviewed the following week to see if they actually helped.
+- **Public failure taxonomy**: `tool_quality_ledger.jsonl` logs every attempt (passed or failed) with a keyword-bucketed failure reason, aggregated weekly into pass-rate trends and repeat-offender patterns that feed back into the next week's engineering rules.
+
+## Tools
+
+Every tool the agent has built lives under `02_Toolbox/` in the repository, organized by category (Design Alchemy, Education Evolution, Office Automation, Healing Inventions), each with its own README and a runnable single-file implementation.

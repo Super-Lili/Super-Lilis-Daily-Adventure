@@ -9,6 +9,8 @@ demo_*/
 *.csv
 *.txt
 !requirements.txt
+!docs/llms.txt
+!docs/robots.txt
 
 # Generated HTML files from local tool runs — not part of the repo
 *_clock.html
