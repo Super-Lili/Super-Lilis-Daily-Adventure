@@ -482,6 +482,14 @@
       "pattern": "transform",
       "path": "02_Toolbox/Education Evolution/2026-08-12_PortalBagPostIt_Merger",
       "description": "A single‑page tool that accepts pasted text from multiple sources (portal, pharmacy bag, nurse notes) and extracts a unified, contradiction‑flagged medication schedule with times, warnings, and special instructions."
+    },
+    {
+      "date": "2026-08-14",
+      "name": "Bumble Cursor",
+      "category": "Healing Inventions",
+      "pattern": "interact",
+      "path": "02_Toolbox/Healing Inventions/2026-08-14_Bumble_Cursor",
+      "description": "A single-page toy that replaces the default cursor with a tiny bee and adds a gentle wing-vibration follow as you move, with one button to adjust the flutter."
     }
   ],
   "topics_covered": [
@@ -809,7 +817,12 @@
       "date": "2026-08-12",
       "title": "The Bag, The Portal, The Post‑It",
       "path": "01_Work_Log/2026-08-12-Diary.md"
+    },
+    {
+      "date": "2026-08-14",
+      "title": "Bumble Cursor",
+      "path": "01_Work_Log/2026-08-14-Diary.md"
     }
   ],
-  "last_updated": "2026-08-12"
+  "last_updated": "2026-08-14"
 }

@@ -715,101 +715,26 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
-<div id="pyodide-ui" style="display:none">
-  <span class="runner-label">Input</span>
-  <textarea id="user-input" rows="6" placeholder="Paste your brief, content, or design description here…"></textarea>
-  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
-  <span class="runner-label">Output</span>
-  <pre id="output"></pre>
+<div class="prerendered-app" style="margin-top:8px">
+  <iframe id="app-frame"
+          sandbox="allow-scripts allow-same-origin"
+          style="width:100%;min-height:540px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block"
+          title="Interactive tool"></iframe>
+  <p style="margin-top:10px;font-size:0.8rem;color:#aaa;text-align:center">
+    ✨ Interactive app — runs entirely in your browser
+  </p>
 </div>
-
-<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 <script>
-let pyodide = null;
-const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n\n\"\"\"Color System CSS Generator - interactive HTML tool.\"\"\"\nimport base64\nimport re\nfrom jinja2 import Template\n\nTEMPLATE = Template(r'''<!DOCTYPE html>\n<html lang=\"en\">\n<head><meta charset=\"UTF-8\"><title>Color System CSS Generator</title>\n<style>\nbody{font-family:system-ui,sans-serif;margin:0;padding:20px;transition:background .3s,color .3s;}\n#entry,#active{max-width:1000px;margin:0 auto;}\ntextarea{width:100%;height:200px;font-family:monospace;padding:10px;box-sizing:border-box;}\nbutton{padding:8px 16px;margin:5px;cursor:pointer;}\n#split{display:flex;gap:20px;flex-wrap:wrap;}\n#swatches{flex:1;min-width:300px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}\n.swatch-card{border:1px solid #ccc;padding:10px;border-radius:8px;background:#f9f9f9;}\n.swatch-light,.swatch-dark{width:100%;height:40px;border-radius:4px;margin-bottom:5px;}\n#code-panel{flex:1;min-width:300px;}\n#css-code{background:#f4f4f4;padding:15px;border-radius:8px;overflow:auto;white-space:pre-wrap;font-family:monospace;max-height:400px;}\n#toast{display:none;position:fixed;bottom:20px;right:20px;background:#333;color:#fff;padding:10px 20px;border-radius:8px;z-index:1000;}\n</style>\n</head>\n<body>\n<div id=\"entry\">\n<h2>Paste your color tokens</h2>\n<textarea id=\"input-text\" placeholder=\"token-name #lighthex [#darkhex]\"></textarea>\n<button id=\"generate-btn\">Generate CSS</button>\n</div>\n<div id=\"active\" style=\"display:none\">\n<div id=\"split\">\n<div id=\"swatches\"></div>\n<div id=\"code-panel\">\n<button id=\"copy-btn\">Copy CSS</button><button id=\"download-btn\">Download CSS</button>\n<pre id=\"css-code\">{{ initial_css }}</pre>\n</div>\n</div>\n<button id=\"toggle-bg\">Toggle Preview Background</button>\n</div>\n<div id=\"toast\">Copied!</div>\n<script>\nvar INITIAL_INPUT = atob('{{ encoded_input }}');\ndocument.getElementById('input-text').value = INITIAL_INPUT;\n\nfunction hexToRgb(h){var v=parseInt(h.slice(1),16);return[(v>>16)&255,(v>>8)&255,v&255];}\nfunction rgbToHex(r,g,b){return'#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}\nfunction rgbToHsl(r,g,b){r/=255;g/=255;b/=255;var max=Math.max(r,g,b),min=Math.min(r,g,b),h,s,l=(max+min)/2;if(max===min){h=s=0;}else{var d=max-min;s=l>0.5?d/(2-max-min):d/(max+min);switch(max){case r:h=((g-b)/d+(g<b?6:0))/6;break;case g:h=((b-r)/d+2)/6;break;case b:h=((r-g)/d+4)/6;}}return[h,s,l];}\nfunction hslToRgb(h,s,l){var r,g,b;if(s===0){r=g=b=l;}else{function hue2rgb(p,q,t){if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;}var q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);}return[Math.round(r*255),Math.round(g*255),Math.round(b*255)];}\nfunction generateDark(hex){var rgb=hexToRgb(hex);var hsl=rgbToHsl(rgb[0],rgb[1],rgb[2]);var newL=Math.max(0,Math.min(1,hsl[2]-0.3));var nrgb=hslToRgb(hsl[0],hsl[1],newL);return rgbToHex(nrgb[0],nrgb[1],nrgb[2]);}\nfunction isHex(s){return /^#[0-9a-fA-F]{6}$/.test(s);}\n\nfunction parseAndGenerate(text){\n  var parts=[];\n  var lines=text.split('\\\\n');\n  for(var i=0;i<lines.length;i++){\n    var line=lines[i].trim();\n    if(!line) continue;\n    var lp=line.split(/[,\\\\t ]+/);\n    for(var j=0;j<lp.length;j++) parts.push(lp[j]);\n  }\n  var tokens=[];\n  var seen={};\n  var idx=0;\n  while(idx<parts.length){\n    var name=parts[idx];\n    if(idx+1>=parts.length) break;\n    var light=parts[idx+1];\n    if(!isHex(light)){idx+=1;continue;}\n    if(idx+2<parts.length&&isHex(parts[idx+2])){\n      var dark=parts[idx+2];\n      tokens.push({name:name,light:light,dark:dark});\n      seen[name]=true;\n      idx+=3;\n    }else{\n      tokens.push({name:name,light:light,dark:generateDark(light)});\n      seen[name]=true;\n      idx+=2;\n    }\n  }\n  if(!seen['error']) tokens.push({name:'error',light:'#ff0000',dark:'#990000'});\n  return {tokens:tokens};\n}\n\ndocument.getElementById('generate-btn').addEventListener('click',function(){\n  var text=document.getElementById('input-text').value;\n  var result=parseAndGenerate(text);\n  var tokens=result.tokens;\n  var css='/* Color System */\\\\n:root {\\\\n';\n  tokens.forEach(function(t){css+='  --color-'+t.name+': '+t.light+';\\\\n';});\n  css+='}\\\\n\\\\n[data-theme=\"dark\"] {\\\\n';\n  tokens.forEach(function(t){css+='  --color-'+t.name+': '+t.dark+';\\\\n';});\n  css+='}';\n  document.getElementById('css-code').textContent=css;\n  var sw=document.getElementById('swatches');sw.innerHTML='';\n  tokens.forEach(function(t){\n    var card=document.createElement('div');card.className='swatch-card';\n    card.innerHTML='<div class=\"swatch-light\" style=\"background:'+t.light+'\"></div><div class=\"swatch-dark\" style=\"background:'+t.dark+'\"></div><span>'+t.name+'</span><br><small>'+t.light+' / '+t.dark+'</small>';\n    sw.appendChild(card);\n  });\n  document.getElementById('entry').style.display='none';\n  document.getElementById('active').style.display='block';\n});\n\nvar darkMode=false;\ndocument.getElementById('toggle-bg').addEventListener('click',function(){\n  darkMode=!darkMode;\n  document.body.style.backgroundColor=darkMode?'#222':'#fff';\n  document.body.style.color=darkMode?'#eee':'#333';\n});\ndocument.getElementById('copy-btn').addEventListener('click',function(){\n  navigator.clipboard.writeText(document.getElementById('css-code').textContent).then(function(){\n    var t=document.getElementById('toast');t.style.display='block';setTimeout(function(){t.style.display='none';},2000);\n  });\n});\ndocument.getElementById('download-btn').addEventListener('click',function(){\n  var blob=new Blob([document.getElementById('css-code').textContent],{type:'text/css'});\n  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='colors.css';a.click();\n});\n<\/script>\n</body>\n</html>''')\n\nHEX_RE = re.compile(r'^#[0-9a-fA-F]{6}$')\n\ndef hex_to_rgb(h):\n    v = int(h.lstrip('#'), 16)\n    return [(v >> 16) & 255, (v >> 8) & 255, v & 255]\n\ndef rgb_to_hex(r, g, b):\n    return '#' + ''.join(f'{c:02x}' for c in (r, g, b))\n\ndef rgb_to_hsl(r, g, b):\n    r, g, b = r/255, g/255, b/255\n    mx = max(r, g, b)\n    mn = min(r, g, b)\n    l = (mx + mn) / 2\n    if mx == mn:\n        h = s = 0\n    else:\n        d = mx - mn\n        s = d / (2 - mx - mn) if l > 0.5 else d / (mx + mn)\n        if mx == r:\n            h = ((g - b) / d + (6 if g < b else 0)) / 6\n        elif mx == g:\n            h = ((b - r) / d + 2) / 6\n        else:\n            h = ((r - g) / d + 4) / 6\n    return [h, s, l]\n\ndef hsl_to_rgb(h, s, l):\n    if s == 0:\n        r = g = b = l\n    else:\n        def hue2rgb(p, q, t):\n            if t < 0: t += 1\n            if t > 1: t -= 1\n            if t < 1/6: return p + (q - p) * 6 * t\n            if t < 1/2: return q\n            if t < 2/3: return p + (q - p) * (2/3 - t) * 6\n            return p\n        q = l * (1 + s) if l < 0.5 else l + s - l * s\n        p = 2 * l - q\n        r = hue2rgb(p, q, h + 1/3)\n        g = hue2rgb(p, q, h)\n        b = hue2rgb(p, q, h - 1/3)\n    return [round(r*255), round(g*255), round(b*255)]\n\ndef generate_dark(light_hex):\n    r, g, b = hex_to_rgb(light_hex)\n    h, s, l = rgb_to_hsl(r, g, b)\n    new_l = max(0.0, min(1.0, l - 0.3))\n    nr, ng, nb = hsl_to_rgb(h, s, new_l)\n    return rgb_to_hex(nr, ng, nb)\n\nDEFAULT_TOKENS = {\n    'error': ('#ff0000', '#990000'),\n}\n\ndef parse_tokens(text):\n    \"\"\"Parse token text and return list of (name, light, dark).\"\"\"\n    all_parts = []\n    for line in text.strip().split('\\\\n'):\n        line = line.strip()\n        if not line:\n            continue\n        all_parts.extend(re.split(r'[,\\\\t ]+', line))\n    \n    tokens = []\n    seen = set()\n    i = 0\n    while i < len(all_parts):\n        name = all_parts[i]\n        if i + 1 >= len(all_parts):\n            break\n        light = all_parts[i + 1]\n        if not HEX_RE.match(light):\n            i += 1\n            continue\n        \n        if i + 2 < len(all_parts) and HEX_RE.match(all_parts[i + 2]):\n            dark = all_parts[i + 2]\n            tokens.append((name, light, dark))\n            seen.add(name)\n            i += 3\n        else:\n            tokens.append((name, light, generate_dark(light)))\n            seen.add(name)\n            i += 2\n    \n    # Add default tokens\n    for def_name, (def_light, def_dark) in DEFAULT_TOKENS.items():\n        if def_name not in seen:\n            tokens.append((def_name, def_light, def_dark))\n    \n    return tokens\n\ndef generate_css(tokens):\n    css = '/* Color System */\\\\n:root {\\\\n'\n    for name, light, dark in tokens:\n        css += f'  --color-{name}: {light};\\\\n'\n    css += '}\\\\n\\\\n[data-theme=\"dark\"] {\\\\n'\n    for name, light, dark in tokens:\n        css += f'  --color-{name}: {dark};\\\\n'\n    css += '}'\n    return css\n\ndef process(text: str) -> str:\n    \"\"\"Generate interactive HTML tool for color token to CSS conversion.\"\"\"\n    if not text.strip():\n        return '<!DOCTYPE html><html lang=\"en\"><head><title>Color System CSS Generator</title></head><body><h1>Color System CSS Generator</h1><p>No tokens provided. Paste a list of color tokens (name #lighthex #darkhex) to generate CSS.</p></body></html>'\n    encoded = base64.b64encode(text.encode('utf-8')).decode('ascii')\n    tokens = parse_tokens(text)\n    initial_css = generate_css(tokens)\n    return TEMPLATE.render(encoded_input=encoded, initial_css=initial_css)\n\ndef _cli_main():\n    import sys\n    if len(sys.argv) > 1 and sys.argv[1] != '-':\n        with open(sys.argv[1], 'r', encoding='utf-8') as f:\n            data = f.read()\n    else:\n        data = sys.stdin.read()\n    print(process(data))\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    _cli_main()\n";
-const DEMO_INPUT = "primary-500 #1a1aff #4d4dff\\nprimary-700 #0000cc #3333cc\\nsecondary-500 #ff9900 #ffaa33\\nbackground #ffffff #121212";
-
-async function loadPyodide_() {
-  try {
-    pyodide = await loadPyodide();
-    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
-    document.getElementById('pyodide-status').style.display = 'none';
-    document.getElementById('pyodide-ui').style.display = 'block';
-    // Auto-run with demo input so user sees real output immediately
-    if (DEMO_INPUT) {
-      document.getElementById('user-input').value = DEMO_INPUT;
-      const demoNote = document.createElement('p');
-      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
-      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
-      document.getElementById('output').before(demoNote);
-      await runTool(true);
-    }
-  } catch(e) {
-    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
-  }
-}
-
-async function runTool(isDemo) {
-  if (!pyodide) return;
-  const userInput = document.getElementById('user-input').value.trim();
-  const btn = document.getElementById('run-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Running...';
-
-  try {
-    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
-    pyodide.globals.set('USER_INPUT', userInput);
-    pyodide.runPython(TOOL_CODE);
-    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
-    const outEl = document.getElementById('output');
-    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      outEl.textContent = '';
-      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
-      const iframe = document.createElement('iframe');
-      iframe.sandbox = 'allow-scripts allow-same-origin';
-      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
-      iframe.srcdoc = output;
-      outEl.appendChild(iframe);
-      iframe.addEventListener('load', () => {
-        try {
-          const h = iframe.contentDocument.body.scrollHeight;
-          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
-        } catch(e) {}
-      });
-    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      outEl.textContent = '';
-      outEl.style.background = '#f8f8f8';
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
-      const img = document.createElement('div');
-      img.innerHTML = output;
-      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
-      wrapper.appendChild(img);
-      const hint = document.createElement('small');
-      hint.textContent = '⬇ Right-click the image to save as SVG';
-      hint.style.color = '#aaa';
-      wrapper.appendChild(hint);
-      outEl.appendChild(wrapper);
-    } else {
-      outEl.textContent = output || '(no output — tool may write to a file instead)';
-    }
-    // If this was an auto-run, add a subtle hint
-    if (isDemo && output) {
-      const hint = document.createElement('p');
-      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
-      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
-      document.getElementById('output').after(hint);
-    }
-  } catch(e) {
-    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
-  }
-
-  btn.disabled = false;
-  btn.textContent = '▶ Run';
-}
-
-loadPyodide_();
+  (function() {
+    const frame = document.getElementById('app-frame');
+    frame.srcdoc = "<!DOCTYPE html><html lang=\"en\"><head><title>Color System CSS Generator</title></head><body><h1>Color System CSS Generator</h1><p>No tokens provided. Paste a list of color tokens (name #lighthex #darkhex) to generate CSS.</p></body></html>";
+    frame.addEventListener('load', function() {
+      try {
+        const h = frame.contentDocument.body.scrollHeight;
+        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
+      } catch(e) {}
+    });
+  })();
 </script>
       </div>
     </section>

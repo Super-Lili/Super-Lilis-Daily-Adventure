@@ -715,101 +715,26 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
-<div id="pyodide-ui" style="display:none">
-  <span class="runner-label">Input</span>
-  <textarea id="user-input" rows="6" placeholder="Paste a few sentences about how you're feeling or what's on your mind…"></textarea>
-  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
-  <span class="runner-label">Output</span>
-  <pre id="output"></pre>
+<div class="prerendered-app" style="margin-top:8px">
+  <iframe id="app-frame"
+          sandbox="allow-scripts allow-same-origin"
+          style="width:100%;min-height:540px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block"
+          title="Interactive tool"></iframe>
+  <p style="margin-top:10px;font-size:0.8rem;color:#aaa;text-align:center">
+    ✨ Interactive app — runs entirely in your browser
+  </p>
 </div>
-
-<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 <script>
-let pyodide = null;
-const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n\"\"\"\nThe Humming Page \u2013 a persistent low\u2011frequency sonic environment that\nresponds to typed input in real time.  Mode 3 (HTML page with Web Audio\nAPI and visual feedback).\n\"\"\"\n\nfrom jinja2 import Template\n\n_TEMPLATE = Template(r'''<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>The Humming Page</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;}\nbody{background:#0f1117;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;font-family:sans-serif;}\n.container{position:relative;text-align:center;}\n.glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(70,130,180,0.3) 0%,rgba(15,17,23,0) 70%);border-radius:50%;filter:blur(40px);z-index:0;}\ntextarea{position:relative;z-index:1;background:transparent;border:none;outline:none;resize:none;width:500px;height:200px;color:#d0d7e5;font-size:18px;line-height:1.6;padding:20px;caret-color:#a0b4d0;}\ntextarea::placeholder{color:#4a5260;}\n.pulse-circle{position:absolute;bottom:-100px;left:50%;transform:translate(-50%,0) scale(1);width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(120,150,200,0.5),rgba(70,130,180,0.15));z-index:0;transition:transform 0.05s linear;}\n#status{position:absolute;bottom:-150px;left:50%;transform:translateX(-50%);color:rgba(160,180,210,0.7);font-size:14px;z-index:2;white-space:nowrap;}\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <div class=\"glow\"></div>\n  <textarea id=\"t\" placeholder=\"type your thoughts\u2026\">{{ it|e }}</textarea>\n  <div class=\"pulse-circle\" id=\"circle\"></div>\n  <span id=\"status\"></span>\n</div>\n<script>\n(function() {\n  var ctx, osc, gn, bv=0.3, cp={f:61,d:0.8,r:0.2}, tp={f:61,d:0.8,r:0.2}, tr=null, idle=null, c=document.getElementById('circle'), ta=document.getElementById('t'), status=document.getElementById('status');\n  var ts=[], initialised=false;\n  function mc(v,i0,i1,o0,o1){var t=Math.max(i0,Math.min(i1,v));return o0+(t-i0)*(o1-o0)/(i1-i0);}\n  function gm(){\n    var txt=ta.value,ch=txt.length,w=txt.trim().split(/\\\\s+/).filter(function(w){return w.length>0;}),wc=w.length,twc=w.reduce(function(s,w){return s+w.length},0),awl=wc?twc/wc:0;\n    return {ch:ch,wc:wc,awl:awl};\n  }\n  function desc(p){\n    var fdesc = p.f < 62 ? 'low' : (p.f > 64 ? 'high' : 'mid');\n    var ddesc = p.d < 0.7 ? 'shallow' : (p.d > 1.5 ? 'deep' : 'gentle');\n    var rdesc = p.r < 0.15 ? 'slow' : (p.r > 0.25 ? 'fast' : 'steady');\n    return 'A ' + fdesc + ', ' + ddesc + ' hum with a ' + rdesc + ' rhythm.';\n  }\n  function upTarget(){\n    var m=gm(),s=0;\n    if(ts.length>1){var dur=(ts[ts.length-1]-ts[0])/1000;s=dur>0?(ts.length-1)/dur:0;}\n    tp.f=mc(m.wc,0,100,58,65);\n    tp.d=mc(s,0,10,2.0,0.5);\n    tp.r=mc(m.awl,3,8,0.3,0.1);\n    tr=null;\n    if(idle){clearTimeout(idle);}\n    idle=setTimeout(rampDef,3000);\n    status.textContent = desc(tp);\n  }\n  function rampDef(){\n    tr={st:performance.now(),dur:1.5};\n    tp.f=61;tp.d=0.8;tp.r=0.2;\n    status.textContent = desc(tp);\n  }\n  function kv(e){\n    var now=Date.now();ts.push(now);if(ts.length>10)ts.shift();\n    upTarget();\n  }\n  function interp(cur,tar,t){return cur+(tar-cur)*Math.min(1,t);}\n  function update(now){\n    requestAnimationFrame(update);\n    if(!ctx)return;\n    var tnow=performance.now();\n    var prog=0;\n    if(tr){\n      var el=(tnow-tr.st)/tr.dur;\n      prog=Math.min(1,el);\n      cp.f=interp(cp.f,tp.f,prog);\n      cp.d=interp(cp.d,tp.d,prog);\n      cp.r=interp(cp.r,tp.r,prog);\n      if(prog>=1)tr=null;\n    }else{\n      cp.f=tp.f;cp.d=tp.d;cp.r=tp.r;\n    }\n    var time=ctx.currentTime;\n    var pulse=cp.d*Math.sin(2*Math.PI*cp.r*time);\n    var gain=Math.max(0,Math.min(0.9,bv*(1+pulse)));\n    gn.gain.cancelScheduledValues(time);\n    gn.gain.setValueAtTime(gain,time);\n    osc.frequency.setValueAtTime(cp.f,time);\n    var sc=1+cp.d*0.15*Math.sin(2*Math.PI*cp.r*time);\n    c.style.transform='translate(-50%,0) scale('+sc+')';\n  }\n  function applyInitialText(){\n    if(initialised)return;\n    initialised=true;\n    ts.push(Date.now());\n    upTarget();\n    cp.f=tp.f;cp.d=tp.d;cp.r=tp.r;\n  }\n  function init(){\n    ctx=new (window.AudioContext||window.webkitAudioContext)();\n    osc=ctx.createOscillator();\n    osc.type='sine';\n    osc.frequency.value=61;\n    gn=ctx.createGain();\n    gn.gain.value=0;\n    osc.connect(gn);\n    gn.connect(ctx.destination);\n    osc.start();\n    var st=ctx.state;\n    var resumeAndStart=function(){\n      gn.gain.cancelScheduledValues(ctx.currentTime);\n      gn.gain.setValueAtTime(0,ctx.currentTime);\n      gn.gain.linearRampToValueAtTime(bv,ctx.currentTime+1.5);\n      requestAnimationFrame(update);\n      setTimeout(applyInitialText,2000);\n    };\n    if(st==='suspended'){\n      var resume=function(){\n        ctx.resume().then(function(){\n          resumeAndStart();\n        });\n        document.removeEventListener('click',resume);\n        document.removeEventListener('keydown',resume);\n      };\n      document.addEventListener('click',resume);\n      document.addEventListener('keydown',resume);\n    }else{\n      resumeAndStart();\n    }\n  }\n  window.addEventListener('load',function(){\n    ta.addEventListener('input',kv);\n    ta.addEventListener('keyup',kv);\n    init();\n  });\n})();\n<\/script>\n</body>\n</html>''')\n\n\ndef process(text: str) -> str:\n    \"\"\"Return the full Humming Page HTML with initial text pre-filled.\"\"\"\n    initial = text.strip()[:500] if text else \"\"\n    return _TEMPLATE.render(it=initial)\n\n\ndef _cli_main() -> None:\n    import sys\n    text = sys.stdin.read().strip() if not sys.stdin.isatty() else \"\"\n    print(process(text))\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    _cli_main()";
-const DEMO_INPUT = "apple harvest season\")\n    html2 = process(\"quantum computing jobs";
-
-async function loadPyodide_() {
-  try {
-    pyodide = await loadPyodide();
-    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
-    document.getElementById('pyodide-status').style.display = 'none';
-    document.getElementById('pyodide-ui').style.display = 'block';
-    // Auto-run with demo input so user sees real output immediately
-    if (DEMO_INPUT) {
-      document.getElementById('user-input').value = DEMO_INPUT;
-      const demoNote = document.createElement('p');
-      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
-      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
-      document.getElementById('output').before(demoNote);
-      await runTool(true);
-    }
-  } catch(e) {
-    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
-  }
-}
-
-async function runTool(isDemo) {
-  if (!pyodide) return;
-  const userInput = document.getElementById('user-input').value.trim();
-  const btn = document.getElementById('run-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Running...';
-
-  try {
-    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
-    pyodide.globals.set('USER_INPUT', userInput);
-    pyodide.runPython(TOOL_CODE);
-    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
-    const outEl = document.getElementById('output');
-    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      outEl.textContent = '';
-      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
-      const iframe = document.createElement('iframe');
-      iframe.sandbox = 'allow-scripts allow-same-origin';
-      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
-      iframe.srcdoc = output;
-      outEl.appendChild(iframe);
-      iframe.addEventListener('load', () => {
-        try {
-          const h = iframe.contentDocument.body.scrollHeight;
-          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
-        } catch(e) {}
-      });
-    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      outEl.textContent = '';
-      outEl.style.background = '#f8f8f8';
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
-      const img = document.createElement('div');
-      img.innerHTML = output;
-      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
-      wrapper.appendChild(img);
-      const hint = document.createElement('small');
-      hint.textContent = '⬇ Right-click the image to save as SVG';
-      hint.style.color = '#aaa';
-      wrapper.appendChild(hint);
-      outEl.appendChild(wrapper);
-    } else {
-      outEl.textContent = output || '(no output — tool may write to a file instead)';
-    }
-    // If this was an auto-run, add a subtle hint
-    if (isDemo && output) {
-      const hint = document.createElement('p');
-      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
-      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
-      document.getElementById('output').after(hint);
-    }
-  } catch(e) {
-    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
-  }
-
-  btn.disabled = false;
-  btn.textContent = '▶ Run';
-}
-
-loadPyodide_();
+  (function() {
+    const frame = document.getElementById('app-frame');
+    frame.srcdoc = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>The Humming Page</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;}\nbody{background:#0f1117;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;font-family:sans-serif;}\n.container{position:relative;text-align:center;}\n.glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(70,130,180,0.3) 0%,rgba(15,17,23,0) 70%);border-radius:50%;filter:blur(40px);z-index:0;}\ntextarea{position:relative;z-index:1;background:transparent;border:none;outline:none;resize:none;width:500px;height:200px;color:#d0d7e5;font-size:18px;line-height:1.6;padding:20px;caret-color:#a0b4d0;}\ntextarea::placeholder{color:#4a5260;}\n.pulse-circle{position:absolute;bottom:-100px;left:50%;transform:translate(-50%,0) scale(1);width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(120,150,200,0.5),rgba(70,130,180,0.15));z-index:0;transition:transform 0.05s linear;}\n#status{position:absolute;bottom:-150px;left:50%;transform:translateX(-50%);color:rgba(160,180,210,0.7);font-size:14px;z-index:2;white-space:nowrap;}\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <div class=\"glow\"></div>\n  <textarea id=\"t\" placeholder=\"type your thoughts\u2026\"></textarea>\n  <div class=\"pulse-circle\" id=\"circle\"></div>\n  <span id=\"status\"></span>\n</div>\n<script>\n(function() {\n  var ctx, osc, gn, bv=0.3, cp={f:61,d:0.8,r:0.2}, tp={f:61,d:0.8,r:0.2}, tr=null, idle=null, c=document.getElementById('circle'), ta=document.getElementById('t'), status=document.getElementById('status');\n  var ts=[], initialised=false;\n  function mc(v,i0,i1,o0,o1){var t=Math.max(i0,Math.min(i1,v));return o0+(t-i0)*(o1-o0)/(i1-i0);}\n  function gm(){\n    var txt=ta.value,ch=txt.length,w=txt.trim().split(/\\s+/).filter(function(w){return w.length>0;}),wc=w.length,twc=w.reduce(function(s,w){return s+w.length},0),awl=wc?twc/wc:0;\n    return {ch:ch,wc:wc,awl:awl};\n  }\n  function desc(p){\n    var fdesc = p.f < 62 ? 'low' : (p.f > 64 ? 'high' : 'mid');\n    var ddesc = p.d < 0.7 ? 'shallow' : (p.d > 1.5 ? 'deep' : 'gentle');\n    var rdesc = p.r < 0.15 ? 'slow' : (p.r > 0.25 ? 'fast' : 'steady');\n    return 'A ' + fdesc + ', ' + ddesc + ' hum with a ' + rdesc + ' rhythm.';\n  }\n  function upTarget(){\n    var m=gm(),s=0;\n    if(ts.length>1){var dur=(ts[ts.length-1]-ts[0])/1000;s=dur>0?(ts.length-1)/dur:0;}\n    tp.f=mc(m.wc,0,100,58,65);\n    tp.d=mc(s,0,10,2.0,0.5);\n    tp.r=mc(m.awl,3,8,0.3,0.1);\n    tr=null;\n    if(idle){clearTimeout(idle);}\n    idle=setTimeout(rampDef,3000);\n    status.textContent = desc(tp);\n  }\n  function rampDef(){\n    tr={st:performance.now(),dur:1.5};\n    tp.f=61;tp.d=0.8;tp.r=0.2;\n    status.textContent = desc(tp);\n  }\n  function kv(e){\n    var now=Date.now();ts.push(now);if(ts.length>10)ts.shift();\n    upTarget();\n  }\n  function interp(cur,tar,t){return cur+(tar-cur)*Math.min(1,t);}\n  function update(now){\n    requestAnimationFrame(update);\n    if(!ctx)return;\n    var tnow=performance.now();\n    var prog=0;\n    if(tr){\n      var el=(tnow-tr.st)/tr.dur;\n      prog=Math.min(1,el);\n      cp.f=interp(cp.f,tp.f,prog);\n      cp.d=interp(cp.d,tp.d,prog);\n      cp.r=interp(cp.r,tp.r,prog);\n      if(prog>=1)tr=null;\n    }else{\n      cp.f=tp.f;cp.d=tp.d;cp.r=tp.r;\n    }\n    var time=ctx.currentTime;\n    var pulse=cp.d*Math.sin(2*Math.PI*cp.r*time);\n    var gain=Math.max(0,Math.min(0.9,bv*(1+pulse)));\n    gn.gain.cancelScheduledValues(time);\n    gn.gain.setValueAtTime(gain,time);\n    osc.frequency.setValueAtTime(cp.f,time);\n    var sc=1+cp.d*0.15*Math.sin(2*Math.PI*cp.r*time);\n    c.style.transform='translate(-50%,0) scale('+sc+')';\n  }\n  function applyInitialText(){\n    if(initialised)return;\n    initialised=true;\n    ts.push(Date.now());\n    upTarget();\n    cp.f=tp.f;cp.d=tp.d;cp.r=tp.r;\n  }\n  function init(){\n    ctx=new (window.AudioContext||window.webkitAudioContext)();\n    osc=ctx.createOscillator();\n    osc.type='sine';\n    osc.frequency.value=61;\n    gn=ctx.createGain();\n    gn.gain.value=0;\n    osc.connect(gn);\n    gn.connect(ctx.destination);\n    osc.start();\n    var st=ctx.state;\n    var resumeAndStart=function(){\n      gn.gain.cancelScheduledValues(ctx.currentTime);\n      gn.gain.setValueAtTime(0,ctx.currentTime);\n      gn.gain.linearRampToValueAtTime(bv,ctx.currentTime+1.5);\n      requestAnimationFrame(update);\n      setTimeout(applyInitialText,2000);\n    };\n    if(st==='suspended'){\n      var resume=function(){\n        ctx.resume().then(function(){\n          resumeAndStart();\n        });\n        document.removeEventListener('click',resume);\n        document.removeEventListener('keydown',resume);\n      };\n      document.addEventListener('click',resume);\n      document.addEventListener('keydown',resume);\n    }else{\n      resumeAndStart();\n    }\n  }\n  window.addEventListener('load',function(){\n    ta.addEventListener('input',kv);\n    ta.addEventListener('keyup',kv);\n    init();\n  });\n})();\n<\/script>\n</body>\n</html>";
+    frame.addEventListener('load', function() {
+      try {
+        const h = frame.contentDocument.body.scrollHeight;
+        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
+      } catch(e) {}
+    });
+  })();
 </script>
       </div>
     </section>

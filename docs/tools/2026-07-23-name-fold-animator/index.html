@@ -715,101 +715,26 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
-<div id="pyodide-ui" style="display:none">
-  <span class="runner-label">Input</span>
-  <textarea id="user-input" rows="6" placeholder="Paste a few sentences about how you're feeling or what's on your mind…"></textarea>
-  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
-  <span class="runner-label">Output</span>
-  <pre id="output"></pre>
+<div class="prerendered-app" style="margin-top:8px">
+  <iframe id="app-frame"
+          sandbox="allow-scripts allow-same-origin"
+          style="width:100%;min-height:540px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block"
+          title="Interactive tool"></iframe>
+  <p style="margin-top:10px;font-size:0.8rem;color:#aaa;text-align:center">
+    ✨ Interactive app — runs entirely in your browser
+  </p>
 </div>
-
-<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 <script>
-let pyodide = null;
-const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n\"\"\"Name Fold Animator \u2014 An interactive breathing canvas for two names.\"\"\"\nfrom jinja2 import Template\n\nTEMPLATE = Template(r'''<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Name Fold Animator</title>\n<style>\n  body{background:#f5f0e1;margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:system-ui,-apple-system,sans-serif}\n  .container{text-align:center;max-width:800px;width:100%;padding:20px}\n  h1{font-weight:300;color:#333}\n  .inputs{display:flex;gap:20px;justify-content:center;margin-bottom:20px}\n  .input-group{display:flex;flex-direction:column;align-items:center}\n  label{font-size:0.9em;color:#444;margin-bottom:6px}\n  input[type=\"text\"]{padding:8px 12px;font-size:1.2em;border:1px solid #ccc;border-radius:8px;width:200px;text-align:center;background:#fff}\n  .slider-container{margin:20px 0}\n  .slider-container label{display:block;margin-bottom:5px}\n  #weight{width:200px}\n  canvas{border:1px solid #ccc;border-radius:12px;margin:20px 0}\n  #info{margin-top:5px;font-size:0.85em;color:#444}\n  #save-btn{padding:10px 20px;font-size:1em;background:#2a9d8f;color:white;border:none;border-radius:8px;cursor:pointer}\n  #save-btn:hover{background:#21867a}\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <h1>Two Names, One Space</h1>\n  <div class=\"inputs\">\n    <div class=\"input-group\">\n      <label for=\"legal\">what the world calls you</label>\n      <input type=\"text\" id=\"legal\" placeholder=\"Legal name\" maxlength=\"40\" value=\"{{ legal }}\">\n    </div>\n    <div class=\"input-group\">\n      <label for=\"chosen\">what you call yourself</label>\n      <input type=\"text\" id=\"chosen\" placeholder=\"Chosen name\" maxlength=\"40\" value=\"{{ chosen }}\">\n    </div>\n  </div>\n  <div class=\"slider-container\">\n    <label for=\"weight\">weight</label>\n    <input type=\"range\" id=\"weight\" min=\"0\" max=\"1\" step=\"0.01\" value=\"{{ weight }}\">\n  </div>\n  <canvas id=\"canvas\" width=\"700\" height=\"300\"></canvas>\n  <div id=\"info\"></div>\n  <button id=\"save-btn\">save this moment</button>\n</div>\n<script>\n(function() {\n  var legalInput = document.getElementById('legal');\n  var chosenInput = document.getElementById('chosen');\n  var weightSlider = document.getElementById('weight');\n  var canvas = document.getElementById('canvas');\n  var ctx = canvas.getContext('2d');\n  var infoDiv = document.getElementById('info');\n  var legalName = '';\n  var chosenName = '';\n  var weight = parseFloat(weightSlider.value);\n  var frictionScore = 0;\n  var surplusScore = 0;\n  var period = 2;\n  var jitterAmp = 0.1;\n  var perCharDiffNorm = [];\n  var audioCtx = null;\n  var osc = null;\n  var gainNode = null;\n  var audioStarted = false;\n\n  function initAudio() {\n    if (audioStarted) return;\n    try {\n      audioCtx = new (window.AudioContext || window.webkitAudioContext)();\n      gainNode = audioCtx.createGain();\n      gainNode.gain.value = 0.06;\n      osc = audioCtx.createOscillator();\n      osc.type = 'sine';\n      osc.frequency.value = 200;\n      osc.connect(gainNode);\n      gainNode.connect(audioCtx.destination);\n      osc.start();\n      if (audioCtx.state === 'suspended') audioCtx.resume();\n      audioStarted = true;\n    } catch(e) {}\n  }\n\n  function updateParams() {\n    legalName = legalInput.value;\n    chosenName = chosenInput.value;\n    weight = parseFloat(weightSlider.value);\n    var maxLen = Math.max(legalName.length, chosenName.length);\n    var l = legalName.padEnd(maxLen, ' ');\n    var c = chosenName.padEnd(maxLen, ' ');\n    var sumDiff = 0;\n    perCharDiffNorm = [];\n    for (var i = 0; i < maxLen; i++) {\n      var dl = l.charCodeAt(i) || 32;\n      var dc = c.charCodeAt(i) || 32;\n      var diff = Math.abs(dl - dc);\n      sumDiff += diff;\n      perCharDiffNorm.push(diff / 127);\n    }\n    frictionScore = maxLen > 0 ? sumDiff / (127 * maxLen) : 0;\n    var lenDiff = Math.abs(legalName.length - chosenName.length);\n    surplusScore = maxLen > 0 ? lenDiff / maxLen : 0;\n    period = 2 + frictionScore * 8;\n    jitterAmp = 0.1 + surplusScore * 0.3;\n    if (gainNode && osc) {\n      osc.frequency.value = 200 * (1 + frictionScore);\n    }\n    if (!audioStarted) initAudio();\n    infoDiv.textContent = 'Friction: ' + frictionScore.toFixed(3) +\n      ' | Period: ' + period.toFixed(1) + 's | Jitter: ' + jitterAmp.toFixed(3);\n  }\n\n  function draw() {\n    ctx.clearRect(0, 0, canvas.width, canvas.height);\n    if (!legalName && !chosenName) {\n      requestAnimationFrame(draw);\n      return;\n    }\n    var t = performance.now() / 1000;\n    var fontSize = 48;\n    ctx.font = 'bold ' + fontSize + 'px system-ui, -apple-system, sans-serif';\n    ctx.textBaseline = 'middle';\n    var charWidth = ctx.measureText('M').width;\n    var maxLen = Math.max(legalName.length, chosenName.length);\n    var startX = (canvas.width - maxLen * charWidth) / 2;\n    var y1 = canvas.height / 2 - 30;\n    var y2 = canvas.height / 2 + 30;\n\n    for (var i = 0; i < legalName.length; i++) {\n      var baseAlpha = 1 - weight;\n      var phase = perCharDiffNorm[i] ? perCharDiffNorm[i] * Math.PI * 2 : 0;\n      var alpha = baseAlpha + jitterAmp * Math.sin(t * 2 * Math.PI / period + phase);\n      alpha = Math.max(0, Math.min(1, alpha));\n      var xOff = jitterAmp * 5 * Math.sin(t * 2 * Math.PI / period + phase);\n      var yOff = jitterAmp * 3 * Math.cos(t * 2 * Math.PI / period + phase + 1.5);\n      ctx.globalAlpha = alpha;\n      ctx.fillStyle = '#003049';\n      ctx.fillText(legalName[i], startX + i * charWidth + xOff, y1 + yOff);\n    }\n    for (var i = 0; i < chosenName.length; i++) {\n      var baseAlpha = weight;\n      var phase = perCharDiffNorm[i] ? perCharDiffNorm[i] * Math.PI * 2 : 0;\n      var alpha = baseAlpha + jitterAmp * Math.sin(t * 2 * Math.PI / period + phase);\n      alpha = Math.max(0, Math.min(1, alpha));\n      var xOff = jitterAmp * 5 * Math.sin(t * 2 * Math.PI / period + phase);\n      var yOff = jitterAmp * 3 * Math.cos(t * 2 * Math.PI / period + phase + 1.5);\n      ctx.globalAlpha = alpha;\n      ctx.fillStyle = '#c1121f';\n      ctx.fillText(chosenName[i], startX + i * charWidth + xOff, y2 + yOff);\n    }\n    ctx.globalAlpha = 1;\n    requestAnimationFrame(draw);\n  }\n\n  legalInput.addEventListener('input', updateParams);\n  chosenInput.addEventListener('input', updateParams);\n  weightSlider.addEventListener('input', updateParams);\n  document.getElementById('save-btn').addEventListener('click', function() {\n    var link = document.createElement('a');\n    link.download = 'name-fold-moment.png';\n    link.href = canvas.toDataURL('image/png');\n    link.click();\n  });\n  updateParams();\n  draw();\n})();\n<\/script>\n</body>\n</html>''')\n\n\ndef process(text: str) -> str:\n    \"\"\"Return an interactive HTML canvas for two name layers breathing together.\"\"\"\n    parts = text.split('|') if '|' in text else [\"\", \"\"]\n    legal = parts[0].strip()[:40] if parts else \"\"\n    chosen = parts[1].strip()[:40] if len(parts) > 1 else \"\"\n    weight_str = parts[2].strip() if len(parts) > 2 else \"0.5\"\n    try:\n        w = float(weight_str)\n        w = max(0.0, min(1.0, w))\n    except (ValueError, TypeError):\n        w = 0.5\n    return TEMPLATE.render(legal=legal, chosen=chosen, weight=w)\n\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    import sys\n    if len(sys.argv) > 1:\n        print(process(sys.argv[1]))\n    else:\n        print(process(\"\"))";
-const DEMO_INPUT = "Elena Vasquez|Ellie V.|0.6\")\n    assert out1 != out2\n    assert \"Alice\" in out1 and \"Bob\" in out1\n    assert \"Elena Vasquez\" in out2 and \"Ellie V.\" in out2\n    assert \"weight\" in out2\n\ndef test_slider():\n    out = process(\"X||0.8";
-
-async function loadPyodide_() {
-  try {
-    pyodide = await loadPyodide();
-    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
-    document.getElementById('pyodide-status').style.display = 'none';
-    document.getElementById('pyodide-ui').style.display = 'block';
-    // Auto-run with demo input so user sees real output immediately
-    if (DEMO_INPUT) {
-      document.getElementById('user-input').value = DEMO_INPUT;
-      const demoNote = document.createElement('p');
-      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
-      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
-      document.getElementById('output').before(demoNote);
-      await runTool(true);
-    }
-  } catch(e) {
-    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
-  }
-}
-
-async function runTool(isDemo) {
-  if (!pyodide) return;
-  const userInput = document.getElementById('user-input').value.trim();
-  const btn = document.getElementById('run-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Running...';
-
-  try {
-    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
-    pyodide.globals.set('USER_INPUT', userInput);
-    pyodide.runPython(TOOL_CODE);
-    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
-    const outEl = document.getElementById('output');
-    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      outEl.textContent = '';
-      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
-      const iframe = document.createElement('iframe');
-      iframe.sandbox = 'allow-scripts allow-same-origin';
-      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
-      iframe.srcdoc = output;
-      outEl.appendChild(iframe);
-      iframe.addEventListener('load', () => {
-        try {
-          const h = iframe.contentDocument.body.scrollHeight;
-          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
-        } catch(e) {}
-      });
-    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      outEl.textContent = '';
-      outEl.style.background = '#f8f8f8';
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
-      const img = document.createElement('div');
-      img.innerHTML = output;
-      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
-      wrapper.appendChild(img);
-      const hint = document.createElement('small');
-      hint.textContent = '⬇ Right-click the image to save as SVG';
-      hint.style.color = '#aaa';
-      wrapper.appendChild(hint);
-      outEl.appendChild(wrapper);
-    } else {
-      outEl.textContent = output || '(no output — tool may write to a file instead)';
-    }
-    // If this was an auto-run, add a subtle hint
-    if (isDemo && output) {
-      const hint = document.createElement('p');
-      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
-      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
-      document.getElementById('output').after(hint);
-    }
-  } catch(e) {
-    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
-  }
-
-  btn.disabled = false;
-  btn.textContent = '▶ Run';
-}
-
-loadPyodide_();
+  (function() {
+    const frame = document.getElementById('app-frame');
+    frame.srcdoc = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Name Fold Animator</title>\n<style>\n  body{background:#f5f0e1;margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:system-ui,-apple-system,sans-serif}\n  .container{text-align:center;max-width:800px;width:100%;padding:20px}\n  h1{font-weight:300;color:#333}\n  .inputs{display:flex;gap:20px;justify-content:center;margin-bottom:20px}\n  .input-group{display:flex;flex-direction:column;align-items:center}\n  label{font-size:0.9em;color:#444;margin-bottom:6px}\n  input[type=\"text\"]{padding:8px 12px;font-size:1.2em;border:1px solid #ccc;border-radius:8px;width:200px;text-align:center;background:#fff}\n  .slider-container{margin:20px 0}\n  .slider-container label{display:block;margin-bottom:5px}\n  #weight{width:200px}\n  canvas{border:1px solid #ccc;border-radius:12px;margin:20px 0}\n  #info{margin-top:5px;font-size:0.85em;color:#444}\n  #save-btn{padding:10px 20px;font-size:1em;background:#2a9d8f;color:white;border:none;border-radius:8px;cursor:pointer}\n  #save-btn:hover{background:#21867a}\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <h1>Two Names, One Space</h1>\n  <div class=\"inputs\">\n    <div class=\"input-group\">\n      <label for=\"legal\">what the world calls you</label>\n      <input type=\"text\" id=\"legal\" placeholder=\"Legal name\" maxlength=\"40\" value=\"\">\n    </div>\n    <div class=\"input-group\">\n      <label for=\"chosen\">what you call yourself</label>\n      <input type=\"text\" id=\"chosen\" placeholder=\"Chosen name\" maxlength=\"40\" value=\"\">\n    </div>\n  </div>\n  <div class=\"slider-container\">\n    <label for=\"weight\">weight</label>\n    <input type=\"range\" id=\"weight\" min=\"0\" max=\"1\" step=\"0.01\" value=\"0.5\">\n  </div>\n  <canvas id=\"canvas\" width=\"700\" height=\"300\"></canvas>\n  <div id=\"info\"></div>\n  <button id=\"save-btn\">save this moment</button>\n</div>\n<script>\n(function() {\n  var legalInput = document.getElementById('legal');\n  var chosenInput = document.getElementById('chosen');\n  var weightSlider = document.getElementById('weight');\n  var canvas = document.getElementById('canvas');\n  var ctx = canvas.getContext('2d');\n  var infoDiv = document.getElementById('info');\n  var legalName = '';\n  var chosenName = '';\n  var weight = parseFloat(weightSlider.value);\n  var frictionScore = 0;\n  var surplusScore = 0;\n  var period = 2;\n  var jitterAmp = 0.1;\n  var perCharDiffNorm = [];\n  var audioCtx = null;\n  var osc = null;\n  var gainNode = null;\n  var audioStarted = false;\n\n  function initAudio() {\n    if (audioStarted) return;\n    try {\n      audioCtx = new (window.AudioContext || window.webkitAudioContext)();\n      gainNode = audioCtx.createGain();\n      gainNode.gain.value = 0.06;\n      osc = audioCtx.createOscillator();\n      osc.type = 'sine';\n      osc.frequency.value = 200;\n      osc.connect(gainNode);\n      gainNode.connect(audioCtx.destination);\n      osc.start();\n      if (audioCtx.state === 'suspended') audioCtx.resume();\n      audioStarted = true;\n    } catch(e) {}\n  }\n\n  function updateParams() {\n    legalName = legalInput.value;\n    chosenName = chosenInput.value;\n    weight = parseFloat(weightSlider.value);\n    var maxLen = Math.max(legalName.length, chosenName.length);\n    var l = legalName.padEnd(maxLen, ' ');\n    var c = chosenName.padEnd(maxLen, ' ');\n    var sumDiff = 0;\n    perCharDiffNorm = [];\n    for (var i = 0; i < maxLen; i++) {\n      var dl = l.charCodeAt(i) || 32;\n      var dc = c.charCodeAt(i) || 32;\n      var diff = Math.abs(dl - dc);\n      sumDiff += diff;\n      perCharDiffNorm.push(diff / 127);\n    }\n    frictionScore = maxLen > 0 ? sumDiff / (127 * maxLen) : 0;\n    var lenDiff = Math.abs(legalName.length - chosenName.length);\n    surplusScore = maxLen > 0 ? lenDiff / maxLen : 0;\n    period = 2 + frictionScore * 8;\n    jitterAmp = 0.1 + surplusScore * 0.3;\n    if (gainNode && osc) {\n      osc.frequency.value = 200 * (1 + frictionScore);\n    }\n    if (!audioStarted) initAudio();\n    infoDiv.textContent = 'Friction: ' + frictionScore.toFixed(3) +\n      ' | Period: ' + period.toFixed(1) + 's | Jitter: ' + jitterAmp.toFixed(3);\n  }\n\n  function draw() {\n    ctx.clearRect(0, 0, canvas.width, canvas.height);\n    if (!legalName && !chosenName) {\n      requestAnimationFrame(draw);\n      return;\n    }\n    var t = performance.now() / 1000;\n    var fontSize = 48;\n    ctx.font = 'bold ' + fontSize + 'px system-ui, -apple-system, sans-serif';\n    ctx.textBaseline = 'middle';\n    var charWidth = ctx.measureText('M').width;\n    var maxLen = Math.max(legalName.length, chosenName.length);\n    var startX = (canvas.width - maxLen * charWidth) / 2;\n    var y1 = canvas.height / 2 - 30;\n    var y2 = canvas.height / 2 + 30;\n\n    for (var i = 0; i < legalName.length; i++) {\n      var baseAlpha = 1 - weight;\n      var phase = perCharDiffNorm[i] ? perCharDiffNorm[i] * Math.PI * 2 : 0;\n      var alpha = baseAlpha + jitterAmp * Math.sin(t * 2 * Math.PI / period + phase);\n      alpha = Math.max(0, Math.min(1, alpha));\n      var xOff = jitterAmp * 5 * Math.sin(t * 2 * Math.PI / period + phase);\n      var yOff = jitterAmp * 3 * Math.cos(t * 2 * Math.PI / period + phase + 1.5);\n      ctx.globalAlpha = alpha;\n      ctx.fillStyle = '#003049';\n      ctx.fillText(legalName[i], startX + i * charWidth + xOff, y1 + yOff);\n    }\n    for (var i = 0; i < chosenName.length; i++) {\n      var baseAlpha = weight;\n      var phase = perCharDiffNorm[i] ? perCharDiffNorm[i] * Math.PI * 2 : 0;\n      var alpha = baseAlpha + jitterAmp * Math.sin(t * 2 * Math.PI / period + phase);\n      alpha = Math.max(0, Math.min(1, alpha));\n      var xOff = jitterAmp * 5 * Math.sin(t * 2 * Math.PI / period + phase);\n      var yOff = jitterAmp * 3 * Math.cos(t * 2 * Math.PI / period + phase + 1.5);\n      ctx.globalAlpha = alpha;\n      ctx.fillStyle = '#c1121f';\n      ctx.fillText(chosenName[i], startX + i * charWidth + xOff, y2 + yOff);\n    }\n    ctx.globalAlpha = 1;\n    requestAnimationFrame(draw);\n  }\n\n  legalInput.addEventListener('input', updateParams);\n  chosenInput.addEventListener('input', updateParams);\n  weightSlider.addEventListener('input', updateParams);\n  document.getElementById('save-btn').addEventListener('click', function() {\n    var link = document.createElement('a');\n    link.download = 'name-fold-moment.png';\n    link.href = canvas.toDataURL('image/png');\n    link.click();\n  });\n  updateParams();\n  draw();\n})();\n<\/script>\n</body>\n</html>";
+    frame.addEventListener('load', function() {
+      try {
+        const h = frame.contentDocument.body.scrollHeight;
+        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
+      } catch(e) {}
+    });
+  })();
 </script>
       </div>
     </section>

@@ -715,101 +715,26 @@ a { color: inherit; text-decoration: none; }
       <div class="detail-label">Try in Browser</div>
       <div class="try-it">
         
-<div id="pyodide-status">&#x23F3; 正在加载 Python 引擎，约需 15 秒&hellip;<br><span style="font-size:0.75rem;opacity:0.6">Loading Python engine, please wait ~15s</span></div>
-<div id="pyodide-ui" style="display:none">
-  <span class="runner-label">Input</span>
-  <textarea id="user-input" rows="6" placeholder="Paste your study notes, article, or learning material here…"></textarea>
-  <button id="run-btn" onclick="runTool()">&#x25B6;&nbsp; Run</button>
-  <span class="runner-label">Output</span>
-  <pre id="output"></pre>
+<div class="prerendered-app" style="margin-top:8px">
+  <iframe id="app-frame"
+          sandbox="allow-scripts allow-same-origin"
+          style="width:100%;min-height:540px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block"
+          title="Interactive tool"></iframe>
+  <p style="margin-top:10px;font-size:0.8rem;color:#aaa;text-align:center">
+    ✨ Interactive app — runs entirely in your browser
+  </p>
 </div>
-
-<script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 <script>
-let pyodide = null;
-const TOOL_CODE = "import sys\nsys.argv = ['tool']  # browser mode: reset argv so argparse never fires\n\n\"\"\"\nVariable Font Warm-Up Wheel - Live canvas with wheel-driven axis exploration.\nRequires: jinja2.\n\"\"\"\nimport re\nfrom jinja2 import Template\n\nHTML_TEMPLATE = Template(r'''<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Variable Font Warm-Up Wheel</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:opsz,wght,wdth,slnt@14..32,100..900,75..125,-10..0&display=swap\" rel=\"stylesheet\">\n<style>\nbody{margin:0;background:#f5f0e6;display:flex;justify-content:center;align-items:center;height:100vh;font-family:'Inter Variable',sans-serif;}\n.container{text-align:center;}\ncanvas{display:block;margin:0 auto;cursor:pointer;}\n#sampleText{font-size:64px;margin:20px 0;word-break:break-word;}\n.axis-indicator{font-size:14px;margin-bottom:5px;}\n.controls{margin-top:10px;}\n.controls select,.controls input,.controls button{margin:5px;}\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <canvas id=\"wheelCanvas\" width=\"300\" height=\"300\"></canvas>\n  <div id=\"sampleText\">{{ sample_word }}</div>\n  <div class=\"axis-indicator\" id=\"axisVals\"></div>\n  <div class=\"controls\">\n    <select id=\"axis1Sel\"></select>\n    <select id=\"axis2Sel\"></select>\n    <br>\n    <label>Speed <input type=\"range\" id=\"speedSlider\" min=\"0.1\" max=\"3\" step=\"0.1\" value=\"0.5\"></label>\n    <select id=\"easingSelect\">\n      <option value=\"linear\">linear</option>\n      <option value=\"easeIn\" selected>easeIn</option>\n      <option value=\"easeOut\">easeOut</option>\n      <option value=\"easeInOut\">easeInOut</option>\n      <option value=\"sine\">sine</option>\n    </select>\n    <button id=\"sweepBtn\">Start Sweep</button>\n    <button id=\"copyBtn\">Copy Axes</button>\n    <button id=\"exportBtn\" style=\"display:none\">Export CSV</button>\n  </div>\n</div>\n<script>\n(function(){\n  const AXES = [\n    {tag:\"wght\",min:300,max:900,def:450},\n    {tag:\"wdth\",min:75,max:125,def:100},\n    {tag:\"slnt\",min:-10,max:0,def:-5},\n    {tag:\"ital\",min:0,max:1,def:0},\n    {tag:\"opsz\",min:14,max:32,def:16}\n  ];\n\n  const canvas=document.getElementById('wheelCanvas');\n  const ctx=canvas.getContext('2d');\n  const sampleText=document.getElementById('sampleText');\n  const axisVals=document.getElementById('axisVals');\n  const axis1Sel=document.getElementById('axis1Sel');\n  const axis2Sel=document.getElementById('axis2Sel');\n  const speedSlider=document.getElementById('speedSlider');\n  const easingSelect=document.getElementById('easingSelect');\n  const sweepBtn=document.getElementById('sweepBtn');\n  const copyBtn=document.getElementById('copyBtn');\n  const exportBtn=document.getElementById('exportBtn');\n\n  let selectedAxis1=AXES[0];\n  let selectedAxis2=AXES[1];\n  let isDragging=false;\n  let isSweeping=false;\n  let sweepRecords=[];\n  let sweepStartTime=0;\n  let lastFrameTime=0;\n  let wheelAngle=0;\n  let angularVelocity=0;\n  let lastMouseAngle=0;\n  let lastMouseTime=0;\n  let sweepSpeed=0;\n\n  function populateAxes() {\n    [axis1Sel, axis2Sel].forEach((sel, idx) => {\n      sel.innerHTML='';\n      AXES.forEach(a => {\n        let opt=document.createElement('option');\n        opt.value=a.tag;\n        opt.textContent=a.tag;\n        sel.appendChild(opt);\n      });\n      sel.value=idx===0? selectedAxis1.tag : selectedAxis2.tag;\n    });\n    axis1Sel.onchange=() => {\n      selectedAxis1=AXES.find(a=>a.tag===axis1Sel.value);\n      if(axis1Sel.value===axis2Sel.value){\n        let other = AXES.find(a=>a.tag!==axis2Sel.value)||AXES[0];\n        axis2Sel.value=other.tag;\n        selectedAxis2=other;\n      }\n      updateAll();\n    };\n    axis2Sel.onchange=() => {\n      selectedAxis2=AXES.find(a=>a.tag===axis2Sel.value);\n      if(axis2Sel.value===axis1Sel.value){\n        let other = AXES.find(a=>a.tag!==axis1Sel.value)||AXES[0];\n        axis1Sel.value=other.tag;\n        selectedAxis1=other;\n      }\n      updateAll();\n    };\n  }\n  populateAxes();\n\n  const easings={\n    linear:t=>t,\n    easeIn:t=>t*t,\n    easeOut:t=>1-(1-t)*(1-t),\n    easeInOut:t=>t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,\n    sine:t=>Math.sin(t*Math.PI/2)\n  };\n\n  function getAxisValues(angle){\n    let t=((angle%360+360)%360)/360;\n    let easingType=easingSelect.value;\n    let easeFn=easings[easingType]||easings.linear;\n    let easedT=easeFn(t);\n    let angleRad=easedT*2*Math.PI;\n    let range1=selectedAxis1.max-selectedAxis1.min;\n    let range2=selectedAxis2.max-selectedAxis2.min;\n    let val1=selectedAxis1.min+range1*(0.5+0.5*Math.cos(angleRad));\n    let val2=selectedAxis2.min+range2*(0.5+0.5*Math.sin(angleRad));\n    // Derivative of axis values w.r.t angle (degrees)\n    let dEasedT = easings[easingType]? ((easings[easingType](t+0.0001)-easings[easingType](t-0.0001))/0.0002) : 1;\n    let dAngleRad=dEasedT*2*Math.PI/360;\n    let dVal1=range1*0.5*(-Math.sin(angleRad))*dAngleRad;\n    let dVal2=range2*0.5*Math.cos(angleRad)*dAngleRad;\n    let derivMag=Math.sqrt(dVal1*dVal1+dVal2*dVal2);\n    let score=Math.min(1,derivMag*8);\n    return {val1,val2,score};\n  }\n\n  function updateSampleText(){\n    let {val1,val2}=getAxisValues(wheelAngle%360);\n    sampleText.style.fontVariationSettings=\n      \"'\" + selectedAxis1.tag + \"' \" + Math.round(val1) + \", '\" + selectedAxis2.tag + \"' \" + Math.round(val2);\n    axisVals.textContent=\n      selectedAxis1.tag+\": \"+Math.round(val1)+\", \"+selectedAxis2.tag+\": \"+Math.round(val2);\n  }\n\n  function drawWheel(){\n    let {score}=getAxisValues(wheelAngle%360);\n    ctx.clearRect(0,0,canvas.width,canvas.height);\n    let cx=150,cy=150,r=140;\n    let hue=score*120;\n    let grad=ctx.createRadialGradient(cx,cy,0,cx,cy,r);\n    grad.addColorStop(0,\"hsl(\"+hue+\",100%,50%)\");\n    grad.addColorStop(1,\"hsl(\"+hue+\",100%,80%)\");\n    ctx.beginPath();\n    ctx.arc(cx,cy,r,0,Math.PI*2);\n    ctx.fillStyle=grad;\n    ctx.fill();\n    ctx.strokeStyle='#333';\n    ctx.lineWidth=2;\n    ctx.stroke();\n    for(let a=0;a<360;a+=15){\n      let rad=a*Math.PI/180;\n      ctx.beginPath();\n      ctx.moveTo(cx+Math.cos(rad)*(r-10),cy+Math.sin(rad)*(r-10));\n      ctx.lineTo(cx+Math.cos(rad)*(r-2),cy+Math.sin(rad)*(r-2));\n      ctx.strokeStyle='#fff';\n      ctx.lineWidth=1;\n      ctx.stroke();\n    }\n    let curAng=(wheelAngle%360)*Math.PI/180;\n    let px=cx+Math.cos(curAng)*(r-15);\n    let py=cy+Math.sin(curAng)*(r-15);\n    ctx.beginPath();\n    ctx.moveTo(cx,cy);\n    ctx.lineTo(px,py);\n    ctx.strokeStyle='#000';\n    ctx.lineWidth=3;\n    ctx.stroke();\n    ctx.beginPath();\n    ctx.arc(px,py,4,0,2*Math.PI);\n    ctx.fillStyle='#000';\n    ctx.fill();\n    if(isSweeping){\n      let progress=((wheelAngle%360)/360);\n      ctx.beginPath();\n      ctx.moveTo(cx,cy);\n      ctx.arc(cx,cy,r-5,-Math.PI/2,-Math.PI/2+progress*Math.PI*2);\n      ctx.closePath();\n      ctx.fillStyle='rgba(0,0,0,0.12)';\n      ctx.fill();\n    }\n  }\n\n  function updateAll(){\n    updateSampleText();\n    drawWheel();\n    let {val1,val2}=getAxisValues(wheelAngle%360);\n    copyBtn.dataset.css='font-variation-settings: \"'+selectedAxis1.tag+'\" '+Math.round(val1)+', \"'+selectedAxis2.tag+'\" '+Math.round(val2)+';';\n    copyBtn.dataset.ae='['+Math.round(val1)+', '+Math.round(val2)+']';\n  }\n\n  copyBtn.addEventListener('click',()=>{\n    let str=copyBtn.dataset.css+'\\\\n'+copyBtn.dataset.ae;\n    navigator.clipboard.writeText(str).catch(()=>alert('Copy failed'));\n  });\n\n  function getMouseAngle(e){\n    let rect=canvas.getBoundingClientRect();\n    return Math.atan2(e.clientY-(rect.top+rect.height/2),e.clientX-(rect.left+rect.width/2))*180/Math.PI;\n  }\n  canvas.addEventListener('mousedown',e=>{\n    isDragging=true;\n    lastMouseAngle=getMouseAngle(e);\n    lastMouseTime=performance.now();\n    e.preventDefault();\n  });\n  window.addEventListener('mouseup',()=>{isDragging=false;});\n  window.addEventListener('mousemove',e=>{\n    if(!isDragging)return;\n    let now=performance.now();\n    let curMouse=getMouseAngle(e);\n    let delta=curMouse-lastMouseAngle;\n    if(delta>180)delta-=360;\n    if(delta<-180)delta+=360;\n    wheelAngle+=delta;\n    let dt=(now-lastMouseTime)/1000;\n    if(dt>0)angularVelocity=delta/dt;\n    lastMouseAngle=curMouse;\n    lastMouseTime=now;\n  });\n  canvas.addEventListener('touchstart',e=>{\n    isDragging=true;\n    let touch=e.touches[0];\n    let rect=canvas.getBoundingClientRect();\n    lastMouseAngle=Math.atan2(touch.clientY-(rect.top+rect.height/2),touch.clientX-(rect.left+rect.width/2))*180/Math.PI;\n    lastMouseTime=performance.now();\n    e.preventDefault();\n  });\n  canvas.addEventListener('touchend',()=>{isDragging=false;});\n  canvas.addEventListener('touchmove',e=>{\n    if(!isDragging)return;\n    e.preventDefault();\n    let touch=e.touches[0];\n    let rect=canvas.getBoundingClientRect();\n    let curMouse=Math.atan2(touch.clientY-(rect.top+rect.height/2),touch.clientX-(rect.left+rect.width/2))*180/Math.PI;\n    let now=performance.now();\n    let delta=curMouse-lastMouseAngle;\n    if(delta>180)delta-=360;\n    if(delta<-180)delta+=360;\n    wheelAngle+=delta;\n    let dt=(now-lastMouseTime)/1000;\n    if(dt>0)angularVelocity=delta/dt;\n    lastMouseAngle=curMouse;\n    lastMouseTime=now;\n  });\n\n  sweepBtn.addEventListener('click',()=>{\n    isSweeping=!isSweeping;\n    if(isSweeping){\n      sweepBtn.textContent='Stop Sweep';\n      sweepRecords=[];\n      sweepStartTime=performance.now();\n      sweepSpeed=parseFloat(speedSlider.value)*180;\n    } else {\n      sweepBtn.textContent='Start Sweep';\n      if(sweepRecords.length>0)exportBtn.style.display='inline-block';\n    }\n  });\n\n  exportBtn.addEventListener('click',()=>{\n    let header=\"time,\"+selectedAxis1.tag+\",\"+selectedAxis2.tag;\n    let rows=sweepRecords.map(r=>r.time.toFixed(3)+\",\"+r.val1.toFixed(1)+\",\"+r.val2.toFixed(1));\n    let csv=header+\"\\\\n\"+rows.join(\"\\\\n\");\n    let blob=new Blob([csv],{type:'text/csv'});\n    let url=URL.createObjectURL(blob);\n    let a=document.createElement('a');\n    a.href=url;a.download='font_axis_sweep.csv';a.click();\n    URL.revokeObjectURL(url);\n  });\n\n  const FRICTION=0.97;\n  function animate(now){\n    let deltaSec=lastFrameTime?(now-lastFrameTime)/1000:0;\n    lastFrameTime=now;\n    if(isSweeping){\n      wheelAngle+=sweepSpeed*deltaSec;\n      angularVelocity=sweepSpeed;\n      let {val1,val2}=getAxisValues(wheelAngle%360);\n      sweepRecords.push({time:(now-sweepStartTime)/1000,val1,val2});\n    } else if(!isDragging){\n      if(Math.abs(angularVelocity)>0.5){\n        wheelAngle+=angularVelocity*deltaSec;\n        angularVelocity*=FRICTION;\n      } else {\n        angularVelocity=0;\n      }\n    }\n    updateAll();\n    requestAnimationFrame(animate);\n  }\n  requestAnimationFrame(animate);\n  updateAll();\n})();\n<\/script>\n</body>\n</html>''')\n\ndef extract_sample_word(text: str) -> str:\n    \"\"\"Extract a sample word from user input, falling back to whole cleaned text.\"\"\"\n    cleaned = text.strip()\n    if not cleaned:\n        return \"Motion\"\n    # explicit patterns: \"sample word X\" or \"word X\"\n    m = re.search(r'sample\\\\s+word\\\\s+\"?(\\\\w[\\\\w\\\\s]*?\\\\w)\"?', cleaned, re.IGNORECASE)\n    if m:\n        return m.group(1).strip()\n    m = re.search(r'word\\\\s+\"?(\\\\w[\\\\w\\\\s]*?\\\\w)\"?', cleaned, re.IGNORECASE)\n    if m:\n        return m.group(1).strip()\n    # No explicit pattern: use the entire input as sample text (up to 30 chars to avoid overflow)\n    if len(cleaned) > 30:\n        return cleaned[:30] + '...'\n    return cleaned\n\ndef process(text: str) -> str:\n    \"\"\"Live variable font warm-up wheel \u2013 returns interactive HTML.\"\"\"\n    if not text.strip():\n        return \"<html><body><p>Enter a sample word to explore variable font axes.</p></body></html>\"\n    sample_word = extract_sample_word(text)\n    return HTML_TEMPLATE.render(sample_word=sample_word)\n\ndef _cli_main():\n    import sys\n    if len(sys.argv) > 1:\n        print(process(sys.argv[1]))\n    else:\n        print(process('User selects wght and wdth sample word Kinetic'))\n\n_browser_input = globals().get('USER_INPUT', None)\nif _browser_input is not None:\n    print(process(_browser_input))\nelif __name__ == \"__main__\":\n    _cli_main()";
-const DEMO_INPUT = "apple harvest season\")\n    assert \"apple harvest season\" in out1, \"Output should contain the input phrase\"\n    out2 = process(\"quantum computing jobs";
-
-async function loadPyodide_() {
-  try {
-    pyodide = await loadPyodide();
-    try { await pyodide.loadPackagesFromImports(TOOL_CODE); } catch(e) {}
-    document.getElementById('pyodide-status').style.display = 'none';
-    document.getElementById('pyodide-ui').style.display = 'block';
-    // Auto-run with demo input so user sees real output immediately
-    if (DEMO_INPUT) {
-      document.getElementById('user-input').value = DEMO_INPUT;
-      const demoNote = document.createElement('p');
-      demoNote.style.cssText = 'font-size:0.75rem;color:#aaa;margin-bottom:8px;font-style:italic';
-      demoNote.textContent = '↓ 示例输出 — 替换上方文字后点 Run 试试你自己的内容';
-      document.getElementById('output').before(demoNote);
-      await runTool(true);
-    }
-  } catch(e) {
-    document.getElementById('pyodide-status').textContent = '❌ Failed to load Python engine. Please refresh.';
-  }
-}
-
-async function runTool(isDemo) {
-  if (!pyodide) return;
-  const userInput = document.getElementById('user-input').value.trim();
-  const btn = document.getElementById('run-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Running...';
-
-  try {
-    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
-    pyodide.globals.set('USER_INPUT', userInput);
-    pyodide.runPython(TOOL_CODE);
-    const output = pyodide.runPython('sys.stdout.getvalue()').trim();
-    const outEl = document.getElementById('output');
-    if (output.startsWith('<!DOCTYPE') || output.startsWith('<html') || output.startsWith('<!-- APP -->')) {
-      outEl.textContent = '';
-      outEl.style.cssText = 'background:transparent;padding:0;border:none;white-space:normal';
-      const iframe = document.createElement('iframe');
-      iframe.sandbox = 'allow-scripts allow-same-origin';
-      iframe.style.cssText = 'width:100%;min-height:520px;border:1px solid #e8e8e8;border-radius:8px;background:#fff;display:block';
-      iframe.srcdoc = output;
-      outEl.appendChild(iframe);
-      iframe.addEventListener('load', () => {
-        try {
-          const h = iframe.contentDocument.body.scrollHeight;
-          if (h > 200) iframe.style.minHeight = (h + 24) + 'px';
-        } catch(e) {}
-      });
-    } else if (output.startsWith('<svg') || output.startsWith('<?xml')) {
-      outEl.textContent = '';
-      outEl.style.background = '#f8f8f8';
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0';
-      const img = document.createElement('div');
-      img.innerHTML = output;
-      img.style.cssText = 'width:100%;max-width:400px;border-radius:8px;overflow:hidden';
-      wrapper.appendChild(img);
-      const hint = document.createElement('small');
-      hint.textContent = '⬇ Right-click the image to save as SVG';
-      hint.style.color = '#aaa';
-      wrapper.appendChild(hint);
-      outEl.appendChild(wrapper);
-    } else {
-      outEl.textContent = output || '(no output — tool may write to a file instead)';
-    }
-    // If this was an auto-run, add a subtle hint
-    if (isDemo && output) {
-      const hint = document.createElement('p');
-      hint.style.cssText = 'font-size:0.75rem;color:#aaa;margin:6px 0 0;text-align:right';
-      hint.textContent = '↑ Demo output — replace the input above with your own text and hit Run';
-      document.getElementById('output').after(hint);
-    }
-  } catch(e) {
-    document.getElementById('output').textContent = '❌ Error:\n' + e.message;
-  }
-
-  btn.disabled = false;
-  btn.textContent = '▶ Run';
-}
-
-loadPyodide_();
+  (function() {
+    const frame = document.getElementById('app-frame');
+    frame.srcdoc = "<html><body><p>Enter a sample word to explore variable font axes.</p></body></html>";
+    frame.addEventListener('load', function() {
+      try {
+        const h = frame.contentDocument.body.scrollHeight;
+        if (h > 200) frame.style.minHeight = (h + 24) + 'px';
+      } catch(e) {}
+    });
+  })();
 </script>
       </div>
     </section>
