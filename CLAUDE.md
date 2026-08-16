@@ -1,7 +1,7 @@
 # CLAUDE.md — Super-Lili Project Memory
 
 > Written for the Claude agent picking up this project. Read this first.
-> Last updated: 2026-08-09 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
+> Last updated: 2026-08-16 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
 
 ---
 
@@ -265,7 +265,7 @@ Written by project owner xiaojiahaina, based on the neo-slow media framework (20
 ## Unfinished / Future Direction
 
 - **Open to public**: once Issues are open to real users, authentic needs become the best evolution fuel
-- **Quality ceiling**: current tools are uneven — 58 tools as of 2026-08-02 (28-day ledger: 4.8% pass rate per build attempt, 14/294), maybe 2-3 reach "creative professional uses it weekly" standard. Direction is right, needs time
+- **Quality ceiling**: current tools are uneven — 65 tools as of 2026-08-16 (28-day ledger: 8.0% pass rate per build attempt, 13/162 — up from 4.8%/294 on 08-02, but the window is also shorter and includes the post-F-018 promise-vs-actual gate plus F-019~F-030, none of which have a full week of clean data yet; see FINDINGS F-031 for two rest days this week lost to a SCOUT parsing gap unrelated to quality scoring), maybe 2-3 reach "creative professional uses it weekly" standard. Direction is right, needs time
 
 ---
 
