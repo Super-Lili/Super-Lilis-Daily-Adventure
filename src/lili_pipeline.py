@@ -313,8 +313,20 @@ def self_correct_code(skill_dir: str, scout: dict, spec: dict, today: str,
         except SyntaxError as e:
             observed = f"SyntaxError at line {e.lineno}: {e.msg}"
         else:
-            # Cheap check 2: actually run it, exactly as the browser would.
-            observed = _check_promise(test_input or "a realistic test input")
+            if _missing_user_input_pattern(code):
+                # Cheap check 1b: structural, no execution needed - mirrors
+                # validate_tool()'s own check exactly (see _missing_user_input_pattern
+                # docstring for the 2026-08-18 incident this closes).
+                observed = (
+                    "Missing USER_INPUT dual-mode pattern - the code never references "
+                    "the injected USER_INPUT global at all, so it cannot be reading real "
+                    "user input. Add: _browser_input = globals().get('USER_INPUT', None) "
+                    "near the bottom, and use it (or the bare USER_INPUT global) as the "
+                    "real input."
+                )
+            else:
+                # Cheap check 2: actually run it, exactly as the browser would.
+                observed = _check_promise(test_input or "a realistic test input")
             if not observed and edge_case_input:
                 # Harness plan #2 (2026-08-09): a tool that only works on the
                 # clean TEST_INPUT but breaks on messier, more realistic input
@@ -421,11 +433,32 @@ _AGENTIC_TOOLS = [
 ]
 
 
+def _missing_user_input_pattern(code: str) -> bool:
+    """True if the code never references the injected USER_INPUT global at
+    all - mirrors validate_tool()'s own structural check exactly (2026-08-18
+    incident: a candidate can pass every execution-based self-correction
+    check - run_tool_output injects USER_INPUT as a real global, so code
+    that ignores it entirely can still produce SOME output and satisfy
+    MUST_CONTAIN by coincidence/hardcoding - yet still get rejected by
+    validate_tool()'s separate structural check, which self-correction
+    never mirrored until now. Same class of gap as the Mode 3 browser check
+    (F-021): the cheap inner loop must check everything the expensive outer
+    chain checks, or problems slip through to the expensive stage anyway."""
+    return "globals().get('USER_INPUT'" not in code and "USER_INPUT" not in code
+
+
 def _execute_candidate(code: str, input_text: str, spec: dict, tmp_dir: str) -> dict:
     """Run `code` against `input_text` and report REAL, mechanically-checked
     results - reuses the exact same ground-truth primitives as validate_tool()
     (run_tool_output, promise check, browser interactivity) so a candidate the
     model believes is correct is never taken on faith."""
+    if _missing_user_input_pattern(code):
+        return {"ok": False, "detail": (
+            "Missing USER_INPUT dual-mode pattern - the code never references the "
+            "injected USER_INPUT global at all, so it cannot be reading real user "
+            "input. Add: _browser_input = globals().get('USER_INPUT', None) near "
+            "the bottom, and use it (or the bare USER_INPUT global) as the real input."
+        )}
     candidate_path = Path(tmp_dir) / "candidate.py"
     candidate_path.write_text(code, encoding="utf-8")
     must_contain = spec.get("must_contain") or []

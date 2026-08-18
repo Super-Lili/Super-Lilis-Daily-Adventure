@@ -51,6 +51,15 @@ if _browser_input is not None:
     print(process(_browser_input))
 '''
 
+_MISSING_USER_INPUT_CODE = '''
+def process(text: str) -> str:
+    return "Summary: hardcoded, ignores whatever you actually typed"
+
+''' + _pad(50) + '''
+
+print(process("nothing"))
+'''
+
 _SCOUT = {"solution": "Test Tool", "category": "Office Automation", "description": "a test tool"}
 
 
@@ -130,6 +139,47 @@ class AgenticFastPathTests(unittest.TestCase):
         finally:
             lili_llm._deepseek_client = original
         self.assertIn("Summary:", result)
+
+
+class AgenticUserInputPatternTests(unittest.TestCase):
+    """2026-08-18 incident (see test_self_correct.py's twin test class):
+    _execute_candidate must reject a candidate that never references the
+    injected USER_INPUT global, even if its hardcoded output would
+    coincidentally satisfy MUST_CONTAIN - mirrors validate_tool()'s own
+    structural check, which neither self-correction loop had before this."""
+
+    def test_missing_user_input_rejected_on_submit(self):
+        skill_dir = _make_skill_dir(_MISSING_USER_INPUT_CODE)
+        responses = [
+            _FakeResp(_FakeMessage(tool_calls=[
+                _FakeToolCall("call_1", "submit_final_code", {"code": _MISSING_USER_INPUT_CODE}),
+            ])),
+            _FakeResp(_FakeMessage(tool_calls=[
+                _FakeToolCall("call_2", "submit_final_code", {"code": _CORRECT_CODE}),
+            ])),
+        ]
+        client = _ScriptedClient(responses)
+        original = lili_llm._deepseek_client
+        lili_llm._deepseek_client = client
+        try:
+            result = agentic_self_correct_code(skill_dir, _SCOUT, _spec(), "2026-08-18")
+        finally:
+            lili_llm._deepseek_client = original
+        self.assertIn("Summary:", result)
+
+    def test_missing_user_input_rejected_on_run_and_check(self):
+        from lili_pipeline import _execute_candidate
+        import tempfile
+        result = _execute_candidate(_MISSING_USER_INPUT_CODE, "some real input",
+                                    _spec(), tempfile.mkdtemp())
+        self.assertFalse(result["ok"])
+        self.assertIn("USER_INPUT dual-mode pattern", result["detail"])
+
+    def test_correct_code_with_user_input_not_flagged(self):
+        from lili_pipeline import _execute_candidate
+        import tempfile
+        result = _execute_candidate(_CORRECT_CODE, "some real input", _spec(), tempfile.mkdtemp())
+        self.assertTrue(result["ok"], result["detail"])
 
 
 class AgenticToolCallingLoopTests(unittest.TestCase):

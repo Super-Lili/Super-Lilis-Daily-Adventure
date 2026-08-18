@@ -86,6 +86,15 @@ if _browser_input is not None:
     print(process(_browser_input))
 '''
 
+_MISSING_USER_INPUT_CODE = '''
+def process(text: str) -> str:
+    return "Summary: hardcoded, ignores whatever you actually typed"
+
+''' + _pad(50) + '''
+
+print(process("nothing"))
+'''
+
 _BROKEN_PROMISE_CODE = '''
 def process(text: str) -> str:
     return 'Result: fill="none" was not removed.\\nStatus: done'
@@ -215,6 +224,63 @@ _browser_input = globals().get('USER_INPUT', None)
 if _browser_input is not None:
     print(process(_browser_input))
 '''
+
+
+class SelfCorrectUserInputPatternTests(unittest.TestCase):
+    """2026-08-18 incident: a candidate can pass every EXECUTION-based
+    self-correction check (run_tool_output injects USER_INPUT as a real
+    global, so hardcoded/input-ignoring code can still produce SOME output
+    and satisfy MUST_CONTAIN by coincidence) yet still get rejected by
+    validate_tool()'s separate structural check, which self-correction had
+    never mirrored. Same class of gap as the Mode 3 browser check (F-021)."""
+
+    def test_missing_user_input_triggers_patch(self):
+        skill_dir = _make_skill_dir(_MISSING_USER_INPUT_CODE)
+        seen_feedback = []
+
+        def fake_call(prompt, deepseek_prompt=None):
+            seen_feedback.append(prompt)
+            return "---CODE---\n" + _CORRECT_CODE + "\n---TEST---\nassert True\n---BUILD_END---"
+
+        original = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = fake_call
+        try:
+            result = self_correct_code(skill_dir, _SCOUT, _spec(), "2026-08-18")
+        finally:
+            lili_pipeline.call_gemini_simple = original
+        self.assertTrue(any("USER_INPUT dual-mode pattern" in p for p in seen_feedback))
+        self.assertIn("Summary:", result)
+
+    def test_missing_user_input_never_reaches_execution(self):
+        # The structural check must fire BEFORE any subprocess execution -
+        # verified indirectly: even though the hardcoded output would
+        # satisfy must_contain, the tool must still be rejected for the
+        # missing pattern, not silently accepted.
+        skill_dir = _make_skill_dir(_MISSING_USER_INPUT_CODE)
+        spec = _spec(must_contain=["Summary:"])  # would trivially pass by coincidence
+        seen_feedback = []
+
+        def fake_call(prompt, deepseek_prompt=None):
+            seen_feedback.append(prompt)
+            return "---CODE---\n" + _CORRECT_CODE + "\n---TEST---\nassert True\n---BUILD_END---"
+
+        original = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = fake_call
+        try:
+            self_correct_code(skill_dir, _SCOUT, spec, "2026-08-18")
+        finally:
+            lili_pipeline.call_gemini_simple = original
+        self.assertTrue(any("USER_INPUT dual-mode pattern" in p for p in seen_feedback))
+
+    def test_correct_code_with_user_input_not_flagged(self):
+        skill_dir = _make_skill_dir(_CORRECT_CODE)
+        original = lili_pipeline.call_gemini_simple
+        lili_pipeline.call_gemini_simple = _RaisingClient()
+        try:
+            result = self_correct_code(skill_dir, _SCOUT, _spec(), "2026-08-18")
+        finally:
+            lili_pipeline.call_gemini_simple = original
+        self.assertIn("Summary:", result)
 
 
 class SelfCorrectEdgeCaseInputTests(unittest.TestCase):
