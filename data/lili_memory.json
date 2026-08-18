@@ -490,6 +490,14 @@
       "pattern": "interact",
       "path": "02_Toolbox/Healing Inventions/2026-08-14_Bumble_Cursor",
       "description": "A single-page toy that replaces the default cursor with a tiny bee and adds a gentle wing-vibration follow as you move, with one button to adjust the flutter."
+    },
+    {
+      "date": "2026-08-18",
+      "name": "Pre-File Bracket Sweep",
+      "category": "Design Alchemy",
+      "pattern": "transform",
+      "path": "02_Toolbox/Design Alchemy/2026-08-18_Pre-File_Bracket_Sweep",
+      "description": "Paste a draft and get a pre-submission open-items memo that extracts every bracketed placeholder, groups it by type, and flags what must be resolved before you send."
     }
   ],
   "topics_covered": [
@@ -822,7 +830,12 @@
       "date": "2026-08-14",
       "title": "Bumble Cursor",
       "path": "01_Work_Log/2026-08-14-Diary.md"
+    },
+    {
+      "date": "2026-08-18",
+      "title": "The Bracket Left Behind",
+      "path": "01_Work_Log/2026-08-18-Diary.md"
     }
   ],
-  "last_updated": "2026-08-14"
+  "last_updated": "2026-08-18"
 }
