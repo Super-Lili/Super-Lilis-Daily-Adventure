@@ -2,11 +2,13 @@ name: 🌸 Super-Lili Daily Adventure
 
 on:
   schedule:
-    # DeepSeek peak pricing (2x): 09:00-12:00 and 14:00-18:00 Beijing. All three
-    # slots below sit in off-peak windows, with margin for ~20min run duration.
-    - cron: '30 23 * * *'  # 07:30 Beijing (primary) — off-peak, before 09:00 peak
-    - cron: '30 4 * * *'   # 12:30 Beijing (backup) — off-peak gap between peaks
-    - cron: '30 12 * * *'  # 20:30 Beijing (backup) — off-peak
+    # DeepSeek peak pricing (2x): 09:00-12:00 and 14:00-18:00 Beijing (official
+    # docs, confirmed 2026-08-18). 2026-08-18: moved all 3 slots out of daytime
+    # entirely (owner's call, pricing pressure) - overnight + evening only now,
+    # nothing between 06:00-20:00 Beijing.
+    - cron: '0 18 * * *'   # 02:00 Beijing (primary) — deep night, off-peak
+    - cron: '30 12 * * *'  # 20:30 Beijing (backup) — evening, off-peak
+    - cron: '30 15 * * *'  # 23:30 Beijing (backup) — late night, off-peak
   workflow_dispatch:
 
 jobs:
