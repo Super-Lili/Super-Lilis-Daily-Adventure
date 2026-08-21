@@ -498,6 +498,14 @@
       "pattern": "transform",
       "path": "02_Toolbox/Design Alchemy/2026-08-18_Pre-File_Bracket_Sweep",
       "description": "Paste a draft and get a pre-submission open-items memo that extracts every bracketed placeholder, groups it by type, and flags what must be resolved before you send."
+    },
+    {
+      "date": "2026-08-22",
+      "name": "Shift-Window Deadline Converter",
+      "category": "Office Automation",
+      "pattern": "generate",
+      "path": "02_Toolbox/Office Automation/2026-08-22_Shift-Window_Deadline_Converter",
+      "description": "A shift-aware deadline converter that turns 9-to-5 editorial calendars into personal wake/sleep windows and generates ready-to-send early-submission or extension notes."
     }
   ],
   "topics_covered": [
@@ -835,7 +843,12 @@
       "date": "2026-08-18",
       "title": "The Bracket Left Behind",
       "path": "01_Work_Log/2026-08-18-Diary.md"
+    },
+    {
+      "date": "2026-08-22",
+      "title": "The Deadline That Falls While You Sleep",
+      "path": "01_Work_Log/2026-08-22-Diary.md"
     }
   ],
-  "last_updated": "2026-08-18"
+  "last_updated": "2026-08-21"
 }
