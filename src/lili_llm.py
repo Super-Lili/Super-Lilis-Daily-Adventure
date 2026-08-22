@@ -94,6 +94,48 @@ def check_provider_health() -> dict:
     return result
 
 
+def call_with_retry(fn, label: str, max_attempts: int = 3, base_wait: int = 15,
+                    on_error=None) -> str | None:
+    """Shared retry-with-backoff primitive (deepseek-harness calls this a
+    'capability seam' - one adapter contract every provider call goes
+    through, instead of each call site hand-rolling its own retry loop with
+    its own, inevitably-drifting behavior).
+
+    Real incident this closes (2026-08-19/20): Qwen's SCOUT search has always
+    retried 3x with backoff on failure - but DeepSeek's SCOUT FALLBACK path
+    was a single bare call with no retry at all, so a transient empty
+    response (a known, established DeepSeek behavior - see FINDINGS F-003)
+    cost a full rest day instead of succeeding on a retry. Every provider
+    call in this module should go through this one primitive so a fix to
+    retry behavior (or a new provider) doesn't need to be re-derived at each
+    call site.
+
+    `fn` is a zero-arg callable that returns text on success, "" or None on
+    an empty response (retried, same as a real error), or raises on a hard
+    failure (also retried, with backoff). `on_error` is called with the
+    exception text on each failed attempt (e.g. to record the last error for
+    later billing-outage classification) - optional, since not every call
+    site needs to track it.
+    """
+    for attempt in range(max_attempts):
+        try:
+            print(f"  ↳ Trying {label} attempt {attempt + 1}...")
+            text = fn()
+            if text:
+                print(f"  [OK] {label} succeeded ({len(text)} chars).")
+                return text
+            print(f"  [NO] {label} attempt {attempt + 1} empty response.")
+        except Exception as e:
+            if on_error:
+                on_error(str(e))
+            wait = base_wait * (2 ** attempt)
+            print(f"  [NO] {label} attempt {attempt + 1} failed: {e}")
+            if attempt < max_attempts - 1:
+                print(f"  ⏳ Waiting {wait}s before retry...")
+                time.sleep(wait)
+    return None
+
+
 def _call_qwen_search(prompt: str) -> tuple[str | None, list[str]]:
     """Call Qwen with web search via DashScope OpenAI-compatible API.
 
@@ -103,28 +145,57 @@ def _call_qwen_search(prompt: str) -> tuple[str | None, list[str]]:
     global _last_qwen_scout_error
     if not _qwen_client:
         return None, []
-    for attempt in range(3):
-        try:
-            print(f"  ↳ Trying Qwen (qwen-plus) search attempt {attempt + 1}...")
-            resp = _qwen_client.chat.completions.create(
-                model="qwen-plus",
-                messages=[{"role": "user", "content": prompt}],
-                extra_body={"enable_search": True},
-                max_tokens=4096,
-            )
-            text = resp.choices[0].message.content if resp.choices else None
-            if text:
-                print(f"  [OK] Qwen search succeeded ({len(text)} chars).")
-                return text, []
-            print(f"  [NO] Qwen attempt {attempt + 1} empty response.")
-        except Exception as e:
-            _last_qwen_scout_error = str(e)
-            wait = 15 * (2 ** attempt)
-            print(f"  [NO] Qwen attempt {attempt + 1} failed: {e}")
-            if attempt < 2:
-                print(f"  ⏳ Waiting {wait}s before retry...")
-                time.sleep(wait)
-    return None, []
+
+    def _do_call():
+        resp = _qwen_client.chat.completions.create(
+            model="qwen-plus",
+            messages=[{"role": "user", "content": prompt}],
+            extra_body={"enable_search": True},
+            max_tokens=4096,
+        )
+        return resp.choices[0].message.content if resp.choices else None
+
+    def _record_error(err_text):
+        global _last_qwen_scout_error
+        _last_qwen_scout_error = err_text
+
+    text = call_with_retry(_do_call, "Qwen (qwen-plus) search", on_error=_record_error)
+    return text, []
+
+
+_last_deepseek_scout_error = ""
+
+
+def get_last_deepseek_scout_error() -> str:
+    return _last_deepseek_scout_error
+
+
+def call_deepseek_scout_fallback(prompt: str) -> str | None:
+    """DeepSeek's role as SCOUT's fallback when Qwen is unavailable - now
+    goes through the same retry primitive Qwen's own search always has, so a
+    transient empty response gets retried instead of immediately giving up
+    (see call_with_retry's docstring for the incident this fixes). No web
+    search grounding available here (DeepSeek has no equivalent to Qwen's
+    enable_search), so SCOUT quality is lower on this path - this only fixes
+    "gave up after one empty response," not the grounding gap itself.
+    """
+    global _last_deepseek_scout_error
+    if not _deepseek_client:
+        return None
+
+    def _do_call():
+        resp = _deepseek_client.chat.completions.create(
+            model="deepseek-v4-pro",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=4096,
+        )
+        return resp.choices[0].message.content if resp.choices else None
+
+    def _record_error(err_text):
+        global _last_deepseek_scout_error
+        _last_deepseek_scout_error = err_text
+
+    return call_with_retry(_do_call, "DeepSeek SCOUT fallback", on_error=_record_error)
 
 
 def call_gemini(prompt: str) -> tuple[str | None, list[str]]:

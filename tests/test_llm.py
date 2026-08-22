@@ -53,6 +53,78 @@ class CallChainTests(unittest.TestCase):
         self.assertEqual(lili_llm.call_gemini_simple("p"), "real")
 
 
+class CallWithRetryTests(unittest.TestCase):
+    """The shared retry primitive (2026-08-20, deepseek-harness-inspired
+    'capability seam' pattern): every provider call goes through one retry
+    contract instead of each call site hand-rolling its own, so a fix to
+    retry behavior doesn't need to be re-derived per call site."""
+
+    def test_succeeds_first_try(self):
+        calls = []
+        def fn():
+            calls.append(1)
+            return "result"
+        self.assertEqual(lili_llm.call_with_retry(fn, "test"), "result")
+        self.assertEqual(len(calls), 1)
+
+    def test_retries_on_empty_then_succeeds(self):
+        results = iter([None, "", "result"])
+        fn = lambda: next(results)
+        self.assertEqual(lili_llm.call_with_retry(fn, "test"), "result")
+
+    def test_retries_on_exception_then_succeeds(self):
+        results = iter([Exception("boom"), "result"])
+        def fn():
+            r = next(results)
+            if isinstance(r, Exception):
+                raise r
+            return r
+        self.assertEqual(lili_llm.call_with_retry(fn, "test", max_attempts=2), "result")
+
+    def test_exhausts_attempts_returns_none(self):
+        fn = lambda: None
+        self.assertIsNone(lili_llm.call_with_retry(fn, "test", max_attempts=3))
+
+    def test_on_error_callback_receives_error_text(self):
+        seen = []
+        def fn():
+            raise RuntimeError("specific failure")
+        lili_llm.call_with_retry(fn, "test", max_attempts=1, on_error=lambda e: seen.append(e))
+        self.assertEqual(len(seen), 1)
+        self.assertIn("specific failure", seen[0])
+
+
+class DeepSeekScoutFallbackTests(unittest.TestCase):
+    """2026-08-19/20 incident: DeepSeek's SCOUT fallback used to be a single
+    bare call with no retry - a transient empty response (an established,
+    documented DeepSeek behavior per FINDINGS F-003) cost a full rest day
+    instead of succeeding on a retry, exactly like Qwen's own search already
+    handled. Now goes through the same call_with_retry primitive."""
+
+    def setUp(self):
+        self._ds = lili_llm._deepseek_client
+
+    def tearDown(self):
+        lili_llm._deepseek_client = self._ds
+
+    def test_empty_response_is_retried_not_immediately_fatal(self):
+        lili_llm._deepseek_client = make_scripted_client([None, "real scout content"])
+        self.assertEqual(lili_llm.call_deepseek_scout_fallback("p"), "real scout content")
+
+    def test_exhausted_retries_returns_none(self):
+        lili_llm._deepseek_client = make_scripted_client([None, None, None])
+        self.assertIsNone(lili_llm.call_deepseek_scout_fallback("p"))
+
+    def test_no_client_returns_none(self):
+        lili_llm._deepseek_client = None
+        self.assertIsNone(lili_llm.call_deepseek_scout_fallback("p"))
+
+    def test_error_recorded_for_later_billing_classification(self):
+        lili_llm._deepseek_client = make_scripted_client(["ERR", "ERR", "ERR"])
+        lili_llm.call_deepseek_scout_fallback("p")
+        self.assertIn("scripted failure", lili_llm.get_last_deepseek_scout_error())
+
+
 class CriticTests(unittest.TestCase):
     def setUp(self):
         self._ds, self._qw = lili_llm._deepseek_client, lili_llm._qwen_client

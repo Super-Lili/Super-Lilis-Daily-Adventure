@@ -14,6 +14,7 @@ from pathlib import Path
 from lili_llm import (
     call_gemini, call_gemini_simple, _deepseek_client, is_billing_error,
     get_last_qwen_scout_error, check_provider_health,
+    call_deepseek_scout_fallback, get_last_deepseek_scout_error,
 )
 from lili_prompts import (
     build_prompt,
@@ -902,25 +903,10 @@ def evolve():
 
     if not scout_content:
         print("  ↳ Qwen SCOUT failed - trying DeepSeek fallback for SCOUT...")
-        deepseek_error = ""
-        if _deepseek_client:
-            try:
-                ds_resp = _deepseek_client.chat.completions.create(
-                    model="deepseek-v4-pro",
-                    messages=[{"role": "user", "content": build_scout_prompt(today, commission)}],
-                    max_tokens=4096,
-                )
-                scout_content = ds_resp.choices[0].message.content if ds_resp.choices else None
-                if scout_content:
-                    print("  [OK] DeepSeek SCOUT fallback succeeded (no grounding URLs).")
-                else:
-                    print("  [NO] DeepSeek SCOUT returned empty response.")
-            except Exception as e:
-                deepseek_error = str(e)
-                print(f"  [NO] DeepSeek SCOUT fallback failed: {e}")
+        scout_content = call_deepseek_scout_fallback(build_scout_prompt(today, commission))
         if not scout_content:
             print("❌ Phase 1 failed - all models exhausted.")
-            reason = classify_scout_failure(get_last_qwen_scout_error(), deepseek_error)
+            reason = classify_scout_failure(get_last_qwen_scout_error(), get_last_deepseek_scout_error())
             if reason.startswith("INFRASTRUCTURE OUTAGE"):
                 print(f"  🚨 BILLING OUTAGE DETECTED - {reason.splitlines()[0]}")
             save_rest_day(today, reason)
