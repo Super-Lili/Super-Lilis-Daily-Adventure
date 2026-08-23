@@ -1,7 +1,7 @@
 # CLAUDE.md — Super-Lili Project Memory
 
 > Written for the Claude agent picking up this project. Read this first.
-> Last updated: 2026-08-16 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
+> Last updated: 2026-08-23 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
 
 ---
 
@@ -185,6 +185,16 @@ The densest single week of harness work to date: ten FINDINGS entries (F-018 fin
 - `dc14908` **Mechanical-fit selection filter added to SCOUT** (F-030): the risk isn't "mechanical-depth solutions are inherently mediocre" (Hemingway App is a counterexample) — it's applying a mechanical/statistical algorithm to a friction point that actually requires semantic judgment. SCOUT now screens candidate friction points for objective measurability *before* committing to a topic, rather than discovering the mismatch downstream in SPEC.
 - Test suite grew from 141 (F-024) to 180 (F-030) over the week, all verified under both local Python 3.13 and a real 3.11 venv per the Phase 11 CI-parity lesson.
 
+### Phase 14 — Self-Correction/Retry Symmetry Fixes, Schedule Moved Off Daytime (2026-08-17 to 2026-08-23)
+
+A quieter week after Phase 13's density — two structural fixes, both the same shape: an outer safety net existed, but an inner/sibling path that should have mirrored it didn't.
+
+- `6f85d38` **Self-correction's missing `USER_INPUT` structural-check gap closed** (F-032): a real 2026-08-18 production incident — SPEC validated fine, but BUILD's code never referenced the injected `USER_INPUT` global at all, and neither `self_correct_code` nor `agentic_self_correct_code` caught it (code that ignores its input can still coincidentally satisfy `MUST_CONTAIN`), wasting the full outer retry chain until `validate_tool()`'s separate structural check finally rejected it. Same class of gap as F-021's Mode 3 browser check. `_missing_user_input_pattern()` now mirrors `validate_tool()`'s exact check and is wired into both inner-loop paths. 186 tests total.
+- `e4fef4a` **Daily Action triggers moved off daytime entirely** (owner request, DeepSeek pricing pressure): 02:00 / 20:30 / 23:30 Beijing (was 07:30 / 12:30 / 20:30), confirmed against current DeepSeek peak-pricing windows (09:00-12:00, 14:00-18:00 Beijing). Ops change, not a model-capability finding.
+- `e3e3f54` **Unified provider retry logic via a shared primitive** (F-033): studying `deepseek-ai/deepseek-harness`'s adapter convention (every provider behind one interface) surfaced a concrete asymmetry in this codebase — Qwen's SCOUT search always retried 3x with backoff, but DeepSeek's SCOUT fallback was a single bare call with zero retry, the direct cause of the 2026-08-19/20 rest days (a transient DeepSeek empty response, per F-003 a known/expected behavior that should be retried, got one shot). New shared `call_with_retry()` in `lili_llm.py`; `_call_qwen_search` refactored onto it (behavior-preserving); new `call_deepseek_scout_fallback()` gives DeepSeek the same 3x retry Qwen always had. 195 tests total.
+- **F-031 upgraded from observed to confirmed** during this week's docs refresh: `01_Work_Log/2026-08-21-Diary.md`'s technical note ("Phase 1 (Scout) returned incomplete response.") is a verbatim third occurrence of the exact pattern first logged 08-13/08-15 — a *different* failure mode than F-033 (Qwen itself returns non-empty, unparseable content; never reaches the DeepSeek fallback path F-033 fixed). Root cause (truncation vs. format drift) still unconfirmed — no raw model response is persisted anywhere to check. Not yet fixed; unblocked from F-030's "pause new mechanisms for a week" instruction now that two weeks have passed.
+- **F-034 (new, docs-refresh finding, not yet fixed)**: `_append_quality_ledger()` (`src/lili_validators.py:679`) is a third, unpatched instance of the same UTC-vs-Beijing date bug already fixed twice on 2026-08-10 (`58a7e35` for weekly evolution, `6a781e4` for the daily diary/commit date) — it still writes `datetime.utcnow()` directly instead of reading `LILI_DATE`. Introduced at the function's creation (Phase 9's module split), predates the `LILI_DATE` mechanism entirely, and was never migrated when its two siblings were. Any BUILD+EVALUATE that completes during Beijing 00:00-08:00 (the current primary Action slot, 02:00 Beijing) will log a ledger date one calendar day behind the diary/commit date — not a rare edge case. See FINDINGS F-034 for the full writeup and the caveat on how much this has actually skewed historical ledger data (unconfirmed).
+
 ---
 
 ## Key Architecture Decisions
@@ -265,7 +275,7 @@ Written by project owner xiaojiahaina, based on the neo-slow media framework (20
 ## Unfinished / Future Direction
 
 - **Open to public**: once Issues are open to real users, authentic needs become the best evolution fuel
-- **Quality ceiling**: current tools are uneven — 65 tools as of 2026-08-16 (28-day ledger: 8.0% pass rate per build attempt, 13/162 — up from 4.8%/294 on 08-02, but the window is also shorter and includes the post-F-018 promise-vs-actual gate plus F-019~F-030, none of which have a full week of clean data yet; see FINDINGS F-031 for two rest days this week lost to a SCOUT parsing gap unrelated to quality scoring), maybe 2-3 reach "creative professional uses it weekly" standard. Direction is right, needs time
+- **Quality ceiling**: current tools are uneven — 67 tools as of 2026-08-23 (28-day ledger: 12% pass rate per build attempt, 11/92 — up from 8.0%/162 on 08-16, but the two most recent ISO weeks are small-sample and noisy, 4/6 and 2/5, so this is a trend to keep watching rather than a confirmed jump; see FINDINGS F-031, now confirmed after a third recurrence, for a SCOUT parsing gap unrelated to quality scoring, and F-034 for a newly-found ledger date-field bug that may have mislabeled some historical entries by one day), maybe 2-3 reach "creative professional uses it weekly" standard. Direction is right, needs time
 
 ---
 
