@@ -1,0 +1,1 @@
+Input: free-form "war story" paragraphs. Output: structured markdown Decision Logic Map.

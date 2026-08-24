@@ -506,6 +506,14 @@
       "pattern": "generate",
       "path": "02_Toolbox/Office Automation/2026-08-22_Shift-Window_Deadline_Converter",
       "description": "A shift-aware deadline converter that turns 9-to-5 editorial calendars into personal wake/sleep windows and generates ready-to-send early-submission or extension notes."
+    },
+    {
+      "date": "2026-08-24",
+      "name": "Decision Logic Extractor",
+      "category": "Education Evolution",
+      "pattern": "extract",
+      "path": "02_Toolbox/Education Evolution/2026-08-24_Decision_Logic_Extractor",
+      "description": "A single-page tool that pastes in your old project notes, decisions, and outcomes, then extracts recurring decision types, constraints, and principles into a structured “how I think” document for mentoring, consulting, or job interviews."
     }
   ],
   "topics_covered": [
@@ -848,7 +856,12 @@
       "date": "2026-08-22",
       "title": "The Deadline That Falls While You Sleep",
       "path": "01_Work_Log/2026-08-22-Diary.md"
+    },
+    {
+      "date": "2026-08-24",
+      "title": "The Map Inside “It Depends”",
+      "path": "01_Work_Log/2026-08-24-Diary.md"
     }
   ],
-  "last_updated": "2026-08-21"
+  "last_updated": "2026-08-24"
 }
