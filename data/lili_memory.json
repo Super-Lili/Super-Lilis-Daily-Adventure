@@ -514,6 +514,14 @@
       "pattern": "extract",
       "path": "02_Toolbox/Education Evolution/2026-08-24_Decision_Logic_Extractor",
       "description": "A single-page tool that pastes in your old project notes, decisions, and outcomes, then extracts recurring decision types, constraints, and principles into a structured “how I think” document for mentoring, consulting, or job interviews."
+    },
+    {
+      "date": "2026-08-25",
+      "name": "Easing Curve Rosetta",
+      "category": "Design Alchemy",
+      "pattern": "transform",
+      "path": "02_Toolbox/Design Alchemy/2026-08-25_Easing_Curve_Rosetta",
+      "description": "A single-file tool that converts keyframe easing data between After Effects, CSS cubic-bezier, GSAP, and Webflow presets."
     }
   ],
   "topics_covered": [
@@ -861,7 +869,12 @@
       "date": "2026-08-24",
       "title": "The Map Inside “It Depends”",
       "path": "01_Work_Log/2026-08-24-Diary.md"
+    },
+    {
+      "date": "2026-08-25",
+      "title": "The Curve That Lost Its Accent",
+      "path": "01_Work_Log/2026-08-25-Diary.md"
     }
   ],
-  "last_updated": "2026-08-24"
+  "last_updated": "2026-08-25"
 }
