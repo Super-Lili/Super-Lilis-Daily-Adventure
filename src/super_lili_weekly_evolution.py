@@ -651,17 +651,42 @@ Keep the entire response under 400 words."""
 # MODEL CALLS (Qwen + DeepSeek)
 # ─────────────────────────────────────────────────────────────
 
-def call_gemini(prompt: str) -> str | None:
-    """Weekly evolution analysis via DeepSeek (Gemini removed)."""
+def _is_truncated_evolution_response(content: str) -> bool:
+    """True if the response was cut off before reaching the final tag.
+    Weekly evolution's output format has ~14 sequential tagged sections
+    (Reflection through Evolution Knobs); a response that returns non-empty
+    text but never reaches ---END--- silently drops every section after
+    wherever it stopped - most consequentially EVOLUTION_KNOBS, which is
+    last, so a truncated response ALWAYS loses it. This was invisible for
+    two straight weeks (2026-08-16, 2026-08-23) because the old retry logic
+    only checked for an exception or fully-empty text, not a response that
+    "succeeded" but was incomplete."""
+    return "---END---" not in content
+
+
+def call_deepseek_evolution(prompt: str) -> str | None:
+    """Weekly evolution analysis via DeepSeek. (Named call_gemini until
+    2026-08-27 - a Gemini-era leftover name from before the 2026-07-03
+    migration; the implementation had already been DeepSeek-only since
+    then, only the name was stale. Renamed for honesty, not behavior.)
+    """
+    last_truncated: str | None = None
     for attempt in range(3):
         try:
             print(f"  ↳ DeepSeek evolution attempt {attempt + 1}...")
             resp = deepseek_client.chat.completions.create(
                 model="deepseek-v4-pro",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=8192,
+                max_tokens=16384,
             )
             text = resp.choices[0].message.content if resp.choices else None
+            if text and _is_truncated_evolution_response(text):
+                print(f"  [NO] DeepSeek attempt {attempt + 1} truncated before ---END--- "
+                      f"({len(text)} chars) - retrying instead of accepting a partial response.")
+                last_truncated = text
+                if attempt < 2:
+                    time.sleep(15 * (2 ** attempt))
+                continue
             if text:
                 print(f"  [OK] DeepSeek succeeded.")
                 return text
@@ -670,6 +695,14 @@ def call_gemini(prompt: str) -> str | None:
             print(f"  [NO] DeepSeek attempt {attempt + 1} failed: {e}")
             if attempt < 2:
                 time.sleep(wait)
+    if last_truncated:
+        # Every retry still truncated - fall back to the last partial response
+        # rather than discarding real content entirely (matches the prior
+        # behavior of saving whatever sections a truncated response did
+        # reach, e.g. Reflection/Blindspot/Strengths even without Knobs).
+        print("  ⚠ All attempts truncated - proceeding with the last partial "
+              "response rather than losing it entirely.")
+        return last_truncated
     return None
 
 
@@ -1084,7 +1117,7 @@ def weekly_evolution():
     prompt = build_evolution_prompt(today_str, week_start, diaries, tools, soul, issues, tool_codes, quality_ledger, deepseek_review)
 
     print("🧠 Running self-evolution with Gemini...")
-    content = call_gemini(prompt)
+    content = call_deepseek_evolution(prompt)
 
     if not content:
         print("❌ All models failed. Evolution postponed.")
