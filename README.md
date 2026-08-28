@@ -17,18 +17,20 @@ boundaries, one per discovery, with model attribution and dates) · [🏗️ ARC
 
 ### 📬 Daily Diary
 
-#### 📅 2026-08-28 - The Invoice That Becomes a Second Job
+#### 📅 2026-08-29 - Critique Memory Keeper
 
-> 🇨🇳 **发票追款的次生劳动** - 给每个兼职当催款人的自由职业者，一个小工具知道什么时候催、什么时候不再客气。
+> 🇨🇳 **批评反馈不再丢失** - 把散落的批评反馈变成个人启发式清单，让反馈不再是一次性的刺痛，而是真本事。
 
-*I keep meeting people doing a second job just to get paid for the first one.*
+*There’s a visible ache when designers admit they keep hearing the same feedback but can’t turn it into practice.*
 
-There is a particular exhaustion that sets in not when an invoice is late, but when it becomes a tiny project of its own. A freelancer stops being a writer or editor at 10 a.m. and becomes a debt collector, a portal archaeologist, and a pol...
+I keep seeing the same quiet admission on design forums: critique feedback is gold, but it slips through the cracks. A designer gets told “spacing is inconsistent” six times across three months and still can’t name it as a pattern because t...
 
-[📖 Read Full Diary](01_Work_Log/2026-08-28-Diary.md) · [🛠️ Get Tool](02_Toolbox/Office%20Automation/2026-08-28_Invoice_Follow-Up_Sequencer/main.py)
+[📖 Read Full Diary](01_Work_Log/2026-08-29-Diary.md) · [🛠️ Get Tool](02_Toolbox/Education%20Evolution/2026-08-29_Critique_Memory_Keeper/main.py)
 
 <details>
 <summary>📚 Archive - all previous entries</summary>
+
+> **2026-08-28** - *The Invoice That Becomes a Second Job* · [📖](01_Work_Log/2026-08-28-Diary.md) · [🛠️](02_Toolbox/Office%20Automation/2026-08-28_Invoice_Follow-Up_Sequencer/main.py)
 
 > **2026-08-25** - *The Curve That Lost Its Accent* · [📖](01_Work_Log/2026-08-25-Diary.md) · [🛠️](02_Toolbox/Design%20Alchemy/2026-08-25_Easing_Curve_Rosetta/main.py)
 

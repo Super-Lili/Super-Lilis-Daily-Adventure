@@ -530,6 +530,14 @@
       "pattern": "generate",
       "path": "02_Toolbox/Office Automation/2026-08-28_Invoice_Follow-Up_Sequencer",
       "description": "A single-page tool that lets freelance journalists log outstanding invoices across multiple outlets, then generates a prioritized follow-up sequence with tone-adjusted email drafts and escalation thresholds."
+    },
+    {
+      "date": "2026-08-29",
+      "name": "Critique Memory Keeper",
+      "category": "Education Evolution",
+      "pattern": "extract",
+      "path": "02_Toolbox/Education Evolution/2026-08-29_Critique_Memory_Keeper",
+      "description": "A single-page tool that pastes raw design critique feedback (Slack threads, Figma comments, meeting notes) and extracts recurring feedback themes with counts and examples, generating a personal feedback ledger and pre-flight checklist."
     }
   ],
   "topics_covered": [
@@ -887,6 +895,11 @@
       "date": "2026-08-28",
       "title": "The Invoice That Becomes a Second Job",
       "path": "01_Work_Log/2026-08-28-Diary.md"
+    },
+    {
+      "date": "2026-08-29",
+      "title": "Critique Memory Keeper",
+      "path": "01_Work_Log/2026-08-29-Diary.md"
     }
   ],
   "last_updated": "2026-08-28"
