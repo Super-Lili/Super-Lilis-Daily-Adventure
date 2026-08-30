@@ -854,50 +854,27 @@ programmer implements verbatim, and every step must run:
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-08-30
+# Last updated: 2026-08-31
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: Return structured sections, not a text blob  
-WHY: Easing Curve Rosetta was flagged as likely unstructured output.  
-HOW:
-```
-return "\n\n".join([
-    "## Input",
-    "## Converted Values",
-    "## Notes / Warnings"
-])
-```
+RULE: Process every record in multi-item input
+WHY: Invoice Follow-Up Sequencer worked for one invoice and dropped the rest.
+HOW: `results = [process(record) for record in records]` — never return after the first record.
 
-RULE: Guard short input before invoking any extractor  
-WHY: Decision extractors produced fragmented phrases when input was too thin.  
-HOW:
-```
-if len(input_text.split()) < 20:
-    return "Please paste at least 20 words of notes or feedback."
-```
+RULE: Conversion tools must emit structured labeled sections
+WHY: Easing Curve Rosetta produced output likely unstructured or raw.
+HOW: `return f"## Converted Curve\n- CSS: {css}\n- GSAP: {gsap}"`
 
-RULE: Loop over every record in multi-item input  
-WHY: Invoice Follow-Up Sequencer failed to process all invoices in one reviewed version.  
-HOW:
-```
-for invoice in invoices:
-    seqs.append(build_sequence(invoice))
-```
+RULE: Never ship two same-skeleton extractors in one week
+WHY: Critique Memory Keeper and Decision Logic Extractor were both paste-text-count-phrases-print-list.
+HOW: If second tool’s core is `Counter(filtered_tokens)`, change input or output to transform/generate.
 
-RULE: Use textwrap.dedent for all multi-line draft strings  
-WHY: Generated emails and reminders truncated or gained broken indentation.  
-HOW:
-```
-from textwrap import dedent
-body = dedent(\"\"\"Dear {contact},\n\n...\"\"\")
-```
+RULE: Every text output needs at least 3 labeled sections
+WHY: Raw text blobs failed engineering checks this week.
+HOW: Always include `## Input Summary`, `## Extracted Patterns`, and `## Action Items`.
 
-RULE: Keep core BUILD phase local; do not depend on live search  
-WHY: 08-26 and 08-27 were lost when Qwen/DeepSeek search both failed or no CODE section returned.  
-HOW:
-```
-def process(input_text):
-    # regex/heuristic only; no network call
-```
+RULE: Hard-code a runnable example input into source
+WHY: Tools without examples fail with real user text.
+HOW: `EXAMPLE = \"\"\"...\"\"\"` at module top; exercise `process(EXAMPLE)` in main.
 """

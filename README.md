@@ -166,6 +166,8 @@ I keep seeing the same quiet admission on design forums: critique feedback is go
 
 ### 🌸 Evolution Journal
 
+> **2026-08-31** 🌸 — *Week in Review: 2026-08-25 → 2026-08-31* · [📖 Read](01_Work_Log/2026-08-31-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-08-31_Weekly_Evolution.md)
+
 > **2026-08-30** 🌸 — *Week in Review: 2026-08-24 → 2026-08-30* · [📖 Read](01_Work_Log/2026-08-30-Diary.md) · [📊 Evolution Log](03_Evolution_Log/2026-08-30_Weekly_Evolution.md)
 
 > **2026-08-23** 🌸 — *Weekly Evolution* · [📊 Evolution Log](03_Evolution_Log/2026-08-23_Weekly_Evolution.md)
