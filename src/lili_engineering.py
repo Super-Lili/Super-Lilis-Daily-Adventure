@@ -854,27 +854,50 @@ programmer implements verbatim, and every step must run:
 # ─────────────────────────────────────────────────────────────
 # WEEKLY EVOLUTION RULES — updated every Sunday by AI self-review
 # Do NOT edit manually. Overwritten each Sunday.
-# Last updated: 2026-08-09
+# Last updated: 2026-08-30
 # ─────────────────────────────────────────────────────────────
 
 LILI_ENGINEERING_LESSONS = """
-RULE: Input‑too‑short‑guard
-WHY: The Flyer Mosaic Finder had no empty‑input guard; blank filenames would crash or produce nonsense.
-HOW: if len(user_input.strip()) < 20: return "⚠️ Please paste at least one filename (20+ characters)."
+RULE: Return structured sections, not a text blob  
+WHY: Easing Curve Rosetta was flagged as likely unstructured output.  
+HOW:
+```
+return "\n\n".join([
+    "## Input",
+    "## Converted Values",
+    "## Notes / Warnings"
+])
+```
 
-RULE: One‑visible‑reaction
-WHY: The Batch Episode Renamer failed browser ground‑truth because DOM elements never reacted to user action.
-HOW: document.getElementById('result').innerText = `Renamed ${count} files.`;
+RULE: Guard short input before invoking any extractor  
+WHY: Decision extractors produced fragmented phrases when input was too thin.  
+HOW:
+```
+if len(input_text.split()) < 20:
+    return "Please paste at least 20 words of notes or feedback."
+```
 
-RULE: Example‑input‑populated‑UI
-WHY: Tools without pre‑loaded examples don’t pass the automated “select and fill” check.
-HOW: <textarea id="input">Zoom_Recording_2026-08-03_14.22.34_participant_1.mp4</textarea>
+RULE: Loop over every record in multi-item input  
+WHY: Invoice Follow-Up Sequencer failed to process all invoices in one reviewed version.  
+HOW:
+```
+for invoice in invoices:
+    seqs.append(build_sequence(invoice))
+```
 
-RULE: No‑Jinja‑only‑interaction
-WHY: Jinja templates render static HTML that looks interactive but cannot process user input, leading to fake‑static scores.
-HOW: Remove all Jinja logic from deliverable HTML; use plain JavaScript or Pyodide’s runPython in the browser instead.
+RULE: Use textwrap.dedent for all multi-line draft strings  
+WHY: Generated emails and reminders truncated or gained broken indentation.  
+HOW:
+```
+from textwrap import dedent
+body = dedent(\"\"\"Dear {contact},\n\n...\"\"\")
+```
 
-RULE: Structured‑output‑sections
-WHY: Many raw‑text blobs were rejected because they lacked visual hierarchy and parsable sections.
-HOW: output = "## Merged Timeline\n" + timeline + "\n\n## Medication List\n" + meds
+RULE: Keep core BUILD phase local; do not depend on live search  
+WHY: 08-26 and 08-27 were lost when Qwen/DeepSeek search both failed or no CODE section returned.  
+HOW:
+```
+def process(input_text):
+    # regex/heuristic only; no network call
+```
 """
