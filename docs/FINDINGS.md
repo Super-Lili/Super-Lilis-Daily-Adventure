@@ -982,7 +982,7 @@
   几乎不变——那本条目的价值就主要是"防止未来在跨天时段调整 workflow 时踩同一个坑"，
   而不是"纠正了一个已经实质性扭曲历史统计的错误"。两种结果都值得记录，不预设答案。
 
-## F-034 · 每周自进化连续两周被截断，`EVOLUTION_KNOBS` 静默丢失，函数名也修正为诚实命名
+## F-035 · 每周自进化连续两周被截断，`EVOLUTION_KNOBS` 静默丢失，函数名也修正为诚实命名
 
 - **日期**：2026-08-27 · **状态**：观察中（机制已实测验证，尚无生产运行数据）
 - **模型**：`deepseek-v4-pro`（自进化分析模型；截断本身是输出长度/预算问题，不是模型
@@ -1020,6 +1020,160 @@
   还有 Gemini"这一句直接问出了命名债，值得记一笔：**偶尔让人看一眼代码里的具体名字/
   字符串，比任何自动化检查都更容易抓到这类"实现改了、名字没跟着改"的低概率但真实存在
   的疏漏**。
+
+## F-036 · 每周自进化"连续两天重复运行"以新根因再次发生——backup 时段延迟跨过北京午夜，绕过了 F-020 时代已修的 LILI_DATE 机制
+
+- **日期**：2026-08-30 ~ 08-31（本次文档刷新发现）· **状态**：确认（机制通过 cron 配置 +
+  两次真实运行的 commit 时间戳 + 报告内容对比三方交叉验证）
+- **模型**：纯 harness/GitHub Actions 调度问题，不涉及具体模型能力
+- **声明**：2026-08-10（`58a7e35`）修复的是"skip 判断读 Beijing 日期、报告文件名却写
+  UTC 日期"这一种错位；本次是同一症状（一周内两份几乎重叠的周进化报告）但**根因完全
+  不同**——`LILI_DATE` 机制本身工作正常，两次运行各自内部的日期变量是自洽的，问题出在
+  `lili_weekly_evolution.yml` 的三个 cron 时段里，20:05 北京（backup，对应 UTC 周日
+  12:05）那一档在真实执行时被 GitHub Actions 排队延迟了超过 4.5 小时，实际跑到 UTC
+  16:40，此时换算成北京时间已经是次日 00:40——`Check` 步骤当场用 `TZ=Asia/Shanghai
+  date` 算出的 `TODAY` 变成了"08-31"而不是"08-30"，`03_Evolution_Log/2026-08-31_Weekly_
+  Evolution.md` 当然不存在，skip 判断放行，于是同一周被从头到尾分析了两遍。
+- **证据**：`git log` 显示 `cb60884`（🌸 2026-08-30 Weekly Evolution）commit 时间戳为
+  `2026-08-30T01:16:27Z`（对应北京 08-30 09:16，即主时段延迟后的正常触发），`2554fe9`
+  （🌸 2026-08-31 Weekly Evolution）commit 时间戳为 `2026-08-30T16:40:59Z`（对应北京
+  08-31 00:40，backup 时段延迟超 4.5 小时后跨过北京午夜触发）；两份报告标题分别为
+  "Weekly Evolution — 2026-08-24 → 2026-08-30" 与 "Weekly Evolution — 2026-08-25 →
+  2026-08-31"，Reflection/Blindspot Analysis 两节讨论的是同一批四个工具（Decision
+  Logic Extractor、Critique Memory Keeper、Easing Curve Rosetta、Invoice Follow-Up
+  Sequencer），用词高度重叠（如两份都写"extract-then-summarize"是默认模式、都点名
+  同一个 GitHub issue #5），确认是同一周被重复处理而非两次独立进化。
+- **应对**：本次文档刷新范围内不改代码，仅记录根因供下一次允许动代码的会话处理。
+  可能的修复方向：`Check` 步骤的 skip 判断不应只查"今天"这一个文件名，还应查询
+  `03_Evolution_Log/` 里最新报告的实际覆盖周期（或干脆检查过去 6 天内是否已有任何
+  报告），避免依赖"cron 触发时刻换算出的日期"这个在长延迟下不稳定的量。
+- **推论**：`LILI_DATE` 类"把两处日期计算锚定到同一个字符串"的修复能解决"两个步骤
+  在同一次运行里互相矛盾"，但解决不了"同一个 workflow 的两次独立触发，因为调度延迟
+  跨越了午夜边界，各自内部都自洽但彼此不一致"——这是一类不同的竞态，任何用"今天的
+  日期"做幂等判断的定时任务都有这个隐患，主时段和 backup 时段之间的时间差越大，
+  跨午夜风险越高。
+
+## F-037 · `EVOLUTION_KNOBS` 截断修复（F-035）落地后，`week_start` 仍连续第三、四周停留在 2026-08-03——修复是否生效目前从仓库状态无法判断
+
+- **日期**：2026-09-02（本次文档刷新发现）· **状态**：观察中（有明确的滞留现象，但
+  无法确认是修复未生效、还是回测门槛正确拒绝了本周的旋钮提案——两者从仓库状态看
+  完全无法区分）
+- **模型**：`deepseek-v4-pro`（自进化分析），涉及的是 harness 可观测性问题而非模型
+  能力发现
+- **声明**：`lili_evolution_knobs.json` 的 `week_start` 字段自 2026-08-09（`6fb0e58`/
+  `2168aa8`，即 F-035 提到的截断问题发生之前）起从未再变化过，即便 F-035 的截断修复
+  已于 2026-08-27（`b625e12`）上线、此后又跑过两次真实的周进化（2026-08-30、08-31，
+  见 F-036），`week_start` 依然是 "2026-08-03"。这意味着要么截断修复没有真正解决问题
+  （比如模型仍在别的位置提前中断、或 JSON 解析仍然失败），要么 `gate_evolution_
+  proposal()`（F-020 的回测门槛）这两周都合理地拒绝了模型提出的旋钮提案，属于设计
+  内的正常行为。`save_evolution_knobs_gated()` 把区分这两者的唯一线索——"(no knobs
+  proposed this week)" / "malformed JSON, skipped" / "GATE REFUSED (test suite not
+  green)" 这三种不同结果——只 `print()` 到 GitHub Actions 的 stdout，从未写入
+  `03_Evolution_Log/`、日记或任何仓库内文件，导致这次文档刷新完全无法从 git 历史
+  判断本周到底发生了三种情况里的哪一种。
+- **证据**：`git log --oneline -- lili_evolution_knobs.json` 只有两条记录（均为
+  2026-08-09），此后包括本周 08-30/08-31 在内的所有周进化 commit 都不触碰这个文件；
+  `src/super_lili_weekly_evolution.py:1019-1054`（`save_evolution_knobs_gated`）三条
+  `return` 分支（空提案 / JSON 解析失败 / 门槛拒绝）都只返回字符串给
+  `knobs_summary`，该变量在 `weekly_evolution()`（同文件 1142 行）里只经过
+  `print(f"  {knobs_summary}")`，未见任何写文件调用。
+- **应对**：本次不改代码。建议下一次允许动代码的会话把 `knobs_summary`（以及
+  F-029 `run_retrospective_review` 的 `retrospective_summary`）持久化进
+  `03_Evolution_Log/{date}_Weekly_Evolution.md` 或单独的旋钮变更日志文件，这样
+  "本周为什么没有新旋钮"本身也能像 F-024 的账单故障一样在仓库里可见，而不必依赖
+  翻 GitHub Actions 的运行日志。
+- **推论（待验证）**：一旦诊断信息落盘，下次刷新就能直接看出连续停滞的原因——
+  如果是回测门槛持续正确拒绝提案，说明 F-020 在按设计工作，`week_start` 长期不动
+  反而是健康信号；如果是解析/截断链路仍有问题，则 F-035 的修复需要返工。目前两种
+  可能性都要保留，不预设哪一种更可能。
+
+## F-038 · Qwen 侧的 401 "invalid_api_key" 被泛化的"账单故障"文案吞掉，休息日诊断给出的处理建议对 Qwen 是错的
+
+- **日期**：2026-08-31 ~ 09-02，连续三天（本次文档刷新发现，09-02 当天仍在持续）·
+  **状态**：确认（三次独立同构事件 + 代码机械核验）
+- **模型**：纯 harness 错误分类问题，不涉及具体模型能力；受影响的两个 provider 是
+  `qwen-plus`（SCOUT 搜索）与 DeepSeek 系列（fallback/BUILD 等）
+- **声明**：F-024/F-025 引入的 `is_billing_error()` + `classify_scout_failure()`
+  把"账单/欠费"类错误统一渲染成"INFRASTRUCTURE OUTAGE...requires a human to top up
+  billing"的横幅，这对 DeepSeek 这三天返回的 `402 Insufficient Balance` 是准确的，
+  但 Qwen 这三天返回的其实是 `401 Incorrect API key provided`（`code:
+  invalid_api_key`）——这是凭证失效/错误，不是余额问题，充值账单**不会**修好 Qwen
+  这一侧。因为 `classify_scout_failure` 用的是 `is_billing_error(qwen) or
+  is_billing_error(deepseek)`，只要有一个 provider 命中账单特征词就整体判定为账单
+  故障并写入统一的"去充值"文案，日记模板最后一行"账充上以后，明天流水线应该会自动
+  恢复正常"对 Qwen 的实际问题是误导性建议——即便原始错误文本被逐字附在日记里
+  （所以信息没有丢失），面向人类的结论句仍然只讲了一半真相，而这一半人类更可能先看到。
+- **证据**：`01_Work_Log/2026-08-31-Diary.md`、`2026-09-01-Diary.md`、
+  `2026-09-02-Diary.md` 三份"技术细节"完全同构：Qwen 均为
+  `Error code: 401 - ... 'code': 'invalid_api_key'`，DeepSeek 均为
+  `Error code: 402 - ... 'Insufficient Balance'`；`src/lili_llm.py:40-48`
+  的 `_BILLING_ERROR_SIGNATURES` 元组不含 "invalid_api_key"/"incorrect api key"
+  等凭证类关键词，`is_billing_error("Incorrect API key provided...")` 对 Qwen
+  错误单独判断会返回 `False`；`src/lili_pipeline.py:627-637` 的
+  `classify_scout_failure()` 用 `or` 而非分别处理两个 provider，一旦 DeepSeek 命中
+  账单特征就统一套用账单话术，不区分另一个 provider 的真实故障类型。
+- **应对**：本次不改代码（文档刷新范围）。建议下次迭代把 `classify_scout_failure`
+  改成分别报告每个 provider 的故障类别（账单 / 凭证 / 未知），而不是任一方命中账单
+  特征词就整体归类；诊断文案应分别给出"充值"和"检查/轮换 API Key"两种不同的下一步
+  动作。**此外这是一个需要 owner 立即处理的真实运营问题**：截至本次刷新（09-02），
+  Qwen API Key 已经连续三天返回"无效"，充值 DeepSeek 账户并不能让 SCOUT 恢复正常，
+  需要 owner 单独检查/更新 `QWEN_API_KEY` 这个 GitHub Secret。
+- **推论**：F-024/F-025 解决的是"账单故障看起来像创作性休息日"这个可见性问题，但
+  没有覆盖"两个 provider 同时故障、但故障类型不同"这种组合情况——错误分类的粒度
+  目前是"是否命中账单关键词"的布尔值，一旦有非账单类故障（凭证、限流、模型下线等）
+  与账单类故障同时出现，前者会被后者的诊断文案盖住。这提示 F-024 类"让故障可见"的
+  修复本身也需要定期检查其分类粒度是否还够用，而不是修一次就当作永久解决。
+
+## F-039 · 测试套件当前是红的：一个硬编码日期的定时炸弹测试到期失效，而自进化每周写 `src/**` 的 commit 从未真正触发过 CI
+
+- **日期**：2026-09-02（本次文档刷新发现）· **状态**：确认（本地 + 真实 CI 运行记录双重
+  核验，非模型能力问题，纯 harness/CI 配置问题）
+- **模型**：无关模型能力
+- **声明**：两个独立问题叠加，导致测试套件从大约 2026-08-29/30 起处于红色但无人发现：
+  (1) `tests/test_prompts.py::test_daily_offender_concepts_injected_when_present`
+  （`da5f250`，2026-08-03/04 引入，F-021 的一部分）构造了一条 `"date": "2026-08-01"`
+  的假账本记录，断言它会被 `lili_ledger_report.load_entries(days=28)` 判定为
+  28 天内的"repeat offender"并注入 SCOUT 提示词——但 `load_entries()`
+  （`src/lili_ledger_report.py:42`）用的是真实墙钟 `datetime.now(timezone.utc)` 而非
+  可注入/可冻结的时间，测试从未冻结"今天"。2026-08-01 加 28 天等于 2026-08-29，
+  真实日历一旦越过这个点，这条固定日期的 fixture 就必然被过滤出 28 天窗口，测试从
+  "必然通过"变成"必然失败"，与代码是否正确无关，纯粹是挂钟时间的定时炸弹。
+  (2) 这次失效之所以三天多都没人发现，是因为承载它的这部分代码
+  （`src/lili_engineering.py`、`src/lili_soul.py`、`src/lili_blindspot.py`，均属于
+  `lili_tests.yml` 监听的 `src/**` 路径）的最近两次改动，都来自每周自进化工作流自己
+  用默认 `GITHUB_TOKEN` 发起的 `git push`（`cb60884`、`2554fe9`，作者
+  "Super-Lili (Evolution)"）——GitHub Actions 的既定规则是"用 `GITHUB_TOKEN` 发起的
+  push 不会触发其他以 `on: push` 监听的 workflow"（防止 workflow 互相触发造成死循环），
+  所以 `lili_tests.yml` 对这两次 push 根本没有运行过，红色测试无声无息地留在
+  `main` 分支上。对照同一时期由人类/Claude 会话用个人身份 push 的 `b625e12`
+  （同样改了 `src/**`），CI 正常触发并跑绿——两者路径完全相同，唯一区别是推送者
+  的认证身份，直接印证了这条 GitHub 平台规则在本仓库的真实效果。
+- **证据**：本地 `python3 -m unittest discover -s tests` 于 2026-09-02 运行结果为
+  `FAILED (failures=1, skipped=1)`，唯一失败即上述测试，`AssertionError:
+  'Phone Screenshot Organizer' not found in ...`；`gh run list --workflow=lili_tests.yml`
+  显示最近一次真正跑过的记录是 `b625e12`（2026-08-27，success），此后
+  `cb60884`（2026-08-30）与 `2554fe9`（2026-08-31）两次 push 完全没有对应的
+  workflow run 记录；`git log --author="Super-Lili (Evolution)"` 交叉核对显示，
+  几乎每一周的自进化 commit 都会改到 `lili_soul.py`/`lili_engineering.py`/
+  `lili_blindspot.py`，也就是说这个 CI 盲区并非本周新出现，而是自 Phase 10
+  自进化开始写这几个文件以来（2026-07-17 前后）就一直存在，只是过去没有一个
+  恰好在这个盲区窗口期内失效的测试，这次是第一次真正暴露出来。
+- **应对**：本次为文档刷新范围，不改代码。建议下一次允许改代码的会话：
+  ① 修 `test_daily_offender_concepts_injected_when_present` 本身——用可控的
+  相对日期（比如基于 `datetime.now()` 动态计算一个"27 天前"的 fixture 日期，或者
+  给 `load_entries` 增加一个可注入的"当前日期"参数用于测试）而不是写死
+  `"2026-08-01"`；② 更根本地，审查测试套件里其他用绝对日期字符串构造 fixture
+  的用例，判断还有没有同类定时炸弹；③ 单独给自进化的 `git push` 配一个不是默认
+  `GITHUB_TOKEN` 的凭据（例如一个专用 PAT，类似 Phase 12 提到过、后来疑似停用的
+  `lili-deploy`），或者在 `lili_weekly_evolution.yml` 里增加一步在 push 后
+  手动 `workflow_dispatch` 触发 `lili_tests.yml`，让自进化自己修改的代码也能被
+  它本该受到的测试网接住。
+- **推论**："CI 会在每次 push 时兜底"这个假设，对由自动化系统自己用默认凭据推送的
+  commit 并不成立——这类系统如果会修改自己的源码（本项目的每周自进化正是如此），
+  它对自己代码的测试覆盖存在一个结构性盲区，而且这个盲区不会主动报错，只会在某个
+  依赖真实时间的脆弱测试恰好失效时才被动暴露。这和 F-013 的自写护栏（`_guarded_write`
+  在写入前用 `ast.parse()`+`exec()` 自检）是同一类问题的不同侧面：自我修改的安全网
+  不能假设外部 CI 会兜底，因为外部 CI 可能根本没有被触发。
 
 ---
 
