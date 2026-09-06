@@ -1175,6 +1175,87 @@
   在写入前用 `ast.parse()`+`exec()` 自检）是同一类问题的不同侧面：自我修改的安全网
   不能假设外部 CI 会兜底，因为外部 CI 可能根本没有被触发。
 
+## F-040 · DeepSeek 从"账单欠费"转为"凭证失效"，两个 provider 同时跌出账单错误分类，休息日诊断退化回和普通创作休息日无法区分的状态，周进化被同一故障拖垮且完全不留痕迹
+
+- **日期**：DeepSeek 错误类型转变发生在 2026-09-02 20:36 UTC（仍为 402）到
+  2026-09-03 16:34 UTC（变为 401）之间；影响持续到本次刷新（2026-09-06）仍在复现，
+  周进化侧当天两次运行同样受影响 · **状态**：确认（四次独立同构 Action 运行日志
+  核验：2026-09-04 两次日常运行 + 2026-09-05 一次日常运行 + 2026-09-06 两次周进化
+  运行，外加代码机械核验）
+- **模型**：纯 harness 错误分类/可见性问题，不涉及模型能力。受影响 provider 是
+  DeepSeek 系列（`deepseek-v4-pro`/SCOUT fallback/周进化审查全部同一把 Key）与
+  Qwen（`qwen-plus`，401 invalid_api_key，延续自 F-038，本身没有变化）
+- **声明**：F-038（上周）已经指出 Qwen 的 401 凭证错误会被 `classify_scout_failure()`
+  的 `is_billing_error(qwen) or is_billing_error(deepseek)` 逻辑盖住——只要 DeepSeek
+  命中账单关键词，整体就被判定为账单故障，Qwen 一侧的真实问题被"去充值"这句泛化
+  建议掩盖。F-038 的推论已经预言了更坏的组合会出现："一旦有非账单类故障与账单类
+  故障同时出现，前者会被后者的诊断文案盖住"。本周实际发生的情况比这个预言更彻底：
+  DeepSeek 自己的错误也从账单类（`402 Insufficient Balance`）变成了凭证类
+  （`401 - Authentication Fails, Your api key: ****1C08 is invalid`），和 Qwen 的
+  故障性质完全相同。这意味着 `is_billing_error()` 对两个 provider 都返回 `False`，
+  `classify_scout_failure()` 整体跌回最泛化的分支，返回值退化成完全不带诊断信息的
+  `"Phase 1 failed - Qwen search and DeepSeek fallback both failed."`——`save_rest_day()`
+  因此把 2026-09-04、2026-09-05 两天渲染成普通的"莉莉在休息"诗意文案（"今天我没能
+  出现...明天我会回来的...带着一杯续满的热茶"），而不是 F-024/F-025 特意做出的、
+  故意让人无法忽略的 INFRASTRUCTURE OUTAGE 横幅。这正是 F-024 最初要修的可见性
+  问题原样复现，只是触发条件从"两个 provider 都无理由拒绝"换成了"两个 provider
+  都以凭证错误而非余额错误拒绝"。更严重的是同一凭证故障今天（09-06）也让周进化的
+  `weekly_evolution()` 彻底失败两次——但 `weekly_evolution()` 从未实现过和
+  `save_rest_day()` 对称的落盘机制，全部 provider 失败时只有
+  `print("❌ All models failed. Evolution postponed.")` 后接一个裸 `return`，本周
+  没有任何周进化报告文件、任何 git 提交能证明本周尝试过周进化——一个人不主动去翻
+  GitHub Actions 原始日志，完全无法从仓库状态分辨"周进化跑过但失败了"和"周进化
+  根本没触发"。
+- **证据**：`gh run view <id> --log` 核对的四次独立运行——daily workflow 的
+  run 33779441400（2026-09-03T16:34:31Z，产出 commit `5af263c` / 2026-09-04 日记）
+  与 run 33974613222（2026-09-05T15:22:42Z，产出 2026-09-05 日记）均显示：
+  `Qwen (qwen-plus) search attempt 1/2/3 failed: ... 'code': 'invalid_api_key'`，
+  紧接着 `DeepSeek SCOUT fallback attempt 1/2/3 failed: Error code: 401 -
+  {'error': {'message': 'Authentication Fails, Your api key: ****1C08 is
+  invalid', 'type': 'authentication_error', ...}}`；两次运行的 Pre-flight 步骤都
+  打印 `[OK] At least one provider is healthy - proceeding.`——这行文案本身具有
+  误导性，`check_billing_outage_preflight()`（`src/lili_pipeline.py:601-617`）在
+  "两个 provider 都不健康但都不是账单错误"时同样 `return None`，和"确实至少一个
+  健康"共用同一条后续日志，日志本身无法区分这两种情况。对照更早的
+  run 33656627283（2026-09-02T16:43:04Z，产出 commit `9806688` / 2026-09-03 日记，
+  与 `9ad4a41`、`c269805` 两次微小重试同构），DeepSeek 当时仍是 `Error code: 402 -
+  ... 'Insufficient Balance'`——转变确认发生在这两次运行之间。周进化侧：
+  run 34002264780（2026-09-06T00:48:47Z）与 run 34022354026（2026-09-06T08:37:10Z）
+  日志均显示 `DeepSeek attempt 1/2/3 failed: Error code: 401 - ... invalid` 后紧跟
+  `❌ All models failed. Evolution postponed.`；`03_Evolution_Log/` 目录最新文件
+  仍是 `2026-08-31_Weekly_Evolution.md`（上周文档刷新已收录），`git log` 里没有任何
+  2026-09-06 的周进化提交，两次运行的 `git diff --cached --quiet || git commit`
+  步骤因为没有文件变更而从未触发提交。`src/lili_llm.py:40-44` 的
+  `_BILLING_ERROR_SIGNATURES` 元组（"arrearage"、"insufficient balance"、
+  "billing" 等）确认不含 "invalid_api_key"/"authentication_error"/"incorrect
+  api key" 等凭证类关键词；`src/super_lili_weekly_evolution.py:1121-1123` 确认
+  `weekly_evolution()` 的 `if not content:` 分支只有 `print` 和裸 `return`，没有
+  调用任何等价于 `save_rest_day()` 的落盘函数。
+- **应对**：本次文档刷新不改代码。这是一个需要 owner 立即处理的运营问题，且比
+  F-038 记录时更紧急——**DeepSeek 和 Qwen 两个 GitHub Secret
+  （`DEEPSEEK_API_KEY`、`QWEN_API_KEY`）现在同时返回凭证失效，而不是"一个欠费一个
+  凭证错误"**，充值任何一方的账户余额都无法解决当前的故障，需要 owner 重新生成
+  两个 provider 的 API Key 并更新对应的 GitHub Secret，更新后建议手动触发一次
+  `workflow_dispatch` 核实 Pre-flight 打印的 "healthy" 是真健康，而不是本条发现
+  指出的"两个都不健康但暂不归类为账单"这种同文案假阳性。代码层面，下次允许改代码
+  时有三个具体方向：① 给 `classify_scout_failure()`/`is_billing_error()` 新增一类
+  "凭证错误"特征词，使其能独立生成"AUTHENTICATION FAILURE, NOT A CREATIVE REST
+  DAY"这一档横幅，而不是让两个非账单错误一起跌回最泛化、不带诊断信息的分支；
+  ② `check_billing_outage_preflight()` 的 "[OK] At least one provider is healthy"
+  日志需要拆成"确认健康"和"故障但未归类为账单、继续走完整流程"两条不同文案；
+  ③ 给 `weekly_evolution()` 补一个和 `save_rest_day()` 对称的失败落盘机制（哪怕只是
+  在 `03_Evolution_Log/` 写一个"本周因 provider 故障未能进化"的占位文件），否则周
+  进化的失败永远只存在于 Actions 原始日志里，对人类不可见。
+- **推论**：F-024/F-025 解决的是"账单故障 vs 创作休息日"这一种二分类的可见性问题，
+  F-038 进一步指出这个二分类在两个 provider 故障类型不同时会把其中一个的诊断盖住；
+  本周的证据显示这套机制的真正弱点比 F-038 描述的更根本——它的分类粒度只有"是否
+  命中账单关键词"这一个布尔维度，一旦故障类型本身漂移出这个维度（账单 → 凭证），
+  整套可见性机制会完全静默失效，退回到 F-024 修复前试图消除的那种状态，而且这次
+  退化不仅影响日常流水线，还波及了从未获得同等可见性保护的周进化路径。任何"用
+  关键词匹配区分故障类型"的分类器都需要被当作会过期的启发式规则来对待，而不是
+  修一次就能覆盖所有未来故障形态的永久解——F-038 的推论已经说过一次同样的话，这次
+  是它在一周内就被现实验证的续篇。
+
 ---
 
 *新发现的写入规则：编号递增，不删除旧条目；**必须写明具体模型与版本**（无模型归属的
