@@ -1,7 +1,7 @@
 # CLAUDE.md — Super-Lili Project Memory
 
 > Written for the Claude agent picking up this project. Read this first.
-> Last updated: 2026-09-06 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
+> Last updated: 2026-09-13 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
 
 ---
 
@@ -216,6 +216,16 @@ A full week with zero code changes and zero new tools — the Phase 15 outage di
 - **Test suite unchanged, still red**: `tests/test_prompts.py::test_daily_offender_concepts_injected_when_present` (F-039) still fails locally on the same hardcoded-date issue, exactly as it did last week — confirmed again this refresh (`python3 -m unittest discover -s tests`: 203 tests, 1 failure). No commits touched `src/**` or `tests/**` this week (verified via `git log f4f4977..HEAD -- src/ tests/ .github/`, empty), so this is simply the same unfixed regression, not a new one.
 - 71 tools in the toolbox as of 2026-09-06 (unchanged from 09-02) — zero new tools shipped this week; every daily run either hit the outage before SCOUT or (09-04/09-05) burned a full retry cycle only to land on the same rest day.
 
+### Phase 17 — Outage Enters Its Second Full Week Unchanged, One GitHub Actions Infra Flake (2026-09-07 to 2026-09-13)
+
+A second consecutive week with zero code changes, zero new tools, and zero owner action on the credential rotation F-040 asked for. This section exists to confirm the outage is still exactly what F-040 already diagnosed, not to introduce anything new.
+
+- **F-040's outage is unchanged, verified against raw logs across all 6 days**: `01_Work_Log/2026-09-07-Diary.md` through `2026-09-12-Diary.md` all render the ordinary poetic rest-day copy with the same generic technical note ("Phase 1 failed - Qwen search and DeepSeek fallback both failed."). Pulled the actual Actions log for 2026-09-12's first daily run (`gh run view 34702909817 --log`) to confirm the underlying errors are byte-for-byte the same as F-040's evidence: Qwen still `Error code: 401 ... 'code': 'invalid_api_key'`, DeepSeek still `Error code: 401 - {'error': {'message': 'Authentication Fails, Your api key: ****1C08 is invalid', ...}}`. Same masked key suffix (`****1C08`) as the 09-03 log F-040 cited — neither `QWEN_API_KEY` nor `DEEPSEEK_API_KEY` has been rotated yet. Not a new finding; no new F-number written, per this refresh's own honesty rule against filing a duplicate of an already-confirmed entry.
+- **Weekly evolution failed the same documented way again**: the 2026-09-13T00:49 UTC run (`gh run view 34728953756 --log`) shows the identical `DeepSeek attempt 1/2/3 failed: Error code: 401 ... invalid` three times followed by `All models failed. Evolution postponed.`, workflow exits "success" (no crash, just silent no-op), and — exactly as F-040 predicted — no `03_Evolution_Log/` file and no commit resulted. `03_Evolution_Log/` still ends at `2026-08-31_Weekly_Evolution.md`.
+- **New, unrelated, one-off observation — not a FINDINGS entry (infra flake, not model capability, single occurrence)**: a second weekly-evolution trigger today at 2026-09-13T09:27 UTC (`run 34749545991`) shows as a hard workflow **failure** rather than the usual silent "success" — GitHub's own annotation reads "The job was not started because it repeatedly failed to be acquired (5 attempts)," i.e. the runner never started at all. This is a GitHub Actions-side scheduling issue, not anything in this repo's code; logged here only so a future refresh doesn't mistake it for a new pipeline bug if it recurs.
+- **Test suite still red on the same known issue**: `python3 -m unittest discover -s tests` → 203 tests, 1 failure (`test_daily_offender_concepts_injected_when_present`, F-039's hardcoded-date fixture). Unchanged because zero commits touched `src/` or `tests/` this week (`git log` since the last refresh shows only diary/README commits).
+- 71 tools in the toolbox, unchanged. `tool_quality_ledger.jsonl` unchanged (470 lines, last entry still 2026-08-30).
+
 ---
 
 ## Key Architecture Decisions
@@ -296,7 +306,7 @@ Written by project owner xiaojiahaina, based on the neo-slow media framework (20
 ## Unfinished / Future Direction
 
 - **Open to public**: once Issues are open to real users, authentic needs become the best evolution fuel
-- **Quality ceiling**: current tools are uneven — still 71 tools as of 2026-09-06 (unchanged from 09-02: the outage from FINDINGS F-038 did not resolve, it escalated to a credential failure on both providers and produced zero attempts all week, see FINDINGS F-040; the ledger has no new entries since 2026-08-30). 28-day ledger, per `lili_ledger_report.py`: 43% pass rate per build attempt, 12/28 (stat frozen at last week's figure — no new attempts to fold in), by ISO week: W32 2/8, W33 4/6, W34 2/5, W35 4/9; treat this as small-sample and outage-skewed, not a confirmed quality improvement, until a full outage-free week of data comes in — and that outage-free week has now been pushed back further. Maybe 2-3 tools reach "creative professional uses it weekly" standard. F-034's ledger date-field bug (see FINDINGS) remains unfixed, so even these week boundaries carry some unquantified uncertainty. Direction is right, needs time — and right now needs the owner to rotate both `QWEN_API_KEY` and `DEEPSEEK_API_KEY` before there's anything new to measure at all.
+- **Quality ceiling**: current tools are uneven — still 71 tools as of 2026-09-13 (unchanged for two straight weeks now: the credential outage from FINDINGS F-040 has not resolved, verified still identical byte-for-byte in this week's raw Action logs — see Phase 17 — and produced zero attempts for an 11th straight day; the ledger has no new entries since 2026-08-30). 28-day ledger, per `lili_ledger_report.py`: 43% pass rate per build attempt, 12/28 (stat frozen since two refreshes ago — no new attempts to fold in), by ISO week: W32 2/8, W33 4/6, W34 2/5, W35 4/9; treat this as small-sample and outage-skewed, not a confirmed quality improvement, until a full outage-free week of data comes in — and that outage-free week keeps getting pushed back further with each unrotated week. Maybe 2-3 tools reach "creative professional uses it weekly" standard. F-034's ledger date-field bug (see FINDINGS) remains unfixed, so even these week boundaries carry some unquantified uncertainty. Direction is right, needs time — and right now still needs the owner to rotate both `QWEN_API_KEY` and `DEEPSEEK_API_KEY` before there's anything new to measure at all; no further diagnosis is possible from this side, only the credential rotation itself unblocks the next data point.
 
 ---
 
