@@ -1,7 +1,7 @@
 # CLAUDE.md — Super-Lili Project Memory
 
 > Written for the Claude agent picking up this project. Read this first.
-> Last updated: 2026-09-13 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
+> Last updated: 2026-09-21 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
 
 ---
 
@@ -226,6 +226,15 @@ A second consecutive week with zero code changes, zero new tools, and zero owner
 - **Test suite still red on the same known issue**: `python3 -m unittest discover -s tests` → 203 tests, 1 failure (`test_daily_offender_concepts_injected_when_present`, F-039's hardcoded-date fixture). Unchanged because zero commits touched `src/` or `tests/` this week (`git log` since the last refresh shows only diary/README commits).
 - 71 tools in the toolbox, unchanged. `tool_quality_ledger.jsonl` unchanged (470 lines, last entry still 2026-08-30).
 
+### Phase 18 — Outage Enters Its Third Week, Still Unchanged (2026-09-14 to 2026-09-21)
+
+A third consecutive week with zero code changes, zero new tools and no owner action on the credential rotation F-040 asked for. Nothing here is new; recorded only so the timeline has no gap.
+
+- **Verified against raw logs, not inferred from diaries**: 09-14 to 09-19 and 09-21 diaries all carry the same generic "Phase 1 failed" note. Daily run 35522359626 (2026-09-20) shows Qwen `401 Incorrect API key provided` x3 and DeepSeek `401 ... ****1C08 is invalid` x3 - same masked key suffix as 09-03, so neither `QWEN_API_KEY` nor `DEEPSEEK_API_KEY` has been rotated. Pre-flight still prints `[OK] At least one provider is healthy` (misleading; F-040 direction 2).
+- **Weekly evolution failed again, three times in one Sunday**: 2026-09-20 cron slots at 00:57 / 09:14 / 15:58 UTC each retried DeepSeek 3x, all 401, all "Evolution postponed". Because a failed run writes no report file, the skip guard never fires and every backup slot repeats the full failed cycle. `03_Evolution_Log/` still ends at `2026-08-31`. Appended as a follow-up note to F-040 (no new F number - same root cause).
+- No commits touched `src/`, `tests/` or `.github/` since 2026-08-27 (`b625e12`); the only commits are daily rest-day diaries + README. No diary exists for 2026-09-20 because it is a Sunday (`DOW=7` skip in `lili_daily.yml`) - by design, not a missed run.
+- Tests: 203 run, 1 failure (F-039's expired hardcoded-date fixture), unchanged. Ledger unchanged (470 lines, last entry 2026-08-30). 71 tools.
+
 ---
 
 ## Key Architecture Decisions
@@ -306,7 +315,7 @@ Written by project owner xiaojiahaina, based on the neo-slow media framework (20
 ## Unfinished / Future Direction
 
 - **Open to public**: once Issues are open to real users, authentic needs become the best evolution fuel
-- **Quality ceiling**: current tools are uneven — still 71 tools as of 2026-09-13 (unchanged for two straight weeks now: the credential outage from FINDINGS F-040 has not resolved, verified still identical byte-for-byte in this week's raw Action logs — see Phase 17 — and produced zero attempts for an 11th straight day; the ledger has no new entries since 2026-08-30). 28-day ledger, per `lili_ledger_report.py`: 43% pass rate per build attempt, 12/28 (stat frozen since two refreshes ago — no new attempts to fold in), by ISO week: W32 2/8, W33 4/6, W34 2/5, W35 4/9; treat this as small-sample and outage-skewed, not a confirmed quality improvement, until a full outage-free week of data comes in — and that outage-free week keeps getting pushed back further with each unrotated week. Maybe 2-3 tools reach "creative professional uses it weekly" standard. F-034's ledger date-field bug (see FINDINGS) remains unfixed, so even these week boundaries carry some unquantified uncertainty. Direction is right, needs time — and right now still needs the owner to rotate both `QWEN_API_KEY` and `DEEPSEEK_API_KEY` before there's anything new to measure at all; no further diagnosis is possible from this side, only the credential rotation itself unblocks the next data point.
+- **Quality ceiling**: current tools are uneven — still 71 tools as of 2026-09-21 (unchanged for three straight weeks now: the credential outage from FINDINGS F-040 has not resolved, verified still identical byte-for-byte in this week's raw Action logs — see Phase 17 — and no daily run has passed SCOUT since 2026-08-30 - 3 weeks; the ledger has no new entries since then). 28-day ledger, per `lili_ledger_report.py`: 43% pass rate per build attempt, 12/28 (stat frozen since two refreshes ago — no new attempts to fold in), by ISO week: W32 2/8, W33 4/6, W34 2/5, W35 4/9; treat this as small-sample and outage-skewed, not a confirmed quality improvement, until a full outage-free week of data comes in — and that outage-free week keeps getting pushed back further with each unrotated week. Maybe 2-3 tools reach "creative professional uses it weekly" standard. F-034's ledger date-field bug (see FINDINGS) remains unfixed, so even these week boundaries carry some unquantified uncertainty. Direction is right, needs time — and right now still needs the owner to rotate both `QWEN_API_KEY` and `DEEPSEEK_API_KEY` before there's anything new to measure at all; no further diagnosis is possible from this side, only the credential rotation itself unblocks the next data point.
 
 ---
 
