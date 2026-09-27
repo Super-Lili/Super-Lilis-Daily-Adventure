@@ -1,7 +1,7 @@
 # CLAUDE.md — Super-Lili Project Memory
 
 > Written for the Claude agent picking up this project. Read this first.
-> Last updated: 2026-09-21 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
+> Last updated: 2026-09-28 · Updated weekly (scheduled task refreshes this file and docs/FINDINGS.md every Sunday evening after weekly evolution).
 
 ---
 
@@ -235,6 +235,15 @@ A third consecutive week with zero code changes, zero new tools and no owner act
 - No commits touched `src/`, `tests/` or `.github/` since 2026-08-27 (`b625e12`); the only commits are daily rest-day diaries + README. No diary exists for 2026-09-20 because it is a Sunday (`DOW=7` skip in `lili_daily.yml`) - by design, not a missed run.
 - Tests: 203 run, 1 failure (F-039's expired hardcoded-date fixture), unchanged. Ledger unchanged (470 lines, last entry 2026-08-30). 71 tools.
 
+### Phase 19 — Outage Enters Its Fourth Week; The 28-Day Ledger Window Has Nearly Emptied (2026-09-22 to 2026-09-28)
+
+Fourth consecutive week with zero code changes, zero new tools and no credential rotation. Recorded to keep the timeline gap-free; no new F number.
+
+- **Same outage, checked against raw logs**: 09-22 to 09-26 diaries all carry the generic "Phase 1 failed" note. Daily run 36190081569 (2026-09-25) shows Qwen `401 Incorrect API key provided` x3 and DeepSeek `401 ... ****1C08 is invalid`, the same masked suffix as 09-03. Weekly evolution on 2026-09-27 ran in all three cron slots (runs 36285109077 / 36311009000 / 36334882156), and each ended in DeepSeek 401 x3 -> `Evolution postponed`. `03_Evolution_Log/` still ends at 2026-08-31. Appended as a second follow-up note to F-040.
+- **The two short (~50s) daily runs on 2026-09-26 UTC are expected**: the 09-26 diary was already committed at 2026-09-25T17:25Z (09-26 01:25 Beijing). The later runs at 16:33Z and 20:43Z UTC fell on Sunday 09-27 Beijing time, so the `DOW=7` guard skipped them. They are not a new failure.
+- **Side effect of the outage length**: `lili_ledger_report.py`'s 28-day window now holds only 1 attempt (0/1, W35), since the last ledger entry is 2026-08-30. The "43%, 12/28" figure quoted in earlier refreshes has aged out of the window. If evolution resumes, its first prompt will get an almost empty ledger report rather than real statistics.
+- Tests: 203 run, 1 failure (F-039), unchanged. No commits touched `src/`, `tests/` or `.github/` this week. 71 tools.
+
 ---
 
 ## Key Architecture Decisions
@@ -315,7 +324,7 @@ Written by project owner xiaojiahaina, based on the neo-slow media framework (20
 ## Unfinished / Future Direction
 
 - **Open to public**: once Issues are open to real users, authentic needs become the best evolution fuel
-- **Quality ceiling**: current tools are uneven — still 71 tools as of 2026-09-21 (unchanged for three straight weeks now: the credential outage from FINDINGS F-040 has not resolved, verified still identical byte-for-byte in this week's raw Action logs — see Phase 17 — and no daily run has passed SCOUT since 2026-08-30 - 3 weeks; the ledger has no new entries since then). 28-day ledger, per `lili_ledger_report.py`: 43% pass rate per build attempt, 12/28 (stat frozen since two refreshes ago — no new attempts to fold in), by ISO week: W32 2/8, W33 4/6, W34 2/5, W35 4/9; treat this as small-sample and outage-skewed, not a confirmed quality improvement, until a full outage-free week of data comes in — and that outage-free week keeps getting pushed back further with each unrotated week. Maybe 2-3 tools reach "creative professional uses it weekly" standard. F-034's ledger date-field bug (see FINDINGS) remains unfixed, so even these week boundaries carry some unquantified uncertainty. Direction is right, needs time — and right now still needs the owner to rotate both `QWEN_API_KEY` and `DEEPSEEK_API_KEY` before there's anything new to measure at all; no further diagnosis is possible from this side, only the credential rotation itself unblocks the next data point.
+- **Quality ceiling**: current tools are uneven — still 71 tools as of 2026-09-28 (unchanged for four straight weeks now: the credential outage from FINDINGS F-040 has not resolved, verified still identical in this week's raw Action logs — see Phase 19 — and no daily run has passed SCOUT since 2026-08-30; the ledger has no new entries since then). Last meaningful 28-day ledger snapshot (as of the 2026-09-21 refresh; the live 28-day window has since aged out to just 1 attempt): 43% pass rate per build attempt, 12/28, by ISO week: W32 2/8, W33 4/6, W34 2/5, W35 4/9; treat this as small-sample and outage-skewed, not a confirmed quality improvement, until a full outage-free week of data comes in — and that outage-free week keeps getting pushed back further with each unrotated week. Maybe 2-3 tools reach "creative professional uses it weekly" standard. F-034's ledger date-field bug (see FINDINGS) remains unfixed, so even these week boundaries carry some unquantified uncertainty. Direction is right, needs time — and right now still needs the owner to rotate both `QWEN_API_KEY` and `DEEPSEEK_API_KEY` before there's anything new to measure at all; no further diagnosis is possible from this side, only the credential rotation itself unblocks the next data point.
 
 ---
 
